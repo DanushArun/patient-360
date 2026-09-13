@@ -40,12 +40,6 @@ Editable sources are the `.drawio` files in `planning/diagrams/`; rendered below
 ### 5. Low-level design
 ![LLD](planning/diagrams/05-lld.png)
 
-## Decisions
-
-- 2026-09-13: Repo created (`patient-360`), structure set up per team plan.
-- 2026-09-13: Snowflake tech-stack smoke test — **pending** (Dev 1).
-- 2026-09-13: Demo patient — **P-017**.
-- 2026-09-13: First 10 synthetic patients added to `data/fixtures/patients.json`.
 
 ## Repo layout
 
@@ -56,5 +50,3 @@ Editable sources are the `.drawio` files in `planning/diagrams/`; rendered below
 - `tests/` — test questions + expected answers, kept separate from `app/` so it can't read its own answer key
 - `evidence/coco/` — CoCo session notes, screenshots, proof of how this was built
 - `planning/` — this project's plan, architecture docs, and diagrams
-
-**Never commit real credentials.** Snowflake secrets go in a local `.env` (already git-ignored), never in code.
