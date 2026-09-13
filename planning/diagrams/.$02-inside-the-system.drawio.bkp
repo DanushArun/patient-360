@@ -1,0 +1,292 @@
+<mxfile host="Electron">
+  <diagram id="xpCL7873nEHsE4qD9z3y" name="Page-1">
+    <mxGraphModel dx="2249" dy="1482" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1400" background="light-dark(#FFFFFF,#121212)" math="0" shadow="0" adaptiveColors="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="1200" x="40" y="22" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Read top to bottom: a record arrives, we check we are allowed to hold it, we work out whose it is, we store it, we check what is missing, then we answer questions about it." vertex="1">
+          <mxGeometry height="20" width="1250" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="sub2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#B45309;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="The three columns on the right apply to every step, not just one — that is why they run the full height." vertex="1">
+          <mxGeometry height="18" width="1250" x="40" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="b1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="124" width="1030" x="210" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="b1n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#CBD5E1;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="1" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="104" as="geometry" />
+        </mxCell>
+        <mxCell id="b1l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="THE WAY IN" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="b1d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Nothing is edited on the way in. The original file is kept with a fingerprint, so we can always prove what we received and when." vertex="1">
+          <mxGeometry height="14" width="900" x="226" y="126" as="geometry" />
+        </mxCell>
+        <mxCell id="i1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;From the hospital&#39;s record system&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;visits, diagnoses, orders, results&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="247" x="226" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="i2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;From the lab and scan rooms&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;reports the moment they are signed&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="247" x="487" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="i3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;A photo or PDF someone uploads&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the family&#39;s folder, a phone picture&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="247" x="748" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="i4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;From the insurer and scheme portal&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;approvals, queries, rejections&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="215" x="1009" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D9A441;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="130" width="1030" x="210" y="244" as="geometry" />
+        </mxCell>
+        <mxCell id="b2n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#FCD34D;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="2" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="248" as="geometry" />
+        </mxCell>
+        <mxCell id="b2l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#B45309;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="ARE WE ALLOWED TO HOLD THIS?" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="254" as="geometry" />
+        </mxCell>
+        <mxCell id="b2d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#B45309;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Required by the Digital Personal Data Protection Act 2023. No permission means no data — the system returns nothing rather than guessing." vertex="1">
+          <mxGeometry height="14" width="900" x="226" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Permission check&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;is there a valid, unexpired permission covering this patient, this purpose, these dates?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="330" x="226" y="294" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Permission record&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;who gave it, for what, to whom, until when — kept as evidence&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="330" x="570" y="294" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Taking permission back&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the patient can withdraw; data stops being served and we can prove the moment it stopped&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="310" x="914" y="294" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="130" width="1030" x="210" y="388" as="geometry" />
+        </mxCell>
+        <mxCell id="b3n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#CBD5E1;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="3" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="392" as="geometry" />
+        </mxCell>
+        <mxCell id="b3l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="WHOSE RECORD IS THIS?" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="398" as="geometry" />
+        </mxCell>
+        <mxCell id="b3d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Never matched on name and date of birth alone. A wrong merge in cancer care cannot be undone — so when unsure, the system refuses to merge." vertex="1">
+          <mxGeometry height="14" width="900" x="226" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="id1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Match to one person&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;national health ID, this hospital&#39;s number, the number the last hospital used, scheme and insurer IDs&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="330" x="226" y="437" as="geometry" />
+        </mxCell>
+        <mxCell id="id2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Not sure? Holding pen&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;ambiguous matches are parked. They are never merged automatically and contribute nothing to any answer&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="330" x="570" y="437" as="geometry" />
+        </mxCell>
+        <mxCell id="id3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;A person decides&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;a human clears the holding pen, and who decided what, and when, is recorded&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="310" x="914" y="437" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="148" width="1030" x="210" y="532" as="geometry" />
+        </mxCell>
+        <mxCell id="b4n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#CBD5E1;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="4" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="536" as="geometry" />
+        </mxCell>
+        <mxCell id="b4l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="THE RECORD ITSELF" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="542" as="geometry" />
+        </mxCell>
+        <mxCell id="b4d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Everything carries three times: when it happened · when the source wrote it down · when we received it. That is how a report arriving late cannot quietly rewrite what was known yesterday." vertex="1">
+          <mxGeometry height="14" width="1000" x="226" y="558" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=7;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontSize=12;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;What happened&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;visits, diagnoses, drugs actually given, lab results, scans&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="247" x="226" y="584" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=7;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontSize=12;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;What the documents say&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;each fact tied to the exact page it came from&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="247" x="487" y="584" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" parent="1" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=7;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontSize=12;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;What money says&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;approvals, claims, queries, rejections&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="247" x="748" y="584" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;What is missing&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;here · waiting · never arrived · sources disagree · unreadable.&lt;br&gt;&lt;b&gt;&quot;Missing&quot; is never turned into &quot;no&quot;.&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="215" x="1009" y="584" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="130" width="1030" x="210" y="696" as="geometry" />
+        </mxCell>
+        <mxCell id="b5n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#CBD5E1;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="5" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="b5l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="THE CHECKS — IS THIS PATIENT READY?" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="706" as="geometry" />
+        </mxCell>
+        <mxCell id="b5d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Each check is a written rule with a version number, run in the database. No model decides any of these. Each answers: yes · no · cannot tell · sources disagree." vertex="1">
+          <mxGeometry height="14" width="1000" x="226" y="722" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Blood counts safe&lt;br&gt;for today?&lt;/b&gt;" vertex="1">
+          <mxGeometry height="68" width="196" x="226" y="744" as="geometry" />
+        </mxCell>
+        <mxCell id="g2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Heart scan recent&lt;br&gt;enough for this drug?&lt;/b&gt;" vertex="1">
+          <mxGeometry height="68" width="196" x="434" y="744" as="geometry" />
+        </mxCell>
+        <mxCell id="g3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Is the final pathology&lt;br&gt;report actually here?&lt;/b&gt;" vertex="1">
+          <mxGeometry height="68" width="196" x="642" y="744" as="geometry" />
+        </mxCell>
+        <mxCell id="g4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Is the approval&lt;br&gt;really in place?&lt;/b&gt;" vertex="1">
+          <mxGeometry height="68" width="196" x="850" y="744" as="geometry" />
+        </mxCell>
+        <mxCell id="g5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Is all of this about&lt;br&gt;the same person?&lt;/b&gt;" vertex="1">
+          <mxGeometry height="68" width="166" x="1058" y="744" as="geometry" />
+        </mxCell>
+        <mxCell id="b6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="130" width="1030" x="210" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="b6n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#CBD5E1;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="6" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="844" as="geometry" />
+        </mxCell>
+        <mxCell id="b6l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="FINDING AND ANSWERING" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="b6d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="The patient&#39;s own documents and the public rulebooks are searched separately and never mixed into one list — they are different kinds of truth." vertex="1">
+          <mxGeometry height="14" width="1000" x="226" y="866" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Search this patient&#39;s documents&lt;/b&gt;" vertex="1">
+          <mxGeometry height="68" width="247" x="226" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Search the rulebooks&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;scheme, quality and privacy rules&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="247" x="487" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Count across patients&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;&quot;which reviews this week have no report?&quot;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="247" x="748" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;The question router&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;may only use the tools to its left — it has no direct database access&lt;/font&gt;" vertex="1">
+          <mxGeometry height="68" width="215" x="1009" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="b7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D9A441;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="110" width="1030" x="210" y="984" as="geometry" />
+        </mxCell>
+        <mxCell id="b7n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#FCD34D;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="7" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="988" as="geometry" />
+        </mxCell>
+        <mxCell id="b7l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#B45309;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="THE PROOF CHECK" vertex="1">
+          <mxGeometry height="16" width="400" x="226" y="994" as="geometry" />
+        </mxCell>
+        <mxCell id="b7d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#B45309;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="The only step that can delete the answer&#39;s own words." vertex="1">
+          <mxGeometry height="14" width="900" x="226" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="pc" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Every sentence must name the page or the row behind it.&lt;/b&gt;&amp;nbsp;&amp;nbsp;A sentence with no proof is deleted before anyone sees it, and the deletion is written down.&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;Answers come back as: &lt;b&gt;proven&lt;/b&gt; · &lt;b&gt;partly proven&lt;/b&gt; · &lt;b&gt;not enough information&lt;/b&gt;. Never a percentage, because a percentage cannot be checked.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="47" width="998" x="226" y="1034" as="geometry" />
+        </mxCell>
+        <mxCell id="b8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;dashed=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="153" width="1030" x="210" y="1108" as="geometry" />
+        </mxCell>
+        <mxCell id="b8n" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#CBD5E1;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="8" vertex="1">
+          <mxGeometry height="30" width="60" x="130" y="1112" as="geometry" />
+        </mxCell>
+        <mxCell id="b8l" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=1;fontColor=#1F2937;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="WHAT PEOPLE SEE, AND WHAT GETS DONE" vertex="1">
+          <mxGeometry height="16" width="500" x="226" y="1118" as="geometry" />
+        </mxCell>
+        <mxCell id="b8d" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="A gap becomes a named task with an owner and a date. Closing it needs a person. No medical order is ever created by this system." vertex="1">
+          <mxGeometry height="14" width="1000" x="226" y="1134" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Today&#39;s review list&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;who needs attention before their visit, and why&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="196" x="226" y="1158" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;One patient&#39;s full picture&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the checks first, then pathology, scans, bloods, history&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="196" x="434" y="1158" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Ask a question&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;answer with the proof beside it; refuses medical advice&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="196" x="642" y="1158" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Chase and close gaps&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;task, owner, deadline, and a record of who closed it&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="196" x="850" y="1158" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=12;fontColor=#1F2937;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;align=center;" value="&lt;b&gt;Message the family&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;before they travel: exactly what to bring. Checked by a person first&lt;/font&gt;" vertex="1">
+          <mxGeometry height="86" width="166" x="1058" y="1158" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="224" as="sourcePoint" />
+            <mxPoint x="725" y="244" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="368" as="sourcePoint" />
+            <mxPoint x="725" y="388" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a3" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="512" as="sourcePoint" />
+            <mxPoint x="725" y="532" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="676" as="sourcePoint" />
+            <mxPoint x="725" y="696" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="820" as="sourcePoint" />
+            <mxPoint x="725" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a6" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#B45309;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="964" as="sourcePoint" />
+            <mxPoint x="725" y="984" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a7" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#B45309;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="1088" as="sourcePoint" />
+            <mxPoint x="725" y="1108" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sp1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="1152" width="200" x="1260" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sp1t" parent="1" style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontColor=#1F2937;spacingLeft=6;spacingRight=6;spacingTop=4;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;" value="&lt;b&gt;WHO CAN SEE WHAT&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B45309&quot;&gt;&lt;i&gt;applies to every step above&lt;/i&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Sign-in and role&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;coordinator · doctor · nurse · family · inspector. The family sees strictly less, and is refused medical questions.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Hospitals kept apart&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;one hospital&#39;s patients can never appear inside another&#39;s, even by accident.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Rules live in the database&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;not in the app, so no screen and no question can talk its way past them.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Every look is recorded&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;who opened which record, when, and what they were shown.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#B45309&quot;&gt;&lt;i&gt;This log is exactly what a hospital quality inspector asks to see.&lt;/i&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="1120" width="172" x="1276" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sp2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="1152" width="200" x="1470" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sp2t" parent="1" style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontColor=#1F2937;spacingLeft=6;spacingRight=6;spacingTop=4;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;" value="&lt;b&gt;KEEPING IT RUNNING&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B45309&quot;&gt;&lt;i&gt;applies to every step above&lt;/i&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Scheduled pickup&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;new records collected on a timetable, not when someone remembers.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;How fresh is this?&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;every screen states how recent the information behind it is.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Bad files are parked&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;an unreadable or broken file is set aside and reported — never silently dropped.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Safe to run twice&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;re-sending the same file creates no duplicate record, fact or task.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Spending limit&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;a ceiling per hospital, so cost cannot run away unnoticed.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="1120" width="172" x="1486" y="118" as="geometry" />
+        </mxCell>
+        <mxCell id="sp3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="1152" width="200" x="1680" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sp3t" parent="1" style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=12;fontColor=#1F2937;spacingLeft=6;spacingRight=6;spacingTop=4;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;" value="&lt;b&gt;PROVING IT IS RIGHT&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B45309&quot;&gt;&lt;i&gt;applies to every step above&lt;/i&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;A fixed set of test questions&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;with answers agreed in advance, so we can measure right and wrong.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Questions held back&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;a second set nobody is allowed to tune against, opened only at the end.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Does the page really say it?&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;a person re-reads the quoted pages and confirms they support the sentence.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#1F2937&quot;&gt;&lt;b&gt;Break-in attempts&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;deliberate attempts to pull another patient&#39;s data, or to hide instructions inside a document. All must fail.&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#B45309&quot;&gt;&lt;i&gt;Results are published with the system — including the failures.&lt;/i&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="1120" width="172" x="1696" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="leg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="84" width="1840" x="40" y="1282" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="16" width="24" x="62" y="1302" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1t" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="something stored" vertex="1">
+          <mxGeometry height="16" width="200" x="94" y="1302" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="16" width="24" x="62" y="1328" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2t" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="something that runs and produces a result" vertex="1">
+          <mxGeometry height="16" width="300" x="94" y="1328" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;fontSize=12;textShadow=0;align=center;" value="" vertex="1">
+          <mxGeometry height="16" width="24" x="440" y="1302" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3t" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="a stopping point — it can refuse, park something, or delete an unproven sentence" vertex="1">
+          <mxGeometry height="16" width="500" x="472" y="1302" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4t" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#B45309;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Yellow bands (2 and 7) are the two places the system is allowed to say no: no permission, and no proof." vertex="1">
+          <mxGeometry height="16" width="600" x="472" y="1328" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5t" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="No real patient information is used anywhere. In the prototype, steps 1, 3 and the money side use invented data; the rulebooks are real public documents." vertex="1">
+          <mxGeometry height="16" width="780" x="1080" y="1302" as="geometry" />
+        </mxCell>
+        <mxCell id="lg6t" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#64748B;rounded=0;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Tahoma;textShadow=0;whiteSpace=wrap;" value="Nothing here decides anything medical. It reports what is present, what is missing, and where two sources disagree." vertex="1">
+          <mxGeometry height="16" width="780" x="1080" y="1328" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

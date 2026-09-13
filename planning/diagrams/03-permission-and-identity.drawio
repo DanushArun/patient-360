@@ -1,0 +1,126 @@
+<mxGraphModel dx="1720" dy="1280" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1720" pageHeight="1280" math="0" shadow="0" background="#FFFFFF" adaptiveColors="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <mxCell id="title" value="Permission and identity — how a record is lawfully obtained, and matched to the right person" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="40" y="22" width="1300" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="sub" value="The two questions that must be answered before any record is read: may we hold this, and whose is it? Getting either wrong is not a bug — it is a breach of law, or a patient harmed." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="40" y="50" width="1400" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="pA" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D9A441;" vertex="1" parent="1">
+      <mxGeometry x="40" y="96" width="1640" height="474" as="geometry" />
+    </mxCell>
+    <mxCell id="pAt" value="PART ONE — MAY WE HOLD THIS RECORD?" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="60" y="110" width="600" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="pAd" value="India's Digital Personal Data Protection Act 2023 requires permission that is specific, informed, and can be taken back. The national health network carries this as a permission slip issued by a Consent Manager. If there is no valid slip, the honest answer is nothing at all — not a guess." style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="60" y="132" width="1080" height="34" as="geometry" />
+    </mxCell>
+
+    <mxCell id="k1" value="&lt;b&gt;1. The patient is asked&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;on their own phone, in their own language: may this hospital see records from the hospital you visited before, for your treatment, for the next 90 days?&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="180" width="300" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="k2" value="&lt;b&gt;2. A permission slip is issued&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;one slip per hospital being asked. It names: whose data · which hospital may see it · what for · which dates · until when it expires.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="392" y="180" width="300" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="k3" value="&lt;b&gt;3. Records are fetched&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;only what the slip covers. A slip for bloods from last year does not open this year's scans. The slip travels with every request.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="724" y="180" width="300" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="k4" value="&lt;b&gt;4. The slip is kept as evidence&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;stored beside the data it unlocked, so we can later show exactly what we were allowed to hold, and when.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="1056" y="180" width="300" height="104" as="geometry" />
+    </mxCell>
+    <mxCell id="k5" value="&lt;b&gt;5. The patient changes their mind&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;withdrawal is a right, not a favour. The moment it happens, serving stops — and the stopping moment is itself recorded.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="1388" y="180" width="272" height="104" as="geometry" />
+    </mxCell>
+
+    <mxCell id="ka1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B45309;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="k1" target="k2"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="ka2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B45309;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="k2" target="k3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="ka3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B45309;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="k3" target="k4"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="ka4" value="at any time" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B45309;dashed=1;endArrow=block;endFill=1;fontSize=9;fontColor=#B45309;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="k4" target="k5"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="noq" value="&lt;b&gt;What happens when there is no valid permission&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="60" y="306" width="600" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="n1" value="&lt;b&gt;No slip&lt;/b&gt; — the record is never fetched.&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;The screen says &quot;we do not have permission to show records from that hospital&quot;. It does not invent a summary.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="330" width="390" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="n2" value="&lt;b&gt;Expired slip&lt;/b&gt; — treated as no slip.&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;Data already held stays, but nothing new is fetched, and answers state that the permission has lapsed.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="470" y="330" width="390" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="n3" value="&lt;b&gt;Withdrawn&lt;/b&gt; — serving stops immediately.&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;Answers generated before the withdrawal keep their original timestamp; they are never re-served as if still current.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="880" y="330" width="390" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="n4" value="&lt;b&gt;Emergency&lt;/b&gt; — a separate, narrower path.&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;Logged loudly, reviewed afterwards by a named person. Not a back door, and never the default.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="1290" y="330" width="370" height="80" as="geometry" />
+    </mxCell>
+
+    <mxCell id="proto" value="&lt;b&gt;In the 18-day prototype:&lt;/b&gt;&#160;the permission slip, its expiry, its withdrawal and all four refusal paths above are fully built and tested — against invented patients. What is not built is the live connection to the national Consent Manager. The shape of the slip follows the real one, so connecting it later is an integration task, not a redesign." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#86C39B;fontSize=10;fontColor=#1F2937;verticalAlign=middle;align=left;spacingLeft=10;" vertex="1" parent="1">
+      <mxGeometry x="60" y="424" width="1600" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="why" value="&lt;b&gt;Why this is drawn at all:&lt;/b&gt;&#160;a copilot that reads patient records without modelling permission is not deployable in an Indian hospital. Full compliance is due by May 2027, and penalties reach ₹250 crore. Permission is not a feature to add later — it is the first gate, and everything downstream depends on it having been passed." style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="60" y="484" width="1600" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="pB" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="596" width="1640" height="530" as="geometry" />
+    </mxCell>
+    <mxCell id="pBt" value="PART TWO — WHOSE RECORD IS THIS?" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="60" y="610" width="600" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="pBd" value="One patient arrives carrying five different numbers, issued by five organisations that have never spoken to each other. Joining them correctly is the whole problem. Joining them wrongly merges two people's cancers into one record." style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="60" y="632" width="1080" height="34" as="geometry" />
+    </mxCell>
+
+    <mxCell id="idlab" value="THE FIVE NUMBERS ONE PATIENT CARRIES" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontStyle=1;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="60" y="676" width="500" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="x1" value="&lt;b&gt;National health ID&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;ABHA — the only one meant to work everywhere&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="60" y="698" width="310" height="62" as="geometry" />
+    </mxCell>
+    <mxCell id="x2" value="&lt;b&gt;This hospital's file number&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;issued at the front desk here&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="382" y="698" width="310" height="62" as="geometry" />
+    </mxCell>
+    <mxCell id="x3" value="&lt;b&gt;The last hospital's number&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;from the town they travelled from&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="704" y="698" width="310" height="62" as="geometry" />
+    </mxCell>
+    <mxCell id="x4" value="&lt;b&gt;Government scheme ID&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;who the scheme thinks is covered&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1026" y="698" width="310" height="62" as="geometry" />
+    </mxCell>
+    <mxCell id="x5" value="&lt;b&gt;Insurer member number&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;often in a relative's name&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1348" y="698" width="312" height="62" as="geometry" />
+    </mxCell>
+
+    <mxCell id="join" value="&lt;b&gt;The joining rule&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;Two numbers are joined only when something authoritative says so — a national ID match, or a person who checked and signed for it.&lt;br&gt;&lt;b&gt;Never on name and date of birth alone.&lt;/b&gt; In a country with shared names and estimated birth years, that is a coin toss with someone's chemotherapy.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=middle;" vertex="1" parent="1">
+      <mxGeometry x="60" y="792" width="770" height="100" as="geometry" />
+    </mxCell>
+
+    <mxCell id="pen" value="&lt;b&gt;When it is not certain: the holding pen&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;The unmatched record is parked, visible, and counted. It contributes &lt;b&gt;nothing&lt;/b&gt; to any answer — it does not quietly join the record and it does not quietly disappear. A named person resolves it, and their decision is recorded with their name and the time.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=middle;" vertex="1" parent="1">
+      <mxGeometry x="860" y="792" width="800" height="100" as="geometry" />
+    </mxCell>
+
+    <mxCell id="outlab" value="THE THREE POSSIBLE OUTCOMES — AND WHAT EACH ONE MEANS DOWNSTREAM" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontStyle=1;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="60" y="916" width="700" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="o1" value="&lt;b&gt;Confirmed by national ID&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the strongest link. Used freely, and the answer may cite it as the reason the records belong together.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#86C39B;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="938" width="520" height="82" as="geometry" />
+    </mxCell>
+    <mxCell id="o2" value="&lt;b&gt;Confirmed by a person&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;used, but the answer says so — &quot;these records were linked by staff on 14 September&quot; — so a reader can weigh it themselves.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="600" y="938" width="520" height="82" as="geometry" />
+    </mxCell>
+    <mxCell id="o3" value="&lt;b&gt;Still unresolved&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the record stays out. Any answer that would have needed it says &quot;a report exists that we cannot yet confirm belongs to this patient&quot;.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="1140" y="938" width="520" height="82" as="geometry" />
+    </mxCell>
+
+    <mxCell id="harm" value="&lt;b&gt;The failure this prevents:&lt;/b&gt;&#160;a woman travels 1,400 km for her fourth cycle. A report from her home-town lab is in the system, but under a slightly different name. A system that guesses attaches it and reports her bloods as safe. A system that refuses to guess says &quot;there is an unconfirmed report — check it before she is treated&quot;. The second system is slower, and is the only one that is safe." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=middle;align=left;spacingLeft=12;" vertex="1" parent="1">
+      <mxGeometry x="60" y="1040" width="1600" height="68" as="geometry" />
+    </mxCell>
+
+    <mxCell id="foot" value="Synthetic data only — no real patient information is used anywhere in this system. Permission slips and identity links in the prototype are invented, and follow the shape of the real national ones." style="text;html=1;whiteSpace=wrap;overflow=block;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="40" y="1148" width="1640" height="30" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>

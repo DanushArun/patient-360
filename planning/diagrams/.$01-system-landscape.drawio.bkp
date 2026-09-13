@@ -1,0 +1,237 @@
+<mxGraphModel dx="1780" dy="1200" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1780" pageHeight="1180" math="0" shadow="0" background="#FFFFFF" adaptiveColors="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <mxCell id="title" value="What this system touches — the whole picture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="40" y="22" width="1100" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="sub" value="Every person who uses it, and every system it reads from or writes to, in a real Indian hospital." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="40" y="50" width="1100" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="subkey" value="Solid outline = built in the 18-day prototype.&#160;&#160;&#160;Dotted outline = real-world connection, designed but not built yet." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="40" y="70" width="1100" height="18" as="geometry" />
+    </mxCell>
+
+    <mxCell id="plab" value="PEOPLE WHO USE IT" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="56" y="120" width="180" height="18" as="geometry" />
+    </mxCell>
+
+    <mxCell id="p1" value="&lt;b&gt;Care coordinator&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;chases missing reports&lt;br&gt;and approvals&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="260" y="112" width="210" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="p2" value="&lt;b&gt;Treating doctor&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;reads the record in the&lt;br&gt;2 minutes before the visit&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="488" y="112" width="210" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="p3" value="&lt;b&gt;Day-care nurse&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;checks the patient is safe&lt;br&gt;to start today&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="716" y="112" width="210" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="p4" value="&lt;b&gt;Insurance desk&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;gets approval before&lt;br&gt;the family is billed&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="944" y="112" width="210" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="p5" value="&lt;b&gt;Patient and family&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;travelling from another&lt;br&gt;city, carrying the file&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1172" y="112" width="210" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="p6" value="&lt;b&gt;Hospital quality team&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;proves records are complete&lt;br&gt;at NABH inspection&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1400" y="112" width="210" height="72" as="geometry" />
+    </mxCell>
+
+    <mxCell id="sys" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;&lt;b&gt;Care Readiness &amp;amp; Evidence Copilot&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Answers one question, with the proof attached:&lt;br&gt;&lt;b&gt;is this patient ready for their next treatment — medically, on paper, and on money — and exactly what is missing?&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot; style=&quot;font-size: 11px;&quot;&gt;Four screens:&#160;&#160;today's review list&#160;&#160;·&#160;&#160;one patient's full picture&#160;&#160;·&#160;&#160;ask a question&#160;&#160;·&#160;&#160;chase and close gaps&lt;br&gt;Every sentence it shows opens the exact document page or record row behind it. It never gives medical advice.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F2937;strokeWidth=3;fontSize=12;fontColor=#1F2937;verticalAlign=middle;" vertex="1" parent="1">
+      <mxGeometry x="260" y="224" width="1350" height="170" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cA" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="260" y="450" width="430" height="272" as="geometry" />
+    </mxCell>
+    <mxCell id="cAt" value="INSIDE THE HOSPITAL" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="462" width="300" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="cAn" value="in the prototype: stand-in data, not a live hospital" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="276" y="480" width="400" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="a1" value="&lt;b&gt;Hospital record system&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;visits, diagnosis, treatment plan&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="502" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="a2" value="&lt;b&gt;Laboratory system&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;blood counts, biopsy and biomarker reports&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="556" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="a3" value="&lt;b&gt;Scan and imaging reports&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;CT, MRI, heart scan before certain drugs&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="610" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="a4" value="&lt;b&gt;Chemotherapy day-care schedule&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;who is booked for which chair, which day&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="664" width="398" height="46" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cB" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="720" y="450" width="430" height="272" as="geometry" />
+    </mxCell>
+    <mxCell id="cBt" value="INDIA'S NATIONAL HEALTH NETWORK" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="736" y="462" width="360" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="cBn" value="in the prototype: shape copied, not connected" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="736" y="480" width="400" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="b1" value="&lt;b&gt;ABHA health ID&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;one identity for the patient across hospitals&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="736" y="502" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="b2" value="&lt;b&gt;Consent Manager&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the patient's permission to fetch records — and to take it back&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="736" y="556" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="b3" value="&lt;b&gt;Other hospitals and labs&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;records from the town the patient travelled from&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="736" y="610" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="b4" value="&lt;b&gt;Hospital and doctor registries&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;proves the hospital and clinician are who they claim&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="736" y="664" width="398" height="46" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cC" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="450" width="430" height="272" as="geometry" />
+    </mxCell>
+    <mxCell id="cCt" value="WHO PAYS, AND WHETHER THEY AGREED" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1196" y="462" width="380" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="cCn" value="in the prototype: stand-in data, not a live insurer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="1196" y="480" width="400" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="c1" value="&lt;b&gt;Government scheme portal (PM-JAY)&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;approval that must exist before treatment starts&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1196" y="502" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="c2" value="&lt;b&gt;National Health Claims Exchange&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the national rail that claims travel on&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1196" y="556" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="c3" value="&lt;b&gt;Private insurer or TPA&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;approval letters, queries, rejections&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1196" y="610" width="398" height="46" as="geometry" />
+    </mxCell>
+    <mxCell id="c4" value="&lt;b&gt;What the family pays themselves&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the gap that sends families into debt&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="1196" y="664" width="398" height="46" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cD" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#86C39B;" vertex="1" parent="1">
+      <mxGeometry x="260" y="760" width="660" height="250" as="geometry" />
+    </mxCell>
+    <mxCell id="cDt" value="THE RULEBOOKS IT QUOTES FROM" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="772" width="400" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="cDn" value="real public documents · fully used in the prototype · quoted with page and clause" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#2F7D4F;" vertex="1" parent="1">
+      <mxGeometry x="276" y="790" width="620" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="d1" value="&lt;b&gt;Government treatment and scheme rules&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;PM-JAY operations manual · National Cancer Grid treatment guidelines&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="812" width="628" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="d2" value="&lt;b&gt;Hospital quality standards&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;NABH — what a complete medical record must contain&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="864" width="628" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="d3" value="&lt;b&gt;Privacy law and insurance rules&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;Digital Personal Data Protection Act 2023 · IRDAI circulars on claim settlement&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="276" y="916" width="628" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="d4" value="A question like &quot;what does the scheme require before this claim is sent?&quot; is answered from these — never invented." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#2F7D4F;" vertex="1" parent="1">
+      <mxGeometry x="276" y="966" width="628" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell id="cE" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="950" y="760" width="660" height="250" as="geometry" />
+    </mxCell>
+    <mxCell id="cEt" value="THE FAMILY'S SIDE — HOW RECORDS ACTUALLY MOVE TODAY" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="966" y="772" width="560" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="cEn" value="the message before travelling is built in the prototype" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="966" y="790" width="560" height="14" as="geometry" />
+    </mxCell>
+    <mxCell id="e1" value="&lt;b&gt;Photographs of paper reports on a phone&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the most common way a record reaches the next hospital&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="966" y="812" width="628" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="e2" value="&lt;b&gt;A folder of printed reports carried on the train&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;the family is the courier, and the backup copy&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="966" y="864" width="628" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="e3" value="&lt;b&gt;The report that never arrived&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;this is the thing the whole system exists to catch, before the journey&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;fontSize=10;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="966" y="916" width="628" height="44" as="geometry" />
+    </mxCell>
+    <mxCell id="e4" value="&lt;b&gt;Message to the family before they travel&lt;/b&gt; — exactly what to bring. Checked by a person first; it is a list of documents, never medical advice." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="966" y="966" width="628" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell e="1" id="ep1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94A3B8;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.05;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p1" target="sys">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ep2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94A3B8;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.24;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2" target="sys">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ep3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94A3B8;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.42;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3" target="sys">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ep4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94A3B8;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.59;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p4" target="sys">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ep5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94A3B8;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.76;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p5" target="sys">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ep6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94A3B8;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.95;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p6" target="sys">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="eA" value="reads records" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#64748B;endArrow=block;endFill=1;fontSize=10;fontColor=#64748B;labelBackgroundColor=#FFFFFF;exitX=0.16;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sys" target="cA">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="eB" value="asks permission,&#10;then fetches" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#64748B;endArrow=block;endFill=1;fontSize=10;fontColor=#64748B;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sys" target="cB">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="eC" value="checks approval&#10;is really in place" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#64748B;endArrow=block;endFill=1;fontSize=10;fontColor=#64748B;labelBackgroundColor=#FFFFFF;exitX=0.84;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sys" target="cC">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="eD" value="quotes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2F7D4F;endArrow=block;endFill=1;fontSize=10;fontColor=#2F7D4F;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" edge="1" parent="1" source="sys" target="cD">
+      <mxGeometry relative="1" x="-0.6" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="309" />
+          <mxPoint x="170" y="810" />
+        </Array>
+        <mxPoint as="offset" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="eE" value="sends the list of&#10;what to bring" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#64748B;endArrow=block;endFill=1;fontSize=10;fontColor=#64748B;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.2;entryDx=0;entryDy=0;" edge="1" parent="1" source="sys" target="cE">
+      <mxGeometry relative="1" x="-0.6" as="geometry">
+        <Array as="points">
+          <mxPoint x="1700" y="309" />
+          <mxPoint x="1700" y="810" />
+        </Array>
+        <mxPoint as="offset" />
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="leg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;" vertex="1" parent="1">
+      <mxGeometry x="40" y="1046" width="1700" height="96" as="geometry" />
+    </mxCell>
+    <mxCell id="legt" value="How to read this" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+      <mxGeometry x="60" y="1056" width="200" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="lg1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="62" y="1084" width="24" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg1t" value="built and working in the 18-day prototype" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="94" y="1084" width="300" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
+      <mxGeometry x="62" y="1110" width="24" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg2t" value="real connection, designed but not built yet — prototype uses stand-in data" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="94" y="1110" width="440" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;strokeWidth=2;" vertex="1" parent="1">
+      <mxGeometry x="600" y="1084" width="24" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg3t" value="where families actually get hurt today" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="632" y="1084" width="320" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#86C39B;" vertex="1" parent="1">
+      <mxGeometry x="600" y="1110" width="24" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg4t" value="real public documents, used as-is" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="632" y="1110" width="320" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg5t" value="No real patient information is used anywhere. Patient data in the prototype is invented. Real documents are only the public rulebooks." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#B45309;" vertex="1" parent="1">
+      <mxGeometry x="1000" y="1084" width="700" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="lg6t" value="The system decides nothing medical. It shows what is present, what is missing, and what two sources disagree about." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#64748B;" vertex="1" parent="1">
+      <mxGeometry x="1000" y="1110" width="700" height="16" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>
