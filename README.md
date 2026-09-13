@@ -13,11 +13,39 @@ Built for the Snowflake CoCo CLI Hackathon 2026 (GCC Edition) — Problem Statem
 
 Full design rationale, architecture, data model, gates, and test plan: `planning/plan.md`.
 
+## Planning docs
+
+- `planning/plan.md` — design rationale, architecture, data model, gates, test plan
+- `planning/architecture.md` — architecture notes
+- `planning/oncology-department-map.md` — oncology department map
+- `planning/study-01-clinical-reading.md` — clinical reading study
+- `planning/diagrams/` — system landscape, inside-the-system, permission/identity, HLD, and LLD diagrams (`.drawio` + exported `.png`)
+
+## Architecture diagrams
+
+Editable sources are the `.drawio` files in `planning/diagrams/`; rendered below from the exported PNGs.
+
+### 1. System landscape
+![System landscape](planning/diagrams/01-system-landscape.png)
+
+### 2. Inside the system
+![Inside the system](planning/diagrams/02-inside-the-system.png)
+
+### 3. Permission and identity
+![Permission and identity](planning/diagrams/03-permission-and-identity.png)
+
+### 4. High-level design — full stack
+![HLD full stack](planning/diagrams/04-hld-full-stack.png)
+
+### 5. Low-level design
+![LLD](planning/diagrams/05-lld.png)
+
 ## Decisions
 
 - 2026-09-13: Repo created (`patient-360`), structure set up per team plan.
 - 2026-09-13: Snowflake tech-stack smoke test — **pending** (Dev 1).
 - 2026-09-13: Demo patient — **P-017**.
+- 2026-09-13: First 10 synthetic patients added to `data/fixtures/patients.json`.
 
 ## Repo layout
 
@@ -27,6 +55,6 @@ Full design rationale, architecture, data model, gates, and test plan: `planning
 - `app/` — Streamlit application code
 - `tests/` — test questions + expected answers, kept separate from `app/` so it can't read its own answer key
 - `evidence/coco/` — CoCo session notes, screenshots, proof of how this was built
-- `planning/` — this project's plan and any designer/flow exports
+- `planning/` — this project's plan, architecture docs, and diagrams
 
 **Never commit real credentials.** Snowflake secrets go in a local `.env` (already git-ignored), never in code.
