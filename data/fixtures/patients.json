@@ -1,0 +1,102 @@
+[
+  {
+    "patient_id": "P-001",
+    "diagnosis": "Triple-negative breast carcinoma",
+    "encounter_date": "2026-09-21",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-002",
+    "diagnosis": "Invasive ductal carcinoma, ER/PR-positive HER2-negative",
+    "encounter_date": "2026-09-20",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-003",
+    "diagnosis": "Invasive ductal carcinoma, ER/PR-positive HER2-negative",
+    "encounter_date": "2026-09-17",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-004",
+    "diagnosis": "Triple-negative breast carcinoma",
+    "encounter_date": "2026-09-26",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-005",
+    "diagnosis": "Triple-negative breast carcinoma",
+    "encounter_date": "2026-09-25",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-006",
+    "diagnosis": "Invasive ductal carcinoma, ER/PR-positive HER2-negative",
+    "encounter_date": "2026-09-16",
+    "lab_report_status": "pending",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-007",
+    "diagnosis": "Invasive ductal carcinoma, HER2-positive",
+    "encounter_date": "2026-09-18",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "pending",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-008",
+    "diagnosis": "Invasive ductal carcinoma, ER/PR-positive HER2-negative",
+    "encounter_date": "2026-09-28",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-009",
+    "diagnosis": "Triple-negative breast carcinoma",
+    "encounter_date": "2026-09-21",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  },
+  {
+    "patient_id": "P-010",
+    "diagnosis": "Invasive ductal carcinoma, ER/PR-positive HER2-negative",
+    "encounter_date": "2026-09-28",
+    "lab_report_status": "final",
+    "authorization": {
+      "table_status": "approved",
+      "letter_status": "approved"
+    }
+  }
+]
