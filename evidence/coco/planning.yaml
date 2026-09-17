@@ -1,0 +1,381 @@
+# CoCo Lifecycle Evidence — Phase 1: PLANNING
+# Hackathon requirement: "Use CoCo to explore the data, frame the problem, draft the
+# solution design, and outline the data model, ontology, and workflow before any build begins."
+#
+# Verify any session:  cortex conversations transcript <id>
+# Raw unedited export: evidence/coco/sessions-raw.csv
+
+phase: planning
+status: complete
+window: 2026-09-16 09:05 IST — 2026-09-17 11:31 IST
+session_count: 52
+principle: >
+  Planning ran as many small sessions with one question each, not one large session
+  asking CoCo to design the project. The session titles are the research questions.
+
+# ─────────────────────────────────────────────────────────────────────────────
+stages:
+
+  - stage: 1_problem_framing
+    date: 2026-09-16
+    window: "09:05 — 09:24"
+    purpose: Read the brief, understand the existing repository, establish scope.
+    sessions:
+      - id: 513ea31d-3a16-45ce-902a-6189da612e68
+        note: session start
+      - id: 01aece97-9d49-473e-b8e6-ac952cdb9a3e
+        note: session start
+      - id: "33359376"
+        purpose: Fetch hackathon page for full details
+      - id: "33359372"
+        purpose: Explore patient-360 codebase structure
+      - id: 419413c9-01ba-4a88-b377-3ade50822584
+        note: session start
+    outputs:
+      - planning/plan.md                       # master design, R1-R6
+      - planning/oncology-department-map.md    # 9-stage chemotherapy cycle
+    commits:
+      - sha: 423c21d
+        at: "2026-09-13 20:34"
+        msg: initial structure
+      - sha: f77568c
+        at: "2026-09-13 23:34"
+        msg: add(planning) architecture docs, diagrams, department map
+
+  - stage: 2_competitive_intelligence
+    date: 2026-09-16
+    window: "09:17 — 09:43"
+    purpose: >
+      Establish what other PS-04 teams are building, so differentiation is grounded in
+      their actual source code rather than assumptions about gaps in their READMEs.
+    sessions:
+      - id: "33359388"
+        purpose: Search GitHub for hackathon submissions
+      - id: "33359384"
+        purpose: Search social media and forums for hackathon teams
+      - id: "33359380"
+        purpose: Research typical Patient 360 hackathon solutions
+      - id: "33359392"
+        purpose: Research Snowflake healthcare quickstarts and winning patterns
+      - id: "33359396"
+        purpose: Deep dive on bodhix — PS-04 competitor
+      - id: "33359400"
+        purpose: Broader search for PS-04 competitors
+    method: ~30 public GitHub repositories surveyed; source review, not README review.
+    outputs:
+      - planning/research/competition/ps04-competitive-landscape.md
+    key_findings:
+      - 4 confirmed direct PS-04 competitors — Verity, ATLAS, SynapseCortex, CareCompass
+      - >
+        Not one competitor implements multi-clock time modelling (R2); none implements
+        server-side scope enforcement and dual-corpus separation together (R5+R6).
+        Confirmed from their source, not inferred.
+      - >
+        CareCompass "role login" is a Streamlit st.radio picker writing to session_state
+        (streamlit/login.py) — access control is cosmetic, with their own comment saying so.
+      - >
+        SynapseCortex PATIENT_360_SNAPSHOT returns the entire dataset to any querier —
+        confirmed zero row-level security.
+      - Two competitors have live public URLs. We had none. This reframed our priorities.
+
+  - stage: 3_domain_research
+    date: 2026-09-16
+    window: "22:19 — 23:04"
+    purpose: >
+      Establish clinical, legal, and lived-experience ground truth before designing
+      anything. 26 sessions, one question each.
+    sessions:
+      - id: "33359468"
+        purpose: Research chemo readiness thresholds
+        output: planning/research/clinical/clinical-thresholds.md
+      - id: "33359456"
+        purpose: Research clinical AI harm and citations
+        output: planning/research/implementation/evidence-why-citations.md
+      - id: "33359432"
+        purpose: Research clinical AI harm and citation rationale
+      - id: "33359452"
+        purpose: Research clinician documentation reality
+        output: planning/research/patient-reality/lived-experience-clinicians.md
+      - id: "33359500"
+        purpose: Research clinician documentation reality India
+      - id: "33359476"
+        purpose: Research Indian lab reporting standards
+        output: planning/research/clinical/lab-reporting-india.md
+      - id: "33359508"
+        purpose: Research Indian lab reporting parsing traps
+      - id: "33359520"
+        purpose: Research Indian lab reporting parsing traps
+      - id: "33359488"
+        purpose: Research Indian medical records law
+        output: planning/research/law/law-medical-records.md
+      - id: "33359504"
+        purpose: Research Indian medical records law
+      - id: "33359448"
+        purpose: Research NMC telemedicine AI rules
+        output: planning/research/law/law-nmc-clinical-practice.md
+      - id: "33359484"
+        purpose: Research CDSCO SaMD rules
+        output: planning/research/law/law-cdsco-device.md
+      - id: "33359464"
+        purpose: Research ABDM ABHA architecture
+        output: planning/research/clinical/abdm-architecture.md
+      - id: "33359512"
+        purpose: Research ABDM ABHA identity architecture
+      - id: "33359428"
+        purpose: Research IRDAI claims and NHCX rules
+        output: planning/research/clinical/insurance-irdai-nhcx.md
+      - id: "33359472"
+        purpose: Research IRDAI claims and NHCX
+      - id: "33359492"
+        purpose: Research IRDAI claims NHCX
+      - id: "33359436"
+        purpose: Research PM-JAY oncology documentation
+        output: planning/research/clinical/pmjay-oncology.md
+      - id: "33359460"
+        purpose: Research PM-JAY oncology documentation
+      - id: "33359516"
+        purpose: Research PM-JAY oncology pre-auth failures
+      - id: "33359480"
+        purpose: Research Indian patient lived experience
+        output: planning/research/patient-reality/lived-experience-patients.md
+      - id: "33359496"
+        purpose: Research Indian patient lived experience cancer
+      - id: "33359532"
+        purpose: Find HER2+ breast cancer treatment timeline clinical details
+        output: planning/research/clinical/treatment-timeline-clinical.md
+      - id: "33359536"
+        purpose: Find published Indian breast cancer patient journeys
+        output: planning/research/patient-reality/patient-journey-meera.md
+      - id: "33359528"
+        purpose: Map every data artifact in the patient journey
+        output: planning/research/implementation/data-artifact-map.md
+    commits:
+      - sha: 0d9e062
+        at: "2026-09-16 23:08"
+        msg: add(research) comprehensive clinical and legal documentation
+      - sha: 283deb1
+        at: "2026-09-16 23:10"
+        msg: refactor(README) reorganize research documentation
+    key_findings:
+      - >
+        DPDP Act 2023: erasure (s.12(3)) and access-log retention (Rule 6(e), 1 year)
+        collide if generated answers are stored inline. ANSWER_RUN must hold pointers,
+        never content. This is a schema constraint arising from law, and it had to be
+        correct in the first migration.
+      - >
+        NMC Telemedicine Practice Guidelines 2020 prohibit AI/ML platforms from
+        counselling or prescribing. The Class A / Class B question split is therefore a
+        legal boundary, not a product preference.
+      - >
+        A missing medical record creates an adverse inference of negligence in Indian
+        law. The audit trail is a legal requirement, not over-engineering.
+      - >
+        Indian labs report the same analyte in incompatible formats. Platelets written
+        as "1.5" may mean 1.5 lakh/µL or 1.5 x 10^9/L — a 100,000x ambiguity.
+      - >
+        60-70% of the ~8% of Indian health insurance claims repudiated annually
+        (approx ₹30,000 crore) fail for documentation or procedural reasons knowable
+        before admission.
+
+  - stage: 4_real_document_study
+    date: 2026-09-16
+    purpose: >
+      Study 19 photographs of a real patient's medical reports to understand actual
+      document formats and failure modes. Consent: the patient's son is a member of
+      this team. No real patient data enters the system — the study informed format
+      research only, and all system data is synthetic.
+    outputs:
+      - planning/research/patient-reality/real-patient-dipali.md
+    key_findings:
+      - 3 facilities, 7 distinct patient identifiers, zero ABHA present on any report.
+      - >
+        Grade discordance between specimens: outside biopsy read Grade II, hub surgical
+        pathology read Grade III. Both correct for their own specimen. A system that
+        silently takes the newer value is wrong.
+      - >
+        HER2 IHC discordance between labs: 1+ at one lab, 2+ at another. 1+ requires no
+        FISH; 2+ requires it. Had only the first result existed, HER2 would have been
+        recorded negative and treatment would have differed.
+      - Haemoglobin appeared as "10.3 GM%", "10.7 L gm/dl", and "12.0 g/dL" across reports.
+      - Reference ranges printed in Indian comma notation — "1,50,000 - 4,50,000".
+      - L and H suffixes on values are flags, not units, and must not be parsed as digits.
+      - >
+        Treatment plan changed four times in 18 months. TREATMENT_PLAN must be a
+        versioned entity, not a current-state column.
+      - >
+        An appendectomy mid-chemotherapy created a treatment gap that is a clinical
+        complication, not a documentation failure. ENCOUNTER.gap_type exists because
+        of this.
+      - Several report photographs are rotated or fully inverted. This is the norm, not an edge case.
+
+  - stage: 5_platform_research
+    date: 2026-09-16
+    purpose: Establish what Snowflake actually supports before designing against it.
+    outputs:
+      - planning/research/platform/platform-constraints.md
+      - planning/research/platform/snowflake-implementation-patterns.md
+      - planning/research/platform/streamlit-container-runtime.md
+    key_findings:
+      - >
+        Cortex Search executes with owner's rights and does not respect row access
+        policies. A RAP-only design for search scope is theatre. This invalidated part
+        of the drafted architecture and forced the three-layer R5 design.
+      - AI functions cannot run inside Dynamic Tables; AI steps must be Task-driven.
+      - >
+        India regions lack native AI_COMPLETE. CORTEX_ENABLED_CROSS_REGION must be set
+        or nothing works.
+      - >
+        Recorded as MUST EMPIRICALLY TEST, because documentation does not answer it:
+        whether an immutable session attribute constrains the Cortex Search tool inside
+        an agent. Resolved in the Testing phase — see verification-query-ids.md.
+
+  - stage: 6_architecture_and_review
+    date: "2026-09-16 — 2026-09-17"
+    session: 42713bc0-e9c0-4547-ae86-781ce533d99e   # 500 messages
+    supporting_session: "33359544"                   # Audit all architecture and planning files
+    purpose: >
+      Design the architecture from the research, then adversarially review it three
+      times before writing any application code.
+    outputs:
+      - planning/revised-architecture/01-system-overview.drawio
+      - planning/revised-architecture/02-data-pipeline.drawio
+      - planning/revised-architecture/03-security-architecture.drawio
+      - planning/revised-architecture/04-data-model.drawio
+      - planning/revised-architecture/05-screens-workflow.drawio
+      - planning/revised-architecture/SPEC.md
+      - planning/revised-architecture/AI-INTEGRATION-ARCHITECTURE.md
+      - planning/revised-architecture/SPEC-REVIEW.md
+      - planning/revised-architecture/SCALE-REVIEW.md
+      - planning/revised-architecture/DEEP-REVIEW-3.md
+      - planning/revised-architecture/DECISION-department-scope.md
+      - planning/WINNING-PLAN.md
+      - planning/PROBLEM-STATEMENT-verbatim.md
+    review_findings:
+      total: 50
+      breakdown:
+        SPEC-REVIEW: 21   # component correctness
+        SCALE-REVIEW: 15  # multi-facility / pan-India shape
+        DEEP-REVIEW-3: 14 # safety, federation, extensibility
+      most_important: >
+        The answer validator checked claim-to-evidence consistency but never
+        evidence-to-reality consistency. A misread lab value passes all five original
+        checks and produces a perfectly cited, clinically wrong answer. This produced
+        rule R7 (two-pass extraction verification) and a sixth validator check.
+      self_corrections:
+        - >
+          Initially recommended 20 rules across 5 departments. Grounding the decision in
+          the confirmed rubric reversed it: Solution Completeness (30%) penalises
+          untested breadth, and two of four competitors are already broad, so breadth is
+          table stakes rather than differentiation. Revised to 16 rules.
+        - >
+          Discovered the existing 13 rules already spanned four organ systems and had
+          been mislabelled as oncology. Adding a specialty column exposed that breadth
+          at no authoring cost.
+        - >
+          Committed to 3 new non-oncology rules without sourced thresholds. A grep for
+          hba1c|dexa|post-op across every clinical research file returned zero matches.
+          Recorded as an open gap rather than silently written in.
+
+  - stage: 7_requirement_verification
+    date: 2026-09-17
+    session: 42713bc0-e9c0-4547-ae86-781ce533d99e
+    purpose: >
+      Two planning documents disagreed about the deadline, and the verbatim problem
+      statement was never stored in the repository. Both resolved from primary sources.
+    method:
+      - Event page captured directly for rubric and timeline.
+      - >
+        Problem Statement Explainer session (46:13, Hack2skill) transcript extracted
+        with youtube-transcript-api after browser DOM extraction failed.
+    outputs:
+      - planning/PROBLEM-STATEMENT-verbatim.md
+      - planning/research/hackathon/ps-explainer-transcript.md      # 1,169 snippets
+      - planning/research/hackathon/explainer-session-findings.md
+    key_findings:
+      - >
+        Deadline is 4 October 2026, not 30 September. plan.md had been scheduled against
+        the wrong date.
+      - >
+        Judging is two-stage: async repository evaluation 5-22 Oct with the team absent,
+        then live demo 27-30 Oct. This makes reproducibility and honest documentation
+        more important than demo polish, because Stage 1 is what gets you to Stage 2.
+      - >
+        Rubric confirmed: Real-World Relevance 30%, Technical Execution 40%,
+        Solution Completeness 30%.
+      - >
+        The brief explicitly invites "risk stratification". We had deliberately avoided
+        the term. The explainer uses "risk stratification metrics" and "care gap
+        indicators". Vocabulary adopted, with an explicit scope disclosure.
+      - >
+        Explainer instructs building separate skills per process and orchestrating them
+        with a Task. We had planned one skill. Revised to four skills plus an
+        orchestrating Task, which satisfies two named bonus categories at once.
+      - >
+        "Semi-structured" is named as a distinct data category. FHIR bundles are JSON,
+        so one ingestion path satisfies it and closes the missing-ingestion gap.
+
+# ─────────────────────────────────────────────────────────────────────────────
+failures_recorded:
+  note: >
+    Recorded deliberately. coco-lifecycle-evidence.md identifies failure-and-fix pairs
+    as the most credible evidence available, and a curated record of only successes
+    reads as a demo rather than an engineering process.
+  items:
+    - failure: >
+        Four consecutive incorrect attempts at AI_FILTER syntax, assuming a two-argument
+        (predicate, text) form.
+      resolution: >
+        Documentation showed the two-argument form is for image inputs only. The text
+        form takes one argument. Both CONCAT and PROMPT forms then verified working.
+      lesson: Stop guessing after the second failure and read the reference.
+
+    - failure: >
+        Designed Layer 1 of the security model as "the application role has no USAGE on
+        the search service" and treated it as sufficient.
+      resolution: >
+        Testing showed the query succeeded anyway. CURRENT_SECONDARY_ROLES() returned
+        ORGADMIN,ACCOUNTADMIN with value ALL — a secondary role satisfied the privilege
+        check. USE SECONDARY ROLES NONE is now a hard architectural requirement.
+      lesson: >
+        The most dangerous security assumption is the one that appears to work.
+
+    - failure: >
+        Assumed a Cortex Search service could be created over a table protected by a
+        row access policy.
+      resolution: >
+        Creation fails — change tracking is unsupported on queries with correlated
+        subquery expressions, and the standard mapping-table RAP is one. The index and
+        content must be separate objects. The platform enforces the design we had
+        chosen for other reasons.
+      lesson: Verify platform mechanics before relying on them.
+
+    - failure: >
+        Scheduled the entire build against a 30 September deadline recorded in plan.md.
+      resolution: Event page confirms 4 October. Four days recovered.
+      lesson: Verify dates from the primary source before planning against them.
+
+# ─────────────────────────────────────────────────────────────────────────────
+open_gaps_at_end_of_planning:
+  - id: G1
+    gap: 3 non-oncology rules have no sourced clinical thresholds
+    evidence: grep for hba1c|dexa|bone density|post-op across research returns 0 matches
+    owner: B
+    estimate: 1h
+  - id: G2
+    gap: FHIR mapping is resource-level only; field-level paths not sourced
+    evidence: only Patient.identifier appears at field level in abdm-architecture.md
+    owner: B
+    estimate: 2h
+  - id: G3
+    gap: Reference corpus documents not downloaded — data/reference does not exist
+    impact: R6 dual-corpus design has no real regulatory documents yet
+    owner: C
+    estimate: 2h
+  - id: G4
+    gap: AI_PARSE_DOCUMENT per-page cost unmeasured
+    blocked_by: client-side PUT unavailable — snow CLI holds a stale OAuth token
+    impact: >
+      reference-corpus-sources.md estimates Tier 1 at 250-310 pages and separately
+      claims ~$1 total. Those are inconsistent by roughly an order of magnitude.
+      Must be measured before committing to the full corpus.
+    owner: B

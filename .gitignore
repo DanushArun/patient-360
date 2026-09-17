@@ -15,3 +15,7 @@ venv/
 *credentials*
 *.pem
 .snowflake/
+
+# tooling artifacts
+.playwright-mcp/
+.venv-yt/
