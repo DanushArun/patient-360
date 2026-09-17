@@ -1,0 +1,192 @@
+<mxfile host="app.diagrams.net" agent="SAARTHI-CoCo">
+  <diagram name="Clinical Workflow" id="workflow-1">
+    <mxGraphModel dx="2216" dy="1113" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="11" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=24;fontStyle=1;fontColor=#1F2937;" value="&lt;b&gt;SAARTHI&lt;/b&gt; — Care Readiness &amp;amp; Evidence Copilot&lt;br/&gt;&lt;i&gt;Clinical Workflow Architecture&lt;/i&gt;" vertex="1">
+          <mxGeometry height="50" width="800" x="600" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="12" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#64748B;" value="How medical professionals use the system at each stage of the 21-day chemotherapy cycle" vertex="1">
+          <mxGeometry height="30" width="800" x="600" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#64748B;" value="&lt;b&gt;THE 21-DAY CYCLE&lt;/b&gt;&lt;br/&gt;&lt;i&gt;9 stages, mapped to system screens&lt;/i&gt;" vertex="1">
+          <mxGeometry height="40" width="280" x="20" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="15" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;1&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="17" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;2&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="19" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;3&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;4&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="23" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;5&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="25" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;6&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="27" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;7&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="29" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;8&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 9&lt;/b&gt;&lt;br/&gt;Between-cycle&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;THE GAP — 14-21 days&#xa;No human assigned&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="31" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#3730A3;fontStyle=1;" value="&lt;b&gt;9&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="30" y="1170" as="geometry" />
+        </mxCell>
+        <mxCell id="32" edge="1" parent="1" source="14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="16" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="33" edge="1" parent="1" source="16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="18" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="34" edge="1" parent="1" source="18" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="20" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="35" edge="1" parent="1" source="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="22" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="36" edge="1" parent="1" source="22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="24" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="37" edge="1" parent="1" source="24" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="26" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="38" edge="1" parent="1" source="26" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="28" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="39" edge="1" parent="1" source="28" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="30" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="40" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="14" value="next cycle →">
+          <mxGeometry relative="1" x="0.0115" y="-130" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="41" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#64748B;" value="&lt;b&gt;SYSTEM SCREENS&lt;/b&gt;&lt;br/&gt;&lt;i&gt;What each user sees&lt;/i&gt;" vertex="1">
+          <mxGeometry height="40" width="280" x="320" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="42" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;shadow=1;" value="&lt;b&gt;Screen 1: REVIEW QUEUE&lt;/b&gt;&lt;br/&gt;&lt;font point-size=&#39;10&#39;&gt;Coordinator sees:&#xa;• Open gate failures across all patients&#xa;• Weighted by days-to-visit&#xa;• Missing docs, pending auths, stale labs&#xa;&#xa;Labelled &#39;documentation &amp;amp; coverage&#xa;review priority&#39; — never &#39;patient risk&#39;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="340" x="310" y="1190" as="geometry" />
+        </mxCell>
+        <mxCell id="43" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;shadow=1;" value="&lt;b&gt;Screen 2: PATIENT 360&lt;/b&gt;&lt;br/&gt;&lt;font point-size=&#39;10&#39;&gt;Oncologist sees in 2 min:&#xa;• Gate strip (5 gates: pass/fail/not_evaluated/conflicting)&#xa;• Pathology → Imaging → Labs → Meds&#xa;  (clinical review order, not arbitrary)&#xa;• Hub record beside spoke record&#xa;• Every disagreement typed, not hidden&#xa;&#xa;This is reconciliation, not display.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="340" x="310" y="379" as="geometry" />
+        </mxCell>
+        <mxCell id="44" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;shadow=1;" value="&lt;b&gt;Screen 3: ASK + EVIDENCE&lt;/b&gt;&lt;br/&gt;&lt;font point-size=&#39;10&#39;&gt;Oncologist or coordinator asks:&#xa;• Class B answered with citations&#xa;• Class A refused → routed to treating team&#xa;• known_as_of slider always visible&#xa;• Each claim → click → exact row or PDF page&#xa;• Answer status: supported / partial / insufficient&#xa;• NO confidence percentage ever displayed&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="340" x="310" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="46" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;shadow=1;" value="&lt;b&gt;Screen 5: JUDGE CONSOLE&lt;/b&gt;&lt;br/&gt;&lt;font point-size=&#39;10&#39;&gt;Live probes (not a test report):&#xa;• Cross-scope probe → 0 leakage + audit row&#xa;• Injection probe → parsed as content, not executed&#xa;• Hallucination probe → stripped + limitation logged&#xa;• Time-travel replay → slider, two correct answers&#xa;• Missing-evidence → degrades to partial/insufficient&#xa;• Baseline delta → measured vs plain RAG&#xa;• Cost meter → ₹ and seconds per answer&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="340" x="310" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="47" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#16A34A;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;shadow=1;" value="&lt;b&gt;FAMILY VIEW&lt;/b&gt;&lt;br/&gt;&lt;font point-size=&#39;10&#39;&gt;Caretaker sees (role-scoped, read-only):&#xa;• Bring-list in patient&#39;s language&#xa;  (Hindi/Tamil/Bengali/Marathi via Cortex TRANSLATE)&#xa;• Only coordinator-reviewed items&#xa;• Strict subset of coordinator&#39;s evidence&#xa;• Class A always refused&#xa;• &#39;Your treating team decides&#39; on every page&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="340" x="310" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="48" edge="1" parent="1" source="14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#2563EB;fontStyle=1;" target="47" value="before travel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="49" edge="1" parent="1" source="18" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#2563EB;fontStyle=1;" target="43" value="2-5 min">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="50" edge="1" parent="1" source="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#2563EB;fontStyle=1;" target="44" value="mid-visit Q">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="51" edge="1" parent="1" source="22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="43" value="gate strip">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="52" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#2563EB;fontStyle=1;" target="42" value="queue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="53" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#2563EB;fontStyle=1;" target="45" value="close tasks">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="54" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#94A3B8;strokeWidth=1;strokeDasharray=4 3;fontSize=10;fontColor=#94A3B8;" target="44" value="chase missing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="55" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#64748B;" value="&lt;b&gt;WHAT IT PREVENTS&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Real failures from research&lt;/i&gt;" vertex="1">
+          <mxGeometry height="40" width="350" x="700" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="56" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#B91C1C;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;" value="&lt;b&gt;Family travels 1,400 km&#xa;and is turned away&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;font point-size=&#39;9&#39;&gt;Missing addendum discovered&#xa;at front desk → wasted trip&#xa;&#xa;&lt;b&gt;14% of cycles missed&lt;/b&gt;&#xa;52.5% because caretaker unavailable&#xa;(Cancer Reports 2020, n=870)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="350" x="700" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="57" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#B91C1C;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;" value="&lt;b&gt;Oncologist misses a stale echo&#xa;in 2-minute chart review&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;font point-size=&#39;9&#39;&gt;LVEF assessment &amp;gt;90 days for&#xa;trastuzumab → hold risk&#xa;but buried in chart&#xa;&#xa;&lt;b&gt;Caught by surveillance gate&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="160" width="350" x="700" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="58" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#B91C1C;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;" value="&lt;b&gt;HER2 status wrong because&#xa;only one lab&#39;s result seen&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;font point-size=&#39;9&#39;&gt;Outside lab: HER2 1+ (negative)&#xa;Hub lab: HER2 2+ (equivocal → FISH)&#xa;&lt;b&gt;Confirmed from Dipali&#39;s reports&lt;/b&gt;&#xa;Wrong result → wrong regimen&lt;/font&gt;" vertex="1">
+          <mxGeometry height="160" width="350" x="700" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="59" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#B91C1C;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;" value="&lt;b&gt;Insurance denies claim after&#xa;treatment already given&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;font point-size=&#39;9&#39;&gt;Authorization &#39;pending&#39; in table&#xa;but &#39;approved&#39; in letter&#xa;Conflict not surfaced until denied&#xa;&#xa;&lt;b&gt;₹30,000 cr denied/year, 60-70%&#xa;preventable&lt;/b&gt; (IRDAI 2024-25)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="350" x="700" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="60" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#B91C1C;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;" value="&lt;b&gt;Report arrives after the decision&#xa;but no one notices it supersedes&#xa;the preliminary&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;font point-size=&#39;9&#39;&gt;Pathology addendum with final&#xa;HER2 status arrives 2 weeks&#xa;after preliminary was used&#xa;for treatment decision&#xa;&#xa;&lt;b&gt;No competitor tracks this&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="350" x="700" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="61" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R3 missingness" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="62" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R6 dual corpus" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="218" as="geometry" />
+        </mxCell>
+        <mxCell id="63" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R1 SQL rules" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="64" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R2 three clocks" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="458" as="geometry" />
+        </mxCell>
+        <mxCell id="65" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R3 conflicting" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="66" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R4 identity" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="698" as="geometry" />
+        </mxCell>
+        <mxCell id="67" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R2 known_as_of" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="68" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R6 dual corpus" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="938" as="geometry" />
+        </mxCell>
+        <mxCell id="69" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R2 three clocks" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="1150" as="geometry" />
+        </mxCell>
+        <mxCell id="70" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;strokeWidth=1;fontSize=9;fontColor=#1E40AF;fontStyle=1;arcSize=20;" value="R5 scope" vertex="1">
+          <mxGeometry height="22" width="110" x="1060" y="1178" as="geometry" />
+        </mxCell>
+        <mxCell id="16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 2&lt;/b&gt;&lt;br/&gt;Registration&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Identity verified&#xa;MRNs assigned&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="18" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 3&lt;/b&gt;&lt;br/&gt;Pre-consult&#xa;Chart Review&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Oncologist reviews record&#xa;2-5 minutes&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 4&lt;/b&gt;&lt;br/&gt;Consultation&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;History, exam, decision&#xa;Class A territory&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 5&lt;/b&gt;&lt;br/&gt;Gate Check&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Day-of labs verified&#xa;against protocol&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 6&lt;/b&gt;&lt;br/&gt;Day-care&#xa;Admission&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Bed/chair allotted&#xa;pre-medication&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 7&lt;/b&gt;&lt;br/&gt;Administration&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Chemo prepared&#xa;infused&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 8&lt;/b&gt;&lt;br/&gt;Discharge&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Next cycle date set&#xa;instructions given&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;strokeWidth=1;fontSize=10;fontColor=#1F2937;verticalAlign=middle;arcSize=8;" value="&lt;b&gt;Stage 1&lt;/b&gt;&lt;br/&gt;Pre-visit&lt;br/&gt;&lt;font point-size=&#39;9&#39; color=&#39;#64748B&#39;&gt;Family prepares to travel&#xa;500-1,400 km&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="45" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=11;fontColor=#1F2937;verticalAlign=top;spacingTop=8;spacingLeft=8;align=left;arcSize=6;shadow=1;" value="&lt;b&gt;Screen 4: REVIEW + HISTORY&lt;/b&gt;&lt;br/&gt;&lt;font point-size=&#39;10&#39;&gt;Coordinator closes the loop:&#xa;• Create/assign documentation task&#xa;• Record resolution with evidence&#xa;• Version chain shows what changed when&#xa;• ANSWER_RUN history (what was known at each moment)&#xa;• Audit trail with idempotency keys&lt;/font&gt;" vertex="1">
+          <mxGeometry height="180" width="340" x="310" y="960" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

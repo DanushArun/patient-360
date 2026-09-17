@@ -319,7 +319,32 @@ Entirely invented. Nothing drawn from any real patient.
 
 ---
 
-## 12. Schedule — 13→30 Sept, 3 people
+## 12. Schedule — 13 Sept → 4 Oct, 3 people
+
+**CONFIRMED from the official event page (screenshot verified 17 Sept 2026). Two judging stages, not one:**
+
+| Phase | Dates | Our exposure |
+|---|---|---|
+| Prototype Submission | 13 Sept – **4 Oct 2026** | Build window |
+| **Prototype Evaluation** | **5 – 22 Oct 2026** | **Judges assess the repo for 18 days with nobody from the team present** |
+| Final Shortlist Announcement | 23 Oct 2026 | The cut |
+| Induction Session | 26 Oct 2026 | If shortlisted |
+| **Grand Finale Demo Days** | **27 – 30 Oct 2026** | **Live demo** |
+
+**Confirmed evaluation rubric:** Real-World Relevance **30%** · Technical **Execution** **40%** · Solution Completeness **30%**. Prize: $10,000.
+
+### The two stages demand different things
+
+**Stage 1 (5–22 Oct) — judges alone with the repository.** No narrator, no demo, no context. They read the README, attempt deployment, inspect code, and look for gaps between claim and implementation. **Stage 1 is what gets us into Stage 2, and it rewards reproducibility over showmanship.** What matters:
+- One-script deploy that works on a clean account
+- README a stranger can follow end to end
+- `IMPLEMENTATION-STATUS.md` — honest built / partial / designed-only accounting. **Critical, not optional:** a judge with 18 days will find every gap, and our own accurate list is far better than their discovery that we overclaimed.
+- Machine-readable test results they can re-run
+- CoCo lifecycle evidence across all four phases
+
+**Stage 2 (27–30 Oct) — live demo.** Judge Console, security probes, consent-revocation moment, cross-department readiness scenario. Valuable — but worthless if we don't clear the Stage 1 cut.
+
+**"Technical Execution", not "Technical Design."** Shipped and working outscores well-architected. As of 17 Sept: ~6,100 lines of planning, zero working code, against competitors with live public URLs. That is the primary risk — not scope, not rule count.
 
 | Owner | Responsibility | Cross-review |
 |---|---|---|
