@@ -53,7 +53,7 @@ Everything else is support. If the schedule collapses, these survive.
 - **6 specialties, 16 rules** (13 exist and already span oncology/cardiology/nephrology/hepatology — they were mislabelled; +3 new for endocrine and general surgery). Oncology is the depth case.
 - **5 gates** → clinical, **safety** (was "surveillance"), documentation, coverage, identity. 4-valued outcomes: `pass · fail · not_evaluated · conflicting`.
 - **Risk stratification** and **care gap** vocabulary adopted — the brief's and the explainer's own words — with explicit scope disclosure: *stratifies documentation, coverage and safety-surveillance risk; does not model clinical deterioration or prognosis.*
-- **~24 tables built** of ~31 designed. New critical ones: `CONSENT`, `ORGANIZATION`, `FACILITY`, `PRACTITIONER`, `CARE_TEAM` (replaces `ROLE_PATIENT_MAP`), `REFERRAL`, `HOUSEHOLD`, `CLINICAL_ONTOLOGY`, `UNIT_REGISTRY`, `SECURITY_EVENT`, `EVIDENCE_PACKET`.
+- **~25 tables built** of ~32 designed. New critical ones: `PATIENT_BINDING` (see `COPILOT-SPEC.md` §0), `CONSENT`, `ORGANIZATION`, `FACILITY`, `PRACTITIONER`, `CARE_TEAM` (replaces `ROLE_PATIENT_MAP`), `REFERRAL`, `HOUSEHOLD`, `CLINICAL_ONTOLOGY`, `UNIT_REGISTRY`, `SECURITY_EVENT`, `EVIDENCE_PACKET`.
 - **Three ingestion paths**: structured (tables), **semi-structured (FHIR JSON → `VARIANT` → flatten)**, unstructured (PDF/image → `AI_PARSE_DOCUMENT`). The brief and explainer both name all three.
 - **Dual Cortex Search** — patient corpus and reference corpus, physically separate services.
 - **Answer validator, 6 checks**: existence · scope · version · polarity (`AI_FILTER`) · type match · **assertion trustworthiness** (new).

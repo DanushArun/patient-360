@@ -1,115 +1,111 @@
-# SAARTHI — Revised Architecture
+# SAARTHI — Architecture
 
-**5 detailed draw.io diagrams built from 24 research files and 19 real patient report photos.**
+**Care-readiness and evidence copilot for Indian oncology and allied specialties.**
+Snowflake CoCo CLI Hackathon 2026 GCC Edition · Problem Statement 04.
 
-Open each `.drawio` file in [draw.io](https://app.diagrams.net) (free, no account needed).
-
----
-
-## The 5 Diagrams
-
-### 01-system-overview.drawio
-**Start here.** Written for someone who is NOT a medical professional.
-
-Shows:
-- **Who uses the system** — oncologist (2-minute chart review), coordinator (between-cycle gap), patient's family (bring-list before traveling 1,400 km)
-- **The problem it solves** — records don't travel between hospitals in India. One patient has 7 identifiers across 3 hospitals and 0 national health ID. Discordant results between labs go unnoticed.
-- **What the system does** — 5 readiness gates (clinical, surveillance, documentation, coverage, identity), each with a rule ID, version, and click-through to the source
-- **What it does NOT do** — never recommends treatment, never predicts, never displays a confidence percentage
-
-### 02-data-pipeline.drawio
-**The most detailed diagram.** Shows every step from synthetic data generation to validated answer.
-
-7 layers:
-1. **Local generation** — seeded fact ledger → projections → documents → corruptions → eval questions
-2. **Snowflake RAW** — internal stages, raw tables (18 tables), streams for change detection
-3. **Document processing** — AI_PARSE_DOCUMENT → typed extraction → deterministic reconciliation (Task-driven, NOT Dynamic Tables — AI steps are non-deterministic)
-4. **Harmonization** — 5 Dynamic Tables for normalized events, readiness gates, review queue, scheme eligibility, treatment plan
-5. **Search & analytics** — dual Cortex Search (patient + reference, NEVER merged), semantic view + verified query repository
-6. **Intelligence** — Class A/B classifier → 6 SQL procedures → deterministic router (primary) / Cortex Agent (layer) → 5-check answer validator
-7. **Output & audit** — ANSWER_RUN (pointers not content for DPDP compliance), Cortex Guard, QUERY_HISTORY for leakage proof
-
-Every Snowflake feature annotated with ❄️. Every research source annotated with 📄.
-
-### 03-security-architecture.drawio
-**The diagram that beats every competitor.** Shows the R5 three-layer defense in detail.
-
-- **Layer 1** — app role has NO USAGE on search services (why: Cortex Search ignores row access policies)
-- **Layer 2** — stored procedure reads CURRENT_USER(), injects scope from ROLE_PATIENT_MAP (why: question can never supply scope)
-- **Layer 3** — search returns chunk IDs only, content re-fetched through governed tables (why: even a leaked ID yields nothing)
-
-Side-by-side comparison with every competitor's confirmed security gaps. The Judge Console security probes. Full legal basis (DPDP, BSA, NMC, adverse inference doctrine).
-
-### 04-data-model.drawio
-**18 tables across 4 schemas.** Every field, every relationship, every constraint.
-
-Key design decisions annotated:
-- Three timestamp columns on every evidence-bearing table (R2)
-- missingness_state enum on ASSERTION (R3 — "not received" ≠ "negative")
-- scope field on DOCUMENT (R6 — corpus separation starts at registration)
-- link_status on ID_MAP (R4 — quarantined = contributes no evidence)
-- Pointers not content in ANSWER_RUN (DPDP erasure compliance)
-- SCHEME_REGISTRY + SCHEME_ELIGIBILITY for government scheme matching
-- FACILITY_REGISTRY for multi-hospital tracking
-- TREATMENT_PLAN versioned (Dipali had 4 changes in 18 months)
-
-Volume model: ~85,000 rows for 100 patients.
-
-### 05-screens-workflow.drawio
-**How the 9-stage chemo cycle maps to 6 screens.** Each screen annotated with:
-- Which user, at which stage, in which moment
-- Exactly what they see
-- What real failure it prevents
-- What actions are available
-
-Includes:
-- **Review Queue** (coordinator, Stage 9) — open gate failures sorted by urgency
-- **Patient 360** (oncologist, Stage 3) — gate strip + facility timeline + clinical sections in review order
-- **Ask + Evidence** (any role, Stages 4/9) — cited answers with known_as_of slider, evidence pane, Class A refusal
-- **Review + History** (coordinator, Stage 9) — task lifecycle, version chain, ANSWER_RUN history
-- **Judge Console** (hackathon judges) — live security probes, metrics, CoCo evidence index
-- **Family View** (caretaker, Stage 1) — bring-list in Hindi/Tamil/Bengali/Marathi, eligible schemes, "your treating team decides"
-- **Coverage Gap → Scheme Finder** detail — when PM-JAY ceiling is exhausted, shows Rashtriya Arogya Nidhi, state schemes, NGOs
+**Status: architecture complete and validated. Build not started.** See `../../IMPLEMENTATION-STATUS.md` for the honest per-component ledger.
 
 ---
 
-## Visual Language (consistent across all 5 diagrams)
+## Start here
 
-| Color | Meaning |
+**→ `ARCHITECTURE-HANDOFF.md`** — the entry point for anyone building this. Reading order, the five frozen interface contracts, the three work streams, the Day-5 gate.
+
+Do not start with `SPEC.md`. It is the reference, not the introduction.
+
+---
+
+## The documents
+
+| Document | Lines | What it is |
+|---|---|---|
+| **`ARCHITECTURE-HANDOFF.md`** | 300 | **Read first.** Team execution contract — interfaces, ownership, schedule, definition of done |
+| **`COPILOT-SPEC.md`** | 316 | The deliverable. Patient binding, conversation model, typed evidence, 10 question types, demo script. **§0 records a fatal gap found late** |
+| `SPEC.md` | 913 | Data model, 16 rules, governance, ingestion, pipeline, application, deployment |
+| `AI-INTEGRATION-ARCHITECTURE.md` | 684 | Agent specification, tool schemas, R7 prompts, model matrix, call path, MCP, evaluation |
+| `ARCHITECTURE-DIAGRAMS.md` | 1,087 | 15 diagrams, C4-structured, Mermaid — renders inline on GitHub |
+| `drawio/` | 15 pages | The same 15 views, editable and print-ready. Generated by `tools/drawio/` |
+| `FINAL-VALIDATION.md` | 232 | Validation against the verbatim brief, the rubric, and every competitor |
+
+### Why things are the way they are
+
+| Document | Lines | Findings |
+|---|---|---|
+| `SPEC-REVIEW.md` | 234 | 21 issues, 7 critical |
+| `SCALE-REVIEW.md` | 223 | 15 gaps at multi-hospital scale, 6 fatal |
+| `DEEP-REVIEW-3.md` | 223 | 14 issues, 3 fatal — **D1 produced R7** |
+| `DECISION-department-scope.md` | 204 | Why 16 rules across 6 specialties, not 20 across 5 |
+
+**All 16 fatal findings are resolved. 7 items are deferred with stated reasons. 0 unresolved contradictions.**
+
+---
+
+## The architecture in one page
+
+**One question, every 21 days, for every patient on the list:** *is this patient ready for the next step of care, and exactly what is missing?*
+
+Answered as transparent risk stratification over care gaps — every claim citing the row or page it came from, with the model structurally unable to produce a clinical judgement.
+
+**Positioning: a centralised evidence index over federated source data.** Assertions, pointers, gate state and consent state are held centrally; clinical content is fetched under a valid consent and cached only for that consent's lifetime. That is what ABDM actually is, and it makes consent load-bearing rather than decorative.
+
+### The seven rules everything obeys
+
+| | |
 |---|---|
-| Blue border | AI / Cortex component (Search, Agent, Analyst, AI functions) |
-| Green border | Dynamic Table (auto-refreshing, deterministic) |
-| Purple border | Task / Procedure (triggered by stream or manual action) |
-| Amber border | Guard / Validator (can refuse or strip) |
-| Red border | Refusal / Stop (Class A, security denial) |
-| Grey border | Data store (tables, stages) |
-| Dashed grey | External system / reference data |
-| Yellow note | Annotation explaining WHY something is designed this way |
-| Blue badge | Architecture rule (R1-R6) |
-| Cyan badge | Snowflake feature (❄️) |
-| Yellow badge | Research source (📄) |
+| **R1** | The LLM never decides. Every status, number, date and threshold comparison comes from SQL against a versioned rule. |
+| **R2** | Three clocks — `event_time`, `source_recorded_at`, `ingested_at`. Every answer carries `known_as_of`. |
+| **R3** | Missingness is a type, never a NULL. Seven states. *Not received* is never *negative*. |
+| **R4** | Identity is ABHA-anchored and federated. Never joined on name. Ambiguous matches quarantine. |
+| **R5** | Scope is enforced server-side before retrieval, in three layers. |
+| **R6** | Two document corpora, never mixed in one ranked list. Physically separate services. |
+| **R7** | Extraction is never trusted on a single pass for safety-critical fields. Two model families. |
+
+### The three claims that decide Technical Execution
+
+**1 — The LLM never decides.** Provable by observing that the component diagram of the container that decides readiness contains **no AI element at all**.
+
+**2 — Extraction is verified, not trusted.** R7 runs two passes on different model families. Same-model self-consistency measures confidence; **cross-family disagreement measures correctness.** On disagreement the value is not asserted and the gate returns `not_evaluated`. No competitor verifies extraction.
+
+**3 — Scope is enforced against four empirically verified leak paths.**
+
+| ID | The leak | Invisible because |
+|---|---|---|
+| **F3** | A policy keyed on `CURRENT_ROLE()` returns **every patient** inside an owner's-rights procedure | With one test user the owner *is* the caller |
+| **F5** | Cortex Search **ignores row access policies** — returned another patient's pathology | The policy on the table is present and correct |
+| **F7** | *"The app role has no `USAGE`"* is false while secondary roles are active | The `GRANT` audit looks correct |
+| **A1** | The agent derives `patient_id` from question text and injects the filter itself | It produces correct answers in testing |
+
+Each is reproducible from a query ID. **No competitor has closed any of the four** — two ship access control that is a Streamlit radio button writing to session state.
 
 ---
 
-## Snowflake Features Used (14 distinct)
+## Grounding
 
-1. ❄️ Cortex Search (×2 services — patient + reference)
-2. ❄️ Cortex Analyst (Semantic View + Verified Query Repository)
-3. ❄️ Cortex Agent (AGENT_RUN via SQL)
-4. ❄️ Cortex Guard (model safety)
-5. ❄️ Cortex TRANSLATE (bring-list in Indian languages)
-6. ❄️ AI_PARSE_DOCUMENT (LAYOUT mode, page_split)
-7. ❄️ AI_COMPLETE (typed extraction)
-8. ❄️ AI_FILTER (polarity checking in validator)
-9. ❄️ Dynamic Tables (×5 — harmonized events, gates, queue, schemes, treatment plan)
-10. ❄️ Streams + Tasks (document processing pipeline)
-11. ❄️ Stored Procedures (6 scoped tools)
-12. ❄️ Row Access Policies + Masking Policies + Object Tags
-13. ❄️ QUERY_HISTORY / ACCESS_HISTORY (leakage proof)
-14. ❄️ Git Integration (one-script deploy)
+19 real medical reports were studied to learn the format of Indian clinical documents. **Consent is held — the patient's son is on this team.** Nothing real is in the system; every byte of data is synthetic.
+
+What those reports taught us, and what no amount of desk research would have:
+
+- **7 patient identifiers across 4 facilities, and not one ABHA number.** The no-ABHA case is the default in India, not an edge case.
+- **HER2 discordant across specimens** — outside biopsy Grade II / IHC 1+, surgical specimen Grade III / IHC 2+. Different accession IDs, so no naive system detects a conflict. **This is the finding that triggered FISH and changed her treatment.**
+- **Labs print `GM%`, `/CUMM`, `1,50,000 - 4,50,000`, and `L`/`H` flags inline with values.** Parsing the flag into the number corrupts every threshold comparison, silently, in the direction of looking normal.
+- **Neutrophils reported as a differential percentage with no ANC.** The number our flagship rule compares was never printed on the page.
+- **An appendectomy mid-chemotherapy**, and surgical clearance communicated verbally, never written into the discharge summary.
 
 ---
 
-## Research Backing
+## Repository layout
 
-Every design decision traces to one of the 24 research files in `planning/research/`. The research index is at `planning/research/README.md`.
+```
+planning/revised-architecture/   this directory — the current architecture
+planning/research/               26 files: clinical, legal, platform, competition, hackathon
+planning/plan.md                 v1, SUPERSEDED — kept for CoCo planning evidence only
+planning/architecture.md         v1, SUPERSEDED — kept for CoCo planning evidence only
+tools/drawio/                    generator for the draw.io document
+evidence/coco/                   CoCo lifecycle evidence, query IDs, session index
+data/                            synthetic generator, fixtures, synthetic documents
+src/sql/                         early DDL, pre-v2 — will be replaced by setup.sql
+IMPLEMENTATION-STATUS.md         the honest per-component ledger
+AGENTS.md                        binding rules for anyone (or anything) working here
+```
+
+**`planning/plan.md` and `planning/architecture.md` are v1 and superseded.** They describe `ROLE_PATIENT_MAP`, a 5-check validator and 18 tables. Do not build from them.

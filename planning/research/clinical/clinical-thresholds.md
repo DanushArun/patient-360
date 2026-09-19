@@ -404,24 +404,205 @@ rule engine must distinguish them because they answer different questions.
 
 ---
 
+## 9. HbA1c Currency Before a Procedure (Endocrinology)
+
+**Added 2026-09-17. Closes research gap G1. Supports rule `ENDO-HBA1C-001`.**
+
+### Threshold
+
+**HbA1c < 8.5% (69 mmol/mol), measured within 90 days of the planned procedure.**
+
+| Source | Threshold | Position |
+|---|---|---|
+| **Centre for Perioperative Care (CPOC), UK, 2022** — *Guideline for Perioperative Care for People with Diabetes Mellitus Undergoing Elective and Emergency Surgery* | HbA1c >= 69 mmol/mol (8.5%) | Consider deferral of **elective** surgery for optimisation. Not an absolute contraindication. |
+| **Association of Anaesthetists, 2021** — *Peri-operative management of the surgical patient with diabetes* | > 69 mmol/mol (8.5%) | Same threshold. Proceed if deferral carries greater clinical risk. |
+| **ADA Standards of Care 2024** | No hard cutoff stated | Individualised targets. A <8% general surgical target appears in consensus text but ADA mandates no deferral threshold. |
+| **ASA** | None | Defers to institutional policy. |
+| **RSSDI (India)** | **Not confirmed** | RSSDI Clinical Practice Recommendations address perioperative glucose management, but no specific HbA1c deferral threshold could be confirmed. Indian institutional practice commonly mirrors the UK 8.5%. |
+
+**Recency: 90 days.** CPOC 2022, Association of Anaesthetists 2021, and the NHS England perioperative pathway all specify within 3 months. ADA does not state a window explicitly, but HbA1c reflects an approximately 3-month average biologically, so the window is implicit.
+
+### ⚠️ This rule is ADVISORY, never a blocker
+
+CPOC and the Association of Anaesthetists **both state that cancer surgery should generally not be deferred for glycaemic optimisation** — oncologic delay risk outweighs the perioperative glycaemic risk. No guideline mandates deferral at any HbA1c level for an oncology patient.
+
+`severity = 'advisory'`. The gate flags for endocrine review. It must not block.
+
+### Caveats
+
+- **HbA1c is unreliable** with recent transfusion, haemoglobinopathies (**thalassaemia trait is prevalent in parts of India**), iron-deficiency anaemia, or CKD. Guidelines recommend fructosamine or glycated albumin instead. The rule should return `not_evaluated` rather than `pass`/`fail` where a haemoglobinopathy is recorded.
+- Perioperative glucose targets (CPOC: 6–10 mmol/L, accepting up to 12) are a **separate operational concern**, not this gate.
+- The 8.5% figure is UK-origin. US institutions variously use 8.0% or 9.0% as **local policy, not guideline**. Do not present 8.5% as universal.
+
+### Rule specification
+
+```json
+{
+  "type": "lab_threshold_with_recency",
+  "code": "4548-4", "code_system": "LOINC", "display": "HbA1c",
+  "operator": "<", "value": 8.5, "unit": "%",
+  "max_age_days": 90,
+  "age_relative_to": "encounter.scheduled_time",
+  "severity": "advisory",
+  "not_evaluated_if": "patient has recorded haemoglobinopathy, recent transfusion, or CKD",
+  "guideline_ref": "CPOC UK 2022; Association of Anaesthetists 2021",
+  "note": "Advisory only. Guidelines explicitly discourage deferring cancer surgery for HbA1c."
+}
+```
+
+---
+
+## 10. Bone Density (DEXA) Surveillance (Endocrinology / Bone Health)
+
+**Added 2026-09-17. Closes research gap G1. Supports rule `ENDO-DEXA-001`.**
+
+Applies to patients on an aromatase inhibitor (AI) and/or receiving a bone-modifying agent (zoledronic acid, denosumab).
+
+### Baseline
+
+DEXA **before or at initiation** of AI therapy — ASCO 2019 (Van Poznak et al.) and ASCO/OH(CCO) 2022; NCCN Breast Cancer v4.2024 (Bone Health); ESMO 2017 (Coleman et al., *Annals of Oncology*).
+
+### Repeat interval, stratified by T-score
+
+| T-score band | Interval | Source |
+|---|---|---|
+| Normal (>= -1.0) | 24 months | ASCO, NCCN |
+| **Osteopenia (-1.0 to -2.5)** | **12 months** | NCCN v4.2024 (annually on AI). ASCO permits 1–2 years. |
+| Osteoporosis (<= -2.5) | 12 months + initiate bone-modifying agent | ASCO 2019, NCCN |
+| On a bone-modifying agent, any T-score | 12 months | NCCN, ESMO |
+
+**Where they disagree:** NCCN says annually for osteopenia on AI therapy; ASCO allows up to 2 years. **We implement 12 months (NCCN)** — the tighter interval is the safer default for a gate whose failure mode is a missed surveillance scan.
+
+### Bone-modifying agent initiation
+
+| Source | Criteria |
+|---|---|
+| ASCO/OH(CCO) 2022 | T-score <= -2.0, **or** age >= 65, **or** FRAX 10-year hip fracture >= 3% / major osteoporotic >= 20% |
+| NCCN | T-score <= -2.5 to treat; consider at <= -2.0 with risk factors |
+
+FRAX requires multiple inputs (age, BMI, prior fracture, steroid use) and is not a single threshold. **The T-score gate is the tractable one for a rule engine.** FRAX is out of scope and stated as such.
+
+### Caveats
+
+- **Denosumab discontinuation causes rebound vertebral fractures.** Guidelines advise transitioning to a bisphosphonate. Relevant if the system tracks medication stops — a discontinuation without a follow-on agent is a legitimate gap.
+- **DEXA availability is limited outside Indian tier-1 cities.** Quantitative ultrasound (QUS) is sometimes substituted. **QUS cannot produce a T-score and is not equivalent** — a QUS result must yield `not_evaluated`, never a pass.
+- No Indian oncology society DEXA guidance for AI-treated breast cancer could be confirmed; Indian practice follows NCCN/ASCO.
+
+### Rule specification
+
+```json
+{
+  "type": "assessment_recency_stratified",
+  "event_type": "imaging", "code": "38268-9", "display": "DEXA bone density",
+  "baseline_required_before": "first aromatase_inhibitor administration",
+  "strata": [
+    {"when": "t_score >= -1.0",                 "max_days_since": 730},
+    {"when": "t_score < -1.0 AND t_score > -2.5","max_days_since": 365},
+    {"when": "t_score <= -2.5",                 "max_days_since": 365,
+     "additional": "bone_modifying_agent must be present"},
+    {"when": "patient on bone_modifying_agent",  "max_days_since": 365}
+  ],
+  "not_evaluated_if": "only QUS available (no T-score derivable)",
+  "severity": "advisory",
+  "guideline_ref": "NCCN Breast v4.2024; ASCO/OH(CCO) 2022; ESMO 2017"
+}
+```
+
+**Exercised by the synthetic data:** the Dipali-derived patient has DEXA-confirmed osteopenia and receives zoledronic acid, landing in the 12-month band via two independent paths.
+
+---
+
+## 11. Post-Operative Clearance Before Resuming Systemic Therapy (General Surgery)
+
+**Added 2026-09-17. Closes research gap G1. Supports rule `SURG-CLEAR-001`.**
+
+Scenario: a patient undergoes surgery partway through systemic therapy — modelled on the real appendectomy-for-perforation during chemotherapy in `real-patient-dipali.md`.
+
+### Intervals
+
+| Agent / class | Interval | Strength |
+|---|---|---|
+| **Bevacizumab** | **>= 28 days** post-major surgery | **HARD — FDA label mandated.** Also >= 28 days before elective surgery. |
+| Ramucirumab, ziv-aflibercept (anti-VEGF) | 28 days | FDA labels |
+| General cytotoxic chemotherapy | **21 days default** (range 2–4 weeks) | ⚠️ **Practice consensus, NOT guideline-mandated** |
+| Anti-PD-1 / PD-L1 | No mandated interval in any label or guideline found | Institutional practice ~2–3 weeks |
+| TKIs (sunitinib, pazopanib) | 1–2 weeks if wound healing adequate | Institutional practice |
+
+**Honest provenance:** NCCN gives 2–4 weeks varying by disease site; ESMO gives 3–4 weeks. **No guideline mandates a universal minimum interval for cytotoxic chemotherapy.** We ship 21 days as a configurable default and label it as practice consensus. The bevacizumab 28-day rule is the only genuinely hard gate here.
+
+### Contaminated / emergency surgery
+
+A perforated appendix is a contaminated or dirty wound class with elevated complication rates. Institutional practice often extends to **4–6 weeks**, but **no citable guideline mandates the extension.** Implemented as a configurable flag, marked as practice.
+
+Perforation additionally requires documented resolution of intra-abdominal infection — serial CRP/WBC trending down and completion of the antibiotic course — beyond wound healing alone.
+
+### What constitutes "clearance"
+
+**No published guideline provides a formal checklist.** The following is synthesised from NCCN, ESMO and surgical oncology practice, and is labelled as such:
+
+| Criterion | Basis |
+|---|---|
+| Wound healing adequate — no dehiscence, no active drainage | Surgical assessment, standard of care |
+| No active infection — afebrile, no ongoing SSI antibiotics, WBC/CRP normalising | Standard pre-chemotherapy assessment |
+| Performance status ECOG <= 2 | NCCN disease-specific |
+| Organ function — ANC >= 1500/µL, platelets >= 100,000/µL, protocol-specific LFT/renal | Protocol-specific, CTCAE-based |
+| **Documented sign-off from the operating surgeon** | Institutional practice — not guideline-mandated |
+| Minimum interval elapsed | FDA labels (agent-specific), NCCN |
+
+**Indian context:** the biology is identical; the practical difference is that surgical clearance is often communicated verbally and never written into the discharge summary. **The rule must require a documented clearance event and must not infer clearance from elapsed time alone.** That is precisely the record-state failure this system exists to catch.
+
+### Rule specification
+
+```json
+{
+  "type": "post_procedure_clearance",
+  "trigger": "encounter.gap_type = 'clinical_complication' AND surgery recorded",
+  "minimum_interval_days": {
+    "default": 21,
+    "bevacizumab": 28,
+    "anti_vegf_class": 28,
+    "contaminated_wound_flag": 42
+  },
+  "required_documented_assertions": [
+    "wound_healing_status IN ('adequate','healed')",
+    "infection_status = 'resolved'",
+    "surgical_clearance_signed_by_practitioner IS NOT NULL"
+  ],
+  "missing_documentation_outcome": "not_evaluated",
+  "severity": "blocker",
+  "guideline_ref": "FDA bevacizumab label (28d, hard); NCCN/ESMO perioperative (2-4wk, practice)",
+  "provenance_note": "Only the 28-day anti-VEGF interval is guideline/label mandated. The 21-day default and the 42-day contaminated-wound extension are documented practice consensus, not guideline requirements. Stated explicitly in the UI."
+}
+```
+
+---
+
 ## Summary: Default Thresholds for SQL Rule Engine
 
-| Check | Default Threshold | Override Level |
-|-------|-------------------|----------------|
-| ANC | >= 1500/uL | Per-regimen |
-| Platelets | >= 100,000/uL | Per-regimen |
-| LVEF (trastuzumab) | Last assessment <= 90 days ago | Per-risk-group |
-| LVEF decline (hold) | Drop >= 16% from baseline OR (< 50% AND drop >= 10%) | Fixed (FDA label) |
-| CrCl (cisplatin) | >= 60 mL/min | Fixed |
-| CrCl (carboplatin) | >= 30 mL/min (for dosing) | Fixed |
-| CrCl (pemetrexed) | >= 45 mL/min | Fixed |
-| Bilirubin (docetaxel) | <= ULN | Fixed |
-| AST (docetaxel) | <= 1.5x ULN | Fixed |
-| HER2 final status | IHC 0/1+/3+ OR IHC 2+ with FISH | Fixed |
-| Medication status for readiness | ORDERED (not administered) | Fixed |
+| Check | Default Threshold | Override Level | Provenance |
+|-------|-------------------|----------------|------------|
+| ANC | >= 1500/uL | Per-regimen | NCCN/ASCO |
+| Platelets | >= 100,000/uL | Per-regimen | NCCN |
+| LVEF (trastuzumab) | Last assessment <= 90 days ago | Per-risk-group | FDA label / NCCN |
+| LVEF decline (hold) | Drop >= 16% from baseline OR (< 50% AND drop >= 10%) | Fixed | FDA label |
+| CrCl (cisplatin) | >= 60 mL/min | Fixed | NCCN / FDA |
+| CrCl (carboplatin) | >= 30 mL/min (for dosing) | Fixed | NCCN / Calvert |
+| CrCl (pemetrexed) | >= 45 mL/min | Fixed | FDA label |
+| Bilirubin (docetaxel) | <= ULN | Fixed | FDA label |
+| AST (docetaxel) | <= 1.5x ULN | Fixed | FDA label |
+| HER2 final status | IHC 0/1+/3+ OR IHC 2+ with FISH | Fixed | ASCO/CAP 2018 |
+| Medication status for readiness | ORDERED (not administered) | Fixed | — |
+| **HbA1c pre-procedure** | **< 8.5%, within 90 days** | Fixed | **CPOC 2022 — ADVISORY ONLY** |
+| **DEXA surveillance** | **24mo normal / 12mo osteopenia, osteoporosis, or on BMA** | Per-T-score | **NCCN v4.2024 / ASCO 2022** |
+| **Post-op interval, anti-VEGF** | **>= 28 days** | Fixed | **FDA label — HARD GATE** |
+| **Post-op interval, general** | **21 days (configurable)** | Per-wound-class | **⚠️ practice consensus, not guideline** |
+| **Post-op clearance documentation** | **wound + infection + surgeon sign-off** | Fixed | **⚠️ synthesised, no published checklist** |
+
+**Rows marked ⚠️ are practice consensus rather than guideline requirements and must be labelled as such wherever surfaced.** Presenting institutional practice as a guideline mandate would be the same category of dishonesty we document in competitors.
 
 ---
 
 *This document is a reference for building SQL rules. Clinical decisions
 remain with the treating oncologist. All thresholds should support clinician
 override with documented reason.*
+

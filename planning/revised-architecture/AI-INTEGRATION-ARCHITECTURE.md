@@ -206,16 +206,18 @@ tools:
       name: GetReadiness
       description: >
         Returns the five care-readiness gates (clinical, safety, documentation,
-        coverage, identity) for an encounter, each with outcome
+        coverage, identity) for the BOUND patient, each with outcome
         (pass|fail|not_evaluated|conflicting), the rule id and version that produced
         it, the reason, and the evidence_ids behind it. This is the authoritative
         source for gaps and blockers. Never compute readiness yourself.
+        Takes no patient selector. encounter_ref is optional and must belong to the
+        bound patient; omit it for the next scheduled encounter.
       input_schema:
         type: object
         properties:
-          encounter_id: {type: string}
+          encounter_ref: {type: string}
           known_as_of: {type: string}
-        required: ["encounter_id"]
+        required: []
 
   - tool_spec:
       type: generic
@@ -495,11 +497,15 @@ ANC is computed here, not extracted: `WBC × (neutrophil% + band%) / 100`, as Di
  4. Agent selects generic tool(s). No patient_id parameter exists.
       ▼
  5. Procedure (EXECUTE AS OWNER):
-      a. CURRENT_USER() → PRACTITIONER → CARE_TEAM  → permitted patient set
+      a. SELECTION — resolve PATIENT_BINDING for CURRENT_SESSION()
+         └─ no binding ──► {"error":"no_patient_bound"}. UI prompts for a choice.
+         The subject comes from a human click, never from question text. COPILOT-SPEC §0.
+      b. AUTHORISATION — CURRENT_USER() → PRACTITIONER → CARE_TEAM, re-validated NOW
          └─ empty set ──► {"error":"no_patient_access"}. No detail leaked.
-      b. CONSENT check at query time (status, purpose, window)
-         └─ invalid/revoked ──► {"error":"consent_not_valid"}. No content.
-      c. Retrieval:
+      c. CONSENT check at query time (status, purpose, window)
+         └─ invalid/revoked ──► {"error":"access_withdrawn"}. Binding released, no content.
+         The binding is a record of selection, NEVER a cached authorisation.
+      d. Retrieval:
          · patient corpus → Cortex Search with SERVER-INJECTED @eq filter
          · returns chunk_ids only                    ← Layer 3
          · re-fetch text from DOC_PAGE (RAP on CURRENT_USER())   ← F3
@@ -642,12 +648,12 @@ Outbound direction — the ticket action — uses CoCo's own MCP client against 
 | Schemas | 7 | `CORE` · `DOCUMENTS` · `EVIDENCE` · `OPERATIONAL` · `GOVERNANCE` · `STAGES` · `EVAL` |
 | Warehouses | 1 new | `SAARTHI_AI_WH` (SMALL, 60s suspend); `COMPUTE_WH` existing |
 | Roles | 5 | `SAARTHI_APP` · `_COORDINATOR` · `_ONCOLOGIST` · `_FAMILY` · `_JUDGE` (read-only console) |
-| Tables | 24 built / 7 designed | `SPEC.md` §2 |
+| Tables | 25 built / 7 designed | `SPEC.md` §2 — includes `PATIENT_BINDING` |
 | Stages | 3 | `PATIENT_DOCS` · `REFERENCE_DOCS` · `SKILLS` — all `SNOWFLAKE_SSE` (F9) |
 | Streams | 3 | directory tables ×2, FHIR staging ×1 |
 | Tasks | 6 | `parse_documents` · `extract_assertions` · `reconcile_evidence` · `refresh_readiness` · `notify` · `orchestrator` |
 | Dynamic Tables | 5 | harmonized_events · doc_chunk · review_queue · scheme_eligibility · treatment_plan |
-| Procedures | 10 | 8 agent tools + `validate_answer` + `evaluate_gates` |
+| Procedures | 11 | 8 agent tools + `validate_answer` + `evaluate_gates` + `bind_patient` |
 | Cortex Search services | 2 | patient · reference (R6, physically separate) |
 | Semantic view | 1 | + **6 verified queries** |
 | Agent | 1 | `SAARTHI_AGENT`, 8 generic tools, 4 skills |

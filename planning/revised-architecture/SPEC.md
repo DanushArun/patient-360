@@ -26,7 +26,7 @@ Every section below carries a scoring tag. If a section cannot justify itself ag
 
 | Brief text | Where satisfied |
 |---|---|
-| "unifies data into a patient or member 360" | §2 data model — 3 ingestion paths, 24 tables |
+| "unifies data into a patient or member 360" | §2 data model — 3 ingestion paths, 25 tables |
 | "answers clinical, safety, or regulatory questions" | §6 Class A/B + question taxonomy; safety gate in §4 |
 | "with cited evidence" | §7 validator — 6 checks, per-claim evidence IDs |
 | "fully synthetic or de-identified data only" | §9 generator — seeded, 100% synthetic |
@@ -48,7 +48,7 @@ R1–R6 carry over from `plan.md`. **R7 is new and comes from empirical testing.
 |---|---|---|
 | **R1** | The LLM never decides. It extracts typed assertions, interprets questions into bounded tool calls, ranks passages, and phrases answers from supplied facts. Every status, number, date, threshold comparison and gate outcome is produced by SQL against a versioned rule. | Design |
 | **R2** | Three clocks: `event_time`, `source_recorded_at`, `ingested_at`. Every answer carries `known_as_of`. | Design |
-| **R3** | Missingness is a type: `present · explicitly_negative · pending · not_received · conflicting · unreadable · superseded`. | Design |
+| **R3** | Missingness is a type: `present · explicitly_negative · pending · not_received · conflicting · unreadable · superseded`. **Mapped to `Observation.dataAbsentReason` where FHIR has an equivalent code — see §2.6. Claimed as *enforced*, not novel: FHIR provides the vocabulary but compels nobody to populate it, and no competitor uses a typed taxonomy at all.** | `fhir-field-mapping.md` §0.1 |
 | **R4** | Identity is ABHA-anchored and federated. Never joined on name. Ambiguous matches quarantine and contribute **no** evidence. | `abdm-architecture.md` |
 | **R5** | Scope is enforced server-side before retrieval, in three layers. | **F3, F5, F6, F7 verified** |
 | **R6** | Two document corpora, never mixed in one ranked list. Physically separate services. | **F4 verified — platform-forced** |
@@ -70,7 +70,7 @@ R1–R6 carry over from `plan.md`. **R7 is new and comes from empirical testing.
 
 ---
 
-## 2. Data model — 24 tables built, 7 designed-only
+## 2. Data model — 25 tables built, 7 designed-only
 
 Four content schemas plus governance and stages. Marked `[B]` built or `[D]` designed-only. Honest accounting is a **`[SC]`** requirement for the 18-day unattended evaluation.
 
@@ -104,7 +104,17 @@ CARE_TEAM               [B]  care_team_id PK
                              · active_from · active_to      -- relationship has a lifetime
                              · granted_by · created_at
                              UNIQUE(practitioner_id, patient_id, facility_id, role_type)
+
+PATIENT_BINDING         [B]  binding_id PK · session_id (CURRENT_SESSION())
+                             · snowflake_user · patient_id FK
+                             · care_team_id FK · consent_id FK
+                             · bound_at · released_at
+                             -- WHICH patient a question is about. Append-only.
+                             -- Set by an explicit user click, never by question text.
+                             -- See COPILOT-SPEC.md §0.
 ```
+
+**`CARE_TEAM` answers *may this user see patient X*. `PATIENT_BINDING` answers *which patient is this question about*.** `COPILOT-SPEC.md` §0 documents why conflating the two was a fatal gap: a permitted set is not a subject, and a coordinator is on the care team for dozens of patients. Selection is an application concern performed by a human and recorded; authorisation is re-validated on every tool call and never cached in the binding.
 
 **`CARE_TEAM` replaces `ROLE_PATIENT_MAP`.** `[TE]` It is what every RAP reads, and what every tool derives scope from.
 
@@ -249,8 +259,11 @@ AUTHORIZATION           [B]  auth_id PK · coverage_id FK · encounter_id FK
 DOCUMENT                [B]  doc_id PK · patient_id FK (NULL for reference)
                              · scope(patient|reference)               -- R6 starts here
                              · doc_type · version · accession_id
-                             · file_hash · source_quality(clean_pdf|scanned|photo
-                                                          |rotated_photo|handwritten)
+                             · revision_type(original|appended|amended|corrected)
+                             · file_hash            -- SHA-256, ours, for dedup
+                             · attachment_hash      -- SHA-1, from FHIR Attachment.hash
+                             · source_quality(clean_pdf|scanned|photo
+                                              |rotated_photo|handwritten)
                              · signed_at · effective_at · ingested_at  -- R2
                              · supersedes_doc_id FK
                              · source_facility_id FK
@@ -273,6 +286,7 @@ ASSERTION               [B]  assertion_id PK · doc_id FK · page_index
                              · subject · predicate · value · unit
                              · negation BOOLEAN
                              · missingness_state                      -- R3, 7 values
+                             · fhir_absent_reason                     -- maps R3 → FHIR
                              · extraction_confidence FLOAT            -- R7
                              · verification_status(verified|conflicting
                                                    |unverified|single_pass)  -- R7
@@ -290,6 +304,26 @@ EVIDENCE_LINK           [B]  link_id PK · assertion_id FK
 **`discordant_across_specimens`** — D3. Dipali's outside biopsy read Grade II / HER2 IHC 1+; the CMC surgical specimen read Grade III / IHC 2+. Different accession IDs, so specimen-keyed matching never collides and no conflict is detected — yet clinically this is the finding that triggered FISH and changed her treatment. Neither a match nor an error: a third relation. `[RWR]` — modelled by nobody in the field.
 
 **`verification_status` + `pass1_value` + `pass2_value`** — R7. See §7.
+
+### 2.6a FHIR-derived corrections
+
+Field-level FHIR mapping (`research/clinical/fhir-field-mapping.md`) forced six corrections. Each also strengthens the interoperability story. `[TE]` `[RWR]`
+
+**`revision_type` — an addendum is not a supersession.** FHIR `DiagnosticReport.status` distinguishes `appended` (information added) from `amended`/`corrected` (previous value was wrong). Dipali's FISH result arrived as an "ADDITIONAL REPORT" appended to an existing surgical pathology report two weeks after the IHC. v1 collapsed both into `supersedes_doc_id`, which is wrong: an append does not invalidate the original, a correction does. **They drive different clinical actions** — an append completes the record, a correction means a prior decision may have rested on a wrong value.
+
+**`fhir_absent_reason` — R3 has prior art.** `Observation.dataAbsentReason` (`http://terminology.hl7.org/CodeSystem/data-absent-reason`) provides `not-asked`, `asked-declined`, `masked`, `not-performed`, `error` and more. R3 is therefore **less novel than `should-close-gaps.md` assessed, and better grounded than we knew.** Two consequences, both applied: we no longer claim R3 as novel (we claim it as *enforced*), and we map to the standard vocabulary. R3 still adds three states FHIR lacks here — `pending` (FHIR expresses via `status`), `conflicting`, `superseded`.
+
+**`attachment_hash` kept separate from `file_hash`.** `Attachment.hash` is SHA-1; our dedup uses SHA-256. Conflating them would silently break duplicate detection.
+
+**`scheduled_time` is NULL when no `Appointment` exists.** `Encounter` alone does not carry a scheduled time — it resolves through `Encounter.appointment[] → Appointment.start`. If a bundle omits `Appointment`, the scheduled time is genuinely unknown and **must not default to `period.start`**, which would erase the R2 delay signal entirely. This is the single most likely silent data-quality bug in the FHIR path.
+
+**`AUTHORIZATION.status = 'denied'` is derived, not mapped.** `ClaimResponse.outcome` has no `denied` value — denial is `complete` with zero or absent benefit adjudication plus a reason code. Documented so the mapping is not misread as one-to-one.
+
+**`HOUSEHOLD` exists because `Coverage` is individual-centric.** `Coverage.beneficiary` is a single Patient reference, so a PM-JAY ₹5-lakh-per-family limit has no native home in base FHIR. Candidate mappings are `Coverage.class[type=group].value` or a `Group` resource. ⚠️ Requires NRCeS verification — if ABDM sanctions a pattern, use theirs. Either way `HOUSEHOLD` is deliberate modelling, not an oversight.
+
+**One stated simplification:** FHIR uses two resources for medication lifecycle — `MedicationRequest` (ordered) and `MedicationAdministration` (administered, linked by `request.reference`). Our single `CLINICAL_EVENT.status` enum spanning `ordered|administered|dispensed` is a deliberate compression. `clinical-thresholds.md` §8 requires the distinction be preserved semantically, and it is; the physical model is simpler than FHIR's. Stated rather than hidden, because a FHIR-literate judge will notice.
+
+**Validation that R2 is not over-engineering:** the worked example in the mapping file is an ordinary CBC with `effectiveDateTime` 08:30 (blood drawn) and `issued` 16:45 (report released) — **an 8-hour gap between R2 clocks 1 and 2 in a single routine lab result**, expressed natively by the standard.
 
 ### 2.7 Ontology & normalisation — closes G5 and D2 together
 
@@ -411,7 +445,26 @@ RAW_FHIR_BUNDLE         [B]  bundle_id PK · source_id FK · payload VARIANT
 
 **Why this closes two gaps at once:** the explainer names "semi-structured" as a distinct category, and `SCALE-REVIEW.md` F4 flagged that "siloed EHR" — the brief's *first* named challenge — had no ingestion architecture beyond a single `ingestion_method` field. FHIR bundles are JSON, so one path satisfies both. It also directly contests CareCompass, whose HL7/FHIR pipeline across 10 source systems is the strongest data-engineering work in the field.
 
-**Research gap being closed during build:** `abdm-architecture.md` §3 maps resources to tables but the only field-level path in the corpus is `Patient.identifier`. The concrete paths (`Observation.code.coding[0].code`, `Observation.valueQuantity.value|unit`, `Observation.effectiveDateTime`, `MedicationRequest.status`, `DiagnosticReport.presentedForm`) get sourced while the flatten SQL is written. **Owner: B. ~2h.**
+**Research gap G2 is closed.** `research/clinical/fhir-field-mapping.md` (462 lines) now carries every field-level path needed: the `Bundle.entry[]` flatten pattern, all nine resource mappings, choice-type handling for `effective[x]` and `value[x]`, the canonical system URIs, and a worked bundle. Six corrections it forced are in §2.6a.
+
+**The flatten pattern:**
+
+```sql
+CREATE OR REPLACE VIEW SAARTHI.DOCUMENTS.V_FHIR_ENTRY AS
+SELECT b.bundle_id, b.source_id, b.received_at,
+       b.payload:type::VARCHAR                 AS bundle_type,
+       e.value:fullUrl::VARCHAR                AS full_url,
+       e.value:resource:resourceType::VARCHAR  AS resource_type,
+       e.value:resource                        AS resource
+FROM SAARTHI.DOCUMENTS.RAW_FHIR_BUNDLE b,
+     LATERAL FLATTEN(input => b.payload:entry) e;
+```
+
+**Two traps documented in the mapping file:**
+
+`effective[x]` and `value[x]` are choice types — exactly one variant is present, so every read must `COALESCE` across `effectiveDateTime`, `effectivePeriod.start`, and `effectiveInstant`. Reading only `effectiveDateTime` silently drops every observation that used a period.
+
+`Observation.interpretation[0].coding[0].code` carries the `H`/`L` flags. **It must land in `abnormal_flag`, never in `value_num`** — this is the exact trap Dipali's `10.3 L` and `38 H` values represent, and parsing the flag into the number corrupts every threshold comparison downstream.
 
 ---
 
@@ -445,18 +498,26 @@ That disclosure is a differentiator, not a hedge: it is what "never opaque predi
 
 The 13 v1 rules already spanned four organ systems and were mislabelled "oncology" because the patient has cancer. Adding `specialty` makes existing breadth visible for ~15 minutes of work.
 
-| Specialty | Rules | New? |
-|---|---|---|
-| Medical oncology | 5 — ANC ≥1500, platelets ≥100k, HER2 FISH if IHC 2+, final pathology present, biomarker discordance | existing |
-| Cardiology | 2 — LVEF ≤90d, FDA decline criteria | existing |
-| Nephrology | 1 — CrCl per agent (Cockcroft-Gault) | existing |
-| Hepatology | 1 — bilirubin/AST per agent | existing |
-| Endocrinology | 2 — HbA1c currency pre-procedure, DEXA surveillance | **new** ⚠️ |
-| General surgery | 1 — post-op clearance before resuming systemic therapy | **new** ⚠️ |
-| Cross-cutting | 4 — coverage ×2, identity ×2 (**all specialties**) | existing |
-| **Total** | **16** | **3 new** |
+| Specialty | Rules | Source | New? |
+|---|---|---|---|
+| Medical oncology | 5 — ANC ≥1500, platelets ≥100k, HER2 FISH if IHC 2+, final pathology present, biomarker discordance | `clinical-thresholds.md` §1,2,6 | existing |
+| Cardiology | 2 — LVEF ≤90d, FDA decline criteria | §3 | existing |
+| Nephrology | 1 — CrCl per agent (Cockcroft-Gault) | §4 | existing |
+| Hepatology | 1 — bilirubin/AST per agent | §5 | existing |
+| Endocrinology | 2 — `ENDO-HBA1C-001`, `ENDO-DEXA-001` | **§9, §10** | **sourced** |
+| General surgery | 1 — `SURG-CLEAR-001` | **§11** | **sourced** |
+| Cross-cutting | 4 — coverage ×2, identity ×2 (**all specialties**) | existing | existing |
+| **Total** | **16** | | **3 sourced** |
 
-⚠️ **Verified research gap:** a grep for `hba1c|dexa|bone density|post-op|postoperative|wound|osteopenia` across every clinical research file returns **0 matches**. These three rules currently have no sourced thresholds. **Owner: B. ~1h before authoring them.**
+**Research gap G1 is closed.** `clinical-thresholds.md` §9–§11 now carry sourced thresholds for all three previously unsourced rules. Three findings changed the rule definitions:
+
+**`ENDO-HBA1C-001` is `severity = 'advisory'`, never a blocker.** HbA1c < 8.5% (69 mmol/mol) within 90 days — CPOC UK 2022 and Association of Anaesthetists 2021. But **both explicitly state cancer surgery should not be deferred for glycaemic optimisation**, because oncologic delay risk outweighs it. The gate flags for endocrine review and must not block. It also returns `not_evaluated` rather than `fail` where a haemoglobinopathy is recorded — thalassaemia trait is prevalent in parts of India and makes HbA1c unreliable.
+
+**`ENDO-DEXA-001` is T-score stratified**: 24 months if normal (≥ -1.0), 12 months for osteopenia, osteoporosis, or any patient on a bone-modifying agent. NCCN v4.2024 says annually for osteopenia on an aromatase inhibitor; ASCO permits 1–2 years. **We implement NCCN's 12 months** — the tighter interval is the safer default for a gate whose failure mode is a missed surveillance scan. A quantitative-ultrasound result yields `not_evaluated`, never a pass, because QUS cannot produce a T-score. Exercised twice over by the Dipali-derived patient, who has DEXA-confirmed osteopenia *and* receives zoledronic acid.
+
+**`SURG-CLEAR-001` has one hard gate and one soft default, labelled differently.** The anti-VEGF 28-day interval (bevacizumab, ramucirumab, ziv-aflibercept) is **FDA-label mandated — genuinely hard**. But **no guideline mandates a universal post-surgery interval for cytotoxic chemotherapy**; NCCN gives 2–4 weeks varying by disease site, ESMO 3–4 weeks. We ship 21 days configurable, plus a 42-day contaminated-wound flag for cases like Dipali's perforated appendix — **both labelled as practice consensus, not guideline requirement, wherever surfaced.** Presenting institutional practice as a guideline mandate would be the same dishonesty we document in competitors.
+
+The rule also **requires a documented clearance event and must not infer clearance from elapsed time alone.** In Indian practice surgical clearance is frequently verbal and never written into the discharge summary — which is exactly the record-state failure this system exists to catch. `[RWR]`
 
 `specificity INT` resolves rule precedence (D5): the most specific matching rule for a patient/regimen suppresses more general ones for the same `(gate, concept)`.
 
@@ -765,7 +826,7 @@ TASK reconcile_evidence  ── discordance ────┤
 ## 14. Deployment, evaluation, and the two stages
 
 ### One-script deploy `[SC]`
-`setup.sql` — idempotent, clean-account safe: database → 6 schemas → 24 tables → 2 stages → governance (tags, RAP on `CURRENT_USER()`, masking, 4 roles) → ontology + unit registry seed → 16 rules → 8 procedures → 4 tasks → 5 DTs → 2 search services → semantic view + 6 VQRs → grants → data load → reference corpus → initial pipeline run.
+`setup.sql` — idempotent, clean-account safe: database → 6 schemas → 25 tables → 2 stages → governance (tags, RAP on `CURRENT_USER()`, masking, 4 roles) → ontology + unit registry seed → 16 rules → 11 procedures → 4 tasks → 5 DTs → 2 search services → semantic view + 6 VQRs → grants → data load → reference corpus → initial pipeline run.
 `teardown.sql` — `DROP DATABASE` + warehouse + roles.
 Git integration: `EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/src/sql/setup.sql`.
 
@@ -816,7 +877,7 @@ Recorded so nothing needs unpicking if this gets funded.
 | Owner | Task |
 |---|---|
 | **all** | Commit everything now — the git trail proving planning preceded development is the cheapest lifecycle evidence and it is currently unbanked |
-| **A** | `setup.sql` skeleton: database, 6 schemas, 24 tables, RAP on `CURRENT_USER()`, 4 roles, `USE SECONDARY ROLES NONE` in app session |
+| **A** | `setup.sql` skeleton: database, 6 schemas, 25 tables, RAP on `CURRENT_USER()`, 4 roles, `USE SECONDARY ROLES NONE` in app session |
 | **B** | Freeze answer JSON schema (§7) · run U1 `PUT` + measure parse cost · source the 3 missing thresholds (§4.3) |
 | **C** | Download Tier 1 reference corpus into `data/reference/` · create `evidence/coco/planning.yaml` and retro-log this session |
 
