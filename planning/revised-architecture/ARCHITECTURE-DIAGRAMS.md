@@ -364,65 +364,64 @@ flowchart TB
 
 ### 5a — Where everything lives
 
+**Runtime call paths only.** Creation dependencies are in 5b. Edge labels are deliberately omitted — every call path is named in the table directly below, which keeps the diagram legible at any zoom level.
+
 ```mermaid
 flowchart TB
-    BROWSER(["<b>Clinician's browser</b><br/>TLS 1.2+<br/>No data persisted client-side"])
+    BROWSER(["<b>Clinician's browser</b><br/>TLS 1.2+"])
 
-    subgraph ACCOUNT["SNOWFLAKE ACCOUNT · FV11738 · Enterprise · GCP_ME_CENTRAL2"]
+    subgraph ACCOUNT["SNOWFLAKE ACCOUNT FV11738 · Enterprise · GCP_ME_CENTRAL2"]
+        direction TB
 
-        subgraph ACCTOBJ["Account-level objects"]
-            PARAM["<b>CORTEX_ENABLED_CROSS_REGION = ANY_REGION</b><br/>Account parameter<br/>Region has no local AI_COMPLETE"]
-            WH["<b>SAARTHI_AI_WH</b><br/>Warehouse · SMALL · 60s auto-suspend"]
-            ROLES["<b>5 roles</b><br/>APP · COORDINATOR · ONCOLOGIST<br/>NAVIGATOR · JUDGE"]
-            POL["<b>Policies</b><br/>1 row access policy on CURRENT_USER<br/>2 masking policies · 1 tag"]
+        subgraph CFG["Account configuration · preconditions"]
+            direction LR
+            PARAM["<b>CROSS_REGION</b><br/>= ANY_REGION"]
+            ROLES["<b>5 roles</b>"]
+            POL["<b>1 RAP on CURRENT_USER</b><br/>2 masking · 1 tag"]
+            WH["<b>SAARTHI_AI_WH</b><br/>SMALL · 60s"]
         end
 
-        subgraph DB["DATABASE · SAARTHI"]
-            subgraph PERSIST["Persistent data · 7 schemas"]
-                TBL[("<b>25 tables</b><br/>CORE · DOCUMENTS · EVIDENCE<br/>OPERATIONAL · GOVERNANCE")]
-                STG[("<b>3 stages</b><br/>PATIENT_DOCS · REFERENCE_DOCS · SKILLS<br/>ENCRYPTION = SNOWFLAKE_SSE")]
-            end
-
-            subgraph LOGIC["Executable objects"]
-                PROC["<b>11 procedures</b><br/>EXECUTE AS OWNER<br/>8 tools + 3 internal"]
-                DT["<b>5 dynamic tables</b><br/>Deterministic only"]
-                TASK["<b>6 tasks</b><br/>Only place AI functions run"]
-                STREAM["<b>3 streams</b><br/>Change data capture"]
-            end
-
-            subgraph APPOBJ["Application objects"]
-                APP["<b>1 Streamlit app</b><br/>6 screens"]
-                SEM["<b>1 semantic view</b><br/>+ 6 verified queries"]
-            end
+        subgraph FRONT["Application layer"]
+            direction LR
+            APP["<b>Streamlit</b><br/>6 screens"]
+            AGENT["<b>SAARTHI_AGENT</b><br/>orchestration: auto"]
         end
 
-        subgraph CORTEX["SNOWFLAKE CORTEX · managed, not deployed by us"]
-            SRCH["<b>2 search services</b><br/>PATIENT_DOC_SEARCH<br/>REFERENCE_DOC_SEARCH<br/>Physically separate · R6"]
-            AGENT["<b>1 agent</b><br/>SAARTHI_AGENT<br/>orchestration: auto"]
-            MODELS["<b>Inference endpoints</b><br/>llama3.3-70b · llama3.1-70b · llama3.1-8b"]
+        PROC["<b>11 procedures · EXECUTE AS OWNER</b><br/>8 tools + 3 internal · the only path to data"]
+
+        subgraph DATA["Governed data · 7 schemas"]
+            direction LR
+            TBL[("<b>25 tables</b>")]
+            STG[("<b>3 stages</b><br/>SNOWFLAKE_SSE")]
+            SEM["<b>Semantic view</b><br/>6 VQRs"]
+            SRCH["<b>2 search services</b><br/>separate · R6"]
+        end
+
+        subgraph PIPE["Pipeline"]
+            direction LR
+            STREAM["<b>3 streams</b>"]
+            TASK["<b>6 tasks</b><br/>AI runs here"]
+            DT["<b>5 dynamic tables</b><br/>deterministic"]
+            MODELS["<b>Inference</b><br/>llama3.3-70b · 3.1-70b · 3.1-8b"]
         end
     end
 
-    subgraph OUT["OUTBOUND ONLY · nothing inbound"]
-        NTF["<b>Notification integration</b><br/>Email + webhook"]
-        MCP["<b>MCP server</b><br/>2 read-only tools"]
+    subgraph OUT["OUTBOUND ONLY"]
+        direction LR
+        NTF["<b>Notifications</b>"]
+        MCP["<b>MCP server</b>"]
     end
 
-    BROWSER -->|"HTTPS"| APP
-    PARAM -.->|"required by"| MODELS
-    WH -.->|"powers"| LOGIC
-    WH -.->|"powers"| SRCH
-    ROLES -.->|"referenced by"| POL
-    POL -.->|"attached to"| TBL
-    APP --> PROC
+    BROWSER --> APP
     APP --> AGENT
+    APP --> PROC
     AGENT --> PROC
     PROC --> TBL
     PROC --> STG
-    PROC --> SRCH
     PROC --> SEM
-    TASK --> MODELS
+    PROC --> SRCH
     STREAM --> TASK
+    TASK --> MODELS
     TASK --> DT
     DT --> SRCH
     TASK --> NTF
@@ -432,79 +431,104 @@ flowchart TB
     classDef cfg fill:#8b1a1a,stroke:#5a0f0f,color:#fff
     classDef store fill:#2e6da4,stroke:#1c4568,color:#fff
     classDef exec fill:#123a5c,stroke:#0b2439,color:#fff
+    classDef choke fill:#8b1a1a,stroke:#5a0f0f,color:#fff,stroke-width:3px
     classDef ai fill:#8a5a00,stroke:#5c3c00,color:#fff
     classDef ext fill:#8c8c8c,stroke:#5c5c5c,color:#fff
 
     class BROWSER person
-    class PARAM,POL,ROLES cfg
+    class PARAM,ROLES,POL cfg
     class TBL,STG,WH store
-    class PROC,DT,STREAM,APP,SEM exec
+    class APP,SEM,DT,STREAM exec
+    class PROC choke
     class TASK,AGENT,MODELS,SRCH ai
     class NTF,MCP ext
 ```
 
-**Reading 5a:**
+### The call paths
 
-- **Red = configuration that breaks everything if wrong.** The account parameter, the row access policy, the roles. Not features — preconditions.
-- **Blue = deterministic.** Tables, stages, procedures, dynamic tables, the app.
-- **Amber = AI runs here.** Tasks, the agent, search services, inference endpoints. Note that **tasks are amber and dynamic tables are blue** — that boundary is forced by the platform and happens to be exactly what R1 requires.
-- **Dotted arrows = dependency, not data flow.** `PARAM` does not send anything to `MODELS`; it makes `MODELS` reachable at all.
-- **Solid arrows = runtime calls.**
-- **Grey box boundaries = deployment tiers.** Nothing inside a tier can exist before the tier does.
+| From | To | What happens |
+|---|---|---|
+| Browser | Streamlit | HTTPS. Session immediately runs `USE SECONDARY ROLES NONE`. |
+| Streamlit | Agent | Class B questions only. Class A is refused upstream by the classifier. |
+| Streamlit | Procedures | Direct calls for `bind_patient` and screen data |
+| Agent | Procedures | `generic` tools only. **`patient_id` is absent from every tool input schema.** |
+| Procedures | Tables | Reads under the row access policy |
+| Procedures | Stages | Reads document files |
+| Procedures | Semantic view | Cohort questions via Cortex Analyst |
+| Procedures | Search services | Query with a server-injected `@eq` filter, returns chunk IDs only |
+| Streams | Tasks | New data triggers the pipeline |
+| Tasks | Inference | `AI_PARSE_DOCUMENT`, `AI_COMPLETE` pass A and pass B |
+| Tasks | Dynamic tables | Deterministic transforms downstream of AI steps |
+| Dynamic tables | Search services | `DT_DOC_CHUNK` feeds the index |
+| Tasks | Notifications | `TASK_NOTIFY` on blocker + visit ≤ 3 days |
+| MCP server | Procedures | 2 read-only tools, no patient-scoped tool exposed |
+
+### Reading 5a
+
+| Colour | Meaning |
+|---|---|
+| **Red, thin border** | Configuration. Preconditions, not participants — nothing calls them. |
+| **Red, thick border** | The procedures layer. The choke point every data path goes through. |
+| **Blue box** | Deterministic executable |
+| **Blue cylinder** | Persistent storage |
+| **Amber** | AI runs here |
+| **Grey** | External, outbound only |
+
+**Three things the diagram proves by what it does not contain:**
+
+**No arrow from `SAARTHI_AGENT` to any data store.** The agent's only outgoing edge is to `PROC`. That absence is R5 layer 1 made structural — verified as A1, where an agent given a raw search tool derived `patient_id` from the question text and injected the filter itself.
+
+**`TASK` is amber, `DT` is blue, and they are adjacent.** AI functions cannot run inside a Dynamic Table. Every AI step is a Task; every deterministic step is a DT. The platform constraint and R1 point the same direction.
+
+**The red configuration boxes have no edges at all.** They are not in the call graph. The account parameter does not send anything to the inference endpoints — it makes them reachable. Their creation order is 5b.
 
 ### 5b — What order to create things
 
-Dependencies are hard. An object cannot be created before everything it points to exists.
+An object cannot be created before everything it depends on exists. This graph is the structure of `setup.sql`.
 
 ```mermaid
 flowchart LR
-    S1["<b>1</b><br/>Account param<br/>CROSS_REGION"]
+    S1["<b>1</b><br/>CROSS_REGION<br/>param"]
     S2["<b>2</b><br/>Warehouse"]
-    S3["<b>3</b><br/>Database<br/>+ 7 schemas"]
+    S3["<b>3</b><br/>Database<br/>7 schemas"]
     S4["<b>4</b><br/>5 roles"]
-    S5["<b>5</b><br/>3 stages<br/>SNOWFLAKE_SSE"]
+    S5["<b>5</b><br/>3 stages<br/>SSE"]
     S6["<b>6</b><br/>25 tables"]
     S7["<b>7</b><br/>Policies<br/>CURRENT_USER"]
-    S8["<b>8</b><br/>Attach policies<br/>DOC_PAGE only"]
-    S9["<b>9</b><br/>Grants<br/>no USAGE on search"]
-    S10["<b>10</b><br/>Ontology<br/>+ unit registry"]
+    S8["<b>8</b><br/>Attach RAP<br/>DOC_PAGE only"]
+    S9["<b>9</b><br/>Grants"]
+    S10["<b>10</b><br/>Ontology<br/>+ units"]
     S11["<b>11</b><br/>16 rules"]
-    S12["<b>12</b><br/>Load patient data"]
+    S12["<b>12</b><br/>Load data"]
     S13["<b>13</b><br/>3 streams"]
     S14["<b>14</b><br/>11 procedures"]
-    S15["<b>15</b><br/>5 dynamic tables"]
+    S15["<b>15</b><br/>5 dynamic<br/>tables"]
     S16["<b>16</b><br/>6 tasks"]
-    S17["<b>17</b><br/>2 search services"]
-    S18["<b>18</b><br/>Semantic view<br/>+ 6 VQRs"]
+    S17["<b>17</b><br/>2 search<br/>services"]
+    S18["<b>18</b><br/>Semantic view<br/>6 VQRs"]
     S19["<b>19</b><br/>Agent"]
-    S20["<b>20</b><br/>Streamlit app"]
-    S21["<b>21</b><br/>Notification<br/>integration"]
+    S20["<b>20</b><br/>Streamlit"]
+    S21["<b>21</b><br/>Notifications"]
 
     S1 --> S2 --> S3
-    S3 --> S4
-    S3 --> S5
-    S3 --> S6
-    S4 --> S7
-    S6 --> S7
-    S7 --> S8
-    S8 --> S9
-    S6 --> S10
+    S3 --> S4 --> S7
+    S3 --> S5 --> S12
+    S3 --> S6 --> S7
+    S3 --> S21
+    S7 --> S8 --> S9 --> S14
+    S6 --> S10 --> S12
     S6 --> S11
-    S5 --> S12
-    S10 --> S12
-    S12 --> S13
-    S9 --> S14
     S10 --> S15
+    S12 --> S13
+    S12 --> S18
     S14 --> S16
     S15 --> S16
-    S15 --> S17
     S2 --> S17
-    S12 --> S18
+    S15 --> S17
+    S14 --> S19
     S17 --> S19
     S18 --> S19
-    S14 --> S19
     S19 --> S20
-    S3 --> S21
 
     classDef gate fill:#8b1a1a,stroke:#5a0f0f,color:#fff
     classDef norm fill:#123a5c,stroke:#0b2439,color:#fff
@@ -515,7 +539,7 @@ flowchart LR
     class S16,S17,S19 ai
 ```
 
-**Red steps are the ones that fail silently or catastrophically if done wrong.** Steps 1, 5, 7, 8, 9. Each has a verified platform finding behind it.
+**Red steps fail silently or catastrophically if done wrong.** Steps 1, 5, 7, 8, 9 — each has a verified platform finding behind it. Get one wrong and the failure surfaces somewhere unrelated, days later.
 
 ### Step reference
 
