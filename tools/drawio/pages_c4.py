@@ -8,7 +8,7 @@ def landscape() -> Page:
     n = [
         Node("coord", label("Care Coordinator", "Person", "Assembles the record<br/>before a treatment visit"), "person", 0, 0, height=140),
         Node("onc", label("Treating Oncologist", "Person", "Accountable under<br/>NMC registration"), "person", 1, 0, height=140),
-        Node("fam", label("Family Caretaker", "Person", "Coordinates care<br/>across facilities"), "person", 2, 0, height=140),
+        Node("nav", label("Patient Navigator", "Person", "Hospital-appointed professional.<br/>Coordinates care across facilities."), "person", 2, 0, height=140),
         Node("saarthi", label("SAARTHI", "Software System", "Care-readiness and evidence copilot.<br/>Answers record-state questions with citations."), "focus", 1, 1),
         Node("his", label("Hospital Information System", "Software System", "Admissions, encounters, orders"), "system", 0, 2),
         Node("lis", label("Laboratory Information System", "Software System", "Results as PDF and structured feeds"), "system", 1, 2),
@@ -20,7 +20,7 @@ def landscape() -> Page:
     e = [
         Edge("coord", "saarthi", "asks what is missing<br/>before a visit"),
         Edge("onc", "saarthi", "reviews evidence,<br/>receives evidence packets"),
-        Edge("fam", "saarthi", "asks what to bring"),
+        Edge("nav", "saarthi", "asks what to bring,<br/>tracks referral documents"),
         Edge("his", "saarthi", "encounters, orders<br/>[CSV, FHIR R4]"),
         Edge("lis", "saarthi", "results, reports<br/>[PDF, FHIR R4]"),
         Edge("pacs", "saarthi", "imaging reports<br/>[PDF]"),
@@ -36,7 +36,7 @@ def context() -> Page:
     n = [
         Node("coord", label("Care Coordinator", "Person", "Prepares the record before<br/>a treatment visit. Primary user."), "person", 0, 0, height=150),
         Node("onc", label("Treating Oncologist", "Person", "Makes every clinical decision.<br/>Named via NMC registration."), "person", 1, 0, height=150),
-        Node("fam", label("Family Caretaker", "Person", "Non-clinical.<br/>Sees a restricted view."), "person", 2, 0, height=150),
+        Node("nav", label("Patient Navigator", "Person", "Hospital-appointed professional.<br/>Restricted view, institutionally accountable."), "person", 2, 0, height=150),
         Node("judge", label("Hackathon Judge", "Person", "Read-only. Reproduces<br/>every claim."), "person", 3, 0, height=150),
         Node("saarthi", label("SAARTHI", "Software System", "Unifies structured, semi-structured and unstructured records into a patient<br/>and member 360. Answers record-state and coverage questions with<br/>page-level citations. Refuses clinical judgment."), "focus", 1, 1, cspan=2),
         Node("src", label("Clinical source systems", "External System", "HIS, LIS, PACS across<br/>multiple facilities"), "ext", 0, 2),
@@ -48,7 +48,7 @@ def context() -> Page:
     e = [
         Edge("coord", "saarthi", "asks what is missing,<br/>receives a bring-list<br/>[Streamlit over HTTPS]"),
         Edge("onc", "saarthi", "reviews cited evidence<br/>and gate outcomes<br/>[Streamlit over HTTPS]"),
-        Edge("fam", "saarthi", "asks what to bring<br/>[Streamlit over HTTPS]"),
+        Edge("nav", "saarthi", "asks what to bring,<br/>tracks referral documents<br/>[Streamlit over HTTPS]"),
         Edge("judge", "saarthi", "reproduces security<br/>and eval claims<br/>[read-only role]"),
         Edge("src", "saarthi", "sends records<br/>[CSV, FHIR R4, PDF, JPEG]"),
         Edge("abdm", "saarthi", "identity and consent<br/>artefacts [FHIR R4]"),
@@ -61,7 +61,7 @@ def context() -> Page:
 
 def container() -> Page:
     n = [
-        Node("user", label("Coordinator / Oncologist / Caretaker", "Person", "Authenticated Snowflake user"), "person", 1, 0, height=140),
+        Node("user", label("Coordinator / Oncologist / Navigator", "Person", "Authenticated Snowflake user, institutionally accountable"), "person", 1, 0, height=140),
         Node("app", label("Care Readiness App", "Container: Streamlit in Snowflake", "6 screens. Ask and Evidence at the centre.<br/>Runs USE SECONDARY ROLES NONE per session."), "system", 0, 1),
         Node("cls", label("Class A/B Classifier", "Container: AI_CLASSIFY", "Routes clinical-judgment questions to<br/>refusal before any retrieval happens."), "ai", 1, 1),
         Node("agent", label("SAARTHI Agent", "Container: Cortex Agent → claude-opus-4-8", "Plans tool calls, ranks passages, phrases answers.<br/>8 generic tools, 4 skills. Cannot see patient_id."), "ai", 2, 1),

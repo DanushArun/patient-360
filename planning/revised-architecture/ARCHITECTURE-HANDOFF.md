@@ -194,7 +194,7 @@ Owns: Contract 5. Blocked by nobody.
 
 **One patient must flow: document → parse → R7 two-pass verify → assertion → ontology normalise → `CLIN-ANC-001` → cited answer on screen, under a real `CARE_TEAM` and `CONSENT`, with a clickable page-level citation.**
 
-If that is not working at the end of Day 5, **cut scope that day.** Not on Day 12. In order: drop the MCP server, then `get_changes`, then two specialties, then the Family View. **Never cut R7, consent, or the citation path** — those are items 1, 2 and 5 of what wins.
+If that is not working at the end of Day 5, **cut scope that day.** Not on Day 12. In order: drop the MCP server, then `get_changes`, then two specialties, then the Navigator View. **Never cut R7, consent, or the citation path** — those are items 1, 2 and 5 of what wins.
 
 ---
 

@@ -100,7 +100,7 @@ PRACTITIONER            [B]  practitioner_id PK · facility_id FK · department_
 
 CARE_TEAM               [B]  care_team_id PK
                              · practitioner_id FK · patient_id FK · facility_id FK
-                             · role_type(treating|coordinator|consulting|family_caretaker)
+                             · role_type(treating|coordinator|consulting|patient_navigator)
                              · active_from · active_to      -- relationship has a lifetime
                              · granted_by · created_at
                              UNIQUE(practitioner_id, patient_id, facility_id, role_type)
@@ -592,7 +592,7 @@ All `EXECUTE AS OWNER`. All derive scope from `CURRENT_USER()` → `PRACTITIONER
 
 Tools 6 and 7 close a real hole: D10 found **four Class B question types with no tool path**, two of which are demo questions ("what changed since 09:00?" is Q3). The agent would have refused a legitimate question or hallucinated.
 
-`create_review_task` is restricted to `treating|coordinator` roles — `family_caretaker` cannot create tasks. `action` is an enum; "approve treatment" does not exist as a value.
+`create_review_task` is restricted to `treating|coordinator` roles — `patient_navigator` cannot create tasks. `action` is an enum; "approve treatment" does not exist as a value.
 
 **Session requirement from F7:** the app session must execute `USE SECONDARY ROLES NONE`, or authenticate as a dedicated service user granted only the app role. Otherwise a secondary ACCOUNTADMIN silently satisfies Layer 1's privilege check.
 
@@ -728,7 +728,7 @@ A first synthetic document already exists — `data/synthetic_docs/lab_cbc_meera
 | Review Queue | coordinator, between cycles | open gate failures by urgency; the unowned Stage-9 gap |
 | Patient 360 | oncologist, on rounds | 2-minute chart review: gate strip, facility timeline, discordance flags |
 | Review + History | coordinator | task lifecycle, version chain, `ANSWER_RUN` history |
-| Family View | caretaker, pre-travel | bring-list in Hindi/Tamil/Bengali/Marathi + eligible schemes |
+| Navigator View | navigator, pre-travel | bring-list in Hindi/Tamil/Bengali/Marathi + eligible schemes |
 | **Judge Console** | judges | live security probes, metrics, CoCo evidence index |
 
 Streamlit in Snowflake. `AGENT_RUN` (F1) means warehouse runtime is a proven fallback if container runtime disappoints.

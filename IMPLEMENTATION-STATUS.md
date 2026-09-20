@@ -118,7 +118,7 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 | Review Queue | designed-only |
 | Patient 360 | designed-only |
 | Review + History | designed-only |
-| Family View (4 languages) | designed-only |
+| Navigator View (4 languages) | designed-only |
 | Judge Console (8 probes) | designed-only |
 
 ---

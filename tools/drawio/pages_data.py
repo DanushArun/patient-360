@@ -10,7 +10,7 @@ def erd_identity() -> Page:
         Entity("fac", "FACILITY", ["facility_id  PK", "org_id  FK", "hfr_id  ABDM Health Facility Registry", "facility_type  hub / spoke / lab / imaging", "district"], 1, 0),
         Entity("dept", "DEPARTMENT", ["department_id  PK", "facility_id  FK", "specialty  8 values, 6 carry rules"], 2, 0),
         Entity("prac", "PRACTITIONER", ["practitioner_id  PK", "facility_id  FK", "nmc_registration_no  names the decider", "snowflake_user  joins CURRENT_USER", "active"], 3, 0),
-        Entity("ct", "CARE_TEAM", ["care_team_id  PK", "practitioner_id  FK", "patient_id  FK", "role_type  treating / coordinator /", "    consulting / family_caretaker", "active_from  relationship has a lifetime", "active_to  expiry, not deletion"], 2, 1, dy=40),
+        Entity("ct", "CARE_TEAM", ["care_team_id  PK", "practitioner_id  FK", "patient_id  FK", "role_type  treating / coordinator /", "    consulting / patient_navigator", "active_from  relationship has a lifetime", "active_to  expiry, not deletion"], 2, 1, dy=40),
         Entity("cons", "CONSENT", ["consent_id  PK", "patient_id  FK", "purpose_code  treatment / coordination /", "    claim / second_opinion", "data_categories  clinical / financial / identity", "date_range_from  WHICH RECORDS", "valid_until  CONSENT LIFETIME", "status  active / revoked / expired", "artifact_hash  signed consent document", "abdm_consent_ref  nullable"], 3, 1, dy=40),
         Entity("pat", "PATIENT", ["patient_id  PK", "abha_ref  NULLABLE - most have none", "household_id  FK"], 1, 1, dy=40),
         Entity("idm", "ID_MAP", ["id_map_id  PK", "patient_id  FK", "identifier_type  7 types, 0 were ABHA", "match_status  linked / quarantined"], 0, 1, dy=40),
