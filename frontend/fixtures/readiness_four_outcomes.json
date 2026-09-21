@@ -1,0 +1,44 @@
+{
+  "_comment": "Patient 360 gate-strip fixture. Five gates, all four outcomes represented — SPEC.md 356/487, WORK-PLAN.md Day 5's own four-outcome requirement for CLIN-ANC-001 extended across the full strip so the UI never has to guess how a severity it hasn't seen yet should look.",
+  "patient_id": "PAT-DEEP-0001",
+  "known_as_of": "2026-09-18T09:00:00",
+  "gates": [
+    {
+      "gate": "clinical",
+      "outcome": "pass",
+      "rule_id": "CLIN-ANC-001",
+      "rule_version": 3,
+      "evidence_ids": ["CE-LAB-441"]
+    },
+    {
+      "gate": "safety",
+      "outcome": "fail",
+      "rule_id": "SURV-LVEF-001",
+      "rule_version": 2,
+      "provenance_note": "FDA label for trastuzumab. Guideline-mandated interval, not practice consensus.",
+      "evidence_ids": ["CE-ECHO-118"]
+    },
+    {
+      "gate": "documentation",
+      "outcome": "not_evaluated",
+      "rule_id": "DOC-HER2-001",
+      "rule_version": 1,
+      "evidence_ids": ["EVT-HER2-SURGICAL"]
+    },
+    {
+      "gate": "coverage",
+      "outcome": "conflicting",
+      "rule_id": "COV-AUTH-001",
+      "rule_version": 1,
+      "provenance_note": "NHCX / IRDAI. Both sources retained; neither is auto-resolved.",
+      "evidence_ids": ["CE-AUTH-77", "AS-8810"]
+    },
+    {
+      "gate": "identity",
+      "outcome": "pass",
+      "rule_id": "ID-LINK-001",
+      "rule_version": 1,
+      "evidence_ids": ["ID-MAP-0001"]
+    }
+  ]
+}
