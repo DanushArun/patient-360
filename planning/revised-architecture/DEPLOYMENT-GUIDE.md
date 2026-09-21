@@ -26,7 +26,7 @@ Snowflake has a built-in feature called a **Git repository object**. Think of it
 The command your CI/CD tool (Spinnaker, GitHub Actions, GitLab, whatever) runs looks like this:
 
 ```sql
-EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/<BRANCH>/src/sql/setup.sql;
+EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/<BRANCH>/backend/sql/setup.sql;
 ```
 
 **`<BRANCH>` is a variable, not a fixed word.** Your pipeline fills it in at run time:
@@ -64,7 +64,7 @@ Symbols: **[!]** = if you get this wrong, security silently breaks. **[AI]** = u
 | 3 | Create the database + 7 schemas | Folders that hold everything: `CORE`, `DOCUMENTS`, `EVIDENCE`, `OPERATIONAL`, `GOVERNANCE`, `STAGES`, `EVAL` | Every later object lives in one of these folders. |
 | 4 | Create 5 roles | Login groups: admin, app user, judge, etc. | Grants and policies reference roles by name. |
 | 5 | **[!]** Create 3 file stages | Buckets inside Snowflake for PDFs, FHIR bundles, agent skill files | AI functions only read stages with `SNOWFLAKE_SSE` encryption. Any other type silently fails later. |
-| 6 | Create 25 tables | The actual data model (patients, documents, events, rules, evidence) | No security applied yet. |
+| 6 | Create 34 tables | The actual data model (patients, documents, events, rules, evidence) | No security applied yet. |
 | 7 | **[!]** Create the row-access policy + 2 masking policies | The rules that decide who sees which patient row | Must key on `CURRENT_USER()`. Not `CURRENT_ROLE()`. A role-based rule leaks every patient inside a procedure. |
 | 8 | **[!]** Attach the row-access policy to `DOC_PAGE` only | Turn on protection on the right table | Cortex Search cannot be built over a protected table. So `DOC_CHUNK` (what search reads) has none; the real content sits behind `DOC_PAGE`. |
 | 9 | **[!]** Grant permissions | Tell each role exactly what it may touch | App role must get **no** direct access to search services. Sessions must run `USE SECONDARY ROLES NONE`. Otherwise an admin's extra roles bypass all rules. |
@@ -95,49 +95,44 @@ Break any of these and single-user testing looks perfect while cross-patient lea
 
 ## 4. Repository layout (implementation)
 
-`setup.sql` is a thin top-level file that runs each phase's own file. This matches the HLD in `ARCHITECTURE-DIAGRAMS.md` §5b and the LLD in `SPEC.md` §2–§13.
+**Revised 21 Sept — this section originally proposed `src/sql/` with one file per numbered phase. That was superseded the same day `planning/builder-1/REPO-STRUCTURE.md` was written: everything that runs inside Snowflake (plus the tooling that deploys and tests it) lives under `backend/`, and the Streamlit client is `frontend/` — with one file per *procedure* rather than one file per deploy phase, so two people editing different tool procedures never touch the same file. `setup.sql` still contains no DDL — it is a list of `EXECUTE IMMEDIATE FROM` lines in build order, one per file below, which is where the 21-phase shape from §3 actually lives. `planning/builder-1/REPO-STRUCTURE.md` §2 has the full rationale; treat it as authoritative over this tree if the two ever disagree.**
 
 ```
 patient-360/
-├── src/
+├── backend/
 │   ├── sql/
-│   │   ├── setup.sql                       ← entry point (idempotent, calls the 21 files below)
+│   │   ├── setup.sql                       ← entry point (idempotent; EXECUTE IMMEDIATE FROM, in build order)
 │   │   ├── teardown.sql                    ← rehearsal cleanup only
-│   │   ├── 01_cortex_cross_region.sql      ← phase 1
-│   │   ├── 02_warehouse.sql                ← phase 2
-│   │   ├── 03_database_and_schemas.sql     ← phase 3
-│   │   ├── 04_roles.sql                    ← phase 4
-│   │   ├── 05_stages.sql                   ← phase 5
-│   │   ├── 06_tables.sql                   ← phase 6   (25 tables — see SPEC.md §2)
-│   │   ├── 07_policies.sql                 ← phase 7
-│   │   ├── 08_attach_policies.sql          ← phase 8
-│   │   ├── 09_grants.sql                   ← phase 9
-│   │   ├── 10_ontology_and_units.sql       ← phase 10  (SPEC.md §2.7)
-│   │   ├── 11_rules.sql                    ← phase 11  (SPEC.md §4.3 — 16 rules)
-│   │   ├── 12_load_data.sql                ← phase 12  (SPEC.md §9 — synthetic generator output)
-│   │   ├── 13_streams.sql                  ← phase 13
-│   │   ├── 14_procedures.sql               ← phase 14  (SPEC.md §6 — 8 tools + 3 helpers)
-│   │   ├── 15_dynamic_tables.sql           ← phase 15  (SPEC.md §13)
-│   │   ├── 16_tasks.sql                    ← phase 16  (SPEC.md §11)
-│   │   ├── 17_search_services.sql          ← phase 17  (SPEC.md §5)
-│   │   ├── 18_semantic_view.sql            ← phase 18  (SPEC.md §8)
-│   │   ├── 19_agent_and_skills.sql         ← phase 19  (SPEC.md §11)
-│   │   ├── 20_streamlit.sql                ← phase 20  (SPEC.md §10 — 6 screens)
-│   │   └── 21_notifications.sql            ← phase 21
-│   └── streamlit/
-│       ├── main.py                          ← runs USE SECONDARY ROLES NONE on start
-│       ├── screens/                         ← 6 screens (SPEC.md §10)
-│       └── skills/                          ← 4 SKILL.md files, uploaded to @SKILLS
+│   │   ├── account/                        ← phases 1–5: cross-region, warehouse, db+schemas, roles, stages
+│   │   ├── tables/                         ← phase 6 (34 tables — SPEC.md §2)
+│   │   ├── governance/                     ← phases 7–9: policies, attach policies, grants
+│   │   ├── data/                           ← phases 10–12: ontology, unit registry, rules, synthetic load
+│   │   ├── streams/                        ← phase 13
+│   │   ├── procedures/                     ← phase 14 — one file per procedure (SPEC.md §6)
+│   │   │   └── tools/                      ← the 8 agent tools, one file each, plus a shared _preamble.sql
+│   │   ├── dynamic_tables/                 ← phase 15 (SPEC.md §13)
+│   │   ├── tasks/                          ← phase 16 (SPEC.md §11)
+│   │   ├── search/                         ← phase 17 (SPEC.md §5) — two services, physically separate
+│   │   ├── semantic/                       ← phase 18 (SPEC.md §8)
+│   │   ├── agent/                          ← phase 19 (SPEC.md §11)
+│   │   ├── integrations/                   ← phase 21 — notifications, git repository
+│   │   ├── prompts/                        ← R7 pass A/B prompt strings, versioned via CHANGELOG.md
+│   │   ├── probes/                         ← NOT deployed — model_availability.sql, output is evidence
+│   │   └── stubs/                          ← TEMPORARY, deleted at the Day-5 gate
+│   ├── scripts/                            ← check_gate.py (5 mechanical checks), deploy.sh (local inner loop)
+│   ├── skills/                             ← 4 SKILL.md, stage-mounted
+│   ├── eval/                               ← questions, ground truth, harness, results
+│   └── tests/                              ← SQL suites (run via the Snowflake CLI) + generator/ (plain pytest)
+├── frontend/                               ← the Streamlit client — no business logic; that's all in backend/sql/
+│   ├── streamlit_app.py                    ← entry point (phase 20). Session runs USE SECONDARY ROLES NONE.
+│   ├── contracts/                          ← FROZEN: answer_schema.json, error_shape.json, tool_signatures.yaml
+│   ├── pages/ · components/ · core/ · fixtures/ · tests/
 ├── data/
-│   ├── fixtures/                            ← synthetic patient CSVs
-│   ├── generator/                           ← SPEC.md §9 (12 corruption scenarios)
-│   └── synthetic_docs/                      ← synthetic PDFs and FHIR bundles
-├── tests/
-│   ├── security/                            ← policy + consent + scope-leakage
-│   ├── rules/                               ← 16 rules × 5 cases = 80 assertions
-│   ├── eval/                                ← 40 dev + 40 held-out questions (SPEC.md §14)
-│   └── e2e/                                 ← full ingest → cited answer flow
-├── evidence/coco/                           ← query IDs, verification runs
+│   ├── generator/                          ← ledger.py → projections.py → fhir_bundles.py → documents.py →
+│   │                                          corruptions.py → eval_questions.py (SPEC.md §9)
+│   ├── fixtures/                           ← generated synthetic data
+│   └── synthetic_docs/                     ← synthetic PDFs and FHIR bundles
+├── evidence/coco/                          ← query IDs, verification runs
 ├── planning/                                ← architecture + this doc
 └── IMPLEMENTATION-STATUS.md                 ← honest build state
 ```
@@ -146,17 +141,17 @@ patient-360/
 
 You build the same way the script deploys. Each phase group ends with its own tests before the next starts.
 
-| Group | Files to author | Done when |
+| Group | `backend/sql/` files | Done when |
 |---|---|---|
-| A. Foundations | `01`–`04` | Warehouse, DB, 7 schemas, 5 roles exist. |
-| B. Storage | `05`, `06` | 3 SSE stages + 25 tables created. |
-| C. Security | `07`–`09` | Cross-user query returns nothing. |
-| D. Reference | `10`, `11` | Ontology, units, 16 rules loaded. |
-| E. Data | `12` + `data/generator/` | One synthetic patient flows end to end. |
-| F. Pipeline | `13`–`16` | Streams fire, procs work, DTs refresh, tasks succeed. |
-| G. Retrieval + agent | `17`–`19` | Both search services healthy, agent answers with citations. |
-| H. UI + notify | `20`, `21` | Streamlit opens; notification integration created. |
-| I. Tests | `tests/**` | 80 rule assertions + security suite + eval set pass. |
+| A. Foundations | `account/` | Warehouse, DB, 7 schemas, 5 roles exist. |
+| B. Storage | `account/05_stages.sql`, `tables/` | 3 SSE stages + 34 tables created. |
+| C. Security | `governance/` | Cross-user query returns nothing. |
+| D. Reference | `data/ontology.sql`, `data/rules.sql` | Ontology, units, 16 rules loaded. |
+| E. Data | `data/load_synthetic.sql` + `data/generator/` | One synthetic patient flows end to end. |
+| F. Pipeline | `streams/`, `procedures/`, `dynamic_tables/`, `tasks/` | Streams fire, procs work, DTs refresh, tasks succeed. |
+| G. Retrieval + agent | `search/`, `semantic/`, `agent/` | Both search services healthy, agent answers with citations. |
+| H. UI + notify | `frontend/streamlit_app.py`, `integrations/` | Streamlit opens; notification integration created. |
+| I. Tests | `backend/tests/**` | 80 rule assertions + security suite + eval set pass. |
 | J. Clean-account rehearsal | — | Same commit deploys to an empty account with zero manual fixes. |
 
 ---
