@@ -4,49 +4,80 @@
 
 Built for the Snowflake CoCo CLI Hackathon 2026 (GCC Edition) — Problem Statement 04: Patient and Member 360 and Clinical or Regulatory Document Copilot. **Synthetic data only. No real patient information.**
 
-## The 4 screens
+**Status: architecture complete and validated (v2); build in progress.** See `IMPLEMENTATION-STATUS.md` for the honest, per-component `built | partial | designed-only` ledger, and `AGENTS.md` for the rules binding anyone working in this repo.
 
-1. **Review queue** — upcoming visits, review priority, unresolved issues, assigned owner
-2. **Patient 360** — source IDs, dated diagnosis/pathology assertions, medication events, encounters, labs, claims/authorization status, documents and corrections
-3. **Ask + evidence** — free-text questions, concise cited answers, evidence pane showing the exact passage or row, visible unknowns/discrepancies
-4. **Review + history** — create/assign a documentation task, record status changes, source references, audit trail, export a versioned evidence packet
+## The seven rules everything obeys
 
-Full design rationale, architecture, data model, gates, and test plan: `planning/plan.md`.
 
-## Planning docs
+|        |                                                                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **R1** | The LLM never decides. Every status, number, date and threshold comparison comes from SQL against a versioned rule.             |
+| **R2** | Three clocks — `event_time`, `source_recorded_at`, `ingested_at`. Every answer carries `known_as_of`.                           |
+| **R3** | Missingness is a type, never a NULL. Seven states. *Not received* is never *negative*.                                          |
+| **R4** | Identity is ABHA-anchored and federated. Never joined on name. Ambiguous matches quarantine.                                    |
+| **R5** | Scope is enforced server-side before retrieval, in three layers.                                                                |
+| **R6** | Two document corpora, never mixed in one ranked list. Physically separate services.                                             |
+| **R7** | Extraction is never trusted on a single pass for safety-critical fields. Two model families; disagreement blocks the assertion. |
 
-- `planning/plan.md` — design rationale, architecture, data model, gates, test plan
-- `planning/architecture.md` — architecture notes
-- `planning/oncology-department-map.md` — oncology department map
-- `planning/study-01-clinical-reading.md` — clinical reading study
-- `planning/diagrams/` — system landscape, inside-the-system, permission/identity, HLD, and LLD diagrams (`.drawio` + exported `.png`)
 
-## Architecture diagrams
 
-Editable sources are the `.drawio` files in `planning/diagrams/`; rendered below from the exported PNGs.
 
-### 1. System landscape
-![System landscape](planning/diagrams/01-system-landscape.png)
+## The 6 screens
 
-### 2. Inside the system
-![Inside the system](planning/diagrams/02-inside-the-system.png)
+Ask + Evidence is the centrepiece; the rest support the same cited-answer model around it.
 
-### 3. Permission and identity
-![Permission and identity](planning/diagrams/03-permission-and-identity.png)
+1. **Ask + Evidence** — free-text questions, cited answers, `known_as_of` slider, evidence pane showing the exact passage or row, Class A refusal + evidence-packet offer
+2. **Review Queue** — open gate failures by urgency, between review cycles
+3. **Patient 360** — gate strip, facility timeline, discordance flags — a 2-minute chart review
+4. **Review + History** — documentation task lifecycle, version chain, `ANSWER_RUN` history
+5. **Navigator View** — pre-travel bring-list (Hindi/Tamil/Bengali/Marathi) + eligible schemes
+6. **Judge Console** — live security probes (cross-scope, unfiltered search, consent revocation, prompt injection, fabricated claims, extraction disagreement, time-travel replay), metrics, CoCo evidence index
 
-### 4. High-level design — full stack
-![HLD full stack](planning/diagrams/04-hld-full-stack.png)
 
-### 5. Low-level design
-![LLD](planning/diagrams/05-lld.png)
 
+## Class A / Class B
+
+- **Class A** — clinical judgment ("should she proceed?", prognosis, dosing). **Always refused.** Offers an `EVIDENCE_PACKET` addressed to the named treating practitioner instead.
+- **Class B** — record and coverage state ("what do we have?", "what's missing?", "what contradicts what?"). Answered deterministically, with citations, across 10 question types (status lookup, gap identification, conflict detection, timeline, document lookup, regulatory lookup, cohort, change detection, provenance, coverage utilisation).
+
+
+
+## Architecture
+
+The current architecture lives in `planning/revised-architecture/` — **start with** `ARCHITECTURE-HANDOFF.md`, not `SPEC.md`.
+
+
+| Document                             | What it is                                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `ARCHITECTURE-HANDOFF.md`            | Team execution contract — interfaces, ownership, schedule, definition of done                         |
+| `COPILOT-SPEC.md`                    | The deliverable — patient binding, conversation model, typed evidence, 10 question types, demo script |
+| `SPEC.md`                            | Data model, 16 rules, governance, ingestion, pipeline, application, deployment                        |
+| `AI-INTEGRATION-ARCHITECTURE.md`     | Agent spec, tool schemas, R7 prompts, model matrix, call path, MCP, evaluation                        |
+| `ARCHITECTURE-DIAGRAMS.md`           | 15 diagrams, C4-structured, Mermaid — renders inline on GitHub                                        |
+| `drawio/SAARTHI-architecture.drawio` | The same 15 views, editable and print-ready, generated by `tools/drawio/`                             |
+| `FINAL-VALIDATION.md`                | Validation against the verbatim brief, the rubric, and every competitor                               |
+
+
+`planning/plan.md` and `planning/architecture.md` are **v1, superseded** — kept only as CoCo planning-phase evidence. Do not build from them.
+
+### Diagram pages (`ARCHITECTURE-DIAGRAMS.md` / `drawio/`)
+
+1. System Landscape · 2. System Context (C4 L1) · 3. Containers (C4 L2) · 4. Components — Readiness Engine (C4 L3) · 5. Deployment · 6. Trust Boundaries (the four closed leak paths) · 7. Question → Cited Answer · 8. Document → Verified Assertion (R7) · 9–10. ERDs · 11. Pipeline Topology · 12. Assertion Verification Lifecycle · 13. Document Revision Lifecycle · 14. Class A/B Routing · 15. Gate Outcomes
+
+Regenerate the `.drawio` file with `python3 -m tools.drawio.generate` after editing `tools/drawio/pages_*.py` — never hand-edit the `.drawio` and regenerate afterward, the generator will overwrite it.
 
 ## Repo layout
 
-- `data/generator/` — Python scripts generating synthetic patients and documents
-- `data/fixtures/` — generated fake data (JSON/CSV/text), including `documents/`
-- `backend/sql/` — CREATE TABLE / load scripts for Snowflake
-- `frontend/` — Streamlit application code
-- `backend/tests/` — test questions + expected answers, kept separate from `frontend/` so it can't read its own answer key
-- `evidence/coco/` — CoCo session notes, screenshots, proof of how this was built
-- `planning/` — this project's plan, architecture docs, and diagrams
+- `data/generator/`, `data/fixtures/`, `data/synthetic_docs/` — synthetic patient and document generation
+- `backend/sql/` — DDL, procedures, tasks, dynamic tables, prompts, probes, `setup.sql` deploy manifest
+- `backend/skills/` — 4 skills (`clinical-question-routing`, `evidence-retrieval`, `evidence-reconciliation`, `risk-stratification`) orchestrated by one Task
+- `backend/scripts/` — `check_gate.py` (build-gate checks), `deploy.sh` (manifest-driven deploy)
+- `backend/eval/` — question sets, ground truth, adversarial probes, harness, results
+- `backend/tests/` — SQL and contract tests, kept separate from `frontend/` so it can't read its own answer key
+- `frontend/` — Streamlit-in-Snowflake app: `contracts/` (frozen answer/error/tool schemas), `core/`, `components/`, `pages/`, `fixtures/`
+- `evidence/coco/` — CoCo session notes, verification query IDs, proof of how this was built
+- `planning/` — architecture docs, diagrams, research, and superseded v1 planning kept as evidence
+- `tools/drawio/` — generator for the `.drawio` architecture document
+- `IMPLEMENTATION-STATUS.md` — the honest per-component build ledger
+- `AGENTS.md` — binding rules for anyone (or anything) working in this repo
+
