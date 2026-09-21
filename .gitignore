@@ -1,3 +1,4 @@
+AGENTS.md
 .env
 .env.*
 __pycache__/
@@ -14,3 +15,5 @@ venv/
 *credentials*
 *.pem
 .snowflake/
+.playwright-mcp/
+.cortex/
