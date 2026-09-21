@@ -67,8 +67,12 @@ BEGIN
     OPEN c_rules;
     FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days;
 
-    WHILE (SQLROWCOUNT > 0) DO
+    WHILE (v_rule_id IS NOT NULL) DO
         v_found := FALSE;
+        v_evt_value := NULL;
+        v_evt_id := NULL;
+        v_derivation := NULL;
+        v_age_days := NULL;
 
         SELECT he.value_num, he.event_id, he.derivation, DATEDIFF('day', he.event_time, :v_scheduled)
           INTO :v_evt_value, :v_evt_id, :v_derivation, :v_age_days
@@ -79,10 +83,17 @@ BEGIN
          ORDER BY he.event_time DESC
          LIMIT 1;
 
-        IF (SQLROWCOUNT > 0) THEN
+        IF (v_evt_id IS NOT NULL) THEN
             v_found := TRUE;
 
-            IF (v_max_age_days IS NOT NULL AND v_age_days > v_max_age_days) THEN
+            IF (v_operator IS NULL) THEN
+                -- Rules with a shape this evaluator does not implement yet
+                -- (e.g. ENDO-DEXA-001's stratified T-score bands) have no
+                -- flat operator/value pair. Evidence exists but the logic to
+                -- read it does not - say so explicitly, never go silent.
+                v_outcome := 'not_evaluated';
+                v_reason := 'evidence exists but this rule''s threshold shape is not yet implemented by evaluate_gates';
+            ELSEIF (v_max_age_days IS NOT NULL AND v_age_days > v_max_age_days) THEN
                 v_outcome := 'fail';
                 v_reason := v_concept || ' assessment is ' || v_age_days::VARCHAR || ' days old, exceeds ' || v_max_age_days::VARCHAR || '-day limit';
             ELSEIF (v_operator = '>=' AND v_evt_value >= v_threshold) THEN
