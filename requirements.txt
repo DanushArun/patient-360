@@ -3,3 +3,4 @@ jsonschema
 pytest
 fpdf2
 pypdf
+streamlit
