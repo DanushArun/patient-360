@@ -6,24 +6,26 @@
 -- given a reachable parameter, the agent derives patient_id from the
 -- question text and injects the filter itself). patient_id is OMITTED from
 -- every tool input schema below - unreachable by construction, not by
--- instruction. orchestration is pinned to claude-opus-4-8, never 'auto'
+-- instruction. orchestration is pinned to claude-opus-5, never 'auto'
 -- (AGENTS.md: auto re-selects upward silently, invalidating measured
--- accuracy and cost).
+-- accuracy and cost). Updated 22 Sept from claude-opus-4-8 - reachability
+-- reverified before switching, not assumed.
 CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
   COMMENT = 'SAARTHI care-readiness copilot. 8 generic tools, patient_id unreachable by construction.'
   FROM SPECIFICATION
   $$
   models:
-    orchestration: "claude-opus-4-8"
+    orchestration: "claude-opus-5"
 
   instructions:
     response: >
-      Answer only from tool results. Never state a status, number, date, or
-      threshold comparison that did not come from a tool's returned facts.
-      Every claim must cite the evidence_ids or event_id the tool returned.
-      If a tool returns an error (no_patient_bound, no_patient_access,
-      access_withdrawn, binding_mismatch, consent_not_valid), report exactly
-      that outcome and nothing about why - never guess or soften it.
+      Respond in English, regardless of the model's default. Answer only
+      from tool results. Never state a status, number, date, or threshold
+      comparison that did not come from a tool's returned facts. Every claim
+      must cite the evidence_ids or event_id the tool returned. If a tool
+      returns an error (no_patient_bound, no_patient_access, access_withdrawn,
+      binding_mismatch, consent_not_valid), report exactly that outcome and
+      nothing about why - never guess or soften it.
     orchestration: >
       Never ask a tool for a patient identifier - no tool accepts one. The
       subject is always whichever patient is already bound in this session.
