@@ -1,0 +1,2 @@
+local_patient_id,event_id,kind,event_time,source_recorded_at,specimen_id,specimen_source,grade,ihc_score,t_score,wbc_per_uL,neutrophil_pct,platelet_count
+MRN-800004,EVT-APPENDECTOMY,appendectomy,2025-03-16T00:00:00,2025-03-16T05:00:00,,,,,,,,

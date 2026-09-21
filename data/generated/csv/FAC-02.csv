@@ -1,0 +1,9 @@
+local_patient_id,event_id,kind,event_time,source_recorded_at,specimen_id,specimen_source,grade,ihc_score,t_score,wbc_per_uL,neutrophil_pct,platelet_count
+MRN-800002,EVT-CHEMO-01,chemo_cycle,2025-01-29T00:00:00,2025-01-29T04:00:00,,,,,,,,
+MRN-800002,EVT-HER2-SURGICAL,her2_result,2025-02-05T00:00:00,2025-02-05T07:00:00,SPEC-SURGICAL-001,surgical_specimen,III,2+,,,,
+MRN-800002,EVT-CHEMO-02,chemo_cycle,2025-02-16T00:00:00,2025-02-17T00:00:00,,,,,,,,
+MRN-800002,EVT-CHEMO-03,chemo_cycle,2025-03-08T00:00:00,2025-03-08T08:00:00,,,,,,,,
+MRN-800002,EVT-CBC-01,cbc_lab,2025-03-27T06:00:00,2025-03-28T01:00:00,,,,,,6000,35.0,260604
+MRN-800002,EVT-CHEMO-04,chemo_cycle,2025-04-08T00:00:00,2025-04-08T04:00:00,,,,,,,,
+MRN-800002,EVT-CHEMO-05,chemo_cycle,2025-05-01T00:00:00,2025-05-02T00:00:00,,,,,,,,
+MRN-800002,EVT-CHEMO-06,chemo_cycle,2025-05-23T00:00:00,2025-05-23T03:00:00,,,,,,,,

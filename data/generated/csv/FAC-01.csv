@@ -1,0 +1,2 @@
+local_patient_id,event_id,kind,event_time,source_recorded_at,specimen_id,specimen_source,grade,ihc_score,t_score,wbc_per_uL,neutrophil_pct,platelet_count
+MRN-800000,EVT-HER2-OUTSIDE,her2_result,2024-12-17T00:00:00,2024-12-17T03:00:00,SPEC-OUTSIDE-001,outside_biopsy,II,1+,,,,

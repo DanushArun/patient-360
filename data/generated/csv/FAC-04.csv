@@ -1,0 +1,3 @@
+local_patient_id,event_id,kind,event_time,source_recorded_at,specimen_id,specimen_source,grade,ihc_score,t_score,wbc_per_uL,neutrophil_pct,platelet_count
+MRN-800005,EVT-DEXA,dexa_scan,2025-03-14T00:00:00,2025-03-14T23:00:00,,,,,-1.6,,,
+MRN-800005,EVT-ZOLEDRONIC,zoledronic_acid_infusion,2025-03-17T00:00:00,2025-03-17T21:00:00,,,,,,,,

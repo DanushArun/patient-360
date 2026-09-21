@@ -43,7 +43,7 @@
 -- GCP_ME_CENTRAL2 has NO local AI_COMPLETE endpoint. Without this, nothing in
 -- the AI path runs and the failure surfaces somewhere unrelated. Line one.
 -- Someone reproducing this on a fresh account fails immediately without it.
--- EXECUTE IMMEDIATE FROM './account/01_cross_region.sql';
+EXECUTE IMMEDIATE FROM './account/01_cross_region.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -51,7 +51,7 @@
 -- ---------------------------------------------------------------------------
 -- SAARTHI_AI_WH, SMALL, AUTO_SUSPEND 60, INITIALLY_SUSPENDED TRUE.
 -- Search services name a warehouse at creation time, so it must exist first.
--- EXECUTE IMMEDIATE FROM './account/02_warehouse.sql';
+EXECUTE IMMEDIATE FROM './account/02_warehouse.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@
 -- CORE - DOCUMENTS - EVIDENCE - OPERATIONAL - GOVERNANCE - STAGES - EVAL
 -- EVAL is not optional: the eval truth key lives there and must be unreadable
 -- by the app role, or the system can read its own answer key.
--- EXECUTE IMMEDIATE FROM './account/03_database_schemas.sql';
+EXECUTE IMMEDIATE FROM './account/03_database_schemas.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@
 -- ---------------------------------------------------------------------------
 -- 5 roles. Policies and grants reference them by name, so they come first.
 -- Name settled in planning/builder-1/README.md item 5.
--- EXECUTE IMMEDIATE FROM './account/04_roles.sql';
+EXECUTE IMMEDIATE FROM './account/04_roles.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -79,7 +79,7 @@
 -- F9: AI functions cannot read SNOWFLAKE_FULL, user stages (@~) or table stages.
 -- Wrong encryption fails at PARSE time, not at CREATE time - days later, in a
 -- different file, with an unrelated-looking error.
--- EXECUTE IMMEDIATE FROM './account/05_stages.sql';
+EXECUTE IMMEDIATE FROM './account/05_stages.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -87,11 +87,11 @@
 -- ---------------------------------------------------------------------------
 -- No policies attached yet. SPEC.md 2, diagrams 9 and 10.
 -- Table names are Contract 1 and Builder 1's procedures read them literally.
--- EXECUTE IMMEDIATE FROM './tables/10_governance.sql';
--- EXECUTE IMMEDIATE FROM './tables/20_core.sql';
--- EXECUTE IMMEDIATE FROM './tables/30_documents.sql';
--- EXECUTE IMMEDIATE FROM './tables/40_evidence.sql';
--- EXECUTE IMMEDIATE FROM './tables/50_operational.sql';
+EXECUTE IMMEDIATE FROM './tables/10_governance.sql';
+EXECUTE IMMEDIATE FROM './tables/20_core.sql';
+EXECUTE IMMEDIATE FROM './tables/30_documents.sql';
+EXECUTE IMMEDIATE FROM './tables/40_evidence.sql';
+EXECUTE IMMEDIATE FROM './tables/50_operational.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -102,7 +102,7 @@
 -- EXECUTE AS OWNER procedure CURRENT_ROLE() becomes the OWNER's role, so a
 -- role-keyed policy returns every patient - a total bypass that looks perfect
 -- in single-user testing because the owner is the caller.
--- EXECUTE IMMEDIATE FROM './governance/01_policies.sql';
+EXECUTE IMMEDIATE FROM './governance/01_policies.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -113,7 +113,7 @@
 -- on queries with correlated subquery expressions" over a RAP-protected table.
 -- The index holds no content and returns IDs; content lives behind the policy.
 -- The platform forced the correct security architecture. Do not "fix" this.
--- EXECUTE IMMEDIATE FROM './governance/02_attach_policies.sql';
+EXECUTE IMMEDIATE FROM './governance/02_attach_policies.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -125,7 +125,7 @@
 -- ACCOUNTADMIN satisfies the privilege check through the back door and the
 -- GRANT audit still looks correct. Every app session runs
 -- USE SECONDARY ROLES NONE, or authenticates as a dedicated service user.
--- EXECUTE IMMEDIATE FROM './governance/03_grants.sql';
+EXECUTE IMMEDIATE FROM './governance/03_grants.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -134,8 +134,8 @@
 -- Dynamic tables read these to normalise, and extract_assertions reads
 -- is_safety_critical to decide which concepts get R7's second pass.
 -- Must be populated before step 15.
--- EXECUTE IMMEDIATE FROM './data/ontology.sql';
--- EXECUTE IMMEDIATE FROM './data/unit_registry.sql';
+EXECUTE IMMEDIATE FROM './data/ontology.sql';
+EXECUTE IMMEDIATE FROM './data/unit_registry.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -145,7 +145,7 @@
 -- and specificity. provenance_note is mandatory and it is a scoring decision:
 -- three thresholds are practice consensus, not guideline requirement, and must
 -- say so wherever they surface.
--- EXECUTE IMMEDIATE FROM './data/rules.sql';
+EXECUTE IMMEDIATE FROM './data/rules.sql';
 
 
 -- ---------------------------------------------------------------------------
