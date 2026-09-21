@@ -115,7 +115,14 @@ BEGIN
                 ELSE
                     v_pass2_value := GET_PATH(:v_result_b, 'value_found')::VARCHAR;
                     LET v_agrees BOOLEAN := GET_PATH(:v_result_b, 'agrees')::BOOLEAN;
-                    IF (v_agrees = TRUE) THEN
+                    IF (v_agrees IS NULL) THEN
+                        -- Parsed as JSON but missing/null "agrees" - a malformed
+                        -- or incomplete response, not a genuine second read.
+                        -- Must not be misclassified as conflicting: that implies
+                        -- pass B actually read the page and disagreed, which we
+                        -- cannot claim here. Fail closed the same as unparseable.
+                        v_verification := 'unverified';
+                    ELSEIF (v_agrees = TRUE) THEN
                         v_verification := 'verified';
                     ELSE
                         v_verification := 'conflicting';  -- value NOT asserted downstream - no transition to Asserted
