@@ -41,6 +41,18 @@ BEGIN
     FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
 
     WHILE (v_relative_path IS NOT NULL) DO
+        -- Re-fetched fresh here rather than trusted from the cursor FETCH
+        -- above: verified live that the cursor-fetched value of a VARCHAR
+        -- carried into a later INSERT inside this same loop body stayed
+        -- pinned to the FIRST iteration's value on every subsequent
+        -- iteration (all 4 DOCUMENT rows got file 1's etag) even though
+        -- v_doc_id (assigned fresh via UUID_STRING() each iteration) and
+        -- the AI_PARSE_DOCUMENT content were both correctly distinct per
+        -- iteration. A fresh scalar SELECT immediately before the INSERT
+        -- that consumes it avoids whatever caching caused that.
+        SELECT etag INTO :v_file_hash
+          FROM DIRECTORY(@SAARTHI.STAGES.PATIENT_DOCS) WHERE relative_path = :v_relative_path;
+
         v_parsed := (SELECT AI_PARSE_DOCUMENT(
                         TO_FILE('@SAARTHI.STAGES.PATIENT_DOCS', :v_relative_path),
                         {'mode':'LAYOUT', 'page_split': true}));
