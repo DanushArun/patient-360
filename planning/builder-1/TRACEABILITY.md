@@ -12,11 +12,11 @@ The point of this table is that "meets all requirements" becomes checkable rathe
 
 | Rule | What it demands of Builder 1 | Implemented in | Proved by |
 |---|---|---|---|
-| **R1** | the LLM never decides — no status, number, date, threshold comparison or gate outcome comes from a model | agent instructions in `backend/sql/agent/saarthi_agent.sql`; `GetReadiness` calls `evaluate_gates` and never recomputes | `backend/tests/backend/sql/rules/` returns the same outcomes with the agent absent; diagram 4 has no amber box |
+| **R1** | the LLM never decides — no status, number, date, threshold comparison or gate outcome comes from a model | agent instructions in `backend/sql/agent/saarthi_agent.sql`; `GetReadiness` calls `evaluate_gates` and never recomputes | `backend/tests/sql/rules/` returns the same outcomes with the agent absent; diagram 4 has no amber box |
 | **R2** | every answer carries `known_as_of`; three clocks survive to the UI | `answer_schema.json` requires it; `_preamble.sql` resolves it **first**, so even errors carry it | schema rejects an answer without it — `check_gate.py --contracts` |
 | **R3** | missingness is a type — "not received" is never "negative" | `pass_a_*.md` prompts return `missingness_state`; four-valued `outcome` on every claim | `t24`, `t25`; `answer_conflicting.json` renders three distinct outcomes in one answer |
 | **R4** | ambiguous identity contributes **no** evidence | consumed, not implemented, by Builder 1 — the identity gate | `ID-QUAR-001` fixtures `[2]` |
-| **R5** | scope enforced server-side, three layers, before retrieval | `_preamble.sql` + the three-step body of `03_search_patient_documents.sql` | `backend/tests/backend/sql/access/` — 14 tests, including a positive control |
+| **R5** | scope enforced server-side, three layers, before retrieval | `_preamble.sql` + the three-step body of `03_search_patient_documents.sql` | `backend/tests/sql/access/` — 14 tests, including a positive control |
 | **R6** | two corpora, never mixed in one ranked list | separate tools over separate services; `reference_clause` renders distinctly | `t04`; **`ground_truth_invocations` machine-checks it across all 80 eval questions** |
 | **R7** | never assert a safety-critical value from one unverified read | `backend/sql/tasks/extract_assertions.sql`, `pass_b_verify.md` | `t21`, `t25`, `t26` — and `t26` attempts the illegal transition directly |
 

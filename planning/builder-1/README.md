@@ -21,7 +21,7 @@ These are derived from `WORK-PLAN.md`, `COPILOT-SPEC.md`, `ARCHITECTURE-HANDOFF.
 |---|---|---|
 | **SQL** | `procedures/tools/` · `classify_question` · `validate_answer` · `tasks/extract_assertions` · `tasks/reconcile_evidence` · `tasks/orchestrator` · `agent/` · `prompts/` · `stubs/` | `account/` · `tables/` · `governance/` · `data/` · `streams/` · `dynamic_tables/` · `search/` · `semantic/` · `integrations/` · `evaluate_gates` · `bind_patient` · the other four tasks · `setup.sql` |
 | **Python** | `frontend/` · `backend/eval/` | `data/generator/` |
-| **Other** | `backend/skills/` · `backend/tests/backend/sql/{access,extraction,validator}` · README | `data/reference/` · `backend/tests/backend/sql/rules` |
+| **Other** | `backend/skills/` · `backend/tests/sql/{access,extraction,validator}` · README | `data/reference/` · `backend/tests/sql/rules` |
 | **Contracts owned** | Answer JSON (3) · tool signatures (2) | Physical schema (1) · rule definitions (4) · synthetic data (5) |
 
 ---
