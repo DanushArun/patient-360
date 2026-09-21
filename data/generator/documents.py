@@ -14,13 +14,8 @@ generator can be re-run without producing a spurious diff every time.
 
 from __future__ import annotations
 
-from datetime import datetime
-
-from fpdf import FPDF
-
+from data.generator._pdf_render import new_pdf, render_line
 from data.generator.ledger import ClinicalEvent, Ledger
-
-_FIXED_CREATION_DATE = datetime(2025, 1, 1)
 
 
 def indian_digit_grouping(n: int) -> str:
@@ -40,44 +35,31 @@ def indian_digit_grouping(n: int) -> str:
     return ",".join(groups) + "," + last_three
 
 
-def _new_pdf() -> FPDF:
-    pdf = FPDF()
-    pdf.set_creation_date(_FIXED_CREATION_DATE)
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=11)
-    return pdf
-
-
-def _line(pdf: FPDF, text: str, *, bold: bool = False) -> None:
-    pdf.set_font("Helvetica", style="B" if bold else "", size=pdf.font_size_pt)
-    pdf.cell(0, 8, text, new_x="LMARGIN", new_y="NEXT")
-
-
 def render_cbc_report(event: ClinicalEvent, ledger: Ledger) -> bytes:
     facility = next(f for f in ledger.facilities if f.facility_id == event.facility_id)
-    pdf = _new_pdf()
-    _line(pdf, facility.name, bold=True)
-    _line(pdf, "COMPLETE BLOOD COUNT")
-    _line(pdf, f"Patient: {ledger.patient_id}")
-    _line(pdf, f"Report date: {event.event_time.date().isoformat()}")
-    _line(pdf, "")
-    _line(pdf, f"WBC: {indian_digit_grouping(event.wbc_per_uL)} /CUMM")
-    _line(pdf, f"Neutrophils (differential): {event.neutrophil_pct}%")
-    _line(pdf, f"Platelet count: {indian_digit_grouping(event.platelet_count)} /CUMM")
+    pdf = new_pdf()
+    render_line(pdf, facility.name, bold=True)
+    render_line(pdf, "COMPLETE BLOOD COUNT")
+    render_line(pdf, f"Patient: {ledger.patient_id}")
+    render_line(pdf, f"Report date: {event.event_time.date().isoformat()}")
+    render_line(pdf, "")
+    render_line(pdf, f"WBC: {indian_digit_grouping(event.wbc_per_uL)} /CUMM")
+    render_line(pdf, f"Neutrophils (differential): {event.neutrophil_pct}%")
+    render_line(pdf, f"Platelet count: {indian_digit_grouping(event.platelet_count)} /CUMM")
     return bytes(pdf.output())
 
 
 def render_her2_report(event: ClinicalEvent, ledger: Ledger) -> bytes:
     facility = next(f for f in ledger.facilities if f.facility_id == event.facility_id)
-    pdf = _new_pdf()
-    _line(pdf, facility.name, bold=True)
-    _line(pdf, "HISTOPATHOLOGY / HER2 REPORT")
-    _line(pdf, f"Patient: {ledger.patient_id}")
-    _line(pdf, f"Specimen: {event.specimen_id} ({event.specimen_source})")
-    _line(pdf, f"Report date: {event.event_time.date().isoformat()}")
-    _line(pdf, "")
-    _line(pdf, f"Grade: {event.grade}")
-    _line(pdf, f"HER2 IHC: {event.ihc_score}")
+    pdf = new_pdf()
+    render_line(pdf, facility.name, bold=True)
+    render_line(pdf, "HISTOPATHOLOGY / HER2 REPORT")
+    render_line(pdf, f"Patient: {ledger.patient_id}")
+    render_line(pdf, f"Specimen: {event.specimen_id} ({event.specimen_source})")
+    render_line(pdf, f"Report date: {event.event_time.date().isoformat()}")
+    render_line(pdf, "")
+    render_line(pdf, f"Grade: {event.grade}")
+    render_line(pdf, f"HER2 IHC: {event.ihc_score}")
     return bytes(pdf.output())
 
 
