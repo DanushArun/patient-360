@@ -54,6 +54,8 @@ This is R5 applied at the agent boundary. Combined with F5 (search ignores RAP) 
 
 Direct `AI_COMPLETE` on this account rejects `claude-4-sonnet` as legacy and gives us `llama3.1-70b` / `llama3.3-70b`. The **agent orchestration layer reaches `claude-opus-4-8` with a 1M context window.** Docs recommend `auto` over pinning a model, because a pinned model may be unavailable in a given region.
 
+⚠️ **This measurement is dated 17 Sept and the recommendation it produced is superseded — see §1.2.** `auto` selects the *highest-capability* model available, so the resolution changes by itself when a stronger model reaches the account; `claude-opus-5` and `gemini-3.1-pro` have since appeared on the published roster. `llama3.1-70b` has moved to `[legacy]`. **Orchestration is now pinned**, and the region-portability argument above is handled by re-probing rather than by delegating the choice.
+
 **Design consequence:** orchestration and answer phrasing go through the agent (`auto`); high-volume extraction goes through direct `AI_COMPLETE` on a cheap model. Note the aggressive prompt caching — 31,718 of 50,050 input tokens were cache reads, which materially lowers repeat-question cost.
 
 ### A3. Native citations and a thinking trace come free
@@ -81,16 +83,74 @@ Direct `AI_COMPLETE` on this account rejects `claude-4-sonnet` as legacy and giv
 
 | Task | Model | Why | Volume |
 |---|---|---|---|
-| **Agent orchestration + answer phrasing** | `auto` → `claude-opus-4-8` | Strongest reasoning; 1M context; prompt caching; region-portable (A2) | 1 call / question |
-| **Extraction pass 1 (R7)** | `llama3.3-70b` | Verified working; cheap enough for per-page volume | 1 / page |
-| **Extraction pass 2 (R7)** | `llama3.1-70b` | **Different model family from pass 1** — an independent read, not a re-roll of the same bias | 1 / safety-critical page |
+| **Agent orchestration + answer phrasing** | **pinned**, not `auto` — `claude-opus-4-8` or the strongest model the probe confirms | Strongest reasoning; 1M context; prompt caching. **Pinned because `auto` re-selects upward whenever a new model lands** — see §1.2 | 1 call / question |
+| **Extraction pass 1 (R7)** | `llama3.3-70b` | Verified working on this account; cheap enough for per-page volume; current, not legacy | 1 / page |
+| **Extraction pass 2 (R7)** | **`claude-haiku-4-5`** — fallback `mistral-large3`, then `qwen3-32b` | **Genuinely a different vendor and architecture from pass 1.** Small, low-latency, built for per-page volume. Replaces `llama3.1-70b` — see §1.1 | 1 / safety-critical page |
 | **Class A/B fallback classification** | `llama3.1-8b` | Binary decision, latency-sensitive, smallest sufficient model | ≤1 / question (keyword-first) |
 | **Polarity check (validator #4)** | `AI_FILTER` (managed) | Purpose-built; 2–10× optimisation, up to 60% fewer tokens; verified F8 | batched / answer |
 | **Bring-list translation** | `AI_TRANSLATE` | Managed; en→hi verified | 1 / list item |
 | **Document parsing** | `AI_PARSE_DOCUMENT` LAYOUT + `page_split` | Markdown tables + page-anchored citations | 1 / document |
 | **Safety filter** | Cortex Guard (`guardrails: true`) | Verified working on `llama3.1-8b` | on generation |
 
+**Only `AI_COMPLETE` takes a model argument.** `AI_FILTER`, `AI_CLASSIFY`, `AI_PARSE_DOCUMENT` and `AI_TRANSLATE` are managed — Snowflake selects. Model choice therefore exists in exactly three places in this project: the `AI_COMPLETE` calls in the extraction task, `models.orchestration` in the agent specification, and the CoCo CLI's own `-m` flag, which is a **development** cost and not part of the delivered system.
+
 **Why two different model families for R7's two passes.** Running the same model twice with a reworded prompt mostly re-samples the same failure mode. Different families fail differently, so disagreement is a real signal. This is the difference between a genuine verification and theatre.
+
+### 1.1 Correction, 20 Sept — pass B was not a different family
+
+**The original pairing was `llama3.3-70b` for pass A and `llama3.1-70b` for pass B, described as "a different model family". That was wrong.** Llama 3.3 70B and Llama 3.1 70B are the same Meta family and the same architecture, separated by post-training. Their failure modes are correlated in exactly the way R7 exists to avoid, so the pairing measured something much closer to confidence than to correctness.
+
+Two things forced the re-examination, both from Snowflake's published model list rather than from our own testing:
+
+1. **`llama3.1-70b` is now marked `[legacy]`, end-of-life pending** — alongside `claude-4-sonnet`, `mistral-large2`, `mixtral-8x7b`, `llama4-maverick` and `openai-gpt-4.1`. No removal schedule is published. Pinning the submission's strongest claim to a model on its way out, over an 18-day unattended evaluation, is an avoidable risk.
+2. **The current roster contains genuinely independent families** that did not exist in the matrix when it was written: `claude-haiku-4-5` (200K context, built for high-throughput), `mistral-large3`, `qwen3-32b`, `openai-gpt-5-mini`.
+
+**Pass B moves to `claude-haiku-4-5`.** Different vendor, different architecture, different training data, current rather than legacy, and priced for per-page volume. The sentence *"cross-family disagreement measures correctness"* becomes literally true rather than nearly true — which matters, because a judge who has built with these models will know that 3.1 and 3.3 are the same lineage.
+
+**This is recorded as a correction rather than edited away.** A failure-and-fix pair is the most credible lifecycle evidence available, and the failure here — a plausible-sounding claim about model independence that did not survive checking — is exactly the class of error the architecture is otherwise designed to catch in itself.
+
+### 1.2 Orchestration is pinned, not `auto`
+
+A2 recommended `auto` on region-portability grounds: a pinned model may be unavailable in a given region. That argument still holds, and it is now outweighed.
+
+`auto` instructs Snowflake to select the **highest-capability** model available, so the resolved model silently changes the day a stronger one reaches the account. This is a documented, observed behaviour rather than a theoretical one: agents left on `auto` re-selected upward within a day of a new Opus release, and cost rose immediately. Our own probe resolved `auto` to `claude-opus-4-8` on 17 Sept; `claude-opus-5` and `gemini-3.1-pro` have since appeared on the published roster, so **the model we measured is very likely not the model we are now running.**
+
+With $386 remaining and a fixed submission date, a cost that changes without a commit is the wrong kind of surprise.
+
+```yaml
+models:
+  orchestration: claude-opus-4-8     # pinned. Never 'auto' after the Day-1 probe.
+```
+
+**Re-evaluate once after the Day-5 gate, not continuously.** If the probe shows a stronger model is available and the budget supports it, change it deliberately, in a commit, and re-run the eval — a model change invalidates every accuracy number measured before it.
+
+### 1.3 Model availability must be re-probed before Day 2
+
+`GCP_ME_CENTRAL2` **does not appear in Snowflake's regional availability tables at all.** Every model this system uses arrives through cross-region inference (`CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION'`), which means the published roster is an upper bound on what the account can actually reach, never a guarantee.
+
+The only evidence of what runs here is a probe dated 17 Sept, which predates at least one model generation.
+
+**`sql/probes/model_availability.sql` runs before any extraction work begins.** Every result — available or not — goes into `evidence/coco/verification-query-ids.md` with its query ID. Owner: Builder 1, Day 1.
+
+**Access prerequisites, in order.** Without both, every model call fails and the error points somewhere unhelpful:
+
+```sql
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE SAARTHI_APP;
+ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';
+SHOW PARAMETERS LIKE 'CORTEX_ENABLED_CROSS_REGION' IN ACCOUNT;   -- confirm 'value'
+```
+
+**Current call syntax is `AI_COMPLETE`**, which supersedes `SNOWFLAKE.CORTEX.COMPLETE` — the form used in our 17 Sept probe. The legacy form still works; new code uses the new one.
+
+```sql
+SELECT AI_COMPLETE(
+  model  => 'llama3.3-70b',
+  prompt => 'Extract findings as JSON. PAGE TEXT: ...',
+  model_parameters => {'temperature': 0, 'max_tokens': 4096}
+);
+```
+
+`temperature: 0` on both extraction passes. A sampled disagreement is not an independent read, and R7 cannot tell the two apart.
 
 **Explicitly not used: any trained/predictive model.** The brief says *"never opaque predictions."* The explainer offers Cortex ML for other domains; we decline it deliberately. Risk stratification is produced by versioned SQL rules (`SPEC.md` §4), not inference. Recorded as a conscious rejection, not an oversight.
 
@@ -428,9 +488,9 @@ PAGE TEXT:
 {page_text}
 ```
 
-### 4.3 Pass B — independent verification (`llama3.1-70b`)
+### 4.3 Pass B — independent verification (`claude-haiku-4-5`)
 
-Runs only where `CLINICAL_ONTOLOGY.is_safety_critical = TRUE`. Deliberately different framing *and* a different model family, so a shared failure mode is less likely:
+Runs only where `CLINICAL_ONTOLOGY.is_safety_critical = TRUE`. Deliberately different framing *and* a different vendor and architecture, so a shared failure mode is less likely. **The model changed on 20 Sept — see §1.1 for why the original `llama3.1-70b` pairing did not hold.** `temperature: 0` on both passes: a sampled disagreement is not an independent read.
 
 ```
 A previous reader extracted this finding from the page below:
@@ -612,7 +672,7 @@ Outbound direction — the ticket action — uses CoCo's own MCP client against 
 
 **Notifications** — `CREATE NOTIFICATION INTEGRATION` (email + webhook/Slack). `TASK_NOTIFY` fires on `blocker AND days_to_visit <= 3` → coordinator; `<= 1` → escalate to treating practitioner. Every send recorded in `NOTIFICATION`. Closes S5; explainer: *"notify the final user… emails… Slack."*
 
-**Git integration** — `CREATE GIT REPOSITORY` + `EXECUTE IMMEDIATE FROM @repo/branches/main/src/sql/setup.sql`. One command deploys everything, matching the `sf-hcls-solutions` convention judges benchmark against.
+**Git integration** — `CREATE GIT REPOSITORY` + `EXECUTE IMMEDIATE FROM @repo/branches/main/sql/setup.sql`. One command deploys everything, matching the `sf-hcls-solutions` convention judges benchmark against.
 
 **Observability** — `QUERY_HISTORY` for the live leakage demo (near-real-time); `ACCESS_HISTORY` for the written evidence pack (**up to 180 min lag**). We label which is which. Presenting a 3-hour-stale view as live would be the dishonesty we criticise in others.
 
@@ -624,9 +684,9 @@ Outbound direction — the ticket action — uses CoCo's own MCP client against 
 
 | Operation | Calls | Notes |
 |---|---|---|
-| Document parse | 1 / document | `AI_PARSE_DOCUMENT`, per-page billing — **U1 must measure this before the 300-page corpus** |
+| Document parse | 1 / document | `AI_PARSE_DOCUMENT` — **billed per page, each page counted as 970 tokens.** U1 resolved, see below |
 | Extraction pass A | 1 / page | `llama3.3-70b` |
-| Extraction pass B | 1 / safety-critical page | ~30% of pages → R7 adds ~30%, not 100% |
+| Extraction pass B | 1 / safety-critical page | `claude-haiku-4-5`. ~30% of pages → R7 adds ~30%, not 100% |
 | Classification | ≤1 / question | keyword-first avoids most calls |
 | Agent orchestration | 1 / question | ~50k input / ~429 output observed; **63% served from prompt cache** |
 | Polarity | 1 batched / answer | `AI_FILTER` optimisation: 2–10× faster, up to 60% fewer tokens |
@@ -634,7 +694,23 @@ Outbound direction — the ticket action — uses CoCo's own MCP client against 
 
 **Controls:** polarity cached on `(claim_hash, evidence_id)` — polarity for a fixed claim/evidence pair never changes. Reference corpus parsed **once**, never re-parsed. Tier 1 documents only until U1 confirms cost. `SAARTHI_AI_WH` at SMALL with 60s auto-suspend. Budget monitoring on AI spend, since resource monitors do not cover serverless.
 
-**Open risk, stated plainly:** `reference-corpus-sources.md` estimates Tier 1 at 250–310 pages and then claims *"~$0.75–1.00 total"* — internally inconsistent. Measured CoCo credits ran ≈$0.26/credit, which would put 300 pages near $78; if AI-function credits price differently the number could be 10× that. **U1 resolves it. Do not commit to Tier 2 before then.**
+### U1 — resolved, 20 Sept. The corpus is affordable.
+
+The open risk was that `reference-corpus-sources.md` estimated Tier 1 at 250–310 pages and *"~$0.75–1.00 total"*, while measured CoCo credits at ≈$0.26/credit implied something nearer $78 — an internal inconsistency of roughly an order of magnitude, with Tier 2 blocked behind it.
+
+**Snowflake's cost documentation settles it: `AI_PARSE_DOCUMENT` is billed per page, and each page is counted as 970 tokens.**
+
+```
+300 pages x 970 tokens = 291,000 tokens = 0.291M tokens
+```
+
+Published AI-function rates span roughly $0.12–$5.10 per million tokens depending on model. **A 300-page corpus therefore costs between $0.03 and $1.50** — the original estimate was approximately right and the $78 figure was wrong by a factor of about fifty. It confused CoCo CLI credit burn, which is development spend, with AI-function token billing, which is runtime spend. **They are separate budgets and were being added together.**
+
+**Consequence: Tier 2 is unblocked.** The reference corpus is not a cost risk and should not be scoped as one. Parse it once, never re-parse.
+
+**One cost trap that replaces it.** `AI_CLASSIFY` bills labels, descriptions **and** examples as input tokens **on every record processed**, not once per query. Document-type routing calls it per page with an eight-label list, so every word added to those labels is multiplied by the page count. Keep the label list terse and put the explanation in the prompt that follows, not in the classifier.
+
+**Still unmeasured:** per-model token rates on *this* account. The ranges above come from published pricing; the Day-1 probe records actual consumption per model so the eval report can state cost per answer with a real number rather than a range.
 
 ---
 
@@ -682,3 +758,19 @@ Outbound direction — the ticket action — uses CoCo's own MCP client against 
 | `CREATE MCP SERVER` exists | Inbound MCP is Snowflake-native and narrow — 2 read-only tools, no patient-scoped tools |
 | Guard placement | Final generation only, never extraction |
 | Fail-closed everywhere | `AI_FILTER` failure strips the claim; pass-B failure blocks the value |
+
+## 12. Corrections — 20 Sept 2026
+
+Found by checking the model layer against Snowflake's published roster rather than against our own 17 Sept account probe. **Recorded, not edited away.**
+
+| # | Finding | Change | Severity |
+|---|---|---|---|
+| 1 | **Pass A and pass B were the same model family.** Llama 3.3 70B and Llama 3.1 70B share an architecture; the "cross-family independence" that justifies R7 did not exist | Pass B → `claude-haiku-4-5`. §1.1 | **High — it undermined the submission's strongest claim** |
+| 2 | `llama3.1-70b` is marked `[legacy]`, end-of-life pending, with no published removal date | same change as #1 | High — 18-day unattended evaluation |
+| 3 | `orchestration: auto` re-selects upward whenever a stronger model lands, silently changing cost and behaviour | orchestration pinned. §1.2 | Medium — budget and reproducibility |
+| 4 | `GCP_ME_CENTRAL2` appears in no regional availability table; every model arrives cross-region, so the published roster is an upper bound | `sql/probes/model_availability.sql`, Day 1, query IDs recorded. §1.3 | Medium |
+| 5 | **U1 resolved.** `AI_PARSE_DOCUMENT` bills per page at 970 tokens/page → a 300-page corpus is $0.03–$1.50, not $78. The $78 figure added CoCo development credits to runtime token billing | Tier 2 corpus unblocked. §9 | Medium — it was blocking scope |
+| 6 | `AI_CLASSIFY` bills labels, descriptions and examples as input tokens **per record**, not once | keep the doc-type label list terse. §9 | Low |
+| 7 | `SNOWFLAKE.CORTEX.COMPLETE` is superseded by `AI_COMPLETE` | new code uses `AI_COMPLETE`. §1.3 | Low |
+
+**The hackathon mandates no model.** Confirmed against the official event page: the requirement is CoCo CLI across the full lifecycle — a constraint on the **development tool**, not on the models the delivered system calls at runtime. Those two budgets and those two decisions are separate, and conflating them is what produced finding #5.
