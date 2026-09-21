@@ -58,7 +58,7 @@
   },
 
   "x-fallback-behaviours": {
-    "description": "The remaining named situations from COPILOT-SPEC.md 4. These are not tool errors - they produce an answer object, not an error envelope. Listed here so app/core/errors.py covers all eleven.",
+    "description": "The remaining named situations from COPILOT-SPEC.md 4. These are not tool errors - they produce an answer object, not an error envelope. Listed here so frontend/core/errors.py covers all twelve (5 tool-error codes above + 7 fallback situations here). COPILOT-SPEC.md 4's own table says 'eleven' - that count is stale: it predates binding_mismatch being added and consent_not_valid being split out from access_withdrawn, and it separately includes Class A refusal, which this file does not cover (Class A is Contract 3's `refusal` object, not a tool error or fallback).",
     "cortex_search_down": "Structured facts still answer. overall_status 'partial', naming the missing capability.",
     "agent_unreachable": "Deterministic Python router over the same 8 procedures. Never an error page.",
     "malformed_agent_json": "One reparse attempt, then the deterministic router. Never raw model output.",

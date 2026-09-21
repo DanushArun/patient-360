@@ -122,11 +122,13 @@ patient-360/
 │   │   ├── adversarial/                       cross-scope leakage = 0. A security property.
 │   │   └── results/                           machine-readable, committed
 │   │
-│   └── tests/                           ←  SPLIT OWNERSHIP. SQL test suites, run through the Snowflake CLI.
+│   └── tests/                           ←  SPLIT OWNERSHIP. SQL suites run through the Snowflake CLI;
+│       │                                     generator/ is plain pytest, no Snowflake needed.
 │       ├── sql/rules/                   [2]  16 rules × 4 outcomes
 │       ├── sql/access/                  [1]  one negative test per tool procedure
 │       ├── sql/extraction/              [1]  the ambiguous CBC page → conflicting
 │       ├── sql/validator/               [1]  6 tests, one per check, each making it fire
+│       ├── generator/                   [2]  pytest for data/generator/*.py — built, 39 tests
 │       ├── run_tests.py                 [·]
 │       └── TEST-MANIFEST.md             [·]  every test named, 36 and counting
 │
@@ -160,16 +162,18 @@ patient-360/
 │   │   ├── router.py                          deterministic fallback over the same 8 procedures
 │   │   ├── tools.py                           typed wrappers. No function here takes a patient id.
 │   │   ├── contracts.py                       loads answer_schema.json, validates every answer — built
-│   │   └── errors.py                          maps the 5 error codes to the 11 named behaviours
+│   │   └── errors.py                          maps the 12 named behaviours (5 error codes + 7 fallback) — built
 │   ├── fixtures/                               Day-1 UI is built entirely against these
 │   │   ├── answer_supported.json · answer_conflicting.json · answer_class_a.json
 │   │   ├── answer_partial.json · readiness_four_outcomes.json
 │   │   └── page_DOC-0031_p2.json               fixture page text so the evidence pane can open
 │   ├── environment.yml                        Streamlit-in-Snowflake package manifest
 │   └── tests/
-│       └── test_contracts.py                  11 tests, TDD, confirmed red before contracts.py existed
+│       ├── test_contracts.py                  11 tests, TDD, confirmed red before contracts.py existed
+│       └── test_errors.py                     10 tests, TDD, confirmed red before errors.py existed
 │
-├── data/                                [2]  generator · reference corpus · synthetic docs
+├── data/generator/                      [2]  ledger.py · projections.py · fhir_bundles.py · documents.py — built,
+│                                              see IMPLEMENTATION-STATUS.md for current detail, this tree drifts
 ├── evidence/coco/                       [·]  verification-query-ids.md is append-only
 ├── planning/                            [·]  unchanged. builder-1/ is this handoff.
 └── tools/drawio/                        [·]  diagram generator, existing

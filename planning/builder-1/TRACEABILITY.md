@@ -49,7 +49,7 @@ Each was established empirically and each fails somewhere other than where the m
 | MCP connectors | 2 read-only tools, no patient-scoped tool exposed | `saarthi_mcp.sql` lists two identifiers |
 | custom tools / function calling | 8 generic tools over procedures | `tool_signatures.yaml` |
 | multi-agent orchestration | `TASK_SAARTHI_ORCHESTRATOR` chains the 4 skills | the task runs and the skills are invoked |
-| guardrails / graceful fallback | 11 named situations in `error_shape.json` | `frontend/core/errors.py` covers all 11; fallback router tested **with the agent off** |
+| guardrails / graceful fallback | 12 named situations in `error_shape.json` (5 tool-error codes + 7 fallback) | `frontend/core/errors.py` covers all 12, built and tested 21 Sept; fallback router tested **with the agent off** |
 
 ## 4 — Go / no-go. Any one of these true is a no-go.
 

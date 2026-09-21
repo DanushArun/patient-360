@@ -129,7 +129,7 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 | Typed evidence contract, 3 kinds | designed-only |
 | Conversation model — binding and `known_as_of` persist, history clears on switch | designed-only |
 | 10 Class B question types | designed-only |
-| 11 named failure behaviours | designed-only |
+| 12 named failure behaviours | **built** — `frontend/core/errors.py`, 10 tests, data-driven off `error_shape.json`. Was miscounted "11" in prose throughout planning docs; the contract itself (5 tool-error codes + 7 fallback situations) has always had 12 — fixed 21 Sept. |
 
 ---
 
