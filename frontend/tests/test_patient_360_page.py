@@ -63,3 +63,9 @@ def test_conflicting_gate_shows_its_provenance_note():
     at = _run_page()
     body = " ".join(m.value for m in at.markdown)
     assert "NHCX / IRDAI" in body
+
+
+def test_no_binding_header_prompts_to_bind_first():
+    at = _run_page()
+    warning_text = " ".join(w.value for w in at.warning)
+    assert "No patient bound" in warning_text

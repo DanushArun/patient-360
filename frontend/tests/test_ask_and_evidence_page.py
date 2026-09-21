@@ -172,6 +172,31 @@ def test_clicking_generate_packet_twice_addresses_the_same_packet():
     assert first == second
 
 
+def test_no_binding_header_prompts_to_bind_first():
+    at = _run_page()
+    warning_text = " ".join(w.value for w in at.warning)
+    assert "No patient bound" in warning_text
+
+
+def test_binding_header_shows_once_a_binding_exists_in_session_state():
+    from datetime import date
+
+    from frontend.core.binding import Binding
+
+    at = AppTest.from_file(str(_PAGE_PATH))
+    at.session_state["binding"] = Binding(
+        patient_id="PAT-DEEP-0001", practitioner_id="PRC-001", consent_id="CON-0031", bound_at=date(2026, 9, 18),
+    )
+    at.session_state["binding_patient_name"] = "Patient (deep case)"
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+
+    body = " ".join(m.value for m in at.markdown)
+    assert "Bound to" in body
+    assert "Patient (deep case)" in body
+    assert "CON-0031" in body
+
+
 def test_switching_to_conflicting_fixture_shows_all_three_claims_and_the_limitation():
     at = _run_page()
     at = _switch_to(at, "Partial (CLASS_B) — conflicting and discordant evidence")

@@ -20,6 +20,7 @@ from pathlib import Path
 
 import streamlit as st
 
+from frontend.components.binding_header import render_binding_header
 from frontend.core.contracts import validate_answer
 from frontend.core.evidence_packet import generate_packet_id
 from frontend.core.evidence_render import describe_evidence
@@ -33,6 +34,7 @@ _FIXTURES = {
 }
 
 st.title("Ask + Evidence")
+render_binding_header(practitioner_name="Dr. Meera Iyer")
 
 question = st.text_input(
     "Ask a question about this patient",
