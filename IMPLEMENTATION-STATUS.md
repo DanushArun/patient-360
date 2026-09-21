@@ -12,19 +12,38 @@
 | **verified** | Empirically tested against the live account, query ID recorded |
 | **refused** | Deliberately not built. Reason stated. |
 
-**Last updated: 17 Sept 2026 — architecture complete, build not started.**
+**Last updated: 20 Sept 2026 — architecture complete; Day-1 scaffold and frozen contracts built, nothing deployed.**
 
 ---
 
-## Summary as of 17 Sept 2026
+## Summary as of 20 Sept 2026
 
 | Phase | State |
 |---|---|
 | Research | **complete** — 26 files, 19 real reports studied, 10 platform behaviours verified |
 | Architecture | **complete** — 7 specification documents, 15 diagrams in 2 renderings, 0 unresolved contradictions |
-| Build | **not started** — Day 1 begins with `setup.sql` |
+| Build | **scaffold only** — repository structure, frozen contracts and build gate exist. **No Snowflake object has been created from `setup.sql`.** |
 
 **Nothing in the Build column below is claimed as working. That is the point of this file.**
+
+### Day-1 scaffold — what exists in the repository, and what that does not mean
+
+Structure and contracts are not a deployed system. Marked separately so the distinction survives.
+
+| Artifact | Status |
+|---|---|
+| `app/contracts/answer_schema.json` + `error_shape.json` + `tool_signatures.yaml` | **built** — Contract 3 and Contract 2, verified by a passing check |
+| `app/fixtures/` — 3 answer fixtures, 3 page fixtures | **built** — validate against the schema; char offsets generated from the page text |
+| `scripts/check_gate.py` — 5 mechanical checks | **built** — verified to catch injected violations, not only to pass |
+| `scripts/deploy.sh` — manifest-driven deploy | **partial** — parsing and dry-run tested; never run against an account |
+| `sql/setup.sql` — 21-step manifest | **partial** — every step present, every line commented. Deploys nothing yet. |
+| `sql/procedures/tools/_preamble.sql` | **designed-only** — written, **never compiled**; no `GOVERNANCE` tables exist |
+| `sql/prompts/` | **partial** — `pass_a_lab` and `pass_b_verify` verbatim from the spec; four type-specific prompts are `@0.x` drafts, **never run against a page** |
+| `skills/` — 4 `SKILL.md` | **designed-only** — frontmatter correct, bodies are scaffolds |
+| `tests/TEST-MANIFEST.md` — 36+ named tests | **designed-only** — named, none written |
+| Everything below this section | unchanged — **designed-only** |
+
+**A draft prompt must not run in a scored evaluation.** A number produced by an unreviewed extractor is not a measurement.
 
 ---
 
@@ -54,19 +73,23 @@ Query IDs in `evidence/coco/verification-query-ids.md`. These are findings, not 
 
 ---
 
-## 2. Data model — 25 built, 7 designed-only
+## 2. Data model — 34 built, 7 designed-only
 
 Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 
 | Schema | Tables | Status |
 |---|---|---|
-| `GOVERNANCE` | ORGANIZATION · FACILITY · DEPARTMENT · PRACTITIONER · CARE_TEAM · CONSENT · **PATIENT_BINDING** · SECURITY_EVENT | designed-only |
-| `CORE` | PATIENT · ID_MAP · HOUSEHOLD · ENCOUNTER · CLINICAL_EVENT · COVERAGE · AUTHORIZATION · REFERRAL · TREATMENT_PLAN | designed-only |
-| `DOCUMENTS` | DOCUMENT · DOC_PAGE · DOC_CHUNK · RAW_FHIR_BUNDLE | designed-only |
-| `EVIDENCE` | ASSERTION · EVIDENCE_LINK · ANSWER_RUN | designed-only |
-| `OPERATIONAL` | RULE · READINESS_STATE · REVIEW_TASK · CLINICAL_ONTOLOGY · UNIT_REGISTRY | designed-only |
+| `GOVERNANCE` (8) | ORGANIZATION · FACILITY · DEPARTMENT · PRACTITIONER · CARE_TEAM · **PATIENT_BINDING** · CONSENT · SECURITY_EVENT | designed-only |
+| `CORE` (8) | PATIENT · ID_MAP · REFERRAL · ENCOUNTER · CLINICAL_EVENT · TREATMENT_PLAN · COVERAGE · AUTHORIZATION | designed-only |
+| `DOCUMENTS` (4) | DOCUMENT · DOC_PAGE · DOC_CHUNK · RAW_FHIR_BUNDLE | designed-only |
+| `EVIDENCE` (4) | ASSERTION · EVIDENCE_LINK · ANSWER_RUN · EVIDENCE_PACKET | designed-only |
+| `OPERATIONAL` (10) | CLINICAL_ONTOLOGY · UNIT_REGISTRY · RULE_CATALOG · REVIEW_ISSUE · REVIEW_TASK · READINESS_STATE · SCHEME_REGISTRY · NOTIFICATION · SOURCE_SYSTEM · INGESTION_RUN | designed-only |
 
-**Designed-only by decision, not omission** — 7 tables in `SPEC.md` §2 "Designed-only" carry `[D]` and will not be built: `DERIVED_ARTIFACT`, `SCHEME_REGISTRY` detail tables, and the population-scale partitioning variants.
+**34 tables marked `[B]` in `SPEC.md` §2. This list is generated from those markings and must stay equal to them.**
+
+**7 designed-only, and they carry no `[B]` marking** — listed in `SPEC.md` §2 "Designed-only": `DERIVED_ARTIFACT` (retention purge for embeddings/caches), `CONSENT_ARTIFACT` (signed document store), `FHIR_MAPPING` (declarative path config), per-region search shards, `FACILITY_ONBOARDING`, `MODEL_RISK_REGISTER` as a table (ships as a markdown deliverable instead), `AUDIT_EXPORT`. **41 declared in total.**
+
+**`HOUSEHOLD` and `HOUSEHOLD_MEMBER` were removed, not deferred** — family-floater coverage is out of scope by decision. See `DECISION-household-removal.md`.
 
 **Created during platform verification and deliberately retained** in `SAARTHI.GOVERNANCE` as judge evidence: `ROLE_PATIENT_MAP` (precursor to `CARE_TEAM`), `R5_TEST_EVIDENCE`, `R5_TEST_CHUNK`, `R5_TEST_SEARCH`, `probe_owner_rights`, `probe_diff_owner`, `R5_OWNER_ROLE`, `TEST_AGENT`. **These are test scaffolding, not the system.**
 
@@ -128,13 +151,13 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 | Type | Designed | Built |
 |---|---|---|
 | Database / schemas | 1 / 7 | **1 / 6** — partial, created during verification |
-| Tables | 25 | **5** — PATIENT, ID_MAP, ENCOUNTER, CLINICAL_EVENT, COVERAGE (early skeleton, pre-v2) |
+| Tables | 34 | **5** — PATIENT, ID_MAP, ENCOUNTER, CLINICAL_EVENT, COVERAGE (early skeleton, pre-v2) |
 | Stages | 3 | **1** — `PATIENT_DOCS`, `SNOWFLAKE_SSE` |
 | Roles | 5 | 0 |
 | Row access policy | 1 | 0 — **test policies only, on scaffolding tables** |
 | Masking policies | 2 | 0 |
 | Procedures | 11 | 0 |
-| Tasks | 6 | 0 |
+| Tasks | 7 | 0 |
 | Dynamic Tables | 5 | 0 |
 | Cortex Search services | 2 | **1** — `R5_TEST_SEARCH`, test scaffolding only |
 | Semantic view + VQRs | 1 + 6 | 0 |

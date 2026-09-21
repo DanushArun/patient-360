@@ -108,6 +108,7 @@ Diagrams show *what*. These records hold *why*, in Nygard ADR form — context, 
 | 008 | Two-pass extraction with different model families (R7)                      | Accepted                         | `DEEP-REVIEW-3.md` D1               |
 | 009 | `ANSWER_RUN` stores evidence pointers, never answer text                    | Accepted, legally forced         | DPDP s.12(3) vs Rule 6(e)           |
 | 010 | R3 claimed as *enforced*, not novel — FHIR `dataAbsentReason` is prior art  | Accepted                         | `fhir-field-mapping.md` §0.1        |
+| 011 | Remove `HOUSEHOLD`; family-floater coverage declared out of scope           | Accepted                         | `DECISION-household-removal.md`     |
 
 
 ---
@@ -228,12 +229,12 @@ flowchart TB
         APP["<b>Care Readiness App</b><br/>[Container: Streamlit in Snowflake]<br/>6 screens. Ask and Evidence at the centre.<br/>Runs USE SECONDARY ROLES NONE per session."]
         CLS["<b>Class A/B Classifier</b><br/>[Container: AI_CLASSIFY]<br/>Routes clinical-judgment questions to<br/>refusal before any retrieval happens."]
         AGENT["<b>SAARTHI Agent</b><br/>[Container: Cortex Agent → claude-opus-4-8]<br/>Plans tool calls, ranks passages, phrases answers.<br/>8 generic tools, 4 skills. Cannot see patient_id."]
-        TOOLS["<b>Tool Layer</b><br/>[Container: 10 SQL procedures, EXECUTE AS OWNER]<br/>Derives scope from CURRENT_USER.<br/>Checks consent at query time.<br/>Returns facts, never conclusions."]
+        TOOLS["<b>Tool Layer</b><br/>[Container: 11 SQL procedures, EXECUTE AS OWNER]<br/>Derives scope from CURRENT_USER.<br/>Checks consent at query time.<br/>Returns facts, never conclusions."]
         ENGINE["<b>Evidence and Readiness Engine</b><br/>[Container: SQL procedures + Dynamic Tables]<br/>16 versioned rules over 5 gates.<br/>Decides every status, number and comparison."]
         EXTRACT["<b>Extraction Pipeline</b><br/>[Container: Tasks with AI_PARSE_DOCUMENT + AI_COMPLETE]<br/>Parses documents, extracts typed assertions<br/>under R7 two-pass verification."]
         VALID["<b>Answer Validator</b><br/>[Container: SQL procedure with AI_FILTER]<br/>6 checks. Strips any claim not supported<br/>by cited evidence. Fails closed."]
 
-        CORE[("<b>Governed Clinical Store</b><br/>[Container: Snowflake tables + row access policy]<br/>25 tables. Identity, consent, binding, clinical events,<br/>coverage, documents, assertions.")]
+        CORE[("<b>Governed Clinical Store</b><br/>[Container: Snowflake tables + row access policy]<br/>34 tables. Identity, consent, binding, clinical events,<br/>coverage, documents, assertions.")]
         PIDX[("<b>Patient Document Index</b><br/>[Container: Cortex Search service]<br/>Chunks of patient documents.<br/>Returns IDs only, never content.")]
         RIDX[("<b>Reference Document Index</b><br/>[Container: Cortex Search service]<br/>Chunks of regulatory text.<br/>Physically separate. No patient data.")]
         SEM[("<b>Semantic View</b><br/>[Container: Cortex Analyst + 6 verified queries]<br/>Cohort questions in natural language.")]
@@ -391,7 +392,7 @@ flowchart TB
 
         subgraph DATA["Governed data · 7 schemas"]
             direction LR
-            TBL[("<b>25 tables</b>")]
+            TBL[("<b>34 tables</b>")]
             STG[("<b>3 stages</b><br/>SNOWFLAKE_SSE")]
             SEM["<b>Semantic view</b><br/>6 VQRs"]
             SRCH["<b>2 search services</b><br/>separate · R6"]
@@ -400,7 +401,7 @@ flowchart TB
         subgraph PIPE["Pipeline"]
             direction LR
             STREAM["<b>3 streams</b>"]
-            TASK["<b>6 tasks</b><br/>AI runs here"]
+            TASK["<b>7 tasks</b><br/>AI runs here"]
             DT["<b>5 dynamic tables</b><br/>deterministic"]
             MODELS["<b>Inference</b><br/>llama3.3-70b · 3.1-70b · 3.1-8b"]
         end
@@ -493,7 +494,7 @@ flowchart LR
     S3["<b>3</b><br/>Database<br/>7 schemas"]
     S4["<b>4</b><br/>5 roles"]
     S5["<b>5</b><br/>3 stages<br/>SSE"]
-    S6["<b>6</b><br/>25 tables"]
+    S6["<b>6</b><br/>34 tables"]
     S7["<b>7</b><br/>Policies<br/>CURRENT_USER"]
     S8["<b>8</b><br/>Attach RAP<br/>DOC_PAGE only"]
     S9["<b>9</b><br/>Grants"]
@@ -503,7 +504,7 @@ flowchart LR
     S13["<b>13</b><br/>3 streams"]
     S14["<b>14</b><br/>11 procedures"]
     S15["<b>15</b><br/>5 dynamic<br/>tables"]
-    S16["<b>16</b><br/>6 tasks"]
+    S16["<b>16</b><br/>7 tasks"]
     S17["<b>17</b><br/>2 search<br/>services"]
     S18["<b>18</b><br/>Semantic view<br/>6 VQRs"]
     S19["<b>19</b><br/>Agent"]
@@ -550,17 +551,17 @@ flowchart LR
 | 3 | Database + schemas | `CREATE DATABASE SAARTHI` · `CREATE SCHEMA` ×7 | 2 | `CORE · DOCUMENTS · EVIDENCE · OPERATIONAL · GOVERNANCE · STAGES · EVAL` |
 | 4 | Roles | `CREATE ROLE` ×5 | 3 | Policies and grants reference roles by name. Create before policies. |
 | 5 | Stages | `CREATE STAGE … ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE') DIRECTORY = (ENABLE = TRUE)` | 3 | **F9 — AI functions cannot read `SNOWFLAKE_FULL`, user stages (`@~`), or table stages (`@%tbl`).** Wrong encryption fails at parse time, not at create time. |
-| 6 | Tables | `CREATE TABLE` ×25 | 3 | No policies attached yet. See `SPEC.md` §2, diagrams 9 and 10. |
+| 6 | Tables | `CREATE TABLE` ×34 | 3 | No policies attached yet. See `SPEC.md` §2, diagrams 9 and 10. |
 | 7 | Policies | `CREATE ROW ACCESS POLICY` + `CREATE MASKING POLICY` ×2 | 4, 6 | **F3 — the RAP must key on `CURRENT_USER()`, never `CURRENT_ROLE()`.** A role-keyed policy returns every patient inside an owner's-rights procedure and looks perfect in single-user testing. |
 | 8 | Attach policies | `ALTER TABLE … ADD ROW ACCESS POLICY` | 7 | **F4 — `DOC_PAGE` gets the policy. `DOC_CHUNK` gets NONE.** A Cortex Search service cannot be created over a RAP-protected table. The index returns IDs; content lives behind the policy. |
 | 9 | Grants | `GRANT` statements | 4, 6, 8 | **F7 — the app role gets no `USAGE` on either search service.** And the session must run `USE SECONDARY ROLES NONE`, or a secondary `ACCOUNTADMIN` satisfies the check through the back door. |
 | 10 | Ontology + units | `INSERT` into `CLINICAL_ONTOLOGY`, `UNIT_REGISTRY` | 6 | Dynamic tables read these for normalisation. Must be populated before step 15. |
-| 11 | Rules | `INSERT` into `RULE` | 6 | 16 rules, each with `guideline_ref`, `provenance_note`, version, `severity`, `specificity`. |
+| 11 | Rules | `INSERT` into `RULE_CATALOG` | 6 | 16 rules, each with `guideline_ref`, `provenance_note`, version, `severity`, `specificity`. |
 | 12 | Load data | `COPY INTO` + `PUT` to stage | 5, 6, 10 | CSV, FHIR bundles, PDFs. Normalisation needs the ontology already loaded. |
 | 13 | Streams | `CREATE STREAM` ×3 | 6, 12 | Directory table, FHIR staging, documents. |
 | 14 | Procedures | `CREATE PROCEDURE … EXECUTE AS OWNER` ×11 | 6, 8, 9 | 8 tools + `evaluate_gates` + `bind_patient` + `validate_answer`. **No tool takes a patient selector.** |
 | 15 | Dynamic tables | `CREATE DYNAMIC TABLE` ×5 | 6, 10 | **No AI functions inside a DT** — a DT requires deterministic refresh. |
-| 16 | Tasks | `CREATE TASK` ×6 | 14, 15 | **The only place AI functions may run.** parse · flatten · extract · reconcile · refresh_readiness · notify |
+| 16 | Tasks | `CREATE TASK` ×7 | 14, 15 | **The only place AI functions may run.** parse · flatten · extract · reconcile · refresh_readiness · notify · skill orchestrator |
 | 17 | Search services | `CREATE CORTEX SEARCH SERVICE` ×2 | 2, 15 | Needs the warehouse and a populated `DT_DOC_CHUNK`. `TARGET_LAG = '1 minute'`. |
 | 18 | Semantic view | `CREATE SEMANTIC VIEW` + 6 VQRs | 6, 12 | Explainer calls verified queries *"very very crucial."* |
 | 19 | Agent | `CREATE AGENT` | 14, 17, 18 | **A1 — `patient_id` omitted from every tool input schema.** Only `generic` tools over procedures. |
@@ -764,7 +765,7 @@ flowchart TB
     ROUTE["3 · Document-type routing<br/>[Process]<br/>lab, pathology, imaging, discharge, claim"]
     A["4 · PASS A — extraction<br/>[Process: AI_COMPLETE llama3.3-70b]<br/>Type-specific prompt"]
     SAFE{"5 · is_safety_critical<br/>on CLINICAL_ONTOLOGY?"}
-    B["6 · PASS B — independent verification<br/>[Process: AI_COMPLETE llama3.1-70b]<br/>DIFFERENT model family"]
+    B["6 · PASS B — independent verification<br/>[Process: AI_COMPLETE claude-haiku-4-5]<br/>DIFFERENT vendor and architecture"]
     CMP{"7 · pass1_value<br/>equals pass2_value?"}
 
     S["single_pass<br/>[State]<br/>Non-critical, one read accepted"]
@@ -798,7 +799,9 @@ flowchart TB
 
 ### Why two different model families and not the same model twice
 
-Running `llama3.3-70b` twice **correlates its errors** — the same architecture misreads the same degraded glyph the same way, and agreement between two runs of one model measures nothing except its own confidence. Pass B on `llama3.1-70b` makes the failure modes partially independent.
+Running `llama3.3-70b` twice **correlates its errors** — the same architecture misreads the same degraded glyph the same way, and agreement between two runs of one model measures nothing except its own confidence. Pass B on `claude-haiku-4-5` makes the failure modes independent: different vendor, different architecture, different training data.
+
+⚠️ **Corrected 20 Sept.** Pass B was originally `llama3.1-70b`, described here as a different family. **It is not** — Llama 3.3 70B and Llama 3.1 70B are the same Meta lineage separated by post-training, so the independence this diagram claims did not exist. `llama3.1-70b` has also since been marked `[legacy]`. `AI-INTEGRATION-ARCHITECTURE.md` §1.1 carries the full reasoning; the correction is recorded rather than edited away because a failure-and-fix pair is the most credible lifecycle evidence available.
 
 **Same-model self-consistency measures confidence. Cross-family disagreement measures correctness.** That distinction is the whole of R7.
 
@@ -829,7 +832,6 @@ erDiagram
     PATIENT ||--o{ CONSENT : "grants"
     FACILITY ||--o{ CONSENT : "is granted"
     PATIENT ||--o{ ID_MAP : "is identified by"
-    HOUSEHOLD ||--o{ PATIENT : "includes"
     PATIENT ||--o{ PATIENT_BINDING : "is bound as subject of"
     CARE_TEAM ||--o{ PATIENT_BINDING : "authorised the binding"
 
@@ -879,17 +881,12 @@ erDiagram
     PATIENT {
         string patient_id PK
         string abha_ref "NULLABLE — most Indian patients have none"
-        string household_id FK
     }
     ID_MAP {
         string id_map_id PK
         string patient_id FK
         string identifier_type "7 types, 0 were ABHA in the real record"
         string match_status "linked or quarantined"
-    }
-    HOUSEHOLD {
-        string household_id PK
-        string scheme_id "PM-JAY family floater"
     }
     PATIENT_BINDING {
         string binding_id PK
@@ -907,7 +904,7 @@ erDiagram
 
 
 
-### Three modelling decisions worth defending
+### Four modelling decisions worth defending
 
 `CARE_TEAM` **replaces a flat user-to-patient map.** A care relationship has a facility, a role type, and a lifetime. A consulting cardiologist who saw the patient once in March should not have access in November, and `active_to` makes that expressible. A flat map cannot express it at all, so systems built on one either over-grant permanently or delete history.
 
@@ -915,7 +912,7 @@ erDiagram
 
 `abha_ref` **is nullable, and that is the design centre of R4 rather than an edge case.** Across the 19 real reports studied, **seven distinct patient identifiers appeared and none of them was an ABHA number.** A system that assumes ABHA is present fails on the common case in India. `ID_MAP` with a `quarantined` status is the consequence: an ambiguous match contributes **no** evidence rather than a guess.
 
-`HOUSEHOLD` **is a data model entity for coverage math, not a user-facing feature.** FHIR `Coverage.beneficiary` is a single Patient reference, so a PM-JAY ₹5-lakh-per-family floater has no native home in base FHIR. Without `HOUSEHOLD`, `DT_SCHEME_ELIGIBILITY` computes the wrong remaining limit for every PM-JAY patient — a scheme covering roughly 500 million people. `HOUSEHOLD` appears here because it is structurally necessary for correct coverage rules. It does not imply that family members are system users — every user of this system is an institutionally accountable professional (see diagram 2).
+**There is no `HOUSEHOLD` entity, and that is a stated scope boundary.** PM-JAY is ₹5 lakh per family per year, and base FHIR `Coverage.beneficiary` is a single Patient reference — so a family limit has no native representation. Modelling it correctly needs a household entity, household-keyed coverage, and member-centric aggregation, none of which is verified against the NRCeS IG. **We declare it out of scope rather than ship an unverified workaround.** `COVERAGE.is_family_floater` records that a shared limit exists; `COV-LIMIT-001` evaluates the patient-level figure only, and the UI says so. The brief asks for *"patient **or** member 360"* — patient 360 satisfies it. See `DECISION-household-removal.md`.
 
 ---
 
@@ -1100,7 +1097,7 @@ flowchart TB
 
 - **`parse_documents` (AI_PARSE_DOCUMENT)** — converts PDFs and images into pages of text. Uses `LAYOUT page_split` mode to preserve page boundaries, which matters because citations must point to a specific page. Deduplicates on SHA-256 `file_hash` before parsing.
 - **`flatten_fhir` (LATERAL FLATTEN)** — explodes nested FHIR JSON into flat rows. One JSON bundle containing a CBC with 15 analytes becomes 15 rows in `CLINICAL_EVENT`, each with its own `concept_id`, `value_num`, `unit`, and all three R2 timestamps.
-- **`extract_assertions` (R7 two-pass)** — the differentiator. Runs two independent AI extractions on safety-critical fields using different model families (`llama3.3-70b` for pass A, `llama3.1-70b` for pass B). Agreement → `verified`. Disagreement → `conflicting` → the gate returns `not_evaluated`, never a guess.
+- **`extract_assertions` (R7 two-pass)** — the differentiator. Runs two independent AI extractions on safety-critical fields using genuinely different model families (`llama3.3-70b` for pass A, `claude-haiku-4-5` for pass B — corrected 20 Sept, see §1.1). Agreement → `verified`. Disagreement → `conflicting` → the gate returns `not_evaluated`, never a guess.
 - **`reconcile_evidence` (discordance detection)** — compares assertions across documents for the same patient and concept. Detects when two sources say different things about the same fact (e.g., two biopsies giving different HER2 results from different specimens — `discordant_across_specimens`).
 
 **Dynamic Tables — deterministic only.** Five DTs that auto-refresh when upstream data changes. Pure SQL, no models:
@@ -1108,7 +1105,7 @@ flowchart TB
 - **`DT_HARMONIZED_EVENTS`** — the normalisation layer. Converts source units to canonical units via `UNIT_REGISTRY` (e.g., `GM%` → `g/dL`, `/CUMM` → `/µL`), rejects implausible values, and computes derived metrics: ANC from differential (`WBC × (neutrophil% + band%) / 100`) and CrCl via Cockcroft-Gault formula using the latest vitals weight.
 - **`DT_DOC_CHUNK`** — splits parsed pages into search-ready chunks for the Cortex Search index. Carries no row access policy because Cortex Search cannot index a RAP-protected table (F4).
 - **`DT_REVIEW_QUEUE`** — surfaces items needing human attention: R7 conflicts, missing documents from referrals, curable insurance denials, unreadable uploads.
-- **`DT_SCHEME_ELIGIBILITY`** — computes PM-JAY and insurance coverage status per patient, using `HOUSEHOLD` for family floater limits and `COVERAGE.priority` for primary/secondary payer sequencing.
+- **`DT_SCHEME_ELIGIBILITY`** — computes PM-JAY and insurance coverage status per patient from `COVERAGE.annual_limit` and `used_amount`, with `COVERAGE.priority` for primary/secondary payer sequencing. Patient-level only — family-floater arithmetic is out of scope and declared as such.
 - **`DT_TREATMENT_PLAN`** — materialises the current treatment plan with cycle count, regimen, intent, and plan version history.
 
 **The final step — readiness materialisation and notification:**

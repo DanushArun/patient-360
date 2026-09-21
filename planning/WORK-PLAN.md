@@ -16,7 +16,7 @@ Every task below names the exact objects to create, the file to create them in, 
 | 2 | `ARCHITECTURE-DIAGRAMS.md` diagram 5 + build order | The 21-step dependency chain. This is the structure of `setup.sql`. | 15 min |
 | 3 | `ARCHITECTURE-DIAGRAMS.md` diagrams 3, 6, 8 | Containers, trust boundaries, R7. The three diagrams that carry the submission. | 20 min |
 | 4 | `COPILOT-SPEC.md` §0 | Why no tool takes a patient selector. Changes how every tool is called. | 25 min |
-| 5 | `SPEC.md` §2 | The data model. 25 tables. | 30 min |
+| 5 | `SPEC.md` §2 | The data model. 34 tables. | 30 min |
 | 6 | Your own stream's section below | | 15 min |
 
 ### Stream ownership
@@ -30,10 +30,10 @@ Every task below names the exact objects to create, the file to create them in, 
 
 | Contract | Source | Owner | Consumed by |
 |---|---|---|---|
-| Physical schema — 25 tables | `SPEC.md` §2, diagrams 9 + 10 | Stream 2 | Both |
+| Physical schema — 34 tables | `SPEC.md` §2, diagrams 9 + 10 | Stream 2 | Both |
 | Tool signatures — 11 procedures | `AI-INTEGRATION-ARCHITECTURE.md` §2 | Stream 1 specifies, Stream 2 implements bodies | Both |
 | Answer JSON | `COPILOT-SPEC.md` §2 | Stream 1 | Stream 1 |
-| Rule definitions — 16 rules | `SPEC.md` §4, diagram 15 | Stream 2 | Both |
+| Rule definitions — 16 rules in `RULE_CATALOG` | `SPEC.md` §4, diagram 15 | Stream 2 | Both |
 | Synthetic data shape | `SPEC.md` §9 | Stream 2 | Both |
 
 **Changing a frozen contract requires telling the other person before you change it.**
@@ -72,7 +72,7 @@ Every task below names the exact objects to create, the file to create them in, 
 | 3 | Database + schemas | `SAARTHI` database. Schemas: `CORE`, `DOCUMENTS`, `EVIDENCE`, `OPERATIONAL`, `GOVERNANCE`, `STAGES`, `EVAL` |
 | 4 | Roles | `SAARTHI_APP`, `SAARTHI_COORDINATOR`, `SAARTHI_ONCOLOGIST`, `SAARTHI_NAVIGATOR`, `SAARTHI_JUDGE` |
 | 5 | Stages | `PATIENT_DOCS`, `REFERENCE_DOCS`, `SKILLS` — all `ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')`, all `DIRECTORY = (ENABLE = TRUE)` |
-| 6 | Tables | 25 tables per `SPEC.md` §2. Group by schema: GOVERNANCE (8), CORE (9), DOCUMENTS (4), EVIDENCE (3), OPERATIONAL (5) |
+| 6 | Tables | 34 tables per `SPEC.md` §2. Every table marked `[B]`. Count per schema from the SPEC, not from memory. |
 | 7 | Policies | `patient_scope` RAP keyed on **`CURRENT_USER()`**. 2 masking policies. 1 sensitivity tag. |
 | 8 | Attach policies | `DOC_PAGE` gets the RAP. **`DOC_CHUNK` gets none** — F4 makes a search service impossible over a RAP-protected table. |
 | 9 | Grants | App role gets **no `USAGE`** on search services. Retrieval only through owner's-rights procedures. |
@@ -231,6 +231,30 @@ Logic, in order:
 
 ### Stream 1 — Copilot Core
 
+#### Day 1 — Model access and availability probe ⚠️ **do this first**
+
+**Reference:** `AI-INTEGRATION-ARCHITECTURE.md` §1.1–§1.3.
+
+**File:** `sql/probes/model_availability.sql`
+
+Nothing in the AI path runs until this passes, and every extraction decision downstream depends on the result.
+
+| Step | Action |
+|---|---|
+| 1 | `GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE SAARTHI_APP;` |
+| 2 | `ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';` then `SHOW PARAMETERS LIKE 'CORTEX_ENABLED_CROSS_REGION' IN ACCOUNT;` |
+| 3 | Probe every candidate with `AI_COMPLETE` — pass A, pass B and its two fallbacks, the classifier model, and the orchestration candidates |
+| 4 | Record **every** result, available or not, in `evidence/coco/verification-query-ids.md` with its query ID |
+| 5 | Confirm what `orchestration: auto` resolves to **today**, then pin it |
+
+**Why this is not optional.** `GCP_ME_CENTRAL2` appears in **no** Snowflake regional availability table — every model reaches this account through cross-region inference, so the published roster is an upper bound and never a guarantee. The only evidence of what actually runs here is a probe dated 17 Sept that predates a model generation: it found `claude-4-sonnet` and `mistral-large2` already rejected as legacy, and `llama3.1-70b` has since joined them.
+
+**Test:** each candidate returns a row or a named error. `claude-haiku-4-5` is reachable, or the fallback chain is exercised and the choice is recorded.
+
+**Use `AI_COMPLETE`, not `SNOWFLAKE.CORTEX.COMPLETE`** — the latter is superseded and is what the 17 Sept probe used.
+
+---
+
 #### Day 1 — Answer JSON schema, frozen
 
 **Reference:** `COPILOT-SPEC.md` §2. Contract 3 in `ARCHITECTURE-HANDOFF.md`.
@@ -313,15 +337,19 @@ Must render:
 |---|---|
 | 1 | Read `DOC_PAGE` text for unprocessed pages |
 | 2 | Route by `doc_type` (lab, pathology, imaging, discharge, claim) → type-specific prompt |
-| 3 | **Pass A:** `AI_COMPLETE('llama3.3-70b', prompt)` → `pass1_value` |
+| 3 | **Pass A:** `AI_COMPLETE(model => 'llama3.3-70b', prompt => …, model_parameters => {'temperature': 0})` → `pass1_value` |
 | 4 | Check `CLINICAL_ONTOLOGY.is_safety_critical` for the concept |
 | 5 | If not safety-critical → `verification_status = 'single_pass'`, proceed |
-| 6 | If safety-critical → **Pass B:** `AI_COMPLETE('llama3.1-70b', prompt)` → `pass2_value` |
+| 6 | If safety-critical → **Pass B:** `AI_COMPLETE(model => 'claude-haiku-4-5', prompt => …, model_parameters => {'temperature': 0})` → `pass2_value` |
 | 7 | `pass1_value = pass2_value` → `verified` |
 | 8 | `pass1_value ≠ pass2_value` → **`conflicting`. Value NOT asserted.** |
 | 9 | Pass B errors or times out → **`unverified`. Value NOT asserted. Fail closed.** |
 
 **Why two different model families:** running `llama3.3-70b` twice correlates its errors. The same architecture misreads the same degraded glyph the same way. Cross-family disagreement measures correctness; same-model agreement measures only confidence.
+
+⚠️ **Pass B changed on 20 Sept.** It was `llama3.1-70b`, which is **the same Meta family as pass A** — so the independence the claim rests on did not exist. It is also now marked `[legacy]` with no published removal date. Pass B is `claude-haiku-4-5`: different vendor, different architecture, current, and priced for per-page volume. Fallbacks if the probe says it is unreachable: `mistral-large3`, then `qwen3-32b`. **Never fall back to a second Llama.** Full reasoning in `AI-INTEGRATION-ARCHITECTURE.md` §1.1.
+
+**`temperature: 0` on both passes.** A sampled disagreement is not an independent read, and R7 cannot tell the two apart.
 
 **The critical constraint from diagram 12:** there is **no transition** from `Conflicting` or `Unverified` to `Asserted`. R7 is enforced by the absence of a transition, not by a validation rule.
 
@@ -445,7 +473,7 @@ The two-argument form is for images only.
 | Hepatology | `CLIN-BILI-001` | NCI hepatic classification, per-agent limits |
 | Endocrinology | `ENDO-HBA1C-001`, `ENDO-DEXA-001` | **HbA1c is `advisory`, never a blocker** — CPOC 2022 says do not defer cancer surgery for glycaemic control. Returns `not_evaluated` where haemoglobinopathy is recorded. DEXA is T-score stratified: 24mo normal, 12mo osteopenia. QUS → `not_evaluated`, never pass. |
 | General surgery | `SURG-CLEAR-001` | Anti-VEGF 28-day is **FDA-mandated hard gate**. General 21-day is **practice consensus** — labelled as such everywhere it surfaces. 42-day contaminated-wound extension. **Requires a documented clearance event — must not infer from elapsed time.** |
-| Cross-cutting | `COV-AUTH-001`, `COV-LIMIT-001`, `ID-LINK-001`, `ID-QUAR-001` | `COV-LIMIT-001` uses `HOUSEHOLD` for family floater math |
+| Cross-cutting | `COV-AUTH-001`, `COV-LIMIT-001`, `ID-LINK-001`, `ID-QUAR-001` | `COV-LIMIT-001` checks the **patient-level** annual limit. Where `is_family_floater` is true it must state that the shared balance is unknown — never estimate it. |
 
 **Every rule needs:** `guideline_ref`, `provenance_note`, version, `severity`, `specificity`.
 
@@ -492,7 +520,7 @@ FROM SAARTHI.DOCUMENTS.RAW_FHIR_BUNDLE b,
 |---|---|
 | `DT_DOC_CHUNK` | Search-ready chunks. **No RAP** — F4. Carries `patient_id` as a filter attribute only. |
 | `DT_REVIEW_QUEUE` | R7 conflicts, missing referral documents, curable denials, unreadable uploads |
-| `DT_SCHEME_ELIGIBILITY` | PM-JAY + insurance status. Uses `HOUSEHOLD` for floater limits, `COVERAGE.priority` for payer sequencing. |
+| `DT_SCHEME_ELIGIBILITY` | PM-JAY + insurance status from `COVERAGE.annual_limit` and `used_amount`, patient-level. `COVERAGE.priority` for payer sequencing. |
 | `DT_TREATMENT_PLAN` | Current plan with cycle status and version chain |
 
 ---
@@ -707,7 +735,7 @@ Structured CSV → `COPY INTO` → staging → `DT_HARMONIZED_EVENTS`.
 | Component | Done means |
 |---|---|
 | A table | In `setup.sql`, idempotent, RAP/masking attached where SPEC says, referenced by a passing fixture |
-| A rule | In `RULE` with version, `guideline_ref`, `provenance_note`, fixtures for **all four** outcomes |
+| A rule | In `RULE_CATALOG` with version, `guideline_ref`, `provenance_note`, fixtures for **all four** outcomes |
 | A tool procedure | `EXECUTE AS OWNER`, resolves binding, re-validates consent, uniform error shape, negative test proving it returns nothing for an unauthorised user |
 | The extraction path | R7 two-pass on safety-critical concepts, disagreement → `conflicting`, a deliberately ambiguous page proves the refusal |
 | The validator | All 6 checks, each with a test that makes it fire, `AI_FILTER` failure fails closed |

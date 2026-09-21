@@ -26,7 +26,7 @@ Every section below carries a scoring tag. If a section cannot justify itself ag
 
 | Brief text | Where satisfied |
 |---|---|
-| "unifies data into a patient or member 360" | §2 data model — 3 ingestion paths, 25 tables |
+| "unifies data into a patient or member 360" | §2 data model — 3 ingestion paths, 34 tables. Patient 360; family dimension out of scope, stated. |
 | "answers clinical, safety, or regulatory questions" | §6 Class A/B + question taxonomy; safety gate in §4 |
 | "with cited evidence" | §7 validator — 6 checks, per-claim evidence IDs |
 | "fully synthetic or de-identified data only" | §9 generator — seeded, 100% synthetic |
@@ -70,7 +70,7 @@ R1–R6 carry over from `plan.md`. **R7 is new and comes from empirical testing.
 
 ---
 
-## 2. Data model — 25 tables built, 7 designed-only
+## 2. Data model — 34 tables built, 7 designed-only
 
 Four content schemas plus governance and stages. Marked `[B]` built or `[D]` designed-only. Honest accounting is a **`[SC]`** requirement for the 18-day unattended evaluation.
 
@@ -154,14 +154,8 @@ CONSENT                 [B]  consent_id PK · patient_id FK
 ```
 PATIENT                 [B]  patient_id PK · abha_ref (nullable — most Indian
                              patients have none) · name · dob · gender
-                             · household_id FK (nullable)
                              · district · state · primary_language
                              · created_at
-
-HOUSEHOLD               [B]  household_id PK · pmjay_family_id
-                             · state · district · created_at
-HOUSEHOLD_MEMBER        [B]  household_id FK · patient_id FK · relationship
-                             PRIMARY KEY(household_id, patient_id)
 
 ID_MAP                  [B]  map_id PK · patient_id FK · source_system
                              · source_patient_id
@@ -178,7 +172,9 @@ REFERRAL                [B]  referral_id PK · patient_id FK
                              · status(open|partial|complete)
 ```
 
-**`HOUSEHOLD` fixes a rule that is currently wrong for every PM-JAY patient.** PM-JAY is ₹5 lakh **per family per year**; coverage keyed on `patient_id` computes the wrong remaining limit. `[RWR]` `insurance-irdai-nhcx.md` §3
+**Family-floater coverage is explicitly out of scope.** PM-JAY is ₹5 lakh **per family per year**, and base FHIR has no native home for a family limit — `Coverage.beneficiary` is a single Patient reference. Modelling it correctly requires a `HOUSEHOLD` entity, household-keyed coverage, and member-centric aggregation. **We do not build it.** `COV-LIMIT-001` evaluates the patient-level annual limit only, and the scope boundary is stated wherever coverage surfaces. See `DECISION-household-removal.md`.
+
+The brief says *"patient **or** member 360"* — patient 360 alone satisfies the requirement, which is why `PROBLEM-STATEMENT-verbatim.md` G2 already downgraded this from FATAL. Claiming family-floater arithmetic we have not built would be exactly the overclaiming we document in competitors.
 
 **`REFERRAL` is the product's central moment.** 74% of patients cross ≥2 facilities; 82.6% hit a delay. `documents_expected` minus `documents_received` **is the bring-list** — a principled derivation instead of inferring it from gate failures. `[RWR]`
 
@@ -232,12 +228,11 @@ TREATMENT_PLAN          [B]  plan_id PK · patient_id FK · version INT
 
 ```
 COVERAGE                [B]  coverage_id PK · patient_id FK
-                             · household_id FK (nullable)     -- floater schemes
                              · payer_type(scheme|private_insurance|self_pay)
                              · payer_name · policy_number
-                             · is_family_floater BOOLEAN
+                             · is_family_floater BOOLEAN   -- flag only; see note
                              · effective_from · effective_to
-                             · annual_limit · used_amount
+                             · annual_limit · used_amount  -- patient-level
                              · priority INT                   -- primary vs secondary payer
                              · portability(cross_state|within_state|none)
 
@@ -252,6 +247,8 @@ AUTHORIZATION           [B]  auth_id PK · coverage_id FK · encounter_id FK
 `status` gains **`partial`** and **`conflicting`** — both recommended by `insurance-irdai-nhcx.md` §5.4 and omitted in v1. **`conflicting` is what our flagship demo scenario requires** (table says pending, letter says approved).
 
 `denial_is_curable` encodes the ₹30,000 cr finding: **60–70% of denials are procedurally curable and knowable pre-admission.** `[RWR]`
+
+**`is_family_floater` is a flag, not an arithmetic input.** When true, the UI states that the limit is shared across a family and that **SAARTHI tracks the patient-level figure only**. `annual_limit` and `used_amount` are patient-scoped. A floater's true remaining balance depends on other members' consumption, which we do not model — so the system reports what it knows and says what it does not. This is R3 applied to coverage: an unknown is declared, never estimated.
 
 ### 2.6 Documents & evidence
 
@@ -319,7 +316,7 @@ Field-level FHIR mapping (`research/clinical/fhir-field-mapping.md`) forced six 
 
 **`AUTHORIZATION.status = 'denied'` is derived, not mapped.** `ClaimResponse.outcome` has no `denied` value — denial is `complete` with zero or absent benefit adjudication plus a reason code. Documented so the mapping is not misread as one-to-one.
 
-**`HOUSEHOLD` exists because `Coverage` is individual-centric.** `Coverage.beneficiary` is a single Patient reference, so a PM-JAY ₹5-lakh-per-family limit has no native home in base FHIR. Candidate mappings are `Coverage.class[type=group].value` or a `Group` resource. ⚠️ Requires NRCeS verification — if ABDM sanctions a pattern, use theirs. Either way `HOUSEHOLD` is deliberate modelling, not an oversight.
+**Family coverage has no native home in base FHIR, and we do not model it.** `Coverage.beneficiary` is a single Patient reference, so a PM-JAY ₹5-lakh-per-family limit cannot be expressed without either `Coverage.class[type=group].value` or a `Group` resource — and neither is verified against the NRCeS IG. Rather than build an unverified workaround, `COVERAGE` is patient-keyed and the family dimension is declared out of scope. `is_family_floater` records that a shared limit exists; the arithmetic over it does not. See `DECISION-household-removal.md`.
 
 **One stated simplification:** FHIR uses two resources for medication lifecycle — `MedicationRequest` (ordered) and `MedicationAdministration` (administered, linked by `request.reference`). Our single `CLINICAL_EVENT.status` enum spanning `ordered|administered|dispensed` is a deliberate compression. `clinical-thresholds.md` §8 requires the distinction be preserved semantically, and it is; the physical model is simpler than FHIR's. Stated rather than hidden, because a FHIR-literate judge will notice.
 
@@ -373,11 +370,22 @@ REVIEW_ISSUE            [B]  issue_id PK · rule_id · rule_version
                              · version INT DEFAULT 1              -- S4 optimistic locking
                              · created_at
 
-TASK                    [B]  task_id PK · issue_id FK
+REVIEW_TASK             [B]  task_id PK · issue_id FK
                              · owner_practitioner_id FK
                              · state · decision · reason
                              · actor_practitioner_id FK
                              · idempotency_key UNIQUE · created_at
+                             -- named REVIEW_TASK, not TASK: a table called TASK
+                             -- collides confusingly with Snowflake TASK objects
+
+READINESS_STATE         [B]  patient_id FK · encounter_id FK · gate
+                             · rule_id · rule_version
+                             · outcome(pass|fail|not_evaluated|conflicting)
+                             · severity · reason · evidence_ids ARRAY
+                             · known_as_of · computed_at
+                             PRIMARY KEY(patient_id, encounter_id, gate, rule_id)
+                             -- materialised by TASK_REFRESH_READINESS calling
+                             -- evaluate_gates. Read by get_readiness.
 
 ANSWER_RUN              [B]  run_id PK · question · question_class(A|B)
                              · practitioner_id FK · patient_id FK
@@ -573,7 +581,9 @@ CREATE CORTEX SEARCH SERVICE SAARTHI.DOCUMENTS.REFERENCE_DOC_SEARCH
 
 ---
 
-## 6. Tools — 8 procedures, scope injected
+## 6. Tools — 8 agent-facing procedures, scope injected
+
+*(11 procedures exist in total: these 8 plus `bind_patient`, `evaluate_gates` and `validate_answer`. The latter three are never exposed to the agent.)*
 
 `[TE]` `[BONUS]` custom tools & function calling
 
@@ -658,8 +668,8 @@ This converts our safety claim from *"we cite our sources"* to *"we know when ou
 
 `[TE]` `[SC]` — explainer: *"verified queries is a very very crucial part of semantic views that adds more confidence and better results accuracies."* v1's weakest section was the one emphasised most.
 
-**Entities:** patients · households · encounters · clinical_events · review_issues · documents · practitioners · facilities · coverage
-**Metrics:** `open_blocker_count` · `days_to_next_visit` · `gate_pass_rate` · `avg_resolution_hours` · `household_limit_remaining` · `curable_denial_count`
+**Entities:** patients · encounters · clinical_events · review_issues · documents · practitioners · facilities · coverage
+**Metrics:** `open_blocker_count` · `days_to_next_visit` · `gate_pass_rate` · `avg_resolution_hours` · `patient_limit_remaining` · `curable_denial_count`
 **Time dimensions:** `encounter_date` · `event_time` · `known_as_of` · `ingested_at`
 
 Six verified queries, covering the demo plus the likely judge probes:
@@ -670,7 +680,7 @@ Six verified queries, covering the demo plus the likely judge probes:
 | How many open blockers per gate? | judge probe |
 | Which patients have conflicting authorisation status? | judge probe |
 | Which patients on trastuzumab have LVEF older than 90 days? | judge probe |
-| Which households are within 10% of their PM-JAY limit? | judge probe |
+| Which patients are within 10% of their recorded annual limit? | judge probe |
 | Average hours to resolve a documentation gap? | judge probe |
 
 RAP on base tables propagates to the semantic view — Cortex Analyst generates SQL that runs in the caller's session.
@@ -808,7 +818,7 @@ TASK reconcile_evidence  ── discordance ────┤
    │ DT_HARMONIZED_EVENTS   (unit normalisation, ANC calc, CrCl)     │
    │ DT_DOC_CHUNK           (page → chunks; NO RAP — F4)             │
    │ DT_REVIEW_QUEUE        (open failures × days-to-visit)          │
-   │ DT_SCHEME_ELIGIBILITY  (household × scheme registry)            │
+   │ DT_SCHEME_ELIGIBILITY  (patient × scheme registry)              │
    │ DT_TREATMENT_PLAN      (current version per patient)            │
    └─────────────────────────────────────────────────────────────────┘
                                     │
@@ -826,7 +836,7 @@ TASK reconcile_evidence  ── discordance ────┤
 ## 14. Deployment, evaluation, and the two stages
 
 ### One-script deploy `[SC]`
-`setup.sql` — idempotent, clean-account safe: database → 6 schemas → 25 tables → 2 stages → governance (tags, RAP on `CURRENT_USER()`, masking, 4 roles) → ontology + unit registry seed → 16 rules → 11 procedures → 4 tasks → 5 DTs → 2 search services → semantic view + 6 VQRs → grants → data load → reference corpus → initial pipeline run.
+`setup.sql` — idempotent, clean-account safe: database → 7 schemas → 34 tables → 3 stages → governance (tags, RAP on `CURRENT_USER()`, masking, 5 roles) → ontology + unit registry seed → 16 rules → 11 procedures → 3 streams → 7 tasks → 5 DTs → 2 search services → semantic view + 6 VQRs → grants → data load → reference corpus → initial pipeline run.
 `teardown.sql` — `DROP DATABASE` + warehouse + roles.
 Git integration: `EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/src/sql/setup.sql`.
 
@@ -877,7 +887,7 @@ Recorded so nothing needs unpicking if this gets funded.
 | Owner | Task |
 |---|---|
 | **all** | Commit everything now — the git trail proving planning preceded development is the cheapest lifecycle evidence and it is currently unbanked |
-| **A** | `setup.sql` skeleton: database, 6 schemas, 25 tables, RAP on `CURRENT_USER()`, 4 roles, `USE SECONDARY ROLES NONE` in app session |
+| **A** | `setup.sql` skeleton: database, 7 schemas, 34 tables, RAP on `CURRENT_USER()`, 5 roles, `USE SECONDARY ROLES NONE` in app session |
 | **B** | Freeze answer JSON schema (§7) · run U1 `PUT` + measure parse cost · source the 3 missing thresholds (§4.3) |
 | **C** | Download Tier 1 reference corpus into `data/reference/` · create `evidence/coco/planning.yaml` and retro-log this session |
 

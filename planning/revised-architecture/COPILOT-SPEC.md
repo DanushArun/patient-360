@@ -198,7 +198,7 @@ All ten have a tool path. These are the worked examples the eval set is built fr
 | 7 | **Cohort** | "Which patients lack a final report before this week's cycle?" | `CohortQuery` | Unavailable while a patient is bound. Counts and lists, never row-level PHI beyond the semantic view |
 | 8 | **Change detection** ⭐ | "What changed since 09:00?" | `GetChanges` | Diffs two `known_as_of` states. Answers a question no competitor can express |
 | 9 | **Provenance** | "Where did this HER2 status come from?" | `GetTimeline` + `SearchPatientDocuments` | Facility, accession, specimen, and both discordant reads if they exist |
-| 10 | **Coverage utilisation** | "How much of the family limit is left?" | `GetPatientFacts(coverage)` | `HOUSEHOLD` floater arithmetic — correct for PM-JAY, wrong in every competitor |
+| 10 | **Coverage utilisation** | "How much of the limit is left?" | `GetPatientFacts(coverage)` | Patient-level limit with an explicit statement when `is_family_floater` is true and the shared balance is unknown |
 
 ⭐ = in the live demo.
 
@@ -280,7 +280,7 @@ Ordered so each beat lands on a different judging criterion.
 
 | Brief line | Where the copilot satisfies it |
 |---|---|
-| *"unifies data into a patient or member 360"* | Binding + `GetPatientFacts` across 6 domains + `HOUSEHOLD` for the member dimension |
+| *"unifies data into a patient or member 360"* | Binding + `GetPatientFacts` across 6 domains. Patient 360; the family/member dimension is declared out of scope. |
 | *"answers clinical, safety, or regulatory questions"* | 10 Class B types; safety gate; reference corpus for regulatory |
 | *"with cited evidence"* | Typed evidence contract, §2 — three kinds, each with its own resolution and rendering |
 | *"risk stratification ... never opaque predictions"* | 5 gates, 4 outcomes, rule id + version on every line. No trained model anywhere |

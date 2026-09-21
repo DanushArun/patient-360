@@ -19,7 +19,7 @@
 | Account: **Enterprise**, cross-region enabled, all 11 AI functions, SPCS live | Runtime gate | Verified |
 | `AGENT_RUN(VARCHAR)` exists — SQL path, no container-runtime hard dependency | `SHOW FUNCTIONS` | Verified |
 | **RAP keyed on `CURRENT_USER()` survives owner's-rights elevation; `CURRENT_ROLE()` does not** | Empirical test, QID `01c71d97-...cdce` | **Verified — architecture-deciding** |
-| Working models: `llama3.1-70b`, `llama3.3-70b`, `llama3.1-8b` | Runtime gate | Verified |
+| Working models: `llama3.1-70b`, `llama3.3-70b`, `llama3.1-8b` | Runtime gate | Verified **17 Sept — now partly stale.** `llama3.1-70b` is marked `[legacy]`; R7 pass B moved to `claude-haiku-4-5`. Re-probe: `sql/probes/model_availability.sql` |
 
 **18 calendar days. Target completion 1 Oct. 2–4 Oct is contingency only.**
 
@@ -53,7 +53,7 @@ Everything else is support. If the schedule collapses, these survive.
 - **6 specialties, 16 rules** (13 exist and already span oncology/cardiology/nephrology/hepatology — they were mislabelled; +3 new for endocrine and general surgery). Oncology is the depth case.
 - **5 gates** → clinical, **safety** (was "surveillance"), documentation, coverage, identity. 4-valued outcomes: `pass · fail · not_evaluated · conflicting`.
 - **Risk stratification** and **care gap** vocabulary adopted — the brief's and the explainer's own words — with explicit scope disclosure: *stratifies documentation, coverage and safety-surveillance risk; does not model clinical deterioration or prognosis.*
-- **~25 tables built** of ~32 designed. New critical ones: `PATIENT_BINDING` (see `COPILOT-SPEC.md` §0), `CONSENT`, `ORGANIZATION`, `FACILITY`, `PRACTITIONER`, `CARE_TEAM` (replaces `ROLE_PATIENT_MAP`), `REFERRAL`, `HOUSEHOLD`, `CLINICAL_ONTOLOGY`, `UNIT_REGISTRY`, `SECURITY_EVENT`, `EVIDENCE_PACKET`.
+- **34 tables built** of 41 designed. `HOUSEHOLD`/`HOUSEHOLD_MEMBER` removed — family-floater coverage is out of scope, stated. New critical ones: `PATIENT_BINDING` (see `COPILOT-SPEC.md` §0), `CONSENT`, `ORGANIZATION`, `FACILITY`, `PRACTITIONER`, `CARE_TEAM` (replaces `ROLE_PATIENT_MAP`), `REFERRAL`, `CLINICAL_ONTOLOGY`, `UNIT_REGISTRY`, `SECURITY_EVENT`, `EVIDENCE_PACKET`.
 - **Three ingestion paths**: structured (tables), **semi-structured (FHIR JSON → `VARIANT` → flatten)**, unstructured (PDF/image → `AI_PARSE_DOCUMENT`). The brief and explainer both name all three.
 - **Dual Cortex Search** — patient corpus and reference corpus, physically separate services.
 - **Answer validator, 6 checks**: existence · scope · version · polarity (`AI_FILTER`) · type match · **assertion trustworthiness** (new).
@@ -77,7 +77,7 @@ Cortex Search sharding beyond 400M chunks · population-scale event-driven gate 
 | Owner | Track | Owns |
 |---|---|---|
 | **A** | Data & platform | Generator (ledger + corruptions + FHIR bundles), DDL, governance (RAP/masking/tags/CARE_TEAM/CONSENT), pipeline (streams/tasks/DTs), semantic view + VQR, deployment script, Git integration |
-| **B** | Evidence & intelligence | `AI_PARSE_DOCUMENT` pipeline, **two-pass extraction verification**, ontology + unit registry, reconciliation + discordance, 6 tools, validator, agent + 4 skills + orchestrating Task, eval harness |
+| **B** | Evidence & intelligence | `AI_PARSE_DOCUMENT` pipeline, **two-pass extraction verification**, ontology + unit registry, reconciliation + discordance, 8 tools, validator, agent + 4 skills + orchestrating Task, eval harness |
 | **C** | Product & proof | Streamlit (6 screens, Ask+Evidence as centrepiece), Judge Console, family view, MCP connector, notifications, README, `IMPLEMENTATION-STATUS.md`, demo video, CoCo evidence manifest |
 
 **Cross-review is mandatory:** A reviews B's SQL correctness; B reviews C's privacy boundaries; C reviews A's cold-start reproducibility.

@@ -68,7 +68,7 @@ def container() -> Page:
         Node("valid", label("Answer Validator", "Container: SQL procedure with AI_FILTER", "6 checks. Strips any claim not supported<br/>by cited evidence. Fails closed."), "enforce", 3, 1),
         Node("engine", label("Evidence and Readiness Engine", "Container: SQL procedures + Dynamic Tables", "16 versioned rules over 5 gates. Decides<br/>every status, number and comparison."), "det", 0, 2),
         Node("tools", label("Tool Layer", "Container: 11 SQL procedures, EXECUTE AS OWNER", "Derives scope from CURRENT_USER. Checks consent at query time.<br/>Returns facts, never conclusions."), "enforce", 1, 2, cspan=2),
-        Node("core", label("Governed Clinical Store", "Container: tables + row access policy", "25 tables. Identity, consent, binding, clinical<br/>events, coverage, documents, assertions."), "store", 0, 3, height=160),
+        Node("core", label("Governed Clinical Store", "Container: tables + row access policy", "23 tables. Identity, consent, binding, clinical<br/>events, coverage, documents, assertions."), "store", 0, 3, height=160),
         Node("pidx", label("Patient Document Index", "Container: Cortex Search service", "Chunks of patient documents.<br/>Returns IDs only, never content."), "store", 1, 3, height=160),
         Node("ridx", label("Reference Document Index", "Container: Cortex Search service", "Chunks of regulatory text. Physically<br/>separate service. No patient data."), "store", 2, 3, height=160),
         Node("sem", label("Semantic View", "Container: Cortex Analyst + 6 VQRs", "Cohort questions in<br/>natural language."), "store", 3, 3, height=160),

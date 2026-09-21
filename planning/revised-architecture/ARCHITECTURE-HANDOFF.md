@@ -51,18 +51,19 @@ If the schedule collapses, these survive in this order.
 
 ### Contract 1 — Physical schema
 
-**Owner: Stream A.** Source of truth: `SPEC.md` §2. 25 tables built, 7 designed-only.
+**Owner: Stream A.** Source of truth: `SPEC.md` §2. 34 tables built, 7 designed-only.
 
 Frozen names that everything else depends on. If you need a column that is not here, ask — do not add it silently.
 
 ```
 GOVERNANCE   ORGANIZATION · FACILITY · DEPARTMENT · PRACTITIONER · CARE_TEAM
              CONSENT · PATIENT_BINDING · SECURITY_EVENT
-CORE         PATIENT · ID_MAP · HOUSEHOLD · ENCOUNTER · CLINICAL_EVENT
+CORE         PATIENT · ID_MAP · ENCOUNTER · CLINICAL_EVENT
              COVERAGE · AUTHORIZATION · REFERRAL · TREATMENT_PLAN
 DOCUMENTS    DOCUMENT · DOC_PAGE · DOC_CHUNK · RAW_FHIR_BUNDLE
 EVIDENCE     ASSERTION · EVIDENCE_LINK · ANSWER_RUN
-OPERATIONAL  RULE · READINESS_STATE · REVIEW_TASK · CLINICAL_ONTOLOGY · UNIT_REGISTRY
+OPERATIONAL  RULE_CATALOG · REVIEW_ISSUE · REVIEW_TASK · READINESS_STATE
+             CLINICAL_ONTOLOGY · UNIT_REGISTRY · SCHEME_REGISTRY
 ```
 
 **Three schema rules that are not negotiable:**
@@ -132,7 +133,7 @@ Every one is `EXECUTE AS OWNER`. Every one re-validates care team and consent **
 **Owner: Stream A.** Source: `SPEC.md` §4, thresholds in `research/clinical/clinical-thresholds.md`.
 
 ```
-RULE  rule_id · version · gate(clinical|safety|documentation|coverage|identity)
+RULE_CATALOG  rule_id · rule_version · gate(clinical|safety|documentation|coverage|identity)
       · specialty · concept_id · operator · threshold_value · unit
       · severity(blocker|advisory) · specificity INT
       · guideline_ref · provenance_note
@@ -168,7 +169,7 @@ Named by function. Reassign the letters as you like, but **keep one owner per st
 
 ### Stream A — Platform and rules
 
-`setup.sql` · 25 tables · governance · the rule engine · pipeline · the tool procedure bodies
+`setup.sql` · 34 tables · governance · the rule engine · pipeline · the tool procedure bodies
 
 Day 1 deliverable: `setup.sql` runs clean on a fresh account and creates every table, role, policy and stage. Idempotent. **The first line is `ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION'`** — `GCP_ME_CENTRAL2` has no local `AI_COMPLETE` and nothing in the AI path runs without it.
 
@@ -205,7 +206,7 @@ A component is done when all of its row is true. "It works on my machine" is not
 | Component | Done means |
 |---|---|
 | A table | in `setup.sql`, idempotent, RAP/masking attached where §2 says, referenced by a passing fixture |
-| A rule | in `RULE` with a version, `guideline_ref`, `provenance_note`, and fixtures for **all four** outcomes |
+| A rule | in `RULE_CATALOG` with a version, `guideline_ref`, `provenance_note`, and fixtures for **all four** outcomes |
 | A tool procedure | `EXECUTE AS OWNER`, resolves binding, re-validates consent, returns the uniform error shape, has a negative test proving it returns nothing for an unauthorised user |
 | The extraction path | R7 two-pass on safety-critical concepts, disagreement produces `conflicting`, and a **deliberately ambiguous page proves the refusal** |
 | The validator | all 6 checks, each with a test that makes it fire, `AI_FILTER` failure **fails closed** |

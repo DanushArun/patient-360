@@ -12,12 +12,11 @@ def erd_identity() -> Page:
         Entity("prac", "PRACTITIONER", ["practitioner_id  PK", "facility_id  FK", "nmc_registration_no  names the decider", "snowflake_user  joins CURRENT_USER", "active"], 3, 0),
         Entity("ct", "CARE_TEAM", ["care_team_id  PK", "practitioner_id  FK", "patient_id  FK", "role_type  treating / coordinator /", "    consulting / patient_navigator", "active_from  relationship has a lifetime", "active_to  expiry, not deletion"], 2, 1, dy=40),
         Entity("cons", "CONSENT", ["consent_id  PK", "patient_id  FK", "purpose_code  treatment / coordination /", "    claim / second_opinion", "data_categories  clinical / financial / identity", "date_range_from  WHICH RECORDS", "valid_until  CONSENT LIFETIME", "status  active / revoked / expired", "artifact_hash  signed consent document", "abdm_consent_ref  nullable"], 3, 1, dy=40),
-        Entity("pat", "PATIENT", ["patient_id  PK", "abha_ref  NULLABLE - most have none", "household_id  FK"], 1, 1, dy=40),
+        Entity("pat", "PATIENT", ["patient_id  PK", "abha_ref  NULLABLE - most have none", "district", "primary_language"], 1, 1, dy=40),
         Entity("idm", "ID_MAP", ["id_map_id  PK", "patient_id  FK", "identifier_type  7 types, 0 were ABHA", "match_status  linked / quarantined"], 0, 1, dy=40),
         Entity("bind", "PATIENT_BINDING", ["binding_id  PK", "session_id  CURRENT_SESSION()",
             "snowflake_user", "patient_id  FK", "care_team_id  FK", "consent_id  FK",
             "bound_at", "released_at", "-- WHICH patient the question is about", "-- set by a human click, append-only"], 2, 2, dy=150),
-        Entity("hh", "HOUSEHOLD", ["household_id  PK", "scheme_id  PM-JAY family floater"], 0, 2, dy=110),
     ]
     e = [
         Edge("org", "fac", "operates", EDGE_ER),
@@ -29,7 +28,6 @@ def erd_identity() -> Page:
         Edge("pat", "cons", "grants", EDGE_ER),
         Edge("fac", "cons", "is granted", EDGE_ER),
         Edge("pat", "idm", "is identified by", EDGE_ER),
-        Edge("hh", "pat", "includes", EDGE_ER),
         Edge("pat", "bind", "is bound as subject of", EDGE_ER),
         Edge("ct", "bind", "authorised the binding", EDGE_ER),
     ]
@@ -41,7 +39,7 @@ def erd_clinical() -> Page:
         Entity("pat", "PATIENT", ["patient_id  PK"], 0, 0, width=240),
         Entity("enc", "ENCOUNTER", ["encounter_id  PK", "scheduled_time  NULL if no FHIR Appointment", "    - NEVER defaulted to period.start", "gap_type  includes clinical_complication"], 1, 0),
         Entity("cev", "CLINICAL_EVENT", ["event_id  PK", "event_type  lab / imaging / medication /", "    procedure / vitals / pathology", "event_time  R2 clock 1 - when it happened", "source_recorded_at  R2 clock 2 - when recorded", "status  ordered / administered / dispensed", "abnormal_flag  H or L - NEVER in value_num", "value_num"], 2, 0),
-        Entity("cov", "COVERAGE", ["coverage_id  PK", "patient_id  FK", "household_id  FK  PM-JAY floater"], 3, 0),
+        Entity("cov", "COVERAGE", ["coverage_id  PK", "patient_id  FK", "annual_limit / used_amount  patient-level", "is_family_floater  flag only, not arithmetic"], 3, 0),
         Entity("auth", "AUTHORIZATION", ["authorization_id  PK", "status  includes partial and conflicting", "denial_is_curable  60-70 percent are"], 3, 1, dy=60),
         Entity("doc", "DOCUMENT", ["doc_id  PK", "scope  patient / reference - R6 starts here", "revision_type  original / appended /", "    amended / corrected", "file_hash  SHA-256, ours, for dedup", "attachment_hash  SHA-1, from FHIR", "source_quality  clean_pdf / scanned / photo /", "    rotated_photo / handwritten", "signed_at  R2 clock 2", "ingested_at  R2 clock 3", "supersedes_doc_id  FK", "ingestion_method  6 values incl whatsapp_photo"], 0, 1, dy=60),
         Entity("dpage", "DOC_PAGE", ["doc_id  FK", "page_index", "text  ROW ACCESS POLICY - governed content"], 1, 1, dy=60),
