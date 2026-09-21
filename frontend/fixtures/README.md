@@ -49,7 +49,7 @@ The `refusal` block names the practitioner and carries their `nmc_registration_n
 
 ## The schema is verified, not asserted
 
-`scripts/check_gate.py --contracts` validates all three fixtures against `app/contracts/answer_schema.json` **and** confirms the schema rejects six malformed answers:
+`backend/scripts/check_gate.py --contracts` validates all three fixtures against `frontend/contracts/answer_schema.json` **and** confirms the schema rejects six malformed answers:
 
 | Negative control | Rejected because |
 |---|---|

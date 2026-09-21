@@ -63,7 +63,7 @@ Every task below names the exact objects to create, the file to create them in, 
 
 **Reference:** Diagram 5 build order steps 1–9. `SPEC.md` §2 for table definitions. Diagrams 9 and 10 for the ERDs.
 
-**File:** `sql/setup.sql`
+**File:** `backend/sql/setup.sql`
 
 | Step | Object | Exact requirement |
 |---|---|---|
@@ -153,7 +153,7 @@ Generate a **seeded fact ledger first**, then derive every projection from it. T
 
 **Reference:** `SPEC.md` §2.7. This closes brief gap G5 (ontology named twice in the CoCo guidelines).
 
-**File:** `sql/data/ontology.sql`
+**File:** `backend/sql/data/ontology.sql`
 
 | Concept | `is_safety_critical` | Synonyms | `reflexes_to` |
 |---|---|---|---|
@@ -203,7 +203,7 @@ This is the single most load-bearing Dynamic Table. It must:
 
 **Reference:** Diagram 4 (component view) — `GATES`, `PREC`. Diagram 15 (gate outcomes decision flow).
 
-**File:** `sql/procedures/evaluate_gates.sql`
+**File:** `backend/sql/procedures/evaluate_gates.sql`
 
 ```
 PROCEDURE evaluate_gates(p_patient_id, p_encounter_id, p_known_as_of) RETURNS VARIANT
@@ -235,7 +235,7 @@ Logic, in order:
 
 **Reference:** `AI-INTEGRATION-ARCHITECTURE.md` §1.1–§1.3.
 
-**File:** `sql/probes/model_availability.sql`
+**File:** `backend/sql/probes/model_availability.sql`
 
 Nothing in the AI path runs until this passes, and every extraction decision downstream depends on the result.
 
@@ -259,7 +259,7 @@ Nothing in the AI path runs until this passes, and every extraction decision dow
 
 **Reference:** `COPILOT-SPEC.md` §2. Contract 3 in `ARCHITECTURE-HANDOFF.md`.
 
-**File:** `app/contracts/answer_schema.json`
+**File:** `frontend/contracts/answer_schema.json`
 
 ```json
 {
@@ -293,7 +293,7 @@ Nothing in the AI path runs until this passes, and every extraction decision dow
 
 **Reference:** `SPEC.md` §10 (6 screens). Diagram 7 (question to cited answer sequence).
 
-**File:** `app/streamlit_app.py`
+**File:** `frontend/streamlit_app.py`
 
 Build the **entire UI** against a hard-coded fixture answer. Do not wait for Stream 2.
 
@@ -313,7 +313,7 @@ Must render:
 
 **Reference:** Diagram 14 (Class A/B routing) — including the classification criteria tables added below the diagram.
 
-**File:** `sql/procedures/classify_question.sql`
+**File:** `backend/sql/procedures/classify_question.sql`
 
 `AI_CLASSIFY` with the criteria from diagram 14:
 
@@ -331,7 +331,7 @@ Must render:
 
 **Reference:** Diagram 8 (document to verified assertion) — the full flow. Diagram 12 (assertion verification lifecycle) — the legal state transitions.
 
-**File:** `sql/tasks/extract_assertions.sql`
+**File:** `backend/sql/tasks/extract_assertions.sql`
 
 | Step | Action |
 |---|---|
@@ -361,7 +361,7 @@ Must render:
 
 **Reference:** Contract 2 in `ARCHITECTURE-HANDOFF.md`. Diagram 6 (trust boundaries) — the TB4 layer. `COPILOT-SPEC.md` §0.
 
-**Files:** `sql/procedures/tools/*.sql`
+**Files:** `backend/sql/procedures/tools/*.sql`
 
 | # | Procedure | Input | Returns |
 |---|---|---|---|
@@ -385,7 +385,7 @@ Must render:
 
 **Reference:** Diagram 3 (containers). Diagram 6 (TB3 — the agent is untrusted). `AI-INTEGRATION-ARCHITECTURE.md` §2.
 
-**File:** `sql/agent/saarthi_agent.sql`
+**File:** `backend/sql/agent/saarthi_agent.sql`
 
 | Requirement | Why |
 |---|---|
@@ -402,7 +402,7 @@ Must render:
 
 **Reference:** `SPEC.md` §7. Diagram 3 — the `VALID` container (red = enforcement point).
 
-**File:** `sql/procedures/validate_answer.sql`
+**File:** `backend/sql/procedures/validate_answer.sql`
 
 | # | Check | Fails when |
 |---|---|---|
@@ -487,7 +487,7 @@ The two-argument form is for images only.
 
 **Reference:** Diagram 11 — the `RAW → STR2 → T2` path. `fhir-field-mapping.md` for every field path.
 
-**File:** `sql/tasks/flatten_fhir.sql`
+**File:** `backend/sql/tasks/flatten_fhir.sql`
 
 ```sql
 CREATE OR REPLACE VIEW SAARTHI.DOCUMENTS.V_FHIR_ENTRY AS

@@ -32,15 +32,15 @@ Structure and contracts are not a deployed system. Marked separately so the dist
 
 | Artifact | Status |
 |---|---|
-| `app/contracts/answer_schema.json` + `error_shape.json` + `tool_signatures.yaml` | **built** — Contract 3 and Contract 2, verified by a passing check |
-| `app/fixtures/` — 3 answer fixtures, 3 page fixtures | **built** — validate against the schema; char offsets generated from the page text |
-| `scripts/check_gate.py` — 5 mechanical checks | **built** — verified to catch injected violations, not only to pass |
-| `scripts/deploy.sh` — manifest-driven deploy | **partial** — parsing and dry-run tested; never run against an account |
-| `sql/setup.sql` — 21-step manifest | **partial** — every step present, every line commented. Deploys nothing yet. |
-| `sql/procedures/tools/_preamble.sql` | **designed-only** — written, **never compiled**; no `GOVERNANCE` tables exist |
-| `sql/prompts/` | **partial** — `pass_a_lab` and `pass_b_verify` verbatim from the spec; four type-specific prompts are `@0.x` drafts, **never run against a page** |
-| `skills/` — 4 `SKILL.md` | **designed-only** — frontmatter correct, bodies are scaffolds |
-| `tests/TEST-MANIFEST.md` — 36+ named tests | **designed-only** — named, none written |
+| `frontend/contracts/answer_schema.json` + `error_shape.json` + `tool_signatures.yaml` | **built** — Contract 3 and Contract 2, verified by a passing check |
+| `frontend/fixtures/` — 3 answer fixtures, 3 page fixtures | **built** — validate against the schema; char offsets generated from the page text |
+| `backend/scripts/check_gate.py` — 5 mechanical checks | **built** — verified to catch injected violations, not only to pass |
+| `backend/scripts/deploy.sh` — manifest-driven deploy | **partial** — parsing and dry-run tested; never run against an account |
+| `backend/sql/setup.sql` — 21-step manifest | **partial** — every step present, every line commented. Deploys nothing yet. |
+| `backend/sql/procedures/tools/_preamble.sql` | **designed-only** — written, **never compiled**; no `GOVERNANCE` tables exist |
+| `backend/sql/prompts/` | **partial** — `pass_a_lab` and `pass_b_verify` verbatim from the spec; four type-specific prompts are `@0.x` drafts, **never run against a page** |
+| `backend/skills/` — 4 `SKILL.md` | **designed-only** — frontmatter correct, bodies are scaffolds |
+| `backend/tests/TEST-MANIFEST.md` — 36+ named tests | **designed-only** — named, none written |
 | Everything below this section | unchanged — **designed-only** |
 
 **A draft prompt must not run in a scored evaluation.** A number produced by an unreviewed extractor is not a measurement.

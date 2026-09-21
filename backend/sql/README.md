@@ -1,4 +1,4 @@
-# `sql/` — every Snowflake object
+# `backend/sql/` — every Snowflake object
 
 **Build order is diagram 5b in `ARCHITECTURE-DIAGRAMS.md`, encoded in `setup.sql`. Read that file first; it is the map.**
 
@@ -50,10 +50,10 @@ Each was established empirically, each cost real time, and each fails somewhere 
 
 ```sh
 # local, during development — runs each uncommented manifest line in order
-scripts/deploy.sh <connection-name>
+backend/scripts/deploy.sh <connection-name>
 
 # from the repository stage — the path judges reproduce
-EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/sql/setup.sql;
+EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/backend/sql/setup.sql;
 ```
 
 Both read the same manifest and skip the same commented lines, so build order and build progress have one source.
@@ -61,5 +61,5 @@ Both read the same manifest and skip the same commented lines, so build order an
 **Before the Day-5 gate and again on Day 15:**
 
 ```sh
-scripts/check_gate.py --all
+backend/scripts/check_gate.py --all
 ```

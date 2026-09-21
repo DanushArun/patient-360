@@ -16,7 +16,7 @@
 
 ---
 
-## 1 — Access control · `tests/sql/access/` · `[1]`
+## 1 — Access control · `backend/tests/backend/sql/access/` · `[1]`
 
 **One negative test per tool. The expected result is *nothing* — not an error, not an empty-with-explanation. Nothing.**
 
@@ -39,7 +39,7 @@
 
 **`t00` is not optional.** Thirteen tests that all expect "nothing" will all pass against a procedure that returns nothing to everybody. The positive control is what makes the other thirteen mean something.
 
-## 2 — Extraction, R7 · `tests/sql/extraction/` · `[1]`
+## 2 — Extraction, R7 · `backend/tests/backend/sql/extraction/` · `[1]`
 
 | | Test | File | Expected |
 |---|---|---|---|
@@ -56,7 +56,7 @@
 
 `t26` is the one worth arguing about. R7 is enforced by **the absence of a transition** in the state machine, not by a guard clause — so the test should attempt the illegal transition directly, not merely confirm the happy path.
 
-## 3 — Validator · `tests/sql/validator/` · `[1]`
+## 3 — Validator · `backend/tests/backend/sql/validator/` · `[1]`
 
 **Six tests, one per check, each constructed to make that check fire.** Six tests that pass prove nothing.
 
@@ -73,7 +73,7 @@
 
 `t36` is the most valuable test in this table. A validator that fails open is worse than no validator, because it manufactures confidence.
 
-## 4 — Classifier · `tests/sql/classifier/` · `[1]`
+## 4 — Classifier · `backend/tests/backend/sql/classifier/` · `[1]`
 
 | | Test | File | Expected |
 |---|---|---|---|
@@ -82,7 +82,7 @@
 | — | *"Is she ready?"* | `t42_ambiguous_defaults_to_a.sql` | Class A |
 | — | keyword stage costs no LLM call | `t43_keyword_zero_latency.sql` | stage 1 short-circuits |
 
-## 5 — Rules · `tests/sql/rules/` · `[2]`
+## 5 — Rules · `backend/tests/backend/sql/rules/` · `[2]`
 
 16 rules × 4 outcomes. Every rule returns the correct `rule_version` and a non-empty `evidence_ids` in each state. **Count settled with Builder 2** — `WORK-PLAN.md` says 64 (4 outcomes), `SPEC.md` §14 says 80 (5 cases, adding exact-boundary). Whichever ships is the number the eval report cites.
 
@@ -96,9 +96,9 @@
 | — | citation is clickable | clicking a claim opens the exact page, span highlighted |
 | — | scope enforced | Practitioner 2 asks the same question → nothing |
 | — | consent works | revoke → same question returns nothing |
-| — | **no stub survives** | `scripts/check_gate.py --all --strict` |
+| — | **no stub survives** | `backend/scripts/check_gate.py --all --strict` |
 
-## 7 — Judge probes · `app/pages/6_Judge_Console.py` · `[1]`
+## 7 — Judge probes · `frontend/pages/6_Judge_Console.py` · `[1]`
 
 Eight buttons, each showing its SQL and its result, **all runnable from the read-only `SAARTHI_JUDGE` role.** A probe that needs write access is a probe a judge cannot run, and judges spend 18 days alone with this repository.
 
@@ -113,7 +113,7 @@ Eight buttons, each showing its SQL and its result, **all runnable from the read
 | — | 7 Class A question | refused in every role including oncologist |
 | — | 8 regulatory question | answered from the real PM-JAY manual, page and clause |
 
-## 8 — Eval · `eval/` · `[1]`
+## 8 — Eval · `backend/eval/` · `[1]`
 
 | | Instrument | Target |
 |---|---|---|
@@ -131,8 +131,8 @@ Eight buttons, each showing its SQL and its result, **all runnable from the read
 ## Running them
 
 ```sh
-scripts/check_gate.py --all --strict     # the mechanical checks
-tests/run_tests.py                       # the SQL suites
+backend/scripts/check_gate.py --all --strict     # the mechanical checks
+backend/tests/run_tests.py                       # the SQL suites
 ```
 
 **Record failures.** Failure-and-fix pairs are the most credible lifecycle evidence available and judges are explicitly looking for evidence at every phase. Do not curate them out of the results file.

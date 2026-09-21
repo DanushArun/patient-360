@@ -17,15 +17,15 @@
 -- HOW TO USE IT DURING THE BUILD
 --   Every line starts commented out. Uncomment a line the moment its file
 --   exists AND runs clean on its own. A commented line is skipped identically by
---   Snowflake and by scripts/deploy.sh, so the manifest is the single source of
---   build order and of build progress. `scripts/check_gate.py --manifest` fails
+--   Snowflake and by backend/scripts/deploy.sh, so the manifest is the single source of
+--   build order and of build progress. `backend/scripts/check_gate.py --manifest` fails
 --   if an uncommented line points at a file that does not exist.
 --
 -- RUN IT
 --   from the repository stage (the deploy path judges reproduce):
---       EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/sql/setup.sql;
+--       EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/backend/sql/setup.sql;
 --   locally, during development:
---       scripts/deploy.sh <connection-name>
+--       backend/scripts/deploy.sh <connection-name>
 --
 -- IDEMPOTENCY
 --   setup.sql must run clean on a fresh account, run clean a second time, run
@@ -263,8 +263,8 @@
 -- =============================================================================
 -- NOT PART OF THE DEPLOY
 -- =============================================================================
--- sql/stubs/ must NEVER be referenced from this file. It exists so Builder 1
+-- backend/sql/stubs/ must NEVER be referenced from this file. It exists so Builder 1
 -- never waits for Builder 2, and it is deleted at the Day-5 gate.
 -- "Any answer is hard-coded" is a go/no-go failure; a surviving stub is how
--- that happens by accident. scripts/check_gate.py --stubs enforces it.
+-- that happens by accident. backend/scripts/check_gate.py --stubs enforces it.
 -- =============================================================================

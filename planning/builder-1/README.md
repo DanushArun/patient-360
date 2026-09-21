@@ -20,8 +20,8 @@ These are derived from `WORK-PLAN.md`, `COPILOT-SPEC.md`, `ARCHITECTURE-HANDOFF.
 | | Builder 1 | Builder 2 |
 |---|---|---|
 | **SQL** | `procedures/tools/` · `classify_question` · `validate_answer` · `tasks/extract_assertions` · `tasks/reconcile_evidence` · `tasks/orchestrator` · `agent/` · `prompts/` · `stubs/` | `account/` · `tables/` · `governance/` · `data/` · `streams/` · `dynamic_tables/` · `search/` · `semantic/` · `integrations/` · `evaluate_gates` · `bind_patient` · the other four tasks · `setup.sql` |
-| **Python** | `app/` · `eval/` | `data/generator/` |
-| **Other** | `skills/` · `tests/sql/{access,extraction,validator}` · README | `data/reference/` · `tests/sql/rules` |
+| **Python** | `frontend/` · `backend/eval/` | `data/generator/` |
+| **Other** | `backend/skills/` · `backend/tests/backend/sql/{access,extraction,validator}` · README | `data/reference/` · `backend/tests/backend/sql/rules` |
 | **Contracts owned** | Answer JSON (3) · tool signatures (2) | Physical schema (1) · rule definitions (4) · synthetic data (5) |
 
 ---
@@ -32,20 +32,20 @@ The scaffold is built. Directories exist, the frozen contracts are written and v
 
 | Path | State |
 |---|---|
-| `sql/` … `app/` … `skills/` … `eval/` … `tests/` … `scripts/` | full tree, per `REPO-STRUCTURE.md` |
-| `app/contracts/` | **written and verified** — schema, error envelope, tool signatures, plus a README explaining each constraint |
-| `app/fixtures/` | 3 answer fixtures + 3 page fixtures. Every char offset was **generated from the page text**, so click-through lands where it should |
-| `sql/setup.sql` | the 21-step manifest, every line present and commented. Uncomment a line as its file lands. |
-| `sql/procedures/tools/_preamble.sql` | the bind → authorise → consent block, ready to paste. **Not yet compiled — no tables exist.** |
-| `sql/prompts/` | pass A lab + pass B verbatim from the spec; four type-specific drafts; `CHANGELOG.md` |
-| `skills/` | 4 `SKILL.md` scaffolds with correct frontmatter, README carrying the three silent gotchas |
-| `tests/TEST-MANIFEST.md` | every required test named — 14 access, 10 extraction, 8 validator, 4 classifier, 8 probes |
-| `scripts/check_gate.py` | 5 mechanical checks. **Verified to catch injected violations, not just to pass.** |
-| `scripts/deploy.sh` | parses the manifest, runs each step, resumes from a failure. Dry-run tested. |
+| `backend/sql/` … `frontend/` … `backend/skills/` … `backend/eval/` … `backend/tests/` … `backend/scripts/` | full tree, per `REPO-STRUCTURE.md` |
+| `frontend/contracts/` | **written and verified** — schema, error envelope, tool signatures, plus a README explaining each constraint |
+| `frontend/fixtures/` | 3 answer fixtures + 3 page fixtures. Every char offset was **generated from the page text**, so click-through lands where it should |
+| `backend/sql/setup.sql` | the 21-step manifest, every line present and commented. Uncomment a line as its file lands. |
+| `backend/sql/procedures/tools/_preamble.sql` | the bind → authorise → consent block, ready to paste. **Not yet compiled — no tables exist.** |
+| `backend/sql/prompts/` | pass A lab + pass B verbatim from the spec; four type-specific drafts; `CHANGELOG.md` |
+| `backend/skills/` | 4 `SKILL.md` scaffolds with correct frontmatter, README carrying the three silent gotchas |
+| `backend/tests/TEST-MANIFEST.md` | every required test named — 14 access, 10 extraction, 8 validator, 4 classifier, 8 probes |
+| `backend/scripts/check_gate.py` | 5 mechanical checks. **Verified to catch injected violations, not just to pass.** |
+| `backend/scripts/deploy.sh` | parses the manifest, runs each step, resumes from a failure. Dry-run tested. |
 
 ```sh
-scripts/check_gate.py --all            # 13 pass, 3 skip (agent, tools, manifest not written yet)
-scripts/deploy.sh <connection> --dry-run
+backend/scripts/check_gate.py --all            # 13 pass, 3 skip (agent, tools, manifest not written yet)
+backend/scripts/deploy.sh <connection> --dry-run
 ```
 
 `--strict` turns every skip into a failure. Use it from the Day-5 gate onward.
@@ -56,7 +56,7 @@ scripts/deploy.sh <connection> --dry-run
 
 1. **Settle the six items below with Builder 2.** Twenty minutes now, or a rewrite on Day 6.
 2. **Review and commit the contracts.** They are written; they are not yet agreed. Item 7 needs your decision specifically.
-3. **Build the whole Ask + Evidence screen against `app/fixtures/`.** No table needs to exist.
+3. **Build the whole Ask + Evidence screen against `frontend/fixtures/`.** No table needs to exist.
 4. **Run U2, U3, U4** and record the query IDs in `evidence/coco/verification-query-ids.md`.
 
 ---
@@ -67,7 +67,7 @@ scripts/deploy.sh <connection> --dry-run
 
 ### 1 — Who writes the tool procedure bodies
 
-`WORK-PLAN.md` line 34 (frozen contracts) says *"Stream 1 specifies, Stream 2 implements bodies."* `WORK-PLAN.md` Days 3–4 puts `sql/procedures/tools/*.sql` squarely in Stream 1's task list. `ARCHITECTURE-HANDOFF.md` §2 says the reverse of both (*"Stream B specifies, Stream A implements the bodies"*) using the older three-stream lettering.
+`WORK-PLAN.md` line 34 (frozen contracts) says *"Stream 1 specifies, Stream 2 implements bodies."* `WORK-PLAN.md` Days 3–4 puts `backend/sql/procedures/tools/*.sql` squarely in Stream 1's task list. `ARCHITECTURE-HANDOFF.md` §2 says the reverse of both (*"Stream B specifies, Stream A implements the bodies"*) using the older three-stream lettering.
 
 **Recommended: Builder 1 writes them.** The day-by-day plan is the more operational document, the tool layer is the trust boundary the copilot depends on, and the person building the agent should own the surface the agent calls. Builder 2 owns the tables those bodies read and reviews the preamble.
 
@@ -107,7 +107,7 @@ It is in `SPEC.md` §2.8 and it is the actual output of the Class A refusal path
 
 `COPILOT-SPEC.md` §2 shows only a Class B answer. §4 requires the Class A refusal to render a *"Generate evidence packet"* button **addressed to the named treating practitioner via `nmc_registration_no`**, and the frozen schema has no field for them. A UI cannot render a button whose target is buried in a prose string.
 
-`app/contracts/answer_schema.json` as written adds an optional `refusal` object, required by an `if/then` when `classification` is `CLASS_A` — which closes the gap and makes a second constraint machine-checkable: **a refused question carries no claims.** Alternatives considered and why they lose are in `app/contracts/README.md`.
+`frontend/contracts/answer_schema.json` as written adds an optional `refusal` object, required by an `if/then` when `classification` is `CLASS_A` — which closes the gap and makes a second constraint machine-checkable: **a refused question carries no claims.** Alternatives considered and why they lose are in `frontend/contracts/README.md`.
 
 **Builder 1 owns Contract 3, so this is within Builder 1's authority to ratify** — but it is an addition to a frozen contract, so say it out loud and add a row to `COPILOT-SPEC.md` §7. Absorbing it silently is how the next person discovers the schema no longer matches the document it came from.
 

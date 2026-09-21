@@ -1,4 +1,4 @@
-"""Validates a SAARTHI answer against Contract 3 (app/contracts/answer_schema.json).
+"""Validates a SAARTHI answer against Contract 3 (frontend/contracts/answer_schema.json).
 
 The schema is frozen (COPILOT-SPEC.md 2 / ARCHITECTURE-HANDOFF.md Contract 3) and
 consumed here as data, never duplicated: this module is a thin, correct wrapper

@@ -130,7 +130,7 @@ models:
 
 The only evidence of what runs here is a probe dated 17 Sept, which predates at least one model generation.
 
-**`sql/probes/model_availability.sql` runs before any extraction work begins.** Every result — available or not — goes into `evidence/coco/verification-query-ids.md` with its query ID. Owner: Builder 1, Day 1.
+**`backend/sql/probes/model_availability.sql` runs before any extraction work begins.** Every result — available or not — goes into `evidence/coco/verification-query-ids.md` with its query ID. Owner: Builder 1, Day 1.
 
 **Access prerequisites, in order.** Without both, every model call fails and the error points somewhere unhelpful:
 
@@ -672,7 +672,7 @@ Outbound direction — the ticket action — uses CoCo's own MCP client against 
 
 **Notifications** — `CREATE NOTIFICATION INTEGRATION` (email + webhook/Slack). `TASK_NOTIFY` fires on `blocker AND days_to_visit <= 3` → coordinator; `<= 1` → escalate to treating practitioner. Every send recorded in `NOTIFICATION`. Closes S5; explainer: *"notify the final user… emails… Slack."*
 
-**Git integration** — `CREATE GIT REPOSITORY` + `EXECUTE IMMEDIATE FROM @repo/branches/main/sql/setup.sql`. One command deploys everything, matching the `sf-hcls-solutions` convention judges benchmark against.
+**Git integration** — `CREATE GIT REPOSITORY` + `EXECUTE IMMEDIATE FROM @repo/branches/main/backend/sql/setup.sql`. One command deploys everything, matching the `sf-hcls-solutions` convention judges benchmark against.
 
 **Observability** — `QUERY_HISTORY` for the live leakage demo (near-real-time); `ACCESS_HISTORY` for the written evidence pack (**up to 180 min lag**). We label which is which. Presenting a 3-hour-stale view as live would be the dishonesty we criticise in others.
 
@@ -768,7 +768,7 @@ Found by checking the model layer against Snowflake's published roster rather th
 | 1 | **Pass A and pass B were the same model family.** Llama 3.3 70B and Llama 3.1 70B share an architecture; the "cross-family independence" that justifies R7 did not exist | Pass B → `claude-haiku-4-5`. §1.1 | **High — it undermined the submission's strongest claim** |
 | 2 | `llama3.1-70b` is marked `[legacy]`, end-of-life pending, with no published removal date | same change as #1 | High — 18-day unattended evaluation |
 | 3 | `orchestration: auto` re-selects upward whenever a stronger model lands, silently changing cost and behaviour | orchestration pinned. §1.2 | Medium — budget and reproducibility |
-| 4 | `GCP_ME_CENTRAL2` appears in no regional availability table; every model arrives cross-region, so the published roster is an upper bound | `sql/probes/model_availability.sql`, Day 1, query IDs recorded. §1.3 | Medium |
+| 4 | `GCP_ME_CENTRAL2` appears in no regional availability table; every model arrives cross-region, so the published roster is an upper bound | `backend/sql/probes/model_availability.sql`, Day 1, query IDs recorded. §1.3 | Medium |
 | 5 | **U1 resolved.** `AI_PARSE_DOCUMENT` bills per page at 970 tokens/page → a 300-page corpus is $0.03–$1.50, not $78. The $78 figure added CoCo development credits to runtime token billing | Tier 2 corpus unblocked. §9 | Medium — it was blocking scope |
 | 6 | `AI_CLASSIFY` bills labels, descriptions and examples as input tokens **per record**, not once | keep the doc-type label list terse. §9 | Low |
 | 7 | `SNOWFLAKE.CORTEX.COMPLETE` is superseded by `AI_COMPLETE` | new code uses `AI_COMPLETE`. §1.3 | Low |

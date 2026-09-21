@@ -1,4 +1,4 @@
-"""Tests for app/core/contracts.py — Contract 3 (app/contracts/answer_schema.json).
+"""Tests for frontend/core/contracts.py — Contract 3 (frontend/contracts/answer_schema.json).
 
 Schema semantics under test come from COPILOT-SPEC.md 2 / ARCHITECTURE-HANDOFF.md
 Contract 3, as encoded in the frozen schema file itself:
@@ -14,7 +14,7 @@ import copy
 
 import pytest
 
-from app.core.contracts import validate_answer, _compiled_validator
+from frontend.core.contracts import validate_answer, _compiled_validator
 
 
 def _minimal_class_b_answer() -> dict:
@@ -136,7 +136,7 @@ def test_evidence_kind_must_be_a_recognised_variant():
 def test_schema_validator_is_compiled_once_and_cached():
     # Compiling the schema (JSON parse + schema validation) is paid once;
     # every subsequent validate_answer call reuses the same validator object
-    # instead of re-parsing app/contracts/answer_schema.json from disk.
+    # instead of re-parsing frontend/contracts/answer_schema.json from disk.
     first = _compiled_validator()
     second = _compiled_validator()
     assert first is second

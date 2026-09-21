@@ -12,13 +12,13 @@ The point of this table is that "meets all requirements" becomes checkable rathe
 
 | Rule | What it demands of Builder 1 | Implemented in | Proved by |
 |---|---|---|---|
-| **R1** | the LLM never decides — no status, number, date, threshold comparison or gate outcome comes from a model | agent instructions in `sql/agent/saarthi_agent.sql`; `GetReadiness` calls `evaluate_gates` and never recomputes | `tests/sql/rules/` returns the same outcomes with the agent absent; diagram 4 has no amber box |
+| **R1** | the LLM never decides — no status, number, date, threshold comparison or gate outcome comes from a model | agent instructions in `backend/sql/agent/saarthi_agent.sql`; `GetReadiness` calls `evaluate_gates` and never recomputes | `backend/tests/backend/sql/rules/` returns the same outcomes with the agent absent; diagram 4 has no amber box |
 | **R2** | every answer carries `known_as_of`; three clocks survive to the UI | `answer_schema.json` requires it; `_preamble.sql` resolves it **first**, so even errors carry it | schema rejects an answer without it — `check_gate.py --contracts` |
 | **R3** | missingness is a type — "not received" is never "negative" | `pass_a_*.md` prompts return `missingness_state`; four-valued `outcome` on every claim | `t24`, `t25`; `answer_conflicting.json` renders three distinct outcomes in one answer |
 | **R4** | ambiguous identity contributes **no** evidence | consumed, not implemented, by Builder 1 — the identity gate | `ID-QUAR-001` fixtures `[2]` |
-| **R5** | scope enforced server-side, three layers, before retrieval | `_preamble.sql` + the three-step body of `03_search_patient_documents.sql` | `tests/sql/access/` — 14 tests, including a positive control |
+| **R5** | scope enforced server-side, three layers, before retrieval | `_preamble.sql` + the three-step body of `03_search_patient_documents.sql` | `backend/tests/backend/sql/access/` — 14 tests, including a positive control |
 | **R6** | two corpora, never mixed in one ranked list | separate tools over separate services; `reference_clause` renders distinctly | `t04`; **`ground_truth_invocations` machine-checks it across all 80 eval questions** |
-| **R7** | never assert a safety-critical value from one unverified read | `sql/tasks/extract_assertions.sql`, `pass_b_verify.md` | `t21`, `t25`, `t26` — and `t26` attempts the illegal transition directly |
+| **R7** | never assert a safety-critical value from one unverified read | `backend/sql/tasks/extract_assertions.sql`, `pass_b_verify.md` | `t21`, `t25`, `t26` — and `t26` attempts the illegal transition directly |
 
 ## 2 — The verified platform facts that constrain Builder 1's code
 
@@ -28,11 +28,11 @@ Each was established empirically and each fails somewhere other than where the m
 |---|---|---|---|
 | F3 | `CURRENT_USER()` survives owner's-rights elevation; `CURRENT_ROLE()` does not | `_preamble.sql` resolves the practitioner from `CURRENT_USER()` | `t01`; U2 query id |
 | F5 | Cortex Search ignores row access policies | tool 3 re-fetches text from `DOC_PAGE`, never returns index text | Judge probe 2 — the leak reproduced, then closed |
-| F7 | secondary roles defeat a `USAGE`-based control | `app/core/session.py` runs `USE SECONDARY ROLES NONE` on every session | both query ids recorded — with and without |
+| F7 | secondary roles defeat a `USAGE`-based control | `frontend/core/session.py` runs `USE SECONDARY ROLES NONE` on every session | both query ids recorded — with and without |
 | F8 | `AI_FILTER` text form takes **one** argument | `validate_answer.sql` check 4 | `t33` discriminates; `t36` proves it fails closed |
 | F9 | AI functions cannot read non-SSE stages | skills upload to the SSE `SKILLS` stage | step 19 runs clean on a clean account |
 | **A1** | the agent derives `patient_id` from question text and injects the filter itself | **no patient selector in any tool schema** | `check_gate.py --params` fails the build on regression |
-| — | `GCP_ME_CENTRAL2` is in no regional availability table; every model arrives cross-region and the published roster is an upper bound | model choices in `extract_assertions.sql` and the agent spec | `sql/probes/model_availability.sql`, Day 1, query IDs recorded |
+| — | `GCP_ME_CENTRAL2` is in no regional availability table; every model arrives cross-region and the published roster is an upper bound | model choices in `extract_assertions.sql` and the agent spec | `backend/sql/probes/model_availability.sql`, Day 1, query IDs recorded |
 | — | `orchestration: auto` re-selects upward when a stronger model lands, changing cost and invalidating measured accuracy | `models.orchestration` **pinned** in the agent spec | grep the agent spec for `auto`; re-run eval after any deliberate change |
 
 ## 3 — The brief, line by line
@@ -49,7 +49,7 @@ Each was established empirically and each fails somewhere other than where the m
 | MCP connectors | 2 read-only tools, no patient-scoped tool exposed | `saarthi_mcp.sql` lists two identifiers |
 | custom tools / function calling | 8 generic tools over procedures | `tool_signatures.yaml` |
 | multi-agent orchestration | `TASK_SAARTHI_ORCHESTRATOR` chains the 4 skills | the task runs and the skills are invoked |
-| guardrails / graceful fallback | 11 named situations in `error_shape.json` | `app/core/errors.py` covers all 11; fallback router tested **with the agent off** |
+| guardrails / graceful fallback | 11 named situations in `error_shape.json` | `frontend/core/errors.py` covers all 11; fallback router tested **with the agent off** |
 
 ## 4 — Go / no-go. Any one of these true is a no-go.
 
@@ -76,15 +76,15 @@ Ranked. If the schedule collapses, these survive in this order.
 | 4 | **4 skills + orchestrating Task** | instructions placed in SKILL.md frontmatter, which agents ignore. Loads, runs, does nothing. |
 | 5 | **a working vertical slice, deployed** | a stub surviving past Day 5 |
 
-**Each of these five has a mechanical check, because each is invisible by inspection.** That is the whole argument for `scripts/check_gate.py` existing at all: the failures that cost the most here do not announce themselves.
+**Each of these five has a mechanical check, because each is invisible by inspection.** That is the whole argument for `backend/scripts/check_gate.py` existing at all: the failures that cost the most here do not announce themselves.
 
 ## 6 — Honesty obligations, worth 30%
 
 | Obligation | Where it lands |
 |---|---|
 | no README claim that is not demonstrable from the repo | every claim maps to a row above |
-| absolute counts alongside rates | `eval/results/` — "94% on 80 questions", never "94% accuracy" |
-| cold starts reported separately | `eval/results/` |
+| absolute counts alongside rates | `backend/eval/results/` — "94% on 80 questions", never "94% accuracy" |
+| cold starts reported separately | `backend/eval/results/` |
 | engineering gates on synthetic tests ≠ clinical validation | stated in the eval report, not only in the deck |
 | `QUERY_HISTORY` live, `ACCESS_HISTORY` up to 180 min stale | each Judge Console probe labels which it used |
 | three thresholds are practice consensus | `provenance_note` travels from the rule into the claim and into the UI |

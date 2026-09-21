@@ -2,12 +2,12 @@
 #
 # SAARTHI - local deploy.
 #
-# Reads the ACTIVE (uncommented) EXECUTE IMMEDIATE FROM lines out of sql/setup.sql
-# and runs each file in that order through the Snowflake CLI.
+# Reads the ACTIVE (uncommented) EXECUTE IMMEDIATE FROM lines out of
+# backend/sql/setup.sql and runs each file in that order through the Snowflake CLI.
 #
-#   scripts/deploy.sh <connection>              deploy
-#   scripts/deploy.sh <connection> --dry-run    print the plan, touch nothing
-#   scripts/deploy.sh <connection> --from 14    resume from build step 14
+#   backend/scripts/deploy.sh <connection>              deploy
+#   backend/scripts/deploy.sh <connection> --dry-run    print the plan, touch nothing
+#   backend/scripts/deploy.sh <connection> --from 14    resume from build step 14
 #
 # WHY THIS SCRIPT EXISTS AT ALL
 #   EXECUTE IMMEDIATE FROM resolves relative paths against the calling file's
@@ -18,7 +18,7 @@
 #   commented line is skipped identically by both.
 #
 # THE DEPLOY JUDGES REPRODUCE IS THE OTHER ONE
-#       EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/sql/setup.sql;
+#       EXECUTE IMMEDIATE FROM @SAARTHI_REPO/branches/main/backend/sql/setup.sql;
 #   Use that for the clean-account rehearsal on Day 15. This script is for the
 #   inner loop, and a script that only works on a developer's machine is exactly
 #   the failure the Day-15 rehearsal exists to catch.
@@ -33,7 +33,7 @@ DRY_RUN=0
 FROM_STEP=0
 
 if [[ -z "${CONN}" || "${CONN}" == -* ]]; then
-  echo "usage: scripts/deploy.sh <connection> [--dry-run] [--from N]" >&2
+  echo "usage: backend/scripts/deploy.sh <connection> [--dry-run] [--from N]" >&2
   echo "  connection is a Snowflake CLI connection name (snow connection list)" >&2
   exit 2
 fi
@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ ! -f "${SETUP}" ]]; then
-  echo "sql/setup.sql not found" >&2
+  echo "backend/sql/setup.sql not found" >&2
   exit 1
 fi
 
@@ -69,7 +69,7 @@ TARGETS="$(
 )"
 
 if [[ -z "${TARGETS}" ]]; then
-  echo "No active deploy steps in sql/setup.sql."
+  echo "No active deploy steps in backend/sql/setup.sql."
   echo "Uncomment each EXECUTE IMMEDIATE FROM line as its file lands and runs clean."
   exit 0
 fi
@@ -96,8 +96,8 @@ while IFS= read -r rel; do
   if [[ ! -f "${file}" ]]; then
     printf '  %2d  MISS  %s\n' "${n}" "${rel}"
     echo >&2
-    echo "setup.sql activates a file that does not exist: sql/${rel}" >&2
-    echo "Either create it or re-comment its line. scripts/check_gate.py --manifest checks this." >&2
+    echo "setup.sql activates a file that does not exist: backend/sql/${rel}" >&2
+    echo "Either create it or re-comment its line. backend/scripts/check_gate.py --manifest checks this." >&2
     exit 1
   fi
 
@@ -112,9 +112,9 @@ while IFS= read -r rel; do
   else
     echo "FAILED"
     echo >&2
-    echo "Step ${n} failed: sql/${rel}" >&2
+    echo "Step ${n} failed: backend/sql/${rel}" >&2
     echo "Fix it, then resume without repeating what already succeeded:" >&2
-    echo "    scripts/deploy.sh ${CONN} --from ${n}" >&2
+    echo "    backend/scripts/deploy.sh ${CONN} --from ${n}" >&2
     exit 1
   fi
 done <<EOF

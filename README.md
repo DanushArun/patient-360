@@ -45,8 +45,8 @@ Editable sources are the `.drawio` files in `planning/diagrams/`; rendered below
 
 - `data/generator/` — Python scripts generating synthetic patients and documents
 - `data/fixtures/` — generated fake data (JSON/CSV/text), including `documents/`
-- `sql/` — CREATE TABLE / load scripts for Snowflake
-- `app/` — Streamlit application code
-- `tests/` — test questions + expected answers, kept separate from `app/` so it can't read its own answer key
+- `backend/sql/` — CREATE TABLE / load scripts for Snowflake
+- `frontend/` — Streamlit application code
+- `backend/tests/` — test questions + expected answers, kept separate from `frontend/` so it can't read its own answer key
 - `evidence/coco/` — CoCo session notes, screenshots, proof of how this was built
 - `planning/` — this project's plan, architecture docs, and diagrams

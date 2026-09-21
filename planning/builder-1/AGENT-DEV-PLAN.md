@@ -14,12 +14,12 @@ Six components implement that sentence. Each is independently testable, and each
 
 | # | Component | File | Fails closed by |
 |---|---|---|---|
-| 1 | Class A/B classifier | `sql/procedures/classify_question.sql` | defaulting to Class A |
-| 2 | Tool layer, 8 procedures | `sql/procedures/tools/` | returning nothing, not an error |
-| 3 | Agent | `sql/agent/saarthi_agent.sql` | having no `patient_id` parameter to reach |
-| 4 | Answer validator | `sql/procedures/validate_answer.sql` | stripping the claim on any check error |
-| 5 | Deterministic router | `app/core/router.py` | answering from the same procedures when the agent is unreachable |
-| 6 | R7 extraction | `sql/tasks/extract_assertions.sql` | never asserting a value two families disagree on |
+| 1 | Class A/B classifier | `backend/sql/procedures/classify_question.sql` | defaulting to Class A |
+| 2 | Tool layer, 8 procedures | `backend/sql/procedures/tools/` | returning nothing, not an error |
+| 3 | Agent | `backend/sql/agent/saarthi_agent.sql` | having no `patient_id` parameter to reach |
+| 4 | Answer validator | `backend/sql/procedures/validate_answer.sql` | stripping the claim on any check error |
+| 5 | Deterministic router | `frontend/core/router.py` | answering from the same procedures when the agent is unreachable |
+| 6 | R7 extraction | `backend/sql/tasks/extract_assertions.sql` | never asserting a value two families disagree on |
 
 ---
 
@@ -27,11 +27,11 @@ Six components implement that sentence. Each is independently testable, and each
 
 **Commit this before writing any other line of Builder 1 code.** The validator, the agent prompt, the UI, and the eval harness all read it. `SPEC.md` §7 shows an older flat `evidence_ids` form — **that example is stale**; `COPILOT-SPEC.md` §2 and `ARCHITECTURE-HANDOFF.md` Contract 3 carry the typed form, and the typed form is what ships.
 
-**It is written and verified: `app/contracts/answer_schema.json`.**
+**It is written and verified: `frontend/contracts/answer_schema.json`.**
 
-This document does not reproduce it. Two copies of a contract is how a contract drifts, and the file plus `app/contracts/README.md` — which explains every constraint and the one proposed extension — is the single source.
+This document does not reproduce it. Two copies of a contract is how a contract drifts, and the file plus `frontend/contracts/README.md` — which explains every constraint and the one proposed extension — is the single source.
 
-**Verified, not asserted.** `scripts/check_gate.py --contracts` validates all three fixtures against the schema *and* confirms the schema **rejects** six malformed answers: a Class A answer carrying a claim, a claim with an empty `evidence` array, a claim carrying a `confidence` field, a Class B answer marked `refused`, a Class A answer naming no practitioner, and an answer with no `known_as_of`. All ten checks currently pass.
+**Verified, not asserted.** `backend/scripts/check_gate.py --contracts` validates all three fixtures against the schema *and* confirms the schema **rejects** six malformed answers: a Class A answer carrying a claim, a claim with an empty `evidence` array, a claim carrying a `confidence` field, a Class B answer marked `refused`, a Class A answer naming no practitioner, and an answer with no `known_as_of`. All ten checks currently pass.
 
 **A schema with no conforming instance is untested, and a schema that has never rejected anything is decorative.** Run both halves before trusting it.
 
@@ -44,7 +44,7 @@ This document does not reproduce it. Two copies of a contract is how a contract 
 
 **What the schema cannot enforce is `derived`.** It is mandatory *only* when a `structured` value was computed rather than read, and JSON Schema cannot see which. **`validate_answer` enforces it:** if the cited `CLINICAL_EVENT` row carries a derivation marker from `DT_HARMONIZED_EVENTS` (ANC from a differential, CrCl from Cockcroft-Gault) and the evidence object has no `derived` string, the claim is stripped. A computed number presented as a printed one is a quiet form of fabrication, and it is the single most likely way this system misleads a clinician who does exactly the right thing and clicks through.
 
-### The error envelope — `app/contracts/error_shape.json`
+### The error envelope — `frontend/contracts/error_shape.json`
 
 ```json
 {"error": "no_patient_bound" | "no_patient_access" | "access_withdrawn"
@@ -57,7 +57,7 @@ The asymmetry is deliberate and must survive into the UI copy. `no_patient_acces
 
 ## 2. Contract 2 — tool signatures, and the preamble every tool shares
 
-`app/contracts/tool_signatures.yaml` is the single source. The agent's `tool_spec` blocks are generated from it, so the two cannot drift; the stubs are generated from it too.
+`frontend/contracts/tool_signatures.yaml` is the single source. The agent's `tool_spec` blocks are generated from it, so the two cannot drift; the stubs are generated from it too.
 
 | # | Procedure | Input | Returns | Notes |
 |---|---|---|---|---|
@@ -72,9 +72,9 @@ The asymmetry is deliberate and must survive into the UI copy. `no_patient_acces
 
 **`patient_id` appears in none of them. Neither does `encounter_id`.** An encounter id identifies a patient, so accepting one reopens A1 under a different parameter name — `COPILOT-SPEC.md` §0 found this and it is the correction most likely to be undone by accident when someone adds a "convenience" parameter at 2am on Day 9.
 
-### The preamble — `sql/procedures/tools/_preamble.sql`
+### The preamble — `backend/sql/procedures/tools/_preamble.sql`
 
-**Written. Ready to paste.** Every tool procedure opens with the same block, between the markers `-- >>> SAARTHI PREAMBLE v1 BEGIN/END`. It is pasted, not abstracted, and `scripts/check_gate.py --preamble` diffs the eight copies against the reference file, so drift is a build failure rather than a discovery.
+**Written. Ready to paste.** Every tool procedure opens with the same block, between the markers `-- >>> SAARTHI PREAMBLE v1 BEGIN/END`. It is pasted, not abstracted, and `backend/scripts/check_gate.py --preamble` diffs the eight copies against the reference file, so drift is a build failure rather than a discovery.
 
 ```
 0.  known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF), CURRENT_TIMESTAMP())
@@ -178,7 +178,7 @@ Inputs must be non-NULL. **If `AI_FILTER` errors or times out, strip the claim.*
 
 ## 6. Component 6 — R7 two-pass extraction
 
-The differentiator. `sql/tasks/extract_assertions.sql`.
+The differentiator. `backend/sql/tasks/extract_assertions.sql`.
 
 | Step | Action |
 |---|---|
@@ -196,11 +196,11 @@ The differentiator. `sql/tasks/extract_assertions.sql`.
 
 ⚠️ **Pass B changed on 20 Sept and this is the detail most likely to be reverted by accident.** The original pairing was `llama3.3-70b` / `llama3.1-70b`, which is **the same Meta family** — the independence the claim rests on did not exist. `llama3.1-70b` is also now marked `[legacy]`. Pass B is `claude-haiku-4-5`; fallbacks are `mistral-large3` then `qwen3-32b`. **Never fall back to a second Llama.** `temperature: 0` on both passes — a sampled disagreement is not an independent read, and R7 cannot tell the two apart. Reasoning: `AI-INTEGRATION-ARCHITECTURE.md` §1.1.
 
-**Run `sql/probes/model_availability.sql` before writing this task.** `GCP_ME_CENTRAL2` is in no regional availability table; every model arrives cross-region, so the published roster is an upper bound, not a guarantee.
+**Run `backend/sql/probes/model_availability.sql` before writing this task.** `GCP_ME_CENTRAL2` is in no regional availability table; every model arrives cross-region, so the published roster is an upper bound, not a guarantee.
 
 **Enforcement is the absence of a transition, not a rule.** Diagram 12: there is no edge from `Conflicting` or `Unverified` to `Asserted`. Write the state handling so that reaching `Asserted` is only possible from `SinglePass`, `Verified`, or an explicit `HumanReview` confirmation. Do not write a guard clause that could be bypassed — write a state machine where the path does not exist.
 
-**Prompt rules that carry the most weight** (full text in `sql/prompts/`):
+**Prompt rules that carry the most weight** (full text in `backend/sql/prompts/`):
 - transcribe verbatim — `1.9 lakhs` stays `1.9 lakhs`; normalisation happens later in a Dynamic Table
 - `10.3 L` is value `10.3`, `abnormal_flag` `L`. **The flag never enters the number.**
 - pending / awaited / to-follow → `missingness_state = 'pending'`, `value = null`. Never guess.
@@ -299,7 +299,7 @@ Truth key lives in the `EVAL` schema, **not readable by the app role** — other
 | 1 | `AI_CLASSIFY` (WORK-PLAN) or the 4-stage cascade (SPEC §12)? | **Cascade.** Keyword-first, `AI_CLASSIFY` on the residue, default Class A. |
 | 2 | Flat `evidence_ids` (SPEC §7) or typed `evidence[]` (COPILOT-SPEC §2)? | **Typed.** SPEC §7's example is stale. |
 | 3 | Classifier keywords in Python or SQL? | **SQL, inside the procedure.** One source of truth, shared with the skill. |
-| 4 | Where do prompts live? | `sql/prompts/*.md`, pasted into task SQL as literals, `CHANGELOG.md` justifies every `extractor_version` bump. |
+| 4 | Where do prompts live? | `backend/sql/prompts/*.md`, pasted into task SQL as literals, `CHANGELOG.md` justifies every `extractor_version` bump. |
 | 5 | Where does Streamlit deploy from? | **The Git repository stage.** A fourth stage would falsify the object inventory. |
 | 6 | Is the deterministic router a real fallback or a claim? | **Real, and tested on Day 8 with the agent disabled.** Otherwise delete the claim. |
 | 7 | 8 tools or 11 procedures? | **8 agent tools** (`tool_signatures.yaml`) **+ 3 internal** (`evaluate_gates`, `validate_answer`, `bind_patient`) that the agent never sees. Both counts are correct about different things; say which in the README. |

@@ -5,8 +5,8 @@
 | File | Contract | Consumed by |
 |---|---|---|
 | `answer_schema.json` | 3 — Answer JSON | agent prompt · `validate_answer` · Streamlit · eval harness |
-| `error_shape.json` | 2, error half | all 8 tool procedures · `app/core/errors.py` |
-| `tool_signatures.yaml` | 2 — tool signatures | `sql/agent/saarthi_agent.sql` (generated) · `sql/stubs/` · `scripts/check_gate.py` |
+| `error_shape.json` | 2, error half | all 8 tool procedures · `frontend/core/errors.py` |
+| `tool_signatures.yaml` | 2 — tool signatures | `backend/sql/agent/saarthi_agent.sql` (generated) · `backend/sql/stubs/` · `backend/scripts/check_gate.py` |
 
 These were committed on Day 1 before any other Builder 1 code, because the validator, the agent prompt and the UI all depend on them and a schema that changes on Day 6 invalidates work in three places at once.
 

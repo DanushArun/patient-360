@@ -4,8 +4,8 @@
 Five mechanical checks that turn promises in the architecture into build failures.
 Run before the Day-5 gate, before every merge, and again on Day 15.
 
-    scripts/check_gate.py --all
-    scripts/check_gate.py --all --strict     # Day 5 onward: SKIP becomes FAIL
+    backend/scripts/check_gate.py --all
+    backend/scripts/check_gate.py --all --strict     # Day 5 onward: SKIP becomes FAIL
 
 Why each check exists
 ---------------------
@@ -36,7 +36,7 @@ import pathlib
 import re
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 
 PASS, FAIL, SKIP = "PASS", "FAIL", "SKIP"
 results: list[tuple[str, str, str]] = []
@@ -89,9 +89,9 @@ NEGATIVE_CONTROLS = {
 
 
 def check_contracts() -> None:
-    schema_path = ROOT / "app/contracts/answer_schema.json"
+    schema_path = ROOT / "frontend/contracts/answer_schema.json"
     if not schema_path.exists():
-        record(FAIL, "contracts", "app/contracts/answer_schema.json is missing")
+        record(FAIL, "contracts", "frontend/contracts/answer_schema.json is missing")
         return
 
     schema = json.loads(schema_path.read_text())
@@ -113,9 +113,9 @@ def check_contracts() -> None:
 
     v = Draft202012Validator(schema)
 
-    fixtures = sorted((ROOT / "app/fixtures").glob("answer_*.json"))
+    fixtures = sorted((ROOT / "frontend/fixtures").glob("answer_*.json"))
     if not fixtures:
-        record(SKIP, "contracts/fixtures", "no app/fixtures/answer_*.json yet")
+        record(SKIP, "contracts/fixtures", "no frontend/fixtures/answer_*.json yet")
     for f in fixtures:
         errs = sorted(v.iter_errors(json.loads(f.read_text())), key=lambda e: list(e.path))
         if errs:
@@ -177,7 +177,7 @@ def _scan_blocks(path: pathlib.Path, opener: re.Pattern[str],
 
 
 def check_params() -> None:
-    sig = ROOT / "app/contracts/tool_signatures.yaml"
+    sig = ROOT / "frontend/contracts/tool_signatures.yaml"
     if sig.exists():
         # Only the agent-visible `tools:` section. bind_patient legitimately takes a
         # patient_id under `internal:` - it is the one place a human's click enters.
@@ -189,11 +189,11 @@ def check_params() -> None:
             record(PASS, "params/contract",
                    "no patient selector in any agent-visible tool signature")
     else:
-        record(FAIL, "params/contract", "app/contracts/tool_signatures.yaml is missing")
+        record(FAIL, "params/contract", "frontend/contracts/tool_signatures.yaml is missing")
 
-    agent = ROOT / "sql/agent/saarthi_agent.sql"
+    agent = ROOT / "backend/sql/agent/saarthi_agent.sql"
     if not agent.exists():
-        record(SKIP, "params/agent", "sql/agent/saarthi_agent.sql not written yet")
+        record(SKIP, "params/agent", "backend/sql/agent/saarthi_agent.sql not written yet")
         return
     hits = _scan_blocks(agent, re.compile(r"\s*input_schema:\s*$"))
     if hits:
@@ -220,16 +220,16 @@ def _extract_preamble(text: str) -> list[str] | None:
 
 
 def check_preamble() -> None:
-    ref_path = ROOT / "sql/procedures/tools/_preamble.sql"
+    ref_path = ROOT / "backend/sql/procedures/tools/_preamble.sql"
     if not ref_path.exists():
-        record(FAIL, "preamble", "sql/procedures/tools/_preamble.sql is missing")
+        record(FAIL, "preamble", "backend/sql/procedures/tools/_preamble.sql is missing")
         return
     ref = _extract_preamble(ref_path.read_text())
     if ref is None:
         record(FAIL, "preamble", "reference file has no v1 markers")
         return
 
-    tools = sorted(p for p in (ROOT / "sql/procedures/tools").glob("*.sql")
+    tools = sorted(p for p in (ROOT / "backend/sql/procedures/tools").glob("*.sql")
                    if not p.name.startswith("_"))
     if not tools:
         record(SKIP, "preamble", "no tool procedures written yet (expect 8)")
@@ -253,9 +253,9 @@ def check_preamble() -> None:
 # ---------------------------------------------------------------------------
 
 def check_stubs() -> None:
-    setup = ROOT / "sql/setup.sql"
+    setup = ROOT / "backend/sql/setup.sql"
     if not setup.exists():
-        record(FAIL, "stubs", "sql/setup.sql is missing")
+        record(FAIL, "stubs", "backend/sql/setup.sql is missing")
         return
 
     bad = [f"setup.sql:{i + 1}" for i, line in enumerate(setup.read_text().splitlines())
@@ -267,7 +267,7 @@ def check_stubs() -> None:
         record(PASS, "stubs/manifest", "setup.sql references no stub")
 
     leaks = []
-    for p in list((ROOT / "sql").rglob("*.sql")) + list((ROOT / "app").rglob("*.py")):
+    for p in list((ROOT / "backend/sql").rglob("*.sql")) + list((ROOT / "frontend").rglob("*.py")):
         if "stubs" in p.parts:
             continue
         for i, line in enumerate(p.read_text().splitlines()):
@@ -275,9 +275,9 @@ def check_stubs() -> None:
                 leaks.append(f"{p.relative_to(ROOT)}:{i + 1}")
     if leaks:
         record(FAIL, "stubs/references",
-               "the STUB schema is referenced outside sql/stubs/: " + ", ".join(leaks[:5]))
+               "the STUB schema is referenced outside backend/sql/stubs/: " + ", ".join(leaks[:5]))
     else:
-        record(PASS, "stubs/references", "no STUB schema reference outside sql/stubs/")
+        record(PASS, "stubs/references", "no STUB schema reference outside backend/sql/stubs/")
 
 
 # ---------------------------------------------------------------------------
@@ -288,7 +288,7 @@ MANIFEST_LINE = re.compile(r"^\s*EXECUTE IMMEDIATE FROM\s+'([^']+)'")
 
 
 def manifest_targets() -> list[str]:
-    setup = ROOT / "sql/setup.sql"
+    setup = ROOT / "backend/sql/setup.sql"
     if not setup.exists():
         return []
     return [m.group(1) for m in
@@ -301,7 +301,7 @@ def check_manifest() -> None:
         record(SKIP, "manifest",
                "no manifest line is active yet - uncomment each as its file lands")
         return
-    missing = [t for t in targets if not (ROOT / "sql" / t).resolve().exists()]
+    missing = [t for t in targets if not (ROOT / "backend/sql" / t).resolve().exists()]
     if missing:
         record(FAIL, "manifest", "setup.sql points at files that do not exist: "
                + ", ".join(missing))
@@ -332,7 +332,7 @@ def check_models() -> None:
     nothing in the output would have looked wrong. This check exists because that
     mistake is invisible by inspection and was made once already.
     """
-    agent = ROOT / "sql/agent/saarthi_agent.sql"
+    agent = ROOT / "backend/sql/agent/saarthi_agent.sql"
     if agent.exists():
         text = agent.read_text()
         if re.search(r"orchestration\s*:\s*auto\b", text, re.IGNORECASE):
@@ -342,11 +342,11 @@ def check_models() -> None:
         else:
             record(PASS, "models/orchestration", "orchestration is pinned, not auto")
     else:
-        record(SKIP, "models/orchestration", "sql/agent/saarthi_agent.sql not written yet")
+        record(SKIP, "models/orchestration", "backend/sql/agent/saarthi_agent.sql not written yet")
 
-    extract = ROOT / "sql/tasks/extract_assertions.sql"
+    extract = ROOT / "backend/sql/tasks/extract_assertions.sql"
     if not extract.exists():
-        record(SKIP, "models/r7", "sql/tasks/extract_assertions.sql not written yet")
+        record(SKIP, "models/r7", "backend/sql/tasks/extract_assertions.sql not written yet")
     else:
         found = [m.lower() for m in MODEL_CALL.findall(extract.read_text())]
         distinct = sorted(set(found))
@@ -362,7 +362,7 @@ def check_models() -> None:
 
     # Legacy models anywhere in deployed SQL or in a prompt's frontmatter.
     hits = []
-    scan = list((ROOT / "sql").rglob("*.sql")) + list((ROOT / "sql/prompts").glob("*.md"))
+    scan = list((ROOT / "backend/sql").rglob("*.sql")) + list((ROOT / "backend/sql/prompts").glob("*.md"))
     for p in scan:
         if "probes" in p.parts:      # the probe deliberately tests legacy models
             continue

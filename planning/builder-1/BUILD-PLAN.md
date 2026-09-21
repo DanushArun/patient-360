@@ -24,7 +24,7 @@ Every task names the files it creates, the specification that defines its behavi
 
 Four deliverables. **The model probe comes first** — everything in the extraction path depends on its result, and two of the contracts unblock Builder 2.
 
-### 1.0 — Model access probe ⚠️ before anything else · `sql/probes/model_availability.sql`
+### 1.0 — Model access probe ⚠️ before anything else · `backend/sql/probes/model_availability.sql`
 
 ```sql
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE SAARTHI_APP;
@@ -38,19 +38,19 @@ Then probe pass A, pass B and its fallbacks, the classifier model, and the orche
 
 **Done when:** `claude-haiku-4-5` is confirmed reachable (or a fallback is chosen and the reason written down), `orchestration` is **pinned** rather than `auto`, and the results are in `evidence/coco/verification-query-ids.md`.
 
-### 1.1 — Ratify the contracts · `app/contracts/`
+### 1.1 — Ratify the contracts · `frontend/contracts/`
 
-**All three are already written and verified.** `scripts/check_gate.py --contracts` passes ten checks: three fixtures validate, and six malformed answers are correctly rejected. `--params` confirms no patient selector exists in any agent-visible signature.
+**All three are already written and verified.** `backend/scripts/check_gate.py --contracts` passes ten checks: three fixtures validate, and six malformed answers are correctly rejected. `--params` confirms no patient selector exists in any agent-visible signature.
 
 Day 1 is therefore review, not authoring:
 
-- read `app/contracts/README.md` — it explains every constraint and why
+- read `frontend/contracts/README.md` — it explains every constraint and why
 - **decide item 7** in `planning/builder-1/README.md`: the `refusal` object is an addition to a frozen contract. Ratify it, or replace it with something that lets the UI render the evidence-packet button
 - tell Builder 2 the three files are frozen, and settle items 1–6 with them
 
 **Done when:** the gate passes, item 7 is decided, and Builder 2 has confirmed items 1–6.
 
-### 1.2 — Streamlit scaffold against a fixture · `app/streamlit_app.py`, `app/pages/1_Ask_and_Evidence.py`
+### 1.2 — Streamlit scaffold against a fixture · `frontend/streamlit_app.py`, `frontend/pages/1_Ask_and_Evidence.py`
 
 Build the **entire** Ask + Evidence screen against hard-coded fixtures. Do not wait for a single table to exist.
 
@@ -64,7 +64,7 @@ Must render: question box · per-claim answer · evidence pane opening on claim 
 |---|---|---|
 | U2 | Does `CURRENT_USER()` inside deployed Streamlit return the caller? | dedicated service user granted only the app role (F7 path 2) |
 | U3 | Does `CREATE STREAMLIT … COMPUTE_POOL` work on this account? | warehouse runtime + `AGENT_RUN` — proven by F1 |
-| U4 | Is `jsonschema` (or your validation library) in the Snowflake Anaconda channel? | hand-rolled validation in `app/core/schema.py` |
+| U4 | Is `jsonschema` (or your validation library) in the Snowflake Anaconda channel? | hand-rolled validation in `frontend/core/schema.py` |
 | U5 | Does `claude-haiku-4-5` answer on this account? | fall back `mistral-large3` → `qwen3-32b`. **Never a second Llama** |
 
 **U1 is closed — do not spend Day 1 on it.** `AI_PARSE_DOCUMENT` bills per page at 970 tokens per page, so a 300-page corpus is **$0.03–$1.50**, not the $78 the cost model feared. That figure added CoCo CLI development credits to runtime token billing; they are separate budgets. Tier 2 corpus is unblocked.
@@ -73,7 +73,7 @@ Must render: question box · per-claim answer · evidence pane opening on claim 
 
 ---
 
-## Day 2 — Class A/B classifier · `sql/procedures/classify_question.sql`
+## Day 2 — Class A/B classifier · `backend/sql/procedures/classify_question.sql`
 
 Four-stage cascade per `AGENT-DEV-PLAN.md` §3: keyword → structure → `AI_CLASSIFY` → **default Class A**.
 
@@ -83,7 +83,7 @@ Four-stage cascade per `AGENT-DEV-PLAN.md` §3: keyword → structure → `AI_CL
 
 ---
 
-## Days 2–3 — R7 two-pass extraction · `sql/tasks/extract_assertions.sql`, `sql/prompts/`
+## Days 2–3 — R7 two-pass extraction · `backend/sql/tasks/extract_assertions.sql`, `backend/sql/prompts/`
 
 The differentiator. Full step table in `AGENT-DEV-PLAN.md` §6.
 
@@ -102,7 +102,7 @@ The differentiator. Full step table in `AGENT-DEV-PLAN.md` §6.
 
 ---
 
-## Days 3–4 — Tool procedures 1–4 · `sql/procedures/tools/`
+## Days 3–4 — Tool procedures 1–4 · `backend/sql/procedures/tools/`
 
 `01_get_patient_facts` · `02_get_readiness` · `03_search_patient_documents` · `04_search_reference_documents`, each opening with the preamble in `_preamble.sql`.
 
@@ -111,13 +111,13 @@ The differentiator. Full step table in `AGENT-DEV-PLAN.md` §6.
 **Tool 3 specifically:** inject the `@eq` filter server-side → take **chunk IDs only** → re-fetch text from RAP-protected `DOC_PAGE`. Returning the index's own `text` column is the F5 leak reproduced, and it will pass single-user testing.
 
 **Depends on:** `bind_patient` and live `CARE_TEAM`/`CONSENT` rows (Builder 2, Days 2–3) and the search services (Builder 2, Day 9).
-**Stub if blocked:** `sql/stubs/stub_tools.sql` — signature-identical procedures over fixture rows in a `STUB` schema. For tool 3 before the search service exists, substitute a `LIKE` scan over `DOC_PAGE`; the three-layer structure stays identical and only the retrieval line changes later.
+**Stub if blocked:** `backend/sql/stubs/stub_tools.sql` — signature-identical procedures over fixture rows in a `STUB` schema. For tool 3 before the search service exists, substitute a `LIKE` scan over `DOC_PAGE`; the three-layer structure stays identical and only the retrieval line changes later.
 
 **Done when:** each procedure has **a negative test proving it returns nothing for an unauthorised user.** Not an error. Nothing.
 
 ---
 
-## Days 4–5 — Agent wired to real tools · `sql/agent/saarthi_agent.sql`
+## Days 4–5 — Agent wired to real tools · `backend/sql/agent/saarthi_agent.sql`
 
 `orchestration: auto` · only `generic` tools over procedures · `patient_id` absent from every input schema · `tool_resources` identifiers matching the created procedure names exactly. Generate the `tools:` block from `tool_signatures.yaml`.
 
@@ -125,7 +125,7 @@ The differentiator. Full step table in `AGENT-DEV-PLAN.md` §6.
 
 ---
 
-## Day 5 — Answer validator · `sql/procedures/validate_answer.sql`
+## Day 5 — Answer validator · `backend/sql/procedures/validate_answer.sql`
 
 Six checks per `AGENT-DEV-PLAN.md` §5. `AI_FILTER` one-argument text form — F8, verified; four earlier guesses at this syntax cost real time and the docs had it.
 
@@ -143,7 +143,7 @@ Six checks per `AGENT-DEV-PLAN.md` §5. `AI_FILTER` one-argument text form — F
 | Citation is clickable | clicking a claim opens the exact page with the span highlighted |
 | Scope is enforced | Practitioner 2 asks the same question → nothing |
 | Consent works | revoke → same question returns nothing |
-| **No stubs survive** | `scripts/check_gate.py --all --strict` exits 0 |
+| **No stubs survive** | `backend/scripts/check_gate.py --all --strict` exits 0 |
 
 The last row is mechanical on purpose. From Day 5 onward `--strict` turns every skipped check into a failure, so "the agent spec is not written yet" stops being an acceptable answer on the day it stops being true.
 
@@ -167,7 +167,7 @@ The last row is mechanical on purpose. From Day 5 onward `--strict` turns every 
 
 Every type gets a tool path. D10 found four types with no path — the agent would have refused a legitimate question or hallucinated. Routing table in `AGENT-DEV-PLAN.md` §7.
 
-**Build `app/core/router.py` here, not later.** It is the graceful-fallback bonus and it is twenty lines once the tools exist.
+**Build `frontend/core/router.py` here, not later.** It is the graceful-fallback bonus and it is twenty lines once the tools exist.
 
 **Done when:** all ten types answer with the agent enabled, **and all ten answer with the agent disabled.** Test the fallback by turning the agent off, not by reading the code.
 
@@ -187,7 +187,7 @@ Every type gets a tool path. D10 found four types with no path — the agent wou
 
 ---
 
-## Days 9–10 — Eval harness · `eval/`
+## Days 9–10 — Eval harness · `backend/eval/`
 
 80 questions, 40 dev + 40 held out, split by patient **and** document layout so no layout leaks across the split.
 
@@ -199,7 +199,7 @@ Native `EXECUTE_AI_EVALUATION` for the four GPA metrics; our own harness for cro
 
 ---
 
-## Days 11–12 — 4 skills + orchestrating Task · `skills/`
+## Days 11–12 — 4 skills + orchestrating Task · `backend/skills/`
 
 `clinical-question-routing` · `evidence-retrieval` · `risk-stratification` · `evidence-reconciliation`. Each a folder with `SKILL.md`; the agent references the folder, not the file. Uploaded by `setup.sql` via `COPY INTO`, no local `PUT`, so deployment stays reproducible from SQL alone.
 
@@ -209,7 +209,7 @@ Native `EXECUTE_AI_EVALUATION` for the four GPA metrics; our own harness for cro
 
 ---
 
-## Days 12–13 — Judge Console, 8 probes · `app/pages/6_Judge_Console.py`
+## Days 12–13 — Judge Console, 8 probes · `frontend/pages/6_Judge_Console.py`
 
 Each probe is a button showing the SQL and the result.
 
@@ -228,7 +228,7 @@ Each probe is a button showing the SQL and the result.
 
 ---
 
-## Days 13–14 — MCP connector · `sql/agent/saarthi_mcp.sql`
+## Days 13–14 — MCP connector · `backend/sql/agent/saarthi_mcp.sql`
 
 Two read-only tools: `get_readiness` and `search_reference_documents`. **`get_patient_facts` and `search_patient_documents` are deliberately excluded** — an MCP client is outside our identity chain, so patient-scoped tools stay inside the app boundary.
 
@@ -260,7 +260,7 @@ Outbound: one documentation blocker → one tracked ticket, carrying only a synt
 Two things buy the time back:
 
 1. **Build the ambiguous CBC page yourself on Day 2.** It is your R7 fixture and your demo asset, and making it removes a dependency on Builder 2's document generation entirely.
-2. **Stub aggressively and delete on Day 5.** `sql/stubs/` exists for exactly this. The Day-5 gate has a stub-deletion check precisely because stubbing early is the right move.
+2. **Stub aggressively and delete on Day 5.** `backend/sql/stubs/` exists for exactly this. The Day-5 gate has a stub-deletion check precisely because stubbing early is the right move.
 
 If Day 4 ends without tools 1–3 returning real rows, **say so that evening**, not on Day 5. The gate exists to be called early.
 

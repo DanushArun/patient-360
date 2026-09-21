@@ -19,7 +19,7 @@
 | Account: **Enterprise**, cross-region enabled, all 11 AI functions, SPCS live | Runtime gate | Verified |
 | `AGENT_RUN(VARCHAR)` exists — SQL path, no container-runtime hard dependency | `SHOW FUNCTIONS` | Verified |
 | **RAP keyed on `CURRENT_USER()` survives owner's-rights elevation; `CURRENT_ROLE()` does not** | Empirical test, QID `01c71d97-...cdce` | **Verified — architecture-deciding** |
-| Working models: `llama3.1-70b`, `llama3.3-70b`, `llama3.1-8b` | Runtime gate | Verified **17 Sept — now partly stale.** `llama3.1-70b` is marked `[legacy]`; R7 pass B moved to `claude-haiku-4-5`. Re-probe: `sql/probes/model_availability.sql` |
+| Working models: `llama3.1-70b`, `llama3.3-70b`, `llama3.1-8b` | Runtime gate | Verified **17 Sept — now partly stale.** `llama3.1-70b` is marked `[legacy]`; R7 pass B moved to `claude-haiku-4-5`. Re-probe: `backend/sql/probes/model_availability.sql` |
 
 **18 calendar days. Target completion 1 Oct. 2–4 Oct is contingency only.**
 

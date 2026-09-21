@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Run the SQL test suites through the Snowflake CLI.
 
-    tests/run_tests.py <connection>
-    tests/run_tests.py <connection> --suite access
-    tests/run_tests.py <connection> --dry-run       # list what would run
+    backend/tests/run_tests.py <connection>
+    backend/tests/run_tests.py <connection> --suite access
+    backend/tests/run_tests.py <connection> --dry-run       # list what would run
 
 THE CONVENTION, AND WHY IT MATTERS
 ----------------------------------
@@ -87,9 +87,9 @@ def main() -> int:
 
     tests = discover(args.suite)
     if not tests:
-        where = f"tests/sql/{args.suite}" if args.suite else "tests/sql"
+        where = f"backend/tests/sql/{args.suite}" if args.suite else "backend/tests/sql"
         print(f"No tests found in {where}.")
-        print("tests/TEST-MANIFEST.md lists every test that must exist - 36 and counting.")
+        print("backend/tests/TEST-MANIFEST.md lists every test that must exist - 36 and counting.")
         return 0
 
     if args.dry_run:
