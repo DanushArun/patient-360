@@ -1,0 +1,47 @@
+{
+  "classification": "CLASS_B",
+  "overall_status": "supported",
+  "known_as_of": "2026-09-18T09:00:00",
+  "binding_id": "BND-0007",
+  "consent_id": "CON-0031",
+  "rule_versions": {
+    "CLIN-ANC-001": 3
+  },
+  "limitations": [],
+  "claims": [
+    {
+      "text": "ANC is 2100/µL, above the 1500 threshold.",
+      "claim_type": "numeric",
+      "asserted_value": 2100,
+      "asserted_unit": "cells/uL",
+      "gate": "clinical",
+      "outcome": "pass",
+      "rule_id": "CLIN-ANC-001",
+      "rule_version": 3,
+      "provenance_note": "NCCN/ASCO. Guideline threshold, not practice consensus.",
+      "evidence": [
+        {
+          "kind": "structured",
+          "id": "CE-LAB-441",
+          "table": "CLINICAL_EVENT",
+          "event_time": "2026-09-16T08:30:00",
+          "source_recorded_at": "2026-09-16T16:45:00",
+          "ingested_at": "2026-09-16T17:02:00",
+          "source_facility": "FAC-002",
+          "derived": "ANC computed as WBC x (neutrophil% + band%) / 100 = 6000 x (35 + 0) / 100 = 2100 cells/uL. The lab reported a differential only; this number appears nowhere on the page."
+        },
+        {
+          "kind": "document_span",
+          "id": "AS-7741",
+          "doc_id": "DOC-0052",
+          "page_index": 1,
+          "char_start": 393,
+          "char_end": 418,
+          "verification_status": "verified",
+          "source_quality": "clean_pdf",
+          "doc_version": 1
+        }
+      ]
+    }
+  ]
+}

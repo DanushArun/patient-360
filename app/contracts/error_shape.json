@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://saarthi.local/contracts/error_shape.json",
+  "title": "SAARTHI uniform tool error",
+  "description": "Contract 2, error half. Every one of the 8 tool procedures returns exactly this shape on any failure, so either stream can handle a failure without knowing the other's internals. Source: WORK-PLAN.md 'Uniform error shape' and ARCHITECTURE-HANDOFF.md Contract 2.",
+  "type": "object",
+  "required": ["error", "known_as_of"],
+  "additionalProperties": false,
+  "properties": {
+    "error": {
+      "enum": [
+        "no_patient_bound",
+        "no_patient_access",
+        "access_withdrawn",
+        "binding_mismatch",
+        "consent_not_valid"
+      ]
+    },
+    "known_as_of": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+      "description": "Resolved FIRST in the preamble, before any check can fail, so every error carries the moment it was true as of."
+    },
+    "detail": {
+      "type": "string",
+      "description": "Optional, and deliberately never populated for no_patient_access. See the disclosure table below."
+    }
+  },
+
+  "x-disclosure": {
+    "description": "The asymmetry between these codes is deliberate and must survive into the UI copy. Do not collapse them into one friendly message.",
+    "no_patient_bound": {
+      "reveals": "nothing about any patient",
+      "ui": "Patient picker, filtered to the caller's care team.",
+      "never": "A guess, or an empty answer."
+    },
+    "no_patient_access": {
+      "reveals": "NOTHING - not even whether the patient exists",
+      "ui": "\"No accessible record for that request.\"",
+      "never": "Any confirmation that the patient exists, or why access failed."
+    },
+    "access_withdrawn": {
+      "reveals": "that a record exists and access to it has been removed",
+      "ui": "\"Access to this record has been withdrawn.\" Context cleared, binding released.",
+      "why": "This code only ever reaches a user who previously had legitimate access and needs to know why their view changed. A user who never had access learns nothing.",
+      "never": "Any cached content from before the revocation."
+    },
+    "binding_mismatch": {
+      "reveals": "that the supplied encounter_ref does not belong to the bound patient",
+      "ui": "Ask the user to re-select. Log it.",
+      "why": "An encounter id identifies a patient. Rejecting on binding rather than on authorisation is a cleaner and earlier rejection - COPILOT-SPEC.md 0."
+    },
+    "consent_not_valid": {
+      "reveals": "that consent does not cover this request",
+      "ui": "Same treatment as access_withdrawn.",
+      "why": "Purpose code or date range does not cover the request, as distinct from revocation."
+    }
+  },
+
+  "x-fallback-behaviours": {
+    "description": "The remaining named situations from COPILOT-SPEC.md 4. These are not tool errors - they produce an answer object, not an error envelope. Listed here so app/core/errors.py covers all eleven.",
+    "cortex_search_down": "Structured facts still answer. overall_status 'partial', naming the missing capability.",
+    "agent_unreachable": "Deterministic Python router over the same 8 procedures. Never an error page.",
+    "malformed_agent_json": "One reparse attempt, then the deterministic router. Never raw model output.",
+    "extraction_conflict_r7": "The value is absent, the disagreement is stated, resolution is named. Never the pass-A value with a caveat.",
+    "claim_stripped_by_validator": "The claim is replaced by an explicit limitation. Never a silent removal.",
+    "injected_instruction_in_document": "Quoted as content, labelled as document text. Never obeyed.",
+    "nothing_found": "\"Nothing found as of <known_as_of>\" - with the timestamp. Never a bare \"No results\"."
+  }
+}

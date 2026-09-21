@@ -1,0 +1,23 @@
+{
+  "classification": "CLASS_A",
+  "overall_status": "refused",
+  "known_as_of": "2026-09-18T09:00:00",
+  "binding_id": "BND-0007",
+  "consent_id": "CON-0031",
+  "rule_versions": {},
+  "limitations": [
+    "This question asks whether treatment should proceed, which is a clinical decision reserved to the registered practitioner under NMC Telemedicine Practice Guidelines 2020."
+  ],
+  "refusal": {
+    "reason_code": "class_a_clinical_judgment",
+    "message": "That is a clinical decision for your treating team. I can assemble the evidence they would need.",
+    "practitioner": {
+      "practitioner_id": "PRC-0012",
+      "name": "Dr A. Rao",
+      "nmc_registration_no": "KMC-2009-41882"
+    },
+    "evidence_packet_offered": true,
+    "evidence_packet_id": null
+  },
+  "claims": []
+}

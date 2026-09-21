@@ -1,0 +1,332 @@
+# SAARTHI - Contract 2: tool signatures
+#
+# Owner: Builder 1. Frozen. Changing an entry means telling Builder 2 before the edit.
+# Source: AI-INTEGRATION-ARCHITECTURE.md 2, ARCHITECTURE-HANDOFF.md Contract 2,
+#         COPILOT-SPEC.md 0 (which corrected get_readiness).
+#
+# THIS FILE IS THE SINGLE SOURCE. Three things are generated or checked from it:
+#   1. the tools: block of sql/agent/saarthi_agent.sql
+#   2. sql/stubs/stub_tools.sql
+#   3. scripts/check_gate.py --forbidden-params, which fails the build if a banned
+#      parameter name appears anywhere under a parameters: block, here or in the agent spec.
+#
+# Hand-maintaining the same eight schemas in two files is how patient_id gets reintroduced.
+
+contract: 2
+version: 1
+owner: builder-1
+
+# ---------------------------------------------------------------------------
+# The rule the whole architecture rests on.
+# ---------------------------------------------------------------------------
+# A1 is verified: given a raw cortex_search tool, the agent derives patient_id from the
+# QUESTION TEXT and injects the filter itself. The fix is not a better instruction - it is
+# the absence of the parameter. encounter_id is banned for the same reason under a different
+# name: an encounter id identifies a patient (COPILOT-SPEC.md 0).
+#
+# The subject of every answer comes from PATIENT_BINDING, resolved on CURRENT_SESSION(),
+# written by a human clicking a name in a care-team-filtered list.
+
+forbidden_parameters:
+  - patient_id
+  - patient_name
+  - encounter_id
+  - mrn
+  - abha_ref
+  - source_patient_id
+
+# Every agent-visible tool opens with this block, pasted verbatim from the reference copy.
+# Eight copies are diffed against one file at the Day-5 gate - a reviewer can then see that
+# none of them skipped the consent check.
+preamble: sql/procedures/tools/_preamble.sql
+preamble_version: 1
+
+defaults:
+  execute_as: OWNER
+  revalidates_consent_every_call: true
+  errors: [no_patient_bound, no_patient_access, access_withdrawn, consent_not_valid]
+
+# ---------------------------------------------------------------------------
+# The 8 tools the agent can see
+# ---------------------------------------------------------------------------
+
+tools:
+
+  - name: GetPatientFacts
+    identifier: SAARTHI.OPERATIONAL.GET_PATIENT_FACTS
+    file: sql/procedures/tools/01_get_patient_facts.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: false
+    write: false
+    description: >
+      Returns structured clinical facts for the patient in the caller's bound scope:
+      labs, vitals, imaging, medications, diagnoses, staging, pathology, coverage.
+      Use for "what is the latest X", "what was the value on date Y".
+      Scope is server-side; no patient identifier is accepted.
+    parameters:
+      domain:
+        type: string
+        required: true
+        enum: [labs, vitals, imaging, medications, diagnoses, staging, pathology, coverage]
+      known_as_of:
+        type: string
+        required: false
+        description: ISO-8601 evidence cutoff. Omit for now.
+    returns: >
+      Rows with value, unit, abnormal_flag held separately from value_num, all three R2
+      clocks, source facility, and a derivation string where the value was computed
+      rather than read.
+    notes:
+      - coverage domain must state explicitly, when is_family_floater is true, that SAARTHI
+        tracks the patient-level figure only and the shared balance is unknown. Never estimate it.
+    negative_test: tests/sql/access/t01_get_patient_facts_unauthorised.sql
+
+  - name: GetReadiness
+    identifier: SAARTHI.OPERATIONAL.GET_READINESS
+    file: sql/procedures/tools/02_get_readiness.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: true
+    write: false
+    description: >
+      Returns the five care-readiness gates (clinical, safety, documentation, coverage,
+      identity) for the BOUND patient, each with outcome (pass|fail|not_evaluated|
+      conflicting), the rule id and version that produced it, the reason, and the
+      evidence_ids behind it. This is the authoritative source for gaps and blockers.
+      Never compute readiness yourself. Takes no patient selector. encounter_ref is
+      optional and must belong to the bound patient; omit it for the next scheduled encounter.
+    parameters:
+      encounter_ref:
+        type: string
+        required: false
+        description: >
+          Must resolve to an encounter belonging to the bound patient. An encounter from
+          another patient fails on binding_mismatch, not on authorisation - a cleaner and
+          earlier rejection.
+      known_as_of:
+        type: string
+        required: false
+    returns: >
+      One object per gate: {gate, rule_id, rule_version, outcome, evidence_ids[], reason,
+      severity, provenance_note, action}.
+    errors_extra: [binding_mismatch]
+    notes:
+      - Calls evaluate_gates. Never reimplements rule logic.
+      - provenance_note must travel with the outcome. Three thresholds are practice
+        consensus, not guideline requirement, and must be labelled wherever they surface.
+    negative_test: tests/sql/access/t02_get_readiness_unauthorised.sql
+
+  - name: SearchPatientDocuments
+    identifier: SAARTHI.OPERATIONAL.SEARCH_PATIENT_DOCUMENTS
+    file: sql/procedures/tools/03_search_patient_documents.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: false
+    write: false
+    description: >
+      Searches this patient's documents (pathology, discharge summaries, referrals,
+      authorisation letters). Returns page-anchored passages with chunk_id, doc_id and
+      page_index for citation. Patient scope is injected server-side.
+      Contains no regulatory or guideline text.
+    parameters:
+      query:
+        type: string
+        required: true
+      known_as_of:
+        type: string
+        required: false
+    returns: Page-anchored passages with chunk_id, doc_id, page_index, char offsets.
+    implementation_order:
+      - 1. inject the @eq patient_id filter SERVER-SIDE from the binding (F6)
+      - 2. take CHUNK IDS ONLY from the un-RAP'd DOC_CHUNK index (F4, F5)
+      - 3. re-fetch text from RAP-protected DOC_PAGE (F3)
+    warning: >
+      Returning the index's own text column instead of re-fetching is the F5 leak
+      reproduced. It passes single-user testing, because the index and the policy agree
+      when the owner is the caller.
+    negative_test: tests/sql/access/t03_search_patient_documents_unauthorised.sql
+
+  - name: SearchReferenceDocuments
+    identifier: SAARTHI.OPERATIONAL.SEARCH_REFERENCE_DOCUMENTS
+    file: sql/procedures/tools/04_search_reference_documents.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: true
+    write: false
+    description: >
+      Searches real public regulatory and clinical reference documents: PM-JAY Operation
+      Manual, DPDP Act, NHCX specification, NCG guidelines, drug labels. Returns page and
+      clause citations. Contains NO patient data. Use for "what does the scheme require",
+      "what does the guideline say".
+    parameters:
+      query:
+        type: string
+        required: true
+      jurisdiction:
+        type: string
+        required: false
+      effective_date:
+        type: string
+        required: false
+    returns: reference_clause evidence - publisher, document, version, effective date, clause.
+    notes:
+      - R6. Physically separate search service. This tool can never reach patient text and
+        the patient tools can never reach reference text.
+      - Takes no binding and needs none. It is the one tool that answers with no patient bound.
+    negative_test: tests/sql/access/t04_reference_no_patient_text.sql
+
+  - name: CohortQuery
+    identifier: SAARTHI.OPERATIONAL.COHORT_QUERY
+    file: sql/procedures/tools/05_cohort_query.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: false
+    write: false
+    description: >
+      Answers aggregate and across-patient questions over the governed semantic view
+      (counts, rates, lists of patients matching a condition). Row access policies apply.
+      Use for "how many", "which patients", "average time to".
+    parameters:
+      question:
+        type: string
+        required: true
+    returns: Aggregates and lists. Never row-level PHI beyond what the semantic view exposes.
+    unavailable_while_bound: true
+    notes:
+      - The deliberate exception with no single subject. UNAVAILABLE while a patient is bound -
+        mixing a bound-patient conversation with cross-patient results is how a coordinator
+        misreads one patient's data as another's.
+    negative_test: tests/sql/access/t05_cohort_refused_while_bound.sql
+
+  - name: GetTimeline
+    identifier: SAARTHI.OPERATIONAL.GET_TIMELINE
+    file: sql/procedures/tools/06_get_timeline.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: false
+    write: false
+    description: >
+      Returns the chronology for the bound patient: when each event occurred, when the
+      source recorded it, when SAARTHI received it, and which facility sent it. Use for
+      "when did X arrive", "which hospital sent this", "what order did things happen in".
+    parameters:
+      known_as_of:
+        type: string
+        required: false
+    returns: Chronology with all three R2 clocks plus the sending facility. Three dates, not one.
+    negative_test: tests/sql/access/t06_get_timeline_unauthorised.sql
+
+  - name: GetChanges
+    identifier: SAARTHI.OPERATIONAL.GET_CHANGES
+    file: sql/procedures/tools/07_get_changes.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: false
+    write: false
+    description: >
+      Diffs the patient's evidence and gate state between two timestamps. Returns additions,
+      supersessions, and gate outcome changes. Use for "what changed since X".
+    parameters:
+      from_ts:
+        type: string
+        required: true
+      to_ts:
+        type: string
+        required: false
+        description: Defaults to now.
+    returns: Additions, supersessions, gate outcome changes, each with the rule version.
+    cut_list_position: 2
+    negative_test: tests/sql/access/t07_get_changes_unauthorised.sql
+
+  - name: CreateReviewTask
+    identifier: SAARTHI.OPERATIONAL.CREATE_REVIEW_TASK
+    file: sql/procedures/tools/08_create_review_task.sql
+    owner: builder-1
+    agent_visible: true
+    mcp_exposed: false
+    write: true
+    description: >
+      Records a documentation or coverage review decision against an open issue.
+      Requires an explicit user action - never call speculatively or to be helpful.
+      Creates no clinical order. Restricted to treating and coordinator roles.
+    parameters:
+      issue_id:
+        type: string
+        required: true
+      action:
+        type: string
+        required: true
+        enum: [accept, reject, escalate, request_evidence]
+      reason:
+        type: string
+        required: true
+      idempotency_key:
+        type: string
+        required: true
+    returns: task_id. Idempotent - the same key returns the same task and never double-fires.
+    restricted_to_roles: [treating, coordinator]
+    notes:
+      - The only write tool in the system.
+      - patient_navigator cannot create tasks.
+      - "approve treatment" does not exist as a value of action, and must not be added.
+    negative_test: tests/sql/access/t08_create_review_task_navigator_denied.sql
+
+# ---------------------------------------------------------------------------
+# Internal procedures. The agent never sees these and they are not tools.
+# 8 agent tools + 3 internal = the 11 in the object inventory. Both counts are
+# correct about different things; the README must say which.
+# ---------------------------------------------------------------------------
+
+internal:
+
+  - name: bind_patient
+    identifier: SAARTHI.OPERATIONAL.BIND_PATIENT
+    file: sql/procedures/bind_patient.sql
+    owner: builder-2
+    called_by: the Streamlit patient picker, on an explicit human click
+    parameters:
+      patient_id:
+        type: string
+        required: true
+        allowed_here: >
+          THE ONE PLACE this parameter legitimately exists. It comes from a human clicking a
+          name in a list already filtered by care relationship and consent - never from
+          question text, never from the agent. The agent has no access to this procedure.
+    returns: binding_id
+    validates: [care_team_active_today, consent_valid_now]
+    side_effects: [releases any prior binding for CURRENT_SESSION(), appends a PATIENT_BINDING row]
+
+  - name: evaluate_gates
+    identifier: SAARTHI.OPERATIONAL.EVALUATE_GATES
+    file: sql/procedures/evaluate_gates.sql
+    owner: builder-2
+    called_by: GetReadiness, TASK_REFRESH_READINESS
+    returns: "{gate, rule_id, rule_version, outcome, evidence_ids[], reason, severity}"
+
+  - name: validate_answer
+    identifier: SAARTHI.OPERATIONAL.VALIDATE_ANSWER
+    file: sql/procedures/validate_answer.sql
+    owner: builder-1
+    called_by: the app, after the agent drafts and before the user sees anything
+    returns: The answer object with unsupported claims stripped and limitations added.
+
+  - name: classify_question
+    identifier: SAARTHI.OPERATIONAL.CLASSIFY_QUESTION
+    file: sql/procedures/classify_question.sql
+    owner: builder-1
+    called_by: the app, BEFORE the agent - a refusal that depends on the agent choosing to refuse is not a control
+    returns: "{classification, stage, matched_term}"
+
+# ---------------------------------------------------------------------------
+# MCP server - deliberately narrow
+# ---------------------------------------------------------------------------
+# Two read-only tools. GetPatientFacts and SearchPatientDocuments are excluded because an
+# MCP client sits outside our identity chain, so patient-scoped tools stay inside the app
+# boundary. Never expose a state-changing or scope-sensitive tool to a surface you do not control.
+
+mcp_server:
+  identifier: SAARTHI.OPERATIONAL.SAARTHI_MCP
+  file: sql/agent/saarthi_mcp.sql
+  owner: builder-1
+  exposes: [GetReadiness, SearchReferenceDocuments]

@@ -1,0 +1,21 @@
+# Streamlit in Snowflake - package manifest.
+#
+# Streamlit and snowflake-snowpark-python are provided by the runtime and are NOT
+# listed here. Only additional packages go below, and every one must exist in the
+# Snowflake Anaconda channel - a package that does not is a deploy-time failure with
+# no local warning, because it installs fine in a venv.
+#
+# U4, Day 1: confirm jsonschema resolves in the Snowflake Anaconda channel before
+# depending on it. If it does not, app/core/schema.py falls back to hand-rolled
+# validation of the six constraints that matter (required keys, non-empty evidence,
+# Class A carries no claims, no additionalProperties on a claim, enum membership,
+# known_as_of present). Record the result in evidence/coco/verification-query-ids.md.
+#
+# Keep this list short. Every package is something a judge redeploying on a clean
+# account can fail on.
+
+name: saarthi_app
+channels:
+  - snowflake
+dependencies:
+  - jsonschema

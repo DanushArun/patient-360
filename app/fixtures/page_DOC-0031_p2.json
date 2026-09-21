@@ -1,0 +1,23 @@
+{
+  "_comment": "Day-1 UI fixture. The preliminary surgical pathology page behind claim 1 of the flagship answer. IHC 2+ reflexes to FISH; the FISH result arrives later as an ADDITIONAL REPORT, which is an append and not a supersession.",
+  "doc_id": "DOC-0031",
+  "page_index": 2,
+  "doc_type": "pathology_report",
+  "doc_version": 1,
+  "source_quality": "clean_pdf",
+  "source_facility": "FAC-003",
+  "text": "CMC HOSPITAL - DEPARTMENT OF PATHOLOGY\nSURGICAL PATHOLOGY REPORT   (PRELIMINARY)\nAccession: SP-24-8891       Specimen received: 02-09-2026\n\nGROSS: Modified radical mastectomy specimen, right breast, with axillary\nclearance. Tumour measures 32 x 24 mm, upper outer quadrant.\n\nMICROSCOPY: Infiltrating ductal carcinoma, histological Grade III.\nLymphovascular invasion present. Margins free, nearest 4 mm.\n\nIMMUNOHISTOCHEMISTRY: ER negative. PR negative. HER2 IHC 2+ (equivocal).\n\nHER2 FISH: to follow. Will be issued as an ADDITIONAL REPORT.\n\nSTATUS: PRELIMINARY. Final report pending FISH.\n",
+  "char_count": 589,
+  "spans": {
+    "AS-6602": {
+      "char_start": 541,
+      "char_end": 588,
+      "text": "STATUS: PRELIMINARY. Final report pending FISH."
+    },
+    "AS-6603": {
+      "char_start": 452,
+      "char_end": 475,
+      "text": "HER2 IHC 2+ (equivocal)"
+    }
+  }
+}

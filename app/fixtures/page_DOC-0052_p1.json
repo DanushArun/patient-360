@@ -1,0 +1,18 @@
+{
+  "_comment": "Day-1 UI fixture. A CBC page that prints a differential and no absolute ANC - which is why CLIN-ANC-001 compares a number the source document never printed. Carries the real Indian-format traps: GM%, /CUMM, mg%, L/H flags, lakh comma notation.",
+  "doc_id": "DOC-0052",
+  "page_index": 1,
+  "doc_type": "lab_report",
+  "doc_version": 1,
+  "source_quality": "clean_pdf",
+  "source_facility": "FAC-002",
+  "text": "CITY DIAGNOSTIC LABORATORY, JHANSI\nPatient: [SYNTHETIC-0001]      Age/Sex: 52 Y / F\nAccession: CBC-24-11907        Collected: 16-09-2026 08:30\nReported:  16-09-2026 16:45\n\nCOMPLETE BLOOD COUNT\nHaemoglobin            10.3 L     GM%        12.0 - 15.0\nTotal Leucocyte Count  6000       /CUMM      4000 - 11000\nPlatelet Count         1,90,000   /CUMM      1,50,000 - 4,50,000\n\nDIFFERENTIAL COUNT\nNeutrophils            35         %          40 - 75\nLymphocytes            55 H       %          20 - 40\nEosinophils            04         %          01 - 06\nMonocytes              06         %          02 - 10\nBand forms             00         %          00 - 06\n\nSerum Creatinine       0.9        mg%        0.6 - 1.1\n\nNote: Absolute counts not reported. Differential percentages only.\n",
+  "char_count": 782,
+  "spans": {
+    "AS-7741": {
+      "char_start": 393,
+      "char_end": 418,
+      "text": "Neutrophils            35"
+    }
+  }
+}

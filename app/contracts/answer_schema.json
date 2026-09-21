@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://saarthi.local/contracts/answer_schema.json",
+  "title": "SAARTHI answer",
+  "description": "Contract 3. Frozen. Owner: Builder 1. Consumed by the agent prompt, validate_answer, the Streamlit UI and the eval harness. Source: COPILOT-SPEC.md 2 and ARCHITECTURE-HANDOFF.md Contract 3. SPEC.md 7 shows an older flat evidence_ids form; that example is stale.",
+  "type": "object",
+  "required": ["classification", "claims", "limitations", "overall_status", "known_as_of"],
+  "additionalProperties": false,
+
+  "properties": {
+    "classification": {
+      "enum": ["CLASS_A", "CLASS_B"],
+      "description": "Set by classify_question BEFORE any retrieval. CLASS_A never reaches the agent."
+    },
+    "overall_status": {
+      "enum": ["supported", "partial", "refused"],
+      "description": "partial names a missing capability in limitations. refused is CLASS_A only."
+    },
+    "known_as_of": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+      "description": "R2. TIMESTAMP_NTZ, no offset - the account runs one clock. Stated on every answer, survives turns once set. format: date-time is deliberately NOT used: it would reject this project's own timestamps."
+    },
+    "binding_id": {
+      "type": ["string", "null"],
+      "description": "PATIENT_BINDING.binding_id. The human click that chose the subject. Null only for reference-corpus-only answers and CLASS_A refusals."
+    },
+    "consent_id": {
+      "type": ["string", "null"],
+      "description": "The consent that authorised this answer, re-validated at query time on every tool call."
+    },
+    "rule_versions": {
+      "type": "object",
+      "description": "Every rule that contributed an outcome, with the version that decided it. Keyed by rule_id.",
+      "additionalProperties": { "type": "integer", "minimum": 1 }
+    },
+    "limitations": {
+      "type": "array",
+      "description": "Explicit statements of what is not known or could not be verified. A stripped claim becomes a limitation here - never a silent removal.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "refusal": { "$ref": "#/$defs/refusal" },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/claim" }
+    }
+  },
+
+  "allOf": [
+    {
+      "description": "A refused question cannot carry claims, and must name who may answer it. NMC TPG 2020 is a legal boundary, so the schema enforces it rather than the prompt.",
+      "if": {
+        "properties": { "classification": { "const": "CLASS_A" } },
+        "required": ["classification"]
+      },
+      "then": {
+        "required": ["refusal"],
+        "properties": {
+          "claims": { "maxItems": 0 },
+          "overall_status": { "const": "refused" }
+        }
+      }
+    },
+    {
+      "description": "A Class B answer is never 'refused'. Nothing found is a supported answer with a limitation and a timestamp.",
+      "if": {
+        "properties": { "classification": { "const": "CLASS_B" } },
+        "required": ["classification"]
+      },
+      "then": {
+        "properties": { "overall_status": { "enum": ["supported", "partial"] } }
+      }
+    }
+  ],
+
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "required": ["text", "claim_type", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Prose lives here and nowhere else."
+        },
+        "claim_type": { "enum": ["numeric", "date", "status", "textual"] },
+        "asserted_value": { "type": ["number", "string", "null"] },
+        "asserted_unit": { "type": ["string", "null"] },
+        "gate": {
+          "type": "string",
+          "enum": ["clinical", "safety", "documentation", "coverage", "identity"]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["pass", "fail", "not_evaluated", "conflicting"],
+          "description": "Four-valued, never a boolean. not_evaluated is not fail."
+        },
+        "rule_id": { "type": "string" },
+        "rule_version": { "type": "integer", "minimum": 1 },
+        "provenance_note": {
+          "type": "string",
+          "description": "Mandatory in the UI wherever a threshold is practice consensus rather than a guideline requirement. Carried here so the renderer cannot omit it."
+        },
+        "action": {
+          "type": "string",
+          "description": "What to do about a fail, not_evaluated or conflicting outcome, addressed to a named person or facility."
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "description": "minItems 1 is the schema refusing an uncited claim. A claim with no evidence id must not be made.",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/$defs/structured" },
+              { "$ref": "#/$defs/document_span" },
+              { "$ref": "#/$defs/reference_clause" }
+            ]
+          }
+        }
+      }
+    },
+
+    "structured": {
+      "type": "object",
+      "description": "A governed row. Renders as the value, its three R2 clocks, the source facility, and the derivation if the number was computed rather than read.",
+      "required": ["kind", "id", "table", "event_time", "source_recorded_at"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "structured" },
+        "id": { "type": "string" },
+        "table": { "type": "string" },
+        "event_time": { "type": "string" },
+        "source_recorded_at": { "type": "string" },
+        "ingested_at": { "type": "string" },
+        "source_facility": { "type": "string" },
+        "derived": {
+          "type": "string",
+          "description": "MANDATORY when the value was computed rather than read - ANC from a differential, CrCl from Cockcroft-Gault. JSON Schema cannot tell which, so validate_answer enforces it: a cited row carrying a derivation marker with no 'derived' string here strips the claim. Presenting a computed value as printed is a quiet form of fabrication."
+        }
+      }
+    },
+
+    "document_span": {
+      "type": "object",
+      "description": "DOC_PAGE plus char_start..char_end. Renders as the page with the span highlighted and a verification badge.",
+      "required": ["kind", "id", "doc_id", "page_index", "char_start", "char_end", "verification_status"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "document_span" },
+        "id": { "type": "string" },
+        "doc_id": { "type": "string" },
+        "page_index": { "type": "integer", "minimum": 0 },
+        "char_start": { "type": "integer", "minimum": 0 },
+        "char_end": { "type": "integer", "minimum": 0 },
+        "verification_status": {
+          "enum": ["verified", "single_pass", "conflicting", "unverified"],
+          "description": "R7. Never rendered as a percentage. 'conflicting' means the value is not asserted at all - such a span may appear as support for a limitation, never for a numeric claim."
+        },
+        "source_quality": {
+          "enum": ["clean_pdf", "scanned", "photo", "rotated_photo", "handwritten"]
+        },
+        "doc_version": { "type": ["integer", "string"] }
+      }
+    },
+
+    "reference_clause": {
+      "type": "object",
+      "description": "A reference-corpus chunk. R6: rendered visually distinct from patient evidence, because a guideline clause in the same panel style as a pathology page invites reading it as a finding about the patient.",
+      "required": ["kind", "id", "doc_id", "page_index", "publisher", "effective_date"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "reference_clause" },
+        "id": { "type": "string" },
+        "doc_id": { "type": "string" },
+        "page_index": { "type": "integer", "minimum": 0 },
+        "publisher": { "type": "string" },
+        "document_title": { "type": "string" },
+        "version": { "type": "string" },
+        "jurisdiction": { "type": "string" },
+        "effective_date": { "type": "string" },
+        "clause": { "type": "string" }
+      }
+    },
+
+    "refusal": {
+      "type": "object",
+      "description": "PROPOSED EXTENSION - see app/contracts/README.md. COPILOT-SPEC.md 2 shows only a Class B answer, so the frozen schema had no machine-readable home for the named practitioner that 4 promises in the refusal UI. Without this the Class A path cannot render its button.",
+      "required": ["reason_code", "message", "practitioner"],
+      "additionalProperties": false,
+      "properties": {
+        "reason_code": { "const": "class_a_clinical_judgment" },
+        "message": { "type": "string", "minLength": 1 },
+        "practitioner": {
+          "type": "object",
+          "required": ["practitioner_id", "name", "nmc_registration_no"],
+          "additionalProperties": false,
+          "description": "law-medical-records.md establishes adverse inference from record gaps. When the system says 'your treating team decides', it must name them.",
+          "properties": {
+            "practitioner_id": { "type": "string" },
+            "name": { "type": "string" },
+            "nmc_registration_no": { "type": "string" }
+          }
+        },
+        "evidence_packet_offered": { "type": "boolean" },
+        "evidence_packet_id": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

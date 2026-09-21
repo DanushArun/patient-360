@@ -1,0 +1,101 @@
+{
+  "classification": "CLASS_B",
+  "overall_status": "partial",
+  "known_as_of": "2026-09-18T09:00:00",
+  "binding_id": "BND-0007",
+  "consent_id": "CON-0031",
+  "rule_versions": {
+    "DOC-PATH-001": 3,
+    "SURV-LVEF-001": 2,
+    "COV-AUTH-001": 1,
+    "CLIN-PLT-001": 1
+  },
+  "limitations": [
+    "Platelet count could not be verified. Two independent reads of the 16 September CBC disagree on the platelet value and the page is a photograph. The value is not asserted and CLIN-PLT-001 returns not_evaluated. Confirm against the original report."
+  ],
+  "claims": [
+    {
+      "text": "Final histopathology not received. The surgical specimen report is recorded as preliminary; a final report has not been received from Facility B.",
+      "claim_type": "status",
+      "asserted_value": "preliminary",
+      "asserted_unit": null,
+      "gate": "documentation",
+      "outcome": "not_evaluated",
+      "rule_id": "DOC-PATH-001",
+      "rule_version": 3,
+      "provenance_note": "ASCO-CAP 2018. A preliminary report is not a negative finding - R3.",
+      "action": "Obtain the final histopathology report - Facility B, accession SP-24-8891.",
+      "evidence": [
+        {
+          "kind": "document_span",
+          "id": "AS-6602",
+          "doc_id": "DOC-0031",
+          "page_index": 2,
+          "char_start": 541,
+          "char_end": 588,
+          "verification_status": "single_pass",
+          "source_quality": "clean_pdf",
+          "doc_version": 1
+        }
+      ]
+    },
+    {
+      "text": "LVEF assessment is 104 days old. Trastuzumab requires an assessment within 90 days; the last recorded assessment was 6 June 2026.",
+      "claim_type": "numeric",
+      "asserted_value": 104,
+      "asserted_unit": "days",
+      "gate": "safety",
+      "outcome": "fail",
+      "rule_id": "SURV-LVEF-001",
+      "rule_version": 2,
+      "provenance_note": "FDA label for trastuzumab. Guideline-mandated interval, not practice consensus.",
+      "action": "Schedule an echocardiogram before the 19 September cycle.",
+      "evidence": [
+        {
+          "kind": "structured",
+          "id": "CE-ECHO-118",
+          "table": "CLINICAL_EVENT",
+          "event_time": "2026-06-06T11:15:00",
+          "source_recorded_at": "2026-06-06T15:40:00",
+          "ingested_at": "2026-06-07T02:10:00",
+          "source_facility": "FAC-003",
+          "derived": "Age computed as days between event_time and the scheduled encounter on 2026-09-18. The report states a date, not an interval."
+        }
+      ]
+    },
+    {
+      "text": "Authorisation state disagrees between two sources. The payer table shows pending; the authorisation letter dated 14 September states approved.",
+      "claim_type": "status",
+      "asserted_value": null,
+      "asserted_unit": null,
+      "gate": "coverage",
+      "outcome": "conflicting",
+      "rule_id": "COV-AUTH-001",
+      "rule_version": 1,
+      "provenance_note": "NHCX / IRDAI. Both sources retained; neither is auto-resolved.",
+      "action": "Confirm with the payer desk before the cycle. A human must reconcile these.",
+      "evidence": [
+        {
+          "kind": "structured",
+          "id": "CE-AUTH-77",
+          "table": "AUTHORIZATION",
+          "event_time": "2026-09-12T10:00:00",
+          "source_recorded_at": "2026-09-12T10:00:00",
+          "ingested_at": "2026-09-12T10:05:00",
+          "source_facility": "FAC-001"
+        },
+        {
+          "kind": "document_span",
+          "id": "AS-8810",
+          "doc_id": "DOC-0044",
+          "page_index": 1,
+          "char_start": 212,
+          "char_end": 230,
+          "verification_status": "verified",
+          "source_quality": "scanned",
+          "doc_version": 1
+        }
+      ]
+    }
+  ]
+}

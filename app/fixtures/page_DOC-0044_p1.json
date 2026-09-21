@@ -1,0 +1,18 @@
+{
+  "_comment": "Day-1 UI fixture. The authorisation letter that says APPROVED while the payer table row CE-AUTH-77 still says pending. This is the conflicting coverage outcome - both are retained, neither is auto-resolved.",
+  "doc_id": "DOC-0044",
+  "page_index": 1,
+  "doc_type": "authorization_letter",
+  "doc_version": 1,
+  "source_quality": "scanned",
+  "source_facility": "FAC-001",
+  "text": "NATIONAL HEALTH AUTHORITY - AYUSHMAN BHARAT PM-JAY\nPRE-AUTHORISATION DECISION\n\nBeneficiary: [SYNTHETIC-0001]\nPackage: MO-BR-014   Chemotherapy cycle, day care\nRequested: INR 28,500          Approved: INR 28,500\n\nDECISION: APPROVED\nDate of decision: 14-09-2026\nValid until: 14-10-2026\n\nAuthorised by: Claims Desk, District Implementation Unit, Jhansi\n",
+  "char_count": 350,
+  "spans": {
+    "AS-8810": {
+      "char_start": 212,
+      "char_end": 230,
+      "text": "DECISION: APPROVED"
+    }
+  }
+}
