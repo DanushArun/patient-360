@@ -193,7 +193,7 @@ EXECUTE IMMEDIATE FROM './data/rules.sql';
 -- DT_HARMONIZED_EVENTS is the load-bearing one: unit normalisation with
 -- plausibility rejection, ANC from a differential, Cockcroft-Gault CrCl.
 -- EXECUTE IMMEDIATE FROM './dynamic_tables/01_harmonized_events.sql';
--- EXECUTE IMMEDIATE FROM './dynamic_tables/02_doc_chunk.sql';
+-- EXECUTE IMMEDIATE FROM './procedures/chunk_documents.sql'; -- see procedures section - DOC_CHUNK is populated synchronously, not by a Dynamic Table (RAP-on-source made background refresh return zero rows, found live)
 -- EXECUTE IMMEDIATE FROM './dynamic_tables/03_review_queue.sql';
 -- EXECUTE IMMEDIATE FROM './dynamic_tables/04_scheme_eligibility.sql';
 -- EXECUTE IMMEDIATE FROM './dynamic_tables/05_treatment_plan.sql';
@@ -219,8 +219,8 @@ EXECUTE IMMEDIATE FROM './data/rules.sql';
 -- can be cited as evidence about a patient. Two of four surveyed competitors
 -- mix them. TARGET_LAG = '1 minute' on the patient service so the mid-demo
 -- addendum appears live.
--- EXECUTE IMMEDIATE FROM './search/01_patient_doc_search.sql';
--- EXECUTE IMMEDIATE FROM './search/02_reference_doc_search.sql';
+EXECUTE IMMEDIATE FROM './search/01_patient_doc_search.sql';
+EXECUTE IMMEDIATE FROM './search/02_reference_doc_search.sql';
 
 
 -- ---------------------------------------------------------------------------
