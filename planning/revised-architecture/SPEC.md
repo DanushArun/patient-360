@@ -877,7 +877,7 @@ Recorded so nothing needs unpicking if this gets funded.
 | Readiness refresh | 5-min Task | event-driven per patient | **hackathon**, documented |
 | Search sharding | 2 services | per-region shards >400M chunks | **hackathon**, documented |
 | Consent | enforced, synthetic artifacts | ABDM Consent Manager integration | **hackathon** — enforcement is real, linkage is stubbed |
-| Handwriting | out of scope, stated | required | **out** — honest |
+| Handwriting | **attempted through the same `AI_PARSE_DOCUMENT` → R7 two-pass pipeline as every other document, no separate subsystem** — `source_quality='handwritten'` tags it, and accuracy is reported broken out by `source_quality` tier rather than one blended number | required | **revised 21 Sept** — the original "refuse, not attempted" call in `WINNING-PLAN.md`/`plan.md` was a scope-protection decision under 18-day pressure, not a technical wall. No code ever actually excluded it: `source_quality` already includes `handwritten` (§2.6) and neither `parse_documents` nor `extract_assertions` filters on it. R7's two-pass verification is the correct mechanism for an unreliable source — expect a materially higher `conflicting`/`unverified` rate on handwriting, and say so with real numbers rather than refusing outright. |
 
 ---
 

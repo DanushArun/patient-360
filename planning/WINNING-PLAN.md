@@ -68,7 +68,9 @@ Everything else is support. If the schedule collapses, these survive.
 Cortex Search sharding beyond 400M chunks · population-scale event-driven gate recomputation · full federation with live ABDM · handwritten document extraction · `DERIVED_ARTIFACT` retention purge · facility onboarding flow.
 
 ### Explicitly refused, with reasons
-**Cortex ML / any trained predictive model** — the brief says "never opaque predictions"; deterministic rules deliver risk stratification without one. **Clinical recommendations** — Class A, unlawful for an AI platform under NMC TPG 2020. **Handwriting** — real and important, not solvable reliably in 18 days; we say so.
+**Cortex ML / any trained predictive model** — the brief says "never opaque predictions"; deterministic rules deliver risk stratification without one. **Clinical recommendations** — Class A, unlawful for an AI platform under NMC TPG 2020.
+
+**Handwriting — revised 21 Sept, was wrongly listed as refused.** No code ever excluded it: `source_quality='handwritten'` is already a valid value (§2.6/Contract 1), and neither `parse_documents` nor `extract_assertions` filters on it. It goes through the identical `AI_PARSE_DOCUMENT` → R7 two-pass pipeline as every other document. The honest claim is not "we don't do handwriting," it's "we report extraction accuracy broken out by `source_quality`, and handwriting will show a materially higher `conflicting`/`unverified` rate than `clean_pdf`" — R7 is precisely the mechanism for an unreliable source, so a separate refusal was redundant with a system that already handles this correctly.
 
 ---
 
