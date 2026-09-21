@@ -111,3 +111,30 @@ def test_patient_id_is_stable_across_calls():
     a = generate_deep_case(seed=20260918)
     b = generate_deep_case(seed=20260918)
     assert a.patient_id == b.patient_id
+
+
+def test_cbc_lab_reports_a_differential_with_no_explicit_anc():
+    # WORK-PLAN.md Day 4: "A patient whose lab reports WBC 6000 and
+    # neutrophils 35% with no ANC row. Query the DT -> ANC = 2100. The
+    # source document never printed that number." ANC must be a derived
+    # value downstream, never a fact this ledger asserts directly.
+    ledger = generate_deep_case(seed=20260918)
+    cbc = [e for e in ledger.events if e.kind == "cbc_lab"]
+    assert len(cbc) == 1
+    assert cbc[0].wbc_per_uL == 6000
+    assert cbc[0].neutrophil_pct == 35.0
+    assert not hasattr(cbc[0], "anc"), "ANC must never be a source fact — only a derived one"
+
+
+def test_cbc_lab_falls_within_the_chemo_course():
+    ledger = generate_deep_case(seed=20260918)
+    cbc = next(e for e in ledger.events if e.kind == "cbc_lab")
+    chemo_times = sorted(e.event_time for e in ledger.events if e.kind == "chemo_cycle")
+    assert chemo_times[0] < cbc.event_time < chemo_times[-1]
+
+
+def test_cbc_lab_carries_a_plausible_platelet_count():
+    ledger = generate_deep_case(seed=20260918)
+    cbc = next(e for e in ledger.events if e.kind == "cbc_lab")
+    assert cbc.platelet_count is not None
+    assert 100_000 <= cbc.platelet_count <= 450_000

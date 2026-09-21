@@ -71,6 +71,17 @@ def test_kind_specific_fields_blank_when_not_applicable():
         assert row["specimen_id"] == ""
         assert row["grade"] == ""
         assert row["t_score"] == ""
+        assert row["wbc_per_uL"] == ""
+        assert row["neutrophil_pct"] == ""
+
+
+def test_cbc_row_carries_the_differential_and_no_anc_column_exists():
+    groups = project_to_source_rows(_LEDGER)
+    cbc_rows = [row for rows in groups.values() for row in rows if row["kind"] == "cbc_lab"]
+    assert len(cbc_rows) == 1
+    assert cbc_rows[0]["wbc_per_uL"] == "6000"
+    assert cbc_rows[0]["neutrophil_pct"] == "35.0"
+    assert "anc" not in ROW_FIELDS, "ANC is derived downstream, never exported as a source column"
 
 
 def test_write_csvs_creates_one_file_per_facility(tmp_path):

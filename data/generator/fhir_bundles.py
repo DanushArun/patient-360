@@ -72,6 +72,25 @@ def _dexa_observation(event: ClinicalEvent) -> dict:
     }
 
 
+def _cbc_observation(event: ClinicalEvent) -> dict:
+    # Reports only the differential the source system actually printed — WBC
+    # and neutrophil percent. No ANC component: an absolute neutrophil count
+    # is a downstream derivation (DT_HARMONIZED_EVENTS), never a source fact.
+    return {
+        "resourceType": "Observation",
+        "id": event.event_id,
+        "status": "final",
+        "code": {"text": "CBC"},
+        "effectiveDateTime": event.event_time.isoformat(),
+        "issued": event.source_recorded_at.isoformat(),
+        "component": [
+            {"code": {"text": "WBC"}, "valueQuantity": {"value": event.wbc_per_uL, "unit": "/uL"}},
+            {"code": {"text": "Neutrophils"}, "valueQuantity": {"value": event.neutrophil_pct, "unit": "%"}},
+            {"code": {"text": "Platelet count"}, "valueQuantity": {"value": event.platelet_count, "unit": "/uL"}},
+        ],
+    }
+
+
 def _procedure(event: ClinicalEvent, text: str) -> dict:
     return {
         "resourceType": "Procedure",
@@ -99,6 +118,7 @@ _EVENT_BUILDERS = {
     "appendectomy": lambda e: _procedure(e, "Appendectomy"),
     "her2_result": _her2_observation,
     "dexa_scan": _dexa_observation,
+    "cbc_lab": _cbc_observation,
     "zoledronic_acid_infusion": lambda e: _medication_administration(e, "Zoledronic acid"),
 }
 

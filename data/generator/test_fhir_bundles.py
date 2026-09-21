@@ -122,3 +122,17 @@ def test_deterministic_same_ledger_same_bundle():
     a = build_fhir_bundle(_LEDGER)
     b = build_fhir_bundle(_LEDGER)
     assert a == b
+
+
+def test_cbc_observation_carries_the_differential_and_never_a_computed_anc():
+    bundle = build_fhir_bundle(_LEDGER)
+    cbc_event = next(e for e in _LEDGER.events if e.kind == "cbc_lab")
+    cbc_resource = next(
+        r for r in _event_resources(bundle)
+        if r["resourceType"] == "Observation" and r.get("id") == cbc_event.event_id
+    )
+    components = {c["code"]["text"]: c["valueQuantity"]["value"] for c in cbc_resource["component"]}
+    assert components["WBC"] == cbc_event.wbc_per_uL
+    assert components["Neutrophils"] == cbc_event.neutrophil_pct
+    assert components["Platelet count"] == cbc_event.platelet_count
+    assert "ANC" not in components, "the source resource must never carry a computed ANC"

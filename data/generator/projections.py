@@ -28,6 +28,9 @@ ROW_FIELDS = [
     "grade",
     "ihc_score",
     "t_score",
+    "wbc_per_uL",
+    "neutrophil_pct",
+    "platelet_count",
 ]
 
 
@@ -47,6 +50,9 @@ def _row(event: ClinicalEvent, local_patient_id: str) -> dict[str, str]:
         "grade": _blank(event.grade),
         "ihc_score": _blank(event.ihc_score),
         "t_score": _blank(event.t_score),
+        "wbc_per_uL": _blank(event.wbc_per_uL),
+        "neutrophil_pct": _blank(event.neutrophil_pct),
+        "platelet_count": _blank(event.platelet_count),
     }
 
 

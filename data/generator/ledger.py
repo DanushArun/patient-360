@@ -50,6 +50,14 @@ class ClinicalEvent:
     grade: str | None = None
     ihc_score: str | None = None
     t_score: float | None = None
+    wbc_per_uL: int | None = None
+    neutrophil_pct: float | None = None
+    platelet_count: int | None = None
+    # Deliberately no `anc` field: ANC is never a source fact in this system
+    # (WORK-PLAN.md Day 4) — it is always derived from wbc_per_uL and
+    # neutrophil_pct downstream, in DT_HARMONIZED_EVENTS. Adding a field here
+    # that a test merely checks is None would let a future edit "fix" it by
+    # populating a value; the field's absence is the actual guarantee.
 
 
 @dataclass(frozen=True)
@@ -136,6 +144,22 @@ def _chemo_and_appendectomy(rng: random.Random) -> list[ClinicalEvent]:
     return events
 
 
+def _cbc_lab(rng: random.Random, chemo_events: list[ClinicalEvent]) -> ClinicalEvent:
+    """A routine CBC drawn mid-course, reporting only the differential — WBC
+    and neutrophil percent, no absolute neutrophil count. ANC = WBC x
+    (neutrophils/100) is a downstream derivation (DT_HARMONIZED_EVENTS), not
+    something this source system ever printed. WBC 6000 x 35% = ANC 2100,
+    matching WORK-PLAN.md's own Day-4 acceptance test exactly."""
+    chemo_times = sorted(e.event_time for e in chemo_events)
+    # Strictly between the first and last chemo cycle, never coinciding with one.
+    cbc_time = chemo_times[0] + (chemo_times[-1] - chemo_times[0]) / 2 + timedelta(hours=6)
+    return ClinicalEvent(
+        event_id="EVT-CBC-01", kind="cbc_lab", facility_id="FAC-02",
+        event_time=cbc_time, source_recorded_at=_recorded_after(rng, cbc_time),
+        wbc_per_uL=6000, neutrophil_pct=35.0, platelet_count=rng.randint(150_000, 300_000),
+    )
+
+
 def _her2_results(rng: random.Random) -> list[ClinicalEvent]:
     """Discordant across specimens — outside biopsy Grade II / IHC 1+;
     surgical specimen Grade III / IHC 2+, different accession IDs. Both
@@ -204,8 +228,10 @@ def generate_deep_case(seed: int) -> Ledger:
     """
     rng = random.Random(seed)
 
+    chemo_events = _chemo_and_appendectomy(rng)
     events = (
-        *_chemo_and_appendectomy(rng),
+        *chemo_events,
+        _cbc_lab(rng, chemo_events),
         *_her2_results(rng),
         *_bone_health(rng),
     )
