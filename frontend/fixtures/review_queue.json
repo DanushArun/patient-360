@@ -1,0 +1,70 @@
+{
+  "_comment": "Day-2 Review Queue fixture. Mixed severities and days_to_visit so ordering is provable, one closed and one escalated issue so exclusion is provable, one unassigned issue so the unowned flag is provable.",
+  "issues": [
+    {
+      "issue_id": "RI-001",
+      "patient_id": "PAT-DEEP-0001",
+      "patient_name": "Patient (deep case)",
+      "gate": "safety",
+      "rule_id": "SURV-LVEF-001",
+      "outcome": "fail",
+      "state": "open",
+      "severity": "blocker",
+      "days_to_visit": 2,
+      "owner_practitioner_name": null,
+      "rule_version": 1
+    },
+    {
+      "issue_id": "RI-002",
+      "patient_id": "PAT-0055",
+      "patient_name": "Patient Fifty-Five",
+      "gate": "documentation",
+      "rule_id": "DOC-HER2-001",
+      "outcome": "fail",
+      "state": "open",
+      "severity": "blocker",
+      "days_to_visit": 7,
+      "owner_practitioner_name": "Dr. Meera Iyer",
+      "rule_version": 1
+    },
+    {
+      "issue_id": "RI-003",
+      "patient_id": "PAT-0061",
+      "patient_name": "Patient Sixty-One",
+      "gate": "coverage",
+      "rule_id": "COV-AUTH-001",
+      "outcome": "conflicting",
+      "state": "evidence_received",
+      "severity": "advisory",
+      "days_to_visit": 2,
+      "owner_practitioner_name": "Dr. A. Rao",
+      "rule_version": 1
+    },
+    {
+      "issue_id": "RI-004",
+      "patient_id": "PAT-0070",
+      "patient_name": "Patient Seventy",
+      "gate": "clinical",
+      "rule_id": "CLIN-PLT-001",
+      "outcome": "fail",
+      "state": "closed",
+      "severity": "blocker",
+      "days_to_visit": 1,
+      "owner_practitioner_name": "Dr. Meera Iyer",
+      "rule_version": 1
+    },
+    {
+      "issue_id": "RI-005",
+      "patient_id": "PAT-0082",
+      "patient_name": "Patient Eighty-Two",
+      "gate": "safety",
+      "rule_id": "ENDO-DEXA-001",
+      "outcome": "not_evaluated",
+      "state": "escalated",
+      "severity": "advisory",
+      "days_to_visit": 4,
+      "owner_practitioner_name": null,
+      "rule_version": 1
+    }
+  ]
+}
