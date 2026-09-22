@@ -6,6 +6,24 @@ Personal tracker. **Not** a replacement for `IMPLEMENTATION-STATUS.md` (that sta
 
 ---
 
+## 0. Deploy progress on my JN89282 account (as of 22 Sept, evening)
+
+Live vertical slice against `EA72552_SNOW` / account `JN89282` / user `DAKSHA`.
+
+| Phase | Status | Details |
+|---|---|---|
+| Phase 1 — `deploy.sh` base (18 manifest steps) | **done** | Steps 1–11 + 17: account param, warehouse, DB + 7 schemas, roles, stages, 5 table files, 3 governance files, ontology + unit registry, 16 rules, 2 Cortex Search services. `snow connection test EA72552_SNOW` = OK (key-pair auth on DAKSHA). |
+| Phase 2 — objects Danush built but manifest still comments | **done** | streams (1), 5 base procedures, 8 tool procedures, `DT_HARMONIZED_EVENTS`, semantic view, 2 AI tasks (created, not run), `SAARTHI_AGENT`, `ASK_SAARTHI` procedure. |
+| Phase 3a — identity + governance seed | **done** | `load_synthetic.sql` — 1 org, 4 facilities, 1 department, 2 practitioners (`PRAC-01` mapped to `CURRENT_USER()`), 1 patient (`PAT-DEEP-0001`), care team, consent, 7 `ID_MAP` rows. |
+| Phase 3b — Step 12 CSV pipeline (Builder 2's slot) | **done** | Ran the three files Danush already wrote (`load_structured_events.sql`, `load_structured_events_copy.sql`, `transform_structured_events.sql`). PUT 4 CSVs from `data/generated/csv/` into `@%STG_SOURCE_EVENTS/FAC-XX/`, COPY INTO staging (12 rows), transform into `ENCOUNTER` + 6 `CLINICAL_EVENT` rows (1 imaging, 3 lab, 2 pathology). `setup.sql` Step 12 still commented — activation deferred pending idempotency re-run. |
+| Phase 3c — end-to-end verification | **done** | `ASK_SAARTHI('What are her readiness gates?')` returns real outcomes: **ANC fail**, **PLT fail** (both on 57-day staleness — R2 working), **LVEF `not_evaluated`** (missing), **HBA1C `not_evaluated`** (missing), **DEXA `not_evaluated`** (threshold shape not implemented — see §5). R7 derivation lineage cited: `EVT-CHEMO-03-ANC-DERIVED`. Total tokens ~48k in / 631 out. |
+
+**What is proven on JN89282 right now:** R1 (SQL rules, not LLM) · R2 (three clocks, freshness window) · R3 (missingness never faked) · R7 (derivation lineage) — all end-to-end.
+
+**Not proven yet:** unstructured document → parse → chunk → search → assert path (needs a PDF ingested through `parse_documents` + `extract_assertions` tasks, credit-heavy, deliberately paused).
+
+---
+
 ## 1. Reconciliation — what STATUS calls designed-only but git shows built
 
 `IMPLEMENTATION-STATUS.md` was last updated 20 Sept. Between 20 Sept and 22 Sept, a large amount of work landed. This section is informational — do **not** use it as a claim in the submission until STATUS itself is refreshed.
@@ -108,12 +126,12 @@ For my own tracking — how I confirm each §2 item is really done, not just cla
 
 Rubric: Technical Execution 40 / Completeness 30 / Relevance 30. Prioritise things that make the vertical slice more demonstrable, not things that make the repo look "bigger."
 
-1. **Deploy SAARTHI to JN89282** (in progress). Without this, none of the above can be verified on my machine.
-2. **Verify §1 rows against the live deploy.** Every "coded" item becomes "built" only after `setup.sql` runs clean.
-3. **Reference corpus Tier 1** — `search_reference_documents` currently returns empty (its commit message admits this). One real WHO guideline or NCCN doc, tokenised into the reference search service, unblocks a whole class of questions.
-4. **Navigator View + Judge Console** — the 2 missing screens. Judge Console especially, because §8 lifecycle evidence and judge reproducibility both depend on it.
+1. ~~**Deploy SAARTHI to JN89282**~~ **done 22 Sept evening** — Phases 1, 2, 3a, 3b, 3c all complete. See §0.
+2. ~~**Verify §1 rows against the live deploy.**~~ **done** — R1, R2, R3, R7 all proven end-to-end. Two live bugs surfaced and logged in §5.
+3. **Reference corpus Tier 1** — `search_reference_documents` currently returns empty (its commit message admits this). One real WHO guideline or NCCN doc, tokenised into the reference search service, unblocks a whole class of questions. Next Daksha-safe backend item.
+4. **Navigator View + Judge Console** — the 2 missing screens. Judge Console especially, because §8 lifecycle evidence and judge reproducibility both depend on it. Frontend phase.
 5. **Validator checks 5 & 6** — small, self-contained, moves §4 from partial to built.
-6. **Remaining tasks + dynamic tables** — 5 tasks + 4 DTs. Deploy manifest step-by-step.
+6. **Remaining tasks + dynamic tables** — 5 tasks + 4 DTs. Deploy manifest step-by-step. **Danush's territory — check first.**
 7. **Corruption scenarios 2–13** — needed for the `conflicting` / `superseded` demos.
 8. **Eval questions to 80 + 80.**
 9. **STATUS refresh** — after Danush's next scoped commit lands, not before.
@@ -136,8 +154,14 @@ Per Daksha's instruction: if I think something's missing that isn't in SPEC/STAT
 
 5. **No entry in STATUS §6 for `chunk_documents` procedure**, which git shows exists (`backend/sql/procedures/chunk_documents.sql`). May be intentionally rolled into the "Procedures 11 designed" count, or may be one that landed after STATUS was written. — *decide: reconcile the count.*
 
+6. **`evaluate_gates` doesn't implement DEXA T-score threshold shape.** Discovered live on 22 Sept: `ENDO-DEXA-001` has evidence (`EVT-DEXA`, T-score = -1.6) but the gate returns `not_evaluated` with reason *"evidence exists but this rule's threshold shape is not yet implemented by evaluate_gates"*. The rule row ships in `RULE_CATALOG` but the SQL comparator branch for it is missing in `backend/sql/procedures/evaluate_gates.sql`. Real bug, not a design gap. Danush's territory. — **Decision (22 Sept): flag to Danush, do not fix in this branch.**
+
+7. **`ledger.py` doesn't emit LVEF or HbA1c events.** Two of five readiness rules can therefore never be tested end-to-end from generated data. Extending it requires editing `data/generator/ledger.py`, `projections.py`, `fhir_bundles.py`, and updating the 12 ledger tests + 8/9-test projection/FHIR test suites, plus `STG_SOURCE_EVENTS` columns, `COPY INTO`, `transform_structured_events.sql`, and `DT_HARMONIZED_EVENTS` normalization. Danush's territory (he owns the generator). — **Decision (22 Sept): flag to Danush, do not fix in this branch.**
+
+8. **`setup.sql` Step 12 activation.** Ran the three Step-12 files manually against JN89282 today; they worked. But the `EXECUTE IMMEDIATE FROM './data/load_structured_events*.sql'` and `./data/transform_structured_events.sql` lines in the manifest are still commented, which means a fresh `deploy.sh` on a clean account will not include them. Per Danush's own rule (*"Uncomment a line the moment its file exists AND runs clean on its own"*), those three lines are now eligible to be uncommented. — *decide: do the uncomment on this branch (small edit to `setup.sql`, matches his rule) or leave for him to activate.*
+
 These are observations, not additions. They stay in this section until the team decides otherwise.
 
 ---
 
-*Last updated: 22 Sept 2026. Personal tracker only — the authoritative status doc is `IMPLEMENTATION-STATUS.md`.*
+*Last updated: 22 Sept 2026, evening — added §0 deploy progress, marked §4 items 1–2 done, added §5 items 6–8. Personal tracker only — the authoritative status doc is `IMPLEMENTATION-STATUS.md`.*
