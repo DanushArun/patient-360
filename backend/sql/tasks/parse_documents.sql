@@ -28,10 +28,18 @@ DECLARE
     v_parsed        VARIANT;
     v_page_count    INTEGER;
     v_i             INTEGER;
+    v_reference_count INTEGER DEFAULT 0;
     c_new_files CURSOR FOR
         SELECT d.relative_path, d.etag,
                SPLIT_PART(d.relative_path, '/', 1) AS patient_id
           FROM DIRECTORY(@SAARTHI.STAGES.PATIENT_DOCS) d
+         WHERE NOT EXISTS (
+                 SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT doc
+                  WHERE doc.file_hash = d.etag
+               );
+    c_new_reference CURSOR FOR
+        SELECT d.relative_path, d.etag
+          FROM DIRECTORY(@SAARTHI.STAGES.REFERENCE_DOCS) d
          WHERE NOT EXISTS (
                  SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT doc
                   WHERE doc.file_hash = d.etag
@@ -81,7 +89,51 @@ BEGIN
     END WHILE;
     CLOSE c_new_files;
 
-    RETURN OBJECT_CONSTRUCT('documents_parsed', v_count);
+    -- Reference corpus (R6): same shape as the patient loop but scope='reference',
+    -- patient_id NULL, and stage is REFERENCE_DOCS. R6 keeps the two corpora in
+    -- physically separate SEARCH SERVICES; a single parse task can populate both
+    -- because scope on the DOCUMENT row is what routes each chunk to the right
+    -- index (chunk_documents_proc copies d.scope into DOC_CHUNK.doc_scope).
+    OPEN c_new_reference;
+    FETCH c_new_reference INTO v_relative_path, v_file_hash;
+    WHILE (v_relative_path IS NOT NULL) DO
+        -- Same fresh SELECT etag pattern as the patient loop above,
+        -- preserving the workaround for the cursor-value-pinning bug found live.
+        SELECT etag INTO :v_file_hash
+          FROM DIRECTORY(@SAARTHI.STAGES.REFERENCE_DOCS) WHERE relative_path = :v_relative_path;
+
+        v_parsed := (SELECT AI_PARSE_DOCUMENT(
+                        TO_FILE('@SAARTHI.STAGES.REFERENCE_DOCS', :v_relative_path),
+                        {'mode':'LAYOUT', 'page_split': true}));
+        v_page_count := (SELECT GET_PATH(:v_parsed, 'metadata.pageCount')::INTEGER);
+        v_doc_id := UUID_STRING();
+
+        INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
+            (doc_id, patient_id, scope, doc_type, file_hash, source_quality, ingested_at, ingestion_method, status)
+        VALUES
+            (:v_doc_id, NULL, 'reference', 'clinical_guideline', :v_file_hash,
+             'clean_pdf', CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
+
+        v_i := 0;
+        WHILE (v_i < v_page_count) DO
+            INSERT INTO SAARTHI.DOCUMENTS.DOC_PAGE (doc_id, page_index, text, char_count)
+            SELECT :v_doc_id, :v_i,
+                   GET_PATH(p.value, 'content')::VARCHAR,
+                   LENGTH(GET_PATH(p.value, 'content')::VARCHAR)
+              FROM TABLE(FLATTEN(input => GET_PATH(:v_parsed, 'pages'))) p
+             WHERE p.value:index::INTEGER = :v_i;
+            v_i := v_i + 1;
+        END WHILE;
+
+        v_reference_count := v_reference_count + 1;
+        FETCH c_new_reference INTO v_relative_path, v_file_hash;
+    END WHILE;
+    CLOSE c_new_reference;
+
+    RETURN OBJECT_CONSTRUCT(
+        'documents_parsed', v_count,
+        'reference_documents_parsed', v_reference_count
+    );
 END;
 $$;
 

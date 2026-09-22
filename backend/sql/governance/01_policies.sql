@@ -17,9 +17,25 @@
 
 -- Layer 3 of R5: even a leaked chunk_id yields nothing, because DOC_PAGE
 -- content is re-fetched through this policy, keyed on the real caller.
+--
+-- Two-branch design:
+--   Top branch — reference-corpus docs (SPEC R6). Public clinical guidelines
+--     (WHO, NCCN, etc.) with no patient PII. Visible to any authenticated
+--     caller; no CURRENT_USER() filtering because reference docs have no
+--     user-specific access rules. Required for parse_documents_proc's
+--     reference loop and chunk_documents_proc to see reference DOC_PAGE
+--     rows at all (patient_id IS NULL means the bottom branch can never
+--     match a CARE_TEAM row).
+--   Bottom branch — patient-scope enforcement, unchanged. F3: keys on
+--     CURRENT_USER(), never CURRENT_ROLE(); survives owner's-rights
+--     elevation exactly as R5 Layer 3 requires.
 CREATE OR REPLACE ROW ACCESS POLICY SAARTHI.GOVERNANCE.patient_scope
   AS (doc_id VARCHAR) RETURNS BOOLEAN ->
     EXISTS (
+      SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT d
+       WHERE d.doc_id = doc_id AND d.scope = 'reference'
+    )
+    OR EXISTS (
       SELECT 1
       FROM SAARTHI.GOVERNANCE.CARE_TEAM ct
       JOIN SAARTHI.GOVERNANCE.PRACTITIONER p

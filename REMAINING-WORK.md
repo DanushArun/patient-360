@@ -17,10 +17,11 @@ Live vertical slice against `EA72552_SNOW` / account `JN89282` / user `DAKSHA`.
 | Phase 3a — identity + governance seed | **done** | `load_synthetic.sql` — 1 org, 4 facilities, 1 department, 2 practitioners (`PRAC-01` mapped to `CURRENT_USER()`), 1 patient (`PAT-DEEP-0001`), care team, consent, 7 `ID_MAP` rows. |
 | Phase 3b — Step 12 CSV pipeline (Builder 2's slot) | **done** | Ran the three files Danush already wrote (`load_structured_events.sql`, `load_structured_events_copy.sql`, `transform_structured_events.sql`). PUT 4 CSVs from `data/generated/csv/` into `@%STG_SOURCE_EVENTS/FAC-XX/`, COPY INTO staging (12 rows), transform into `ENCOUNTER` + 6 `CLINICAL_EVENT` rows (1 imaging, 3 lab, 2 pathology). `setup.sql` Step 12 still commented — activation deferred pending idempotency re-run. |
 | Phase 3c — end-to-end verification | **done** | `ASK_SAARTHI('What are her readiness gates?')` returns real outcomes: **ANC fail**, **PLT fail** (both on 57-day staleness — R2 working), **LVEF `not_evaluated`** (missing), **HBA1C `not_evaluated`** (missing), **DEXA `not_evaluated`** (threshold shape not implemented — see §5). R7 derivation lineage cited: `EVT-CHEMO-03-ANC-DERIVED`. Total tokens ~48k in / 631 out. |
+| Phase 4 — Reference corpus Tier 1 (SPEC R6) | **done** | Extended `parse_documents_proc` with a second cursor for `REFERENCE_DOCS` (previously scanned `PATIENT_DOCS` only). Fixed `patient_scope` RAP to allow reference-scope docs (top branch; bottom branch unchanged). PUT `who_diabetes_guideline.pdf` (72 pages) + `ncd_treatment_guidelines.pdf` (87 pages) to `@REFERENCE_DOCS`. AI parse → 2 DOCUMENT + 159 DOC_PAGE + 159 DOC_CHUNK rows. `REFERENCE_DOC_SEARCH` refreshed. `ASK_SAARTHI('What does the guideline say about HbA1c targets…')` returns **cited answer** (`[doc <uuid>, p.22]` + `[…, p.23]`) with Class A refusal appended. Tokens 53k / 712. Est. AI spend ~$0.16. |
 
-**What is proven on JN89282 right now:** R1 (SQL rules, not LLM) · R2 (three clocks, freshness window) · R3 (missingness never faked) · R7 (derivation lineage) — all end-to-end.
+**What is proven on JN89282 right now:** R1 (SQL rules, not LLM) · R2 (three clocks, freshness window) · R3 (missingness never faked) · R6 (two physically separate corpora with reference citations) · R7 (derivation lineage) — all end-to-end.
 
-**Not proven yet:** unstructured document → parse → chunk → search → assert path (needs a PDF ingested through `parse_documents` + `extract_assertions` tasks, credit-heavy, deliberately paused).
+**Not proven yet:** patient document → parse → chunk → search path (needs a patient PDF uploaded to `@PATIENT_DOCS`; reference path is now proven so the same flow will work). R7 two-pass extraction (`extract_assertions` task) — created, never fired.
 
 ---
 
@@ -128,7 +129,7 @@ Rubric: Technical Execution 40 / Completeness 30 / Relevance 30. Prioritise thin
 
 1. ~~**Deploy SAARTHI to JN89282**~~ **done 22 Sept evening** — Phases 1, 2, 3a, 3b, 3c all complete. See §0.
 2. ~~**Verify §1 rows against the live deploy.**~~ **done** — R1, R2, R3, R7 all proven end-to-end. Two live bugs surfaced and logged in §5.
-3. **Reference corpus Tier 1** — `search_reference_documents` currently returns empty (its commit message admits this). One real WHO guideline or NCCN doc, tokenised into the reference search service, unblocks a whole class of questions. Next Daksha-safe backend item.
+3. ~~**Reference corpus Tier 1**~~ **done 22 Sept evening** — extended `parse_documents_proc` for `REFERENCE_DOCS`, fixed `patient_scope` RAP for reference-scope docs, loaded WHO + NCD guideline PDFs (159 chunks), agent returns cited reference answers. See §0 Phase 4 and §5 items 9 + 10.
 4. **Navigator View + Judge Console** — the 2 missing screens. Judge Console especially, because §8 lifecycle evidence and judge reproducibility both depend on it. Frontend phase.
 5. **Validator checks 5 & 6** — small, self-contained, moves §4 from partial to built.
 6. **Remaining tasks + dynamic tables** — 5 tasks + 4 DTs. Deploy manifest step-by-step. **Danush's territory — check first.**
@@ -158,10 +159,14 @@ Per Daksha's instruction: if I think something's missing that isn't in SPEC/STAT
 
 7. **`ledger.py` doesn't emit LVEF or HbA1c events.** Two of five readiness rules can therefore never be tested end-to-end from generated data. Extending it requires editing `data/generator/ledger.py`, `projections.py`, `fhir_bundles.py`, and updating the 12 ledger tests + 8/9-test projection/FHIR test suites, plus `STG_SOURCE_EVENTS` columns, `COPY INTO`, `transform_structured_events.sql`, and `DT_HARMONIZED_EVENTS` normalization. Danush's territory (he owns the generator). — **Decision (22 Sept): flag to Danush, do not fix in this branch.**
 
-8. **`setup.sql` Step 12 activation.** Ran the three Step-12 files manually against JN89282 today; they worked. But the `EXECUTE IMMEDIATE FROM './data/load_structured_events*.sql'` and `./data/transform_structured_events.sql` lines in the manifest are still commented, which means a fresh `deploy.sh` on a clean account will not include them. Per Danush's own rule (*"Uncomment a line the moment its file exists AND runs clean on its own"*), those three lines are now eligible to be uncommented. — *decide: do the uncomment on this branch (small edit to `setup.sql`, matches his rule) or leave for him to activate.*
+8. **`setup.sql` Step 12 activation.** Ran the three Step-12 files manually against JN89282 today; they worked. But the `EXECUTE IMMEDIATE FROM './data/load_structured_events*.sql'` and `./data/transform_structured_events.sql` lines in the manifest are still commented, which means a fresh `deploy.sql` on a clean account will not include them. Per Danush's own rule (*"Uncomment a line the moment its file exists AND runs clean on its own"*), those three lines are now eligible to be uncommented. — *decide: do the uncomment on this branch (small edit to `setup.sql`, matches his rule) or leave for him to activate.*
+
+9. **`parse_documents_proc` extended in this branch to scan `REFERENCE_DOCS` too.** The proc previously only scanned `PATIENT_DOCS`, leaving no path for the reference corpus that SPEC R6 requires. Extension adds a second cursor + WHILE loop with `scope='reference'`, `patient_id=NULL`, `doc_type='clinical_guideline'`. `chunk_documents_proc` unchanged (already reads both scopes via `d.scope`). Applied and verified on JN89282: 2 DOCUMENT + 159 DOC_PAGE + 159 DOC_CHUNK rows for the WHO diabetes + NCD treatment guidelines. — **Decision (22 Sept): fixed in this branch as it completes what SPEC describes; needs Danush's review before merge.**
+
+10. **`patient_scope` RAP extended to allow reference-scope docs.** Original policy required `d.patient_id = ct.patient_id`, which cannot match rows where `d.patient_id IS NULL` (reference docs) — so every reference `DOC_PAGE` row was filtered out invisibly, and `chunk_documents_proc` returned 0 chunks. Fix adds a top branch that returns TRUE for `d.scope = 'reference'` unconditionally; bottom branch (patient-scope, keyed on `CURRENT_USER()`) unchanged. R5 Layer 3 preserved; R6 now functional. Applied via `ALTER ROW ACCESS POLICY … SET BODY`. — **Decision (22 Sept): fixed in this branch; needs Danush's review before merge.**
 
 These are observations, not additions. They stay in this section until the team decides otherwise.
 
 ---
 
-*Last updated: 22 Sept 2026, evening — added §0 deploy progress, marked §4 items 1–2 done, added §5 items 6–8. Personal tracker only — the authoritative status doc is `IMPLEMENTATION-STATUS.md`.*
+*Last updated: 22 Sept 2026, evening — Phase 4 reference-corpus deployed + verified end-to-end; §4 items 1–3 marked done; §5 gaps 9 and 10 added for Danush's review (parse_documents extended, patient_scope RAP extended). Personal tracker only — the authoritative status doc is `IMPLEMENTATION-STATUS.md`.*
