@@ -6,7 +6,8 @@ description: >
   deterioration, prognosis or survival, and computes nothing itself.
 ---
 
-<!-- STATUS: draft scaffold. Body written Days 11-12. -->
+<!-- Execution instructions live in the markdown body; frontmatter carries name and
+     description only (agents ignore an instructions: key in frontmatter). -->
 
 # Risk stratification
 

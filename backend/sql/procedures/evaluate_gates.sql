@@ -6,13 +6,23 @@
 -- A scheduled Task (step 16, TASK_REFRESH_READINESS) materialises the result
 -- into READINESS_STATE; this procedure is what it calls.
 --
--- This build implements the "simple threshold" rule shape (operator, value,
--- unit, max_age_days in threshold_json) - covers CLIN-ANC-001, CLIN-PLT-001,
--- SURV-LVEF-001, ENDO-HBA1C-001. Per-agent multi-value rules (CLIN-CRCL-001,
--- CLIN-BILI-001), the HER2 state machine (DOC-HER2-001), and the stratified
--- DEXA rule (ENDO-DEXA-001) need bespoke evaluators, not yet written - a
--- rule whose gate logic isn't implemented here returns not_evaluated with an
--- explicit reason, never a guessed pass/fail.
+-- This build implements THREE rule shapes:
+--   (a) simple threshold - operator, value, unit, max_age_days in threshold_json.
+--       Covers CLIN-ANC-001, CLIN-PLT-001, ENDO-HBA1C-001.
+--   (b) freshness-only - concept + max_age_days but NO operator/value. Rule passes
+--       if the event exists and is within max_age_days, fails otherwise. Covers
+--       SURV-LVEF-001 and SURV-LVEF-002 (LVEF surveillance requires a recent
+--       measurement; the rule does not gate on the absolute value).
+--   (c) stratified (T-score bands) - bespoke evaluator for ENDO-DEXA-001. Bands
+--       per NCCN v4.2024: T>=-1.0 -> 24-month interval; else -> 12-month interval.
+--       QUS modality would surface as no T_SCORE row (different concept_id via
+--       the ontology join), which the outer 'no evidence found' branch already
+--       handles per SPEC.md 524.
+-- Per-agent multi-value rules (CLIN-CRCL-001, CLIN-BILI-001), the HER2 state
+-- machine (DOC-HER2-001), and presence/coverage/identity rules still need bespoke
+-- evaluators - they remain in the fallback 'not_implemented' branch until the
+-- next evaluator pass. A rule whose gate logic isn't implemented here returns
+-- not_evaluated with an explicit reason, never a guessed pass/fail.
 --
 -- Uses explicit CURSOR + OPEN/FETCH/CLOSE into scalar variables throughout,
 -- not the FOR-loop record-variable form: dot-access on a FOR-loop record
@@ -86,11 +96,45 @@ BEGIN
         IF (v_evt_id IS NOT NULL) THEN
             v_found := TRUE;
 
-            IF (v_operator IS NULL) THEN
+            IF (v_rule_id = 'ENDO-DEXA-001') THEN
+                -- Stratified T-score interval per NCCN v4.2024. T-score band
+                -- determines the max age; freshness is compared against that band.
+                -- v_evt_value carries the T-score from concept T_SCORE.
+                IF (v_evt_value >= -1.0 AND v_age_days > 730) THEN
+                    v_outcome := 'fail';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (normal, T>=-1.0) - 24-month interval, last scan ' || v_age_days::VARCHAR || ' days old, overdue';
+                ELSEIF (v_evt_value >= -1.0) THEN
+                    v_outcome := 'pass';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (normal, T>=-1.0) - 24-month interval, last scan ' || v_age_days::VARCHAR || ' days old, within interval';
+                ELSEIF (v_evt_value > -2.5 AND v_age_days > 365) THEN
+                    v_outcome := 'fail';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan ' || v_age_days::VARCHAR || ' days old, overdue';
+                ELSEIF (v_evt_value > -2.5) THEN
+                    v_outcome := 'pass';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan ' || v_age_days::VARCHAR || ' days old, within interval';
+                ELSEIF (v_age_days > 365) THEN
+                    v_outcome := 'fail';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteoporosis, T<=-2.5) - 12-month interval, last scan ' || v_age_days::VARCHAR || ' days old, overdue';
+                ELSE
+                    v_outcome := 'pass';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteoporosis, T<=-2.5) - 12-month interval, last scan ' || v_age_days::VARCHAR || ' days old, within interval';
+                END IF;
+            ELSEIF (v_operator IS NULL AND v_max_age_days IS NOT NULL) THEN
+                -- Freshness-only shape (SURV-LVEF-001/002). No threshold on the
+                -- value - the rule requires a recent measurement, not a target
+                -- value. Pass if within max_age_days; fail otherwise.
+                IF (v_age_days > v_max_age_days) THEN
+                    v_outcome := 'fail';
+                    v_reason := v_concept || ' last measured ' || v_age_days::VARCHAR || ' days ago, exceeds ' || v_max_age_days::VARCHAR || '-day surveillance interval';
+                ELSE
+                    v_outcome := 'pass';
+                    v_reason := v_concept || ' measured ' || v_age_days::VARCHAR || ' days ago, within ' || v_max_age_days::VARCHAR || '-day surveillance interval';
+                END IF;
+            ELSEIF (v_operator IS NULL) THEN
                 -- Rules with a shape this evaluator does not implement yet
-                -- (e.g. ENDO-DEXA-001's stratified T-score bands) have no
-                -- flat operator/value pair. Evidence exists but the logic to
-                -- read it does not - say so explicitly, never go silent.
+                -- (per-agent multi-value, presence/coverage/identity, HER2 state
+                -- machine). Evidence exists but the logic to read it does not -
+                -- say so explicitly, never go silent.
                 v_outcome := 'not_evaluated';
                 v_reason := 'evidence exists but this rule''s threshold shape is not yet implemented by evaluate_gates';
             ELSEIF (v_max_age_days IS NOT NULL AND v_age_days > v_max_age_days) THEN

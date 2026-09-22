@@ -66,3 +66,58 @@ MERGE INTO SAARTHI.CORE.ID_MAP t USING (SELECT 'FAC-04-MRN' k) s ON t.map_id = s
 WHEN NOT MATCHED THEN INSERT (map_id, patient_id, source_system, source_patient_id, link_status, linked_at) VALUES ('FAC-04-MRN', 'PAT-DEEP-0001', 'FAC-04-MRN', 'MRN-800005', 'manually_verified', CURRENT_TIMESTAMP());
 MERGE INTO SAARTHI.CORE.ID_MAP t USING (SELECT 'FAC-04-INS' k) s ON t.map_id = s.k
 WHEN NOT MATCHED THEN INSERT (map_id, patient_id, source_system, source_patient_id, link_status, linked_at) VALUES ('FAC-04-INS', 'PAT-DEEP-0001', 'FAC-04-INSURANCE_MEMBER_ID', 'INSURANCE_MEMBER_ID-800006', 'manually_verified', CURRENT_TIMESTAMP());
+
+-- =============================================================================
+-- STEP 12c - LVEF + HbA1c clinical events for the deep-case patient
+-- =============================================================================
+-- ledger.py does not emit LVEF or HbA1c events (REMAINING-WORK.md §5 gap 7 -
+-- extending the ledger to emit these hits 12+8+9 test files and multiple pipeline
+-- files, deferred to Danush). Seeding directly here with concept_ids from
+-- CLINICAL_ONTOLOGY so DT_HARMONIZED_EVENTS.concept_name resolves to
+-- 'LVEF' and 'HBA1C' via the LEFT JOIN in that Dynamic Table's DDL.
+--
+-- Freshness anchor: the latest chemo encounter (EVT-CHEMO-06) is scheduled
+-- 2025-05-23. Events are dated 2025-04-15 - 38 days before the encounter, so
+-- both rules (SURV-LVEF-001 max_age_days=90 and ENDO-HBA1C-001 max_age_days=90)
+-- see them as fresh.
+--
+-- Values chosen to exercise the pass paths (LVEF 58% >= 50 threshold; HbA1c 7.2%
+-- < 8.5 threshold). The corresponding fail scenarios are covered by the rule
+-- fixture corpus at data/fixtures/rules/rule_fixtures.yaml.
+
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-LVEF-01' AS event_id) s ON t.event_id = s.event_id
+WHEN NOT MATCHED THEN INSERT (
+  event_id, patient_id, encounter_id, event_type, concept_id,
+  code_system, code, display, value_num, value_text, unit,
+  original_value, original_unit, abnormal_flag, specimen_id, accession_id,
+  status, negation, event_time, source_recorded_at, ingested_at, valid_until
+) VALUES (
+  'EVT-LVEF-01', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'imaging',
+  '047c1aee-f5ff-415b-9f44-1d222bd96b18',  -- LVEF concept_id
+  'LOINC', '10230-1', 'Left ventricular Ejection fraction',
+  58, NULL, '%', '58', '%', NULL, NULL, 'ECHO-2025-0418',
+  'final', FALSE,
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 15, 10, 30, 0),
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 15, 12, 0, 0),
+  CURRENT_TIMESTAMP(), NULL
+);
+
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-HBA1C-01' AS event_id) s ON t.event_id = s.event_id
+WHEN NOT MATCHED THEN INSERT (
+  event_id, patient_id, encounter_id, event_type, concept_id,
+  code_system, code, display, value_num, value_text, unit,
+  original_value, original_unit, abnormal_flag, specimen_id, accession_id,
+  status, negation, event_time, source_recorded_at, ingested_at, valid_until
+) VALUES (
+  'EVT-HBA1C-01', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'lab',
+  'e695965e-646b-44c0-94c0-be884b8739e7',  -- HBA1C concept_id
+  'LOINC', '4548-4', 'Hemoglobin A1c/Hemoglobin.total in Blood',
+  7.2, NULL, '%', '7.2', '%', NULL, NULL, 'LAB-2025-0415-HBA1C',
+  'final', FALSE,
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 15, 9, 15, 0),
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 15, 11, 30, 0),
+  CURRENT_TIMESTAMP(), NULL
+);
+

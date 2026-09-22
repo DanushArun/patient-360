@@ -181,7 +181,7 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 | Synthetic PDF with Indian lab traps | **built** — 1 of ~20. `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
 | Reference corpus Tier 1 | **not started** — `data/reference/` does not exist |
 | 80 rule fixtures | designed-only |
-| 80 dev + 80 held-out eval questions | designed-only |
+| 80 questions (40 dev + 40 held-out) eval | designed-only |
 | FHIR R4 bundles | designed-only — field mapping complete (`fhir-field-mapping.md`, 462 lines) |
 
 ---

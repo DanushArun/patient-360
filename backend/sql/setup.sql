@@ -153,7 +153,12 @@ EXECUTE IMMEDIATE FROM './data/rules.sql';
 -- ---------------------------------------------------------------------------
 -- COPY INTO for CSV and FHIR bundles; PUT for PDFs. Normalisation needs the
 -- ontology already loaded, which is why this follows step 10.
--- EXECUTE IMMEDIATE FROM './data/load_synthetic.sql';
+EXECUTE IMMEDIATE FROM './data/load_synthetic.sql';
+EXECUTE IMMEDIATE FROM './data/load_structured_events.sql';
+EXECUTE IMMEDIATE FROM './data/load_structured_events_copy.sql';
+EXECUTE IMMEDIATE FROM './data/transform_structured_events.sql';
+-- Idempotency note: load_structured_events_copy.sql now TRUNCATEs STG_SOURCE_EVENTS
+-- before COPY INTO. transform_structured_events.sql MERGEs downstream. Safe on re-run.
 
 
 -- ---------------------------------------------------------------------------

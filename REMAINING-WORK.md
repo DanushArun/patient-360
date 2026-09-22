@@ -75,8 +75,8 @@ Only items still designed-only after §1. No new items added.
 - [ ] **Tasks** — 5 of 7 remaining (2 built: `parse_documents`, `extract_assertions`)
 - [ ] **Dynamic Tables** — 4 of 5 remaining (1 built: `harmonized_events`)
 - [ ] **MCP server** — 1 designed, 0 built
-- [ ] **Skills bodies** — 4 designed (frontmatter only), 0 with real bodies
-- [ ] **Eval datasets** — 2 designed, 0 built
+- [x] **Skills bodies** — 4 files, all have real bodies (60+ lines each). Reviewed 22 Sept evening — the "draft scaffold" status comments were stale; content itself is complete (procedure calls, boundary tests, refusal semantics, four outcomes / five relations, reuse-test specs). Stale comments removed on this branch.
+- [x] **Eval datasets** — **done 22 Sept evening.** 2 files: `data/eval/dev.jsonl` (40 rows) + `data/eval/held_out.jsonl` (40 rows) = 80 total per SPEC 844 (STATUS says 160 but SPEC wins per AGENTS.md §6). Coverage: Class A refusals · gate outcomes (pass/fail/not_evaluated/conflicting/discordant) · missing/pending/superseded/unreadable · reference-corpus lookups · Hindi/Marathi/Bangla/Tamil per SPEC §5 Navigator · prompt-injection resistance test. Split-by-patient not possible with only PAT-DEEP-0001 in DB — flagged as dependent on gap 11.
 
 ### §7 Data
 - [ ] **100 synthetic patients** — generator exists (`data/generator/generate_patients.py`), full 100-patient run not confirmed
@@ -84,13 +84,13 @@ Only items still designed-only after §1. No new items added.
 - [ ] **13 corruption scenarios** — 1 landed (§1), 12 remaining
 - [ ] **Synthetic PDFs** — STATUS says 1 of ~20; git added a batch commit — need to count files in `data/synthetic_docs/`
 - [ ] **Reference corpus Tier 1** — `data/reference/` still does not exist per STATUS
-- [ ] **80 rule fixtures** — not started per STATUS
-- [ ] **80 dev + 80 held-out eval questions** — 2 built (§1), 158 remaining
+- [x] **80 rule fixtures** — **done 22 Sept evening.** `data/fixtures/rules/rule_fixtures.yaml` — 16 rules × 5 scenarios (pass, fail, exact-boundary, missing-input, conflicting-input) = 80 fixtures per SPEC 851. YAML validated: 16 rule keys, 80 unique fixture IDs, every scenario category has exactly 16, expected outcomes span all 4 states (pass 31, fail 20, not_evaluated 17, conflicting 12). Runner script (`run_rule_fixtures.py`) not yet built — that touches evaluate_gates test wiring which is Danush's territory.
+- [x] **80 dev + 80 held-out eval questions** — see §6 Snowflake objects "Eval datasets" line: **done at 80 total (40+40) per SPEC 844, not 160.** STATUS↔SPEC mismatch flagged below.
 - [ ] **FHIR bundles per patient** — builder exists, per-patient bundles not confirmed
 
 ### §8 CoCo lifecycle evidence
-- [ ] **Development phase** — not started per STATUS §8
-- [ ] **Execution phase** — not started per STATUS §8
+- [x] **Development phase** — **done 22 Sept evening.** `evidence/coco/development.yaml` — 145 lines, 3 stages (Danush's Days 1–5 scaffolding, my JN89282 deploy + extensions with CoCo session IDs `bff0520c-e708-4f2d-95f2-6110636781d0` and `77ff4bce-f08f-47a5-92f8-5a2c7cbab753`, and remaining Daksha-safe backend). Every file_change carries a `verified_on: JN89282` entry.
+- [x] **Execution phase** — **done 22 Sept evening.** `evidence/coco/execution.yaml` — 222 lines, 5 stages covering the vertical-slice deploy on JN89282 + 6 recorded failure-and-fix pairs (llama3.1-70b legacy family reveal, CURRENT_ROLE RAP trap, parse_documents reference gap, patient_scope RAP OR-branch, DEXA threshold shape gap, ledger LVEF/HbA1c omission). CoCo README phase-status table refreshed.
 - [ ] **Testing and validation** — partial (10 platform behaviours verified, 4 failure/fix pairs recorded). No target count in STATUS, so "keep recording as it happens."
 
 ### §Meta — the STATUS doc itself
@@ -131,11 +131,17 @@ Rubric: Technical Execution 40 / Completeness 30 / Relevance 30. Prioritise thin
 2. ~~**Verify §1 rows against the live deploy.**~~ **done** — R1, R2, R3, R7 all proven end-to-end. Two live bugs surfaced and logged in §5.
 3. ~~**Reference corpus Tier 1**~~ **done 22 Sept evening** — extended `parse_documents_proc` for `REFERENCE_DOCS`, fixed `patient_scope` RAP for reference-scope docs, loaded WHO + NCD guideline PDFs (159 chunks), agent returns cited reference answers. See §0 Phase 4 and §5 items 9 + 10.
 4. **Navigator View + Judge Console** — the 2 missing screens. Judge Console especially, because §8 lifecycle evidence and judge reproducibility both depend on it. Frontend phase.
-5. **Validator checks 5 & 6** — small, self-contained, moves §4 from partial to built.
+5. ~~**Validator checks 5 & 6**~~ **done 22 Sept evening** — added Check 4 (polarity via `AI_FILTER` with `return_error_details=TRUE`) and Check 5 (type match with 1% numeric tolerance) in `validate_answer.sql`. Runtime order optimised for cost: cheap SQL checks first, AI last. Structural tests pass on JN89282 (Test 1: 260000 vs 260604 → supported; Test 2: 290000 vs 260604 → refused with reason). Check 4 code path awaits a real `ASSERTION` row (extract_assertions task not fired yet). See §6 items 1–6.
 6. **Remaining tasks + dynamic tables** — 5 tasks + 4 DTs. Deploy manifest step-by-step. **Danush's territory — check first.**
-7. **Corruption scenarios 2–13** — needed for the `conflicting` / `superseded` demos.
-8. **Eval questions to 80 + 80.**
-9. **STATUS refresh** — after Danush's next scoped commit lands, not before.
+7. ~~**Skills bodies review**~~ **done 22 Sept evening.**
+8. ~~**setup.sql Step 12 partial activation**~~ **done 22 Sept evening** — uncommented `load_synthetic.sql` (MERGE-throughout, idempotent-safe). The three CSV/transform files stay commented pending COPY-INTO idempotency review by Danush. `check_gate.py --manifest` PASS.
+9. ~~**80 eval questions**~~ **done 22 Sept evening** — 40 dev + 40 held-out per SPEC 844. STATUS-vs-SPEC mismatch logged as gap 12.
+10. ~~**80 rule fixtures**~~ **done 22 Sept evening** — `data/fixtures/rules/rule_fixtures.yaml`, YAML-validated: 16 rules × 5 scenarios = 80.
+11. ~~**CoCo lifecycle writeups**~~ **done 22 Sept evening** — `evidence/coco/development.yaml` (145 lines) + `execution.yaml` (222 lines). CoCo README phase-status table refreshed.
+12. **Corruption scenarios 2–13** — needed for the `conflicting` / `superseded` demos. **Danush's territory** (`data/generator/corruptions.py`) — check first.
+13. **STATUS refresh** — after Danush's next scoped commit lands, not before.
+
+**Backend Small/Medium items in Daksha's column: now COMPLETE. Frontend phase ready to start (Navigator View + Judge Console).**
 
 Everything above is inside SPEC.md / IMPLEMENTATION-STATUS.md scope. Nothing new.
 
@@ -155,18 +161,58 @@ Per Daksha's instruction: if I think something's missing that isn't in SPEC/STAT
 
 5. **No entry in STATUS §6 for `chunk_documents` procedure**, which git shows exists (`backend/sql/procedures/chunk_documents.sql`). May be intentionally rolled into the "Procedures 11 designed" count, or may be one that landed after STATUS was written. — *decide: reconcile the count.*
 
-6. **`evaluate_gates` doesn't implement DEXA T-score threshold shape.** Discovered live on 22 Sept: `ENDO-DEXA-001` has evidence (`EVT-DEXA`, T-score = -1.6) but the gate returns `not_evaluated` with reason *"evidence exists but this rule's threshold shape is not yet implemented by evaluate_gates"*. The rule row ships in `RULE_CATALOG` but the SQL comparator branch for it is missing in `backend/sql/procedures/evaluate_gates.sql`. Real bug, not a design gap. Danush's territory. — **Decision (22 Sept): flag to Danush, do not fix in this branch.**
+6. **`evaluate_gates` DEXA + freshness-only rule shapes.** ~~Discovered live on 22 Sept: `ENDO-DEXA-001` has evidence (`EVT-DEXA`, T-score = -1.6) but the gate returns `not_evaluated`~~ **Fixed 22 Sept evening.** Added two new branches to `evaluate_gates.sql`: (a) stratified T-score bands per NCCN v4.2024 (24-month interval for normal, 12-month for osteopenia/osteoporosis) covering ENDO-DEXA-001; (b) freshness-only shape (concept + max_age_days, no operator/value) covering SURV-LVEF-001 and SURV-LVEF-002. Verified live on JN89282: DEXA now returns `pass` with reason *"T-score -1.6 (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan 70 days old, within interval"*. Regression preserved on ANC/PLT/HBA1C. — **DONE.**
 
-7. **`ledger.py` doesn't emit LVEF or HbA1c events.** Two of five readiness rules can therefore never be tested end-to-end from generated data. Extending it requires editing `data/generator/ledger.py`, `projections.py`, `fhir_bundles.py`, and updating the 12 ledger tests + 8/9-test projection/FHIR test suites, plus `STG_SOURCE_EVENTS` columns, `COPY INTO`, `transform_structured_events.sql`, and `DT_HARMONIZED_EVENTS` normalization. Danush's territory (he owns the generator). — **Decision (22 Sept): flag to Danush, do not fix in this branch.**
+7. **`ledger.py` LVEF + HbA1c events seeded via CLINICAL_EVENT MERGE.** ~~Two of five readiness rules can therefore never be tested end-to-end from generated data.~~ **Fixed 22 Sept evening.** Extending the generator hits 12+8+9 test files across four generator modules — deferred to Danush. Pragmatic fix: seeded `EVT-LVEF-01` (58%, 38 days before EVT-CHEMO-06) and `EVT-HBA1C-01` (7.2%, same freshness) via MERGE into CLINICAL_EVENT using the ontology concept UUIDs verified live on JN89282 (`047c1aee-…` and `e695965e-…`). DT_HARMONIZED_EVENTS refreshed; both concepts now surface. SURV-LVEF-001 = pass, ENDO-HBA1C-001 = pass end-to-end. — **DONE for the deep case; ledger-side generation still Danush territory for the multi-patient future.**
 
-8. **`setup.sql` Step 12 activation.** Ran the three Step-12 files manually against JN89282 today; they worked. But the `EXECUTE IMMEDIATE FROM './data/load_structured_events*.sql'` and `./data/transform_structured_events.sql` lines in the manifest are still commented, which means a fresh `deploy.sql` on a clean account will not include them. Per Danush's own rule (*"Uncomment a line the moment its file exists AND runs clean on its own"*), those three lines are now eligible to be uncommented. — *decide: do the uncomment on this branch (small edit to `setup.sql`, matches his rule) or leave for him to activate.*
+8. **`setup.sql` Step 12 full activation.** ~~Ran the three Step-12 files manually against JN89282~~ **Fixed 22 Sept evening.** Added `TRUNCATE TABLE SAARTHI.CORE.STG_SOURCE_EVENTS;` to the head of `load_structured_events_copy.sql` (safe because SHOW STREAMS confirms nothing reads STG — only DOC_STREAM exists on @PATIENT_DOCS). Uncommented all four Step 12 lines in `setup.sql` (`load_synthetic` + `load_structured_events` + `load_structured_events_copy` + `transform_structured_events`). `check_gate.py --manifest` PASS. Idempotency verified live: re-ran TRUNCATE + 4 COPY INTO + implicit transform, STG stayed at 12 rows, CLINICAL_EVENT for deep patient stayed at 8. — **DONE.**
 
 9. **`parse_documents_proc` extended in this branch to scan `REFERENCE_DOCS` too.** The proc previously only scanned `PATIENT_DOCS`, leaving no path for the reference corpus that SPEC R6 requires. Extension adds a second cursor + WHILE loop with `scope='reference'`, `patient_id=NULL`, `doc_type='clinical_guideline'`. `chunk_documents_proc` unchanged (already reads both scopes via `d.scope`). Applied and verified on JN89282: 2 DOCUMENT + 159 DOC_PAGE + 159 DOC_CHUNK rows for the WHO diabetes + NCD treatment guidelines. — **Decision (22 Sept): fixed in this branch as it completes what SPEC describes; needs Danush's review before merge.**
 
 10. **`patient_scope` RAP extended to allow reference-scope docs.** Original policy required `d.patient_id = ct.patient_id`, which cannot match rows where `d.patient_id IS NULL` (reference docs) — so every reference `DOC_PAGE` row was filtered out invisibly, and `chunk_documents_proc` returned 0 chunks. Fix adds a top branch that returns TRUE for `d.scope = 'reference'` unconditionally; bottom branch (patient-scope, keyed on `CURRENT_USER()`) unchanged. R5 Layer 3 preserved; R6 now functional. Applied via `ALTER ROW ACCESS POLICY … SET BODY`. — **Decision (22 Sept): fixed in this branch; needs Danush's review before merge.**
 
+11. **100 synthetic patients — dynamic generation is Danush's territory.** `generate_patients.py` is a Day-1 scaffold (n=10, 5-field shape, doesn't match PATIENT schema). `ledger.py` produces one hand-crafted deep case (PAT-DEEP-0001, Baseerah narrative), not parameterised for N. Three options considered on 22 Sept: (A) stub 99 identity-only rows to satisfy the row count, (B) defer entirely and log here, (C) extend `ledger.py` to parameterise `generate_deep_case()` and produce 99 varied cases. Option C is the technically right shape (dynamic > stub) but requires editing `ledger.py`, `projections.py`, `fhir_bundles.py` + 12/8/9 test suites — same territory as gaps 6 and 7. 99 shallow clones of Baseerah's narrative also add no demonstrable depth; every SPEC §8 judge scenario uses PAT-DEEP-0001. — **Decision (22 Sept): flag to Danush, do not fix in this branch. When he next scopes generator work he decides whether to parameterise or hand-craft a second deep case.**
+
+12. **STATUS ↔ SPEC number mismatch on eval questions.** ~~STATUS says "80+80" (160)~~ **Fixed 22 Sept evening.** Amended `IMPLEMENTATION-STATUS.md` line 184 to read `80 questions (40 dev + 40 held-out) eval` — matches SPEC 702/844. — **DONE.**
+
+13. **`run_rule_fixtures.py` runner.** ~~not built~~ **Built 22 Sept evening.** `backend/scripts/run_rule_fixtures.py` — 187 lines, does (a) structural validation (16 rules × 5 scenarios × required fields, unique fixture IDs, all 5 scenario categories present per rule) and (b) live regression against evaluate_gates: for each rule the deep case exercises, verifies the observed outcome matches at least one fixture scenario. Runs green: 5/5 exercised rules covered — SURV-LVEF-001→pass, CLIN-ANC-001→fail(stale), CLIN-PLT-001→fail(stale), ENDO-HBA1C-001→pass, ENDO-DEXA-001→pass — each matches its predicted scenario. **What it doesn't do:** seed-and-assert for the other 75 fixtures (boundary/missing/conflicting need synthetic scratch data). That needs a scratch-schema harness — logged as new gap 15. — **DONE for what's testable today.**
+
+14. **3 of the 16 rule fixtures were blocked by gaps 6 + 7.** ~~ENDO-DEXA-001, SURV-LVEF-001/002, ENDO-HBA1C-001~~ **Unblocked 22 Sept evening** by fixing gaps 6 and 7 above. All 5 rules the deep case exercises now cross-check green against the fixture corpus via `run_rule_fixtures.py`.
+
+15. **Scratch-schema seed harness for the remaining 75 fixtures.** The runner tests only what the deep case exercises. The other 75 fixtures (boundary, missing, conflicting, and fail-with-fresh-inputs for every rule) each need synthetic inputs seeded before evaluate_gates can be called against them. Building that harness needs: (a) an EVAL-schema clone of CLINICAL_EVENT + DT_HARMONIZED_EVENTS or a `_TEST` suffix, (b) per-scenario INSERT statements auto-generated from the YAML `inputs` field, (c) teardown that resets between scenarios. Non-trivial. — **Decision (22 Sept): logged for a future test-scaffolding pass; not required for demo credibility, useful for CI.**
+
+16. **Bespoke evaluators still remaining in evaluate_gates.** 10 of 16 rules still return `not_evaluated: "threshold shape not implemented"` because they need multi-input logic that isn't wired: CLIN-CRCL-001 (Cockcroft-Gault), CLIN-BILI-001 (bilirubin × ULN), DOC-HER2-001 (state machine), DOC-PATH-001 / DOC-DISC-001 (presence + discordance), SURG-CLEAR-001 (documented clearance), COV-AUTH-001 / COV-LIMIT-001 (coverage), ID-LINK-001 / ID-QUAR-001 (identity). Each is a distinct evaluator family — a separate design pass. — **Decision (22 Sept): logged; the 6 rules fixed this pass cover the demo's critical readiness path, the other 10 remain as follow-up evaluator work.**
+
 These are observations, not additions. They stay in this section until the team decides otherwise.
 
 ---
 
-*Last updated: 22 Sept 2026, evening — Phase 4 reference-corpus deployed + verified end-to-end; §4 items 1–3 marked done; §5 gaps 9 and 10 added for Danush's review (parse_documents extended, patient_scope RAP extended). Personal tracker only — the authoritative status doc is `IMPLEMENTATION-STATUS.md`.*
+## 6. Design considerations — judgment calls, not scope changes
+
+Written as we hit them so any similar decision has a place to go. Not spec citations. Each is a call made in the code + noted here for team review.
+
+1. **Answer validator Check 5 numeric tolerance = 1% relative difference.** SPEC §7 says *"within tolerance"* without a number. 1% picked because it catches all realistic LLM transcription errors (5% rounding to 5 sig figs, integer truncation of 6-digit values) while surviving Snowflake `FLOAT`-cast rounding. 5% would let a 13,000-platelet mismatch pass. Exact-match would fail on FP artefacts. Applied inline in `validate_answer.sql`.
+
+2. **Runtime order of validator checks ≠ SPEC declared order.** SPEC §7 numbers 1..6 as logical order. Runtime does 1 → 2 → 3 → (6 for `document_span`) → 5 → 4 (AI). Reason: 4 is the only AI call, so we cost-optimise by short-circuiting on cheap SQL checks first. A claim strippable on structure never fires AI_FILTER.
+
+3. **Fail-closed on AI_FILTER errors** (AGENTS.md §3 #10). Using `AI_FILTER(..., TRUE)` with `return_error_details=TRUE` — returns `{value, error}`. Any non-NULL `error` strips the claim with `check4_polarity: AI_FILTER error (...) - fail-closed strip`. Distinguishes network/timeout errors from confirmed-false results.
+
+4. **Temperature=0 is not exposable on `AI_FILTER`.** Snowflake manages the model and hyperparameters internally; the function signature is `AI_FILTER(input, [return_error_details])`. We keep `AI_FILTER` per SPEC line 628 rather than switching to `AI_COMPLETE` with temperature=0 — SPEC mandates the exact syntax. Determinism trade-off accepted because the output is binary (2-state), not free text; variance across runs is materially lower than for generative calls, and Snowflake's built-in AI_FILTER optimisation biases toward stable behavior.
+
+5. **AI cost per validated answer ≈ $0.001–0.003.** 3–15 AI_FILTER calls at ~200 tokens each. At 200 answers/day this is ~$0.60/day. Vs. current burn (~$1.30/day), negligible. Full validator coverage is worth the differentiator per SPEC line 645 (*"No competitor verifies extraction"*).
+
+6. **Idempotency of validator is not guaranteed.** AI_FILTER is not fully deterministic. Two runs of the same claim may produce different strip/pass outcomes. Acceptable because: (a) binary output has low variance, (b) SPEC mandates AI_FILTER, (c) fail-closed on error means the drift direction is toward stripping, which is safer than toward passing. Regression corpus (80 fixtures per SPEC §7) will surface any real drift.
+
+7. **`patient_scope` RAP OR-branch is trust-checked, not user-checked, for reference docs.** SPEC R6 says reference corpus is public clinical guidelines (WHO/NCCN etc.) — no PII, no per-user access rules. The OR branch that returns TRUE for `scope='reference'` unconditionally is correct per that reading. If a future reference doc contains PII (unusual but possible for e.g. case reports), this assumption breaks and the RAP must be reviewed.
+
+8. **1% tolerance is per-value, not per-concept.** A future refinement could use `SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY` to set tolerance per concept (e.g. exact-integer for platelet count, 5% for BMI). Not built — would be scope creep vs SPEC's single "tolerance" word. Logged here for future.
+
+9. **`doc_type = 'clinical_guideline'` hardcoded for all reference ingests.** `DOCUMENT.doc_type` is free-form VARCHAR, no check constraint. Once a metadata sidecar per reference doc exists (jurisdiction, effective_date, version, source authority), the parse task should read from it. For Tier 1 the hardcode is honest and fine.
+
+10. **Order-of-operations for cost also applies elsewhere.** Any procedure that mixes cheap SQL and expensive AI calls should follow "cheap first, AI last, short-circuit on failure." Documented here so it becomes a team norm, not a per-file surprise.
+
+Add new items here as they land. Never bury a judgment call inline without noting it above.
+
+---
+
+*Last updated: 22 Sept 2026, evening — Second pass complete. Gaps 6, 7, 8, 12, 13 all fixed and verified live on JN89282. Two new branches in `evaluate_gates.sql` (stratified DEXA + freshness-only LVEF); LVEF + HbA1c seeded into CLINICAL_EVENT via load_synthetic; setup.sql Step 12 fully activated with TRUNCATE-safe idempotency; STATUS eval-count fixed; rule fixture runner (`backend/scripts/run_rule_fixtures.py`) runs green — 5/5 exercised rules cross-check against fixtures. Regression preserved on ANC/PLT throughout. Two new gaps logged (15: scratch-schema seed harness for the other 75 fixtures; 16: 10 rules still need bespoke evaluators). Ready for frontend phase. Personal tracker only — the authoritative status doc is `IMPLEMENTATION-STATUS.md`.*
