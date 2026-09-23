@@ -11,10 +11,11 @@
 --    least-privileged role allowed to work with MCP. This will help prevent
 --    leaking a secret with access to a highly-privileged role."
 --
--- The role has USAGE and nothing else - no direct table SELECT, no procedure
--- EXECUTE outside the agent's owner's-rights chain. Every actual query goes
--- through SAARTHI_AGENT and therefore through classify_question +
--- validate_answer. R5 layers 1-3 remain intact end-to-end.
+-- The role gets USAGE on the MCP server, the agent, the warehouse and the
+-- agent's eight tool procedures - no table SELECT, no internal procedure.
+-- Every query goes through SAARTHI_AGENT. Note that this path does NOT run
+-- classify_question or validate_answer (those guard ask_saarthi, which the
+-- apps call); see agent/saarthi_mcp.sql. R5 layers 1-3 still hold.
 
 USE ROLE ACCOUNTADMIN;
 
@@ -30,24 +31,26 @@ GRANT USAGE ON WAREHOUSE SAARTHI_AI_WH TO ROLE SAARTHI_MCP_CLIENT;
 GRANT USAGE ON MCP SERVER SAARTHI.OPERATIONAL.SAARTHI_MCP TO ROLE SAARTHI_MCP_CLIENT;
 GRANT USAGE ON AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT TO ROLE SAARTHI_MCP_CLIENT;
 
--- The agent invokes its 8 tool procedures within the caller's session.
--- Every one is EXECUTE AS OWNER, so the procedure body still runs under
--- ACCOUNTADMIN with owner's rights and can read the RAP-protected tables
--- via the agent's owner grants - the caller only needs USAGE (the
--- "entry key") to invoke them. Without this, the agent hits
--- "Unknown user-defined function SAARTHI.OPERATIONAL.GET_READINESS" and
--- the whole session fails at the first tool call.
+-- The agent invokes its 8 tool procedures within the caller's session, so
+-- the caller needs USAGE on exactly those (without it the first tool call
+-- fails with "Unknown user-defined function ...GET_READINESS"). Each is
+-- EXECUTE AS OWNER and re-checks binding, care team and consent itself.
 --
--- Grant USAGE on ALL + FUTURE procedures in OPERATIONAL rather than
--- enumerating the 8 tool procedures, because (a) the agent tool list
--- may grow (see SPEC.md §12), (b) all procedures in this schema are
--- EXECUTE AS OWNER so exposure risk is uniform, and (c) SAARTHI_APP
--- already has this exact grant - the two roles need parity here.
-GRANT USAGE ON ALL PROCEDURES IN SCHEMA SAARTHI.OPERATIONAL TO ROLE SAARTHI_MCP_CLIENT;
-GRANT USAGE ON FUTURE PROCEDURES IN SCHEMA SAARTHI.OPERATIONAL TO ROLE SAARTHI_MCP_CLIENT;
+-- Named grants only. An earlier version granted ALL and FUTURE procedures,
+-- which exposed EVALUATE_GATES(patient_id, ...) and every task body to a
+-- token holder - contradicting this file's own "no procedure EXECUTE outside
+-- the agent chain" promise above.
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.GET_PATIENT_FACTS(VARCHAR, VARCHAR)          TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.GET_READINESS(VARCHAR, VARCHAR)              TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.SEARCH_PATIENT_DOCUMENTS(VARCHAR, VARCHAR)   TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.SEARCH_REFERENCE_DOCUMENTS(VARCHAR, VARCHAR, VARCHAR) TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.COHORT_QUERY(VARCHAR)                        TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.GET_TIMELINE(VARCHAR)                        TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.GET_CHANGES(VARCHAR, VARCHAR)                TO ROLE SAARTHI_MCP_CLIENT;
+GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.CREATE_REVIEW_TASK(VARCHAR, VARCHAR, VARCHAR, VARCHAR) TO ROLE SAARTHI_MCP_CLIENT;
 
--- Grant the role to the user who will hold the PAT. Change DAKSHA to the
--- operator user if this is being provisioned for someone else. Do NOT
+-- Grant the role to the user who will hold the PAT. DAKSHA is the operator
+-- on account JN89282; substitute the operator's user on any other account. Do NOT
 -- grant this role to service accounts that also hold ACCOUNTADMIN or
 -- SAARTHI_APP - the whole point is a dedicated identity.
 GRANT ROLE SAARTHI_MCP_CLIENT TO USER DAKSHA;

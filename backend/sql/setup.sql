@@ -273,6 +273,14 @@ EXECUTE IMMEDIATE FROM './procedures/judge/judge_probes.sql';
 
 
 -- ---------------------------------------------------------------------------
+-- STEP 19c - Procedure, agent and MCP grants.  [2]  *** RED STEP ***
+-- ---------------------------------------------------------------------------
+-- Least privilege: named entry points and agent tools only. Must follow every
+-- object it grants on - see the file header.
+EXECUTE IMMEDIATE FROM './governance/05_procedure_grants.sql';
+
+
+-- ---------------------------------------------------------------------------
 -- STEP 20 - Streamlit.  [1]
 -- ---------------------------------------------------------------------------
 -- ROOT_LOCATION on the Git repository stage, not a fourth internal stage - the

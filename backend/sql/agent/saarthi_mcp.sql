@@ -14,15 +14,21 @@
 --      client to bypass the agent's semantic views, verified queries, and
 --      orchestration; if direct SQL is required, expose it through a separate
 --      MCP server with a dedicated least-privileged role."
---   The same reasoning applies to our 8 individual tool procedures: if an
---   external MCP client can call get_patient_facts, cohort_query, or
---   search_patient_documents directly, it bypasses classify_question
---   (A/B gating), validate_answer (6 checks), and the agent's binding
---   discipline. R5 Layer 3 would still hold (RAP keys on CURRENT_USER),
---   but the agent-level guarantees on class-A refusal, citation coverage,
---   and derivation lineage would not.
+--   The same reasoning applies to our 8 individual tool procedures: an
+--   external client calling get_patient_facts or cohort_query directly would
+--   skip the agent's orchestration. R5 Layer 3 would still hold (RAP keys on
+--   CURRENT_USER), but nothing else would.
 --
---   Bypassing those is exactly what our differentiator says we DO NOT do.
+--   WHAT THIS PATH DOES NOT GET - stated so no one claims otherwise:
+--   CORTEX_AGENT_RUN calls SAARTHI_AGENT directly, NOT ask_saarthi. The
+--   keyword-first classify_question and the validate_answer strip that
+--   ask_saarthi enforces for the Streamlit and web apps do not run here.
+--   Class A refusal on the MCP path rests on the agent's orchestration
+--   instruction, and every patient tool refuses with no_patient_bound,
+--   because an MCP session carries no PATIENT_BINDING. In practice MCP
+--   serves reference-corpus and record-free questions; patient questions
+--   go through ask_saarthi.
+--
 --   One agent-shaped tool. External clients ask questions; SAARTHI_AGENT
 --   answers with the same discipline it uses inside Streamlit.
 --

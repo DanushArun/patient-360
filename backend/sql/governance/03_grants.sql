@@ -20,11 +20,13 @@ GRANT USAGE ON DATABASE SAARTHI TO ROLE SAARTHI_JUDGE;
 GRANT USAGE ON ALL SCHEMAS IN DATABASE SAARTHI TO ROLE SAARTHI_APP;
 GRANT USAGE ON FUTURE SCHEMAS IN DATABASE SAARTHI TO ROLE SAARTHI_APP;
 
--- The app calls owner's-rights procedures (EXECUTE AS OWNER) - it needs
--- EXECUTE, never direct SELECT on the governed tables. Future-proofed so
--- procedures created in step 14 do not need a second grants pass.
-GRANT USAGE ON ALL PROCEDURES IN SCHEMA SAARTHI.OPERATIONAL TO ROLE SAARTHI_APP;
-GRANT USAGE ON FUTURE PROCEDURES IN SCHEMA SAARTHI.OPERATIONAL TO ROLE SAARTHI_APP;
+-- Procedure grants are NOT made here. The app role gets USAGE on its named
+-- entry points only, in governance/05_procedure_grants.sql (step 19c), after
+-- every procedure, the agent and the MCP server exist. The blanket
+-- ALL/FUTURE PROCEDURES grant that used to sit here exposed internal
+-- owner's-rights procedures such as EVALUATE_GATES(patient_id, ...), which
+-- takes a caller-supplied patient id and checks no binding - a direct path
+-- around R5 for anyone holding the app role.
 
 -- The role each Snowflake user session runs as also needs role membership -
 -- USE SECONDARY ROLES NONE is set in the application session (Streamlit
@@ -33,14 +35,3 @@ GRANT ROLE SAARTHI_APP TO ROLE SAARTHI_COORDINATOR;
 GRANT ROLE SAARTHI_APP TO ROLE SAARTHI_ONCOLOGIST;
 GRANT ROLE SAARTHI_APP TO ROLE SAARTHI_NAVIGATOR;
 
--- Agent + MCP server access. Snowflake docs are explicit that USAGE on an
--- MCP SERVER does NOT confer USAGE on the underlying tools; both grants are
--- required for a caller to invoke the agent via MCP. SAARTHI_APP is the
--- effective role for every Streamlit / Cortex Agent REST call and for
--- external MCP clients that authenticate as a role linked to SAARTHI_APP.
---
--- No secondary-role trap here either: the agent's RAP (patient_scope on
--- CURRENT_USER) still fires regardless of which role wraps the session,
--- and USE SECONDARY ROLES NONE remains mandatory app-side.
-GRANT USAGE ON AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT TO ROLE SAARTHI_APP;
-GRANT USAGE ON MCP SERVER SAARTHI.OPERATIONAL.SAARTHI_MCP TO ROLE SAARTHI_APP;
