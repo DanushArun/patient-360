@@ -41,6 +41,8 @@ BEGIN
     WHILE (v_ci < v_n_claims) DO
         LET v_claim VARIANT := GET(:CLAIMS, :v_ci);
         LET v_text VARCHAR := GET_PATH(:v_claim, 'text')::VARCHAR;
+        LET v_claim_type VARCHAR := GET_PATH(:v_claim, 'claim_type')::VARCHAR;
+        LET v_asserted VARIANT := GET_PATH(:v_claim, 'asserted_value');
         LET v_evidence VARIANT := GET_PATH(:v_claim, 'evidence');
         LET v_n_ev INTEGER := ARRAY_SIZE(:v_evidence);
         LET v_ei INTEGER := 0;
@@ -60,7 +62,10 @@ BEGIN
             IF (v_kind = 'structured') THEN
                 LET v_ev_patient VARCHAR := NULL;
                 LET v_ev_ingested TIMESTAMP_NTZ := NULL;
-                SELECT patient_id, ingested_at INTO :v_ev_patient, :v_ev_ingested
+                LET v_ev_num FLOAT := NULL;
+                LET v_ev_txt VARCHAR := NULL;
+                SELECT patient_id, ingested_at, value_num, value_text
+                  INTO :v_ev_patient, :v_ev_ingested, :v_ev_num, :v_ev_txt
                   FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE event_id = :v_ev_id;
                 IF (v_ev_patient IS NULL) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check1_existence: ' || v_ev_id || ' does not resolve';
@@ -71,13 +76,38 @@ BEGIN
                             OBJECT_CONSTRUCT('claim', v_text, 'evidence_id', v_ev_id, 'reason', 'cross_patient_evidence'));
                 ELSEIF (v_ev_ingested > v_known_as_of) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check3_temporality: evidence ingested after known_as_of';
+                ELSEIF (v_claim_type = 'numeric' AND v_asserted IS NOT NULL) THEN
+                    -- Check 5. Type match for numeric claims. 1% relative tolerance is
+                    -- a calibration decision (SPEC says "within tolerance" without a
+                    -- number) - documented in REMAINING-WORK.md §6, not a spec citation.
+                    IF (v_ev_num IS NULL) THEN
+                        v_claim_ok := FALSE;
+                        v_strip_reason := 'check5_type_match: numeric claim but evidence has no value_num';
+                    ELSEIF (ABS(v_asserted::FLOAT - v_ev_num) / GREATEST(ABS(v_asserted::FLOAT), 1) > 0.01) THEN
+                        v_claim_ok := FALSE;
+                        v_strip_reason := 'check5_type_match: asserted ' || v_asserted::VARCHAR
+                                          || ' vs evidence ' || v_ev_num::VARCHAR || ' exceeds 1% tolerance';
+                    END IF;
+                ELSEIF (v_claim_type = 'status' AND v_asserted IS NOT NULL AND v_ev_txt IS NOT NULL) THEN
+                    IF (LOWER(v_asserted::VARCHAR) != LOWER(v_ev_txt)) THEN
+                        v_claim_ok := FALSE;
+                        v_strip_reason := 'check5_type_match: status mismatch (asserted ' || v_asserted::VARCHAR
+                                          || ' vs evidence ' || v_ev_txt || ')';
+                    END IF;
+                ELSEIF (v_claim_type = 'date' AND v_asserted IS NOT NULL) THEN
+                    IF (TRY_TO_DATE(v_asserted::VARCHAR) IS DISTINCT FROM TRY_TO_DATE(v_ev_txt)) THEN
+                        v_claim_ok := FALSE;
+                        v_strip_reason := 'check5_type_match: date mismatch';
+                    END IF;
                 END IF;
             ELSEIF (v_kind = 'document_span') THEN
                 LET v_ev_verif VARCHAR := NULL;
                 LET v_ev_doc_patient VARCHAR := NULL;
                 LET v_ev_value VARCHAR := NULL;
-                SELECT a.verification_status, d.patient_id, a.value
-                  INTO :v_ev_verif, :v_ev_doc_patient, :v_ev_value
+                LET v_ev_doc_id VARCHAR := NULL;
+                LET v_ev_page INT := NULL;
+                SELECT a.verification_status, d.patient_id, a.value, a.doc_id, a.page_index
+                  INTO :v_ev_verif, :v_ev_doc_patient, :v_ev_value, :v_ev_doc_id, :v_ev_page
                   FROM SAARTHI.EVIDENCE.ASSERTION a
                   JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = a.doc_id
                  WHERE a.assertion_id = :v_ev_id;
@@ -95,6 +125,64 @@ BEGIN
                     v_strip_reason := 'check6_trustworthiness: assertion is ' || v_ev_verif || ', value not asserted';
                     v_limitations := ARRAY_APPEND(v_limitations,
                         'A value was read but could not be verified on a second pass (' || v_ev_verif || '). Confirm against the original report.');
+                ELSE
+                    -- Check 5 first (cheap type match against ASSERTION.value), then
+                    -- Check 4 last (AI_FILTER polarity — the only AI call in this proc).
+                    -- SPEC §7 order was 1..6; runtime order optimises for cost: all cheap
+                    -- SQL checks precede the AI call so a claim strippable by structure
+                    -- never fires AI_FILTER.
+                    IF (v_claim_type = 'numeric' AND v_asserted IS NOT NULL) THEN
+                        LET v_ev_num_ds FLOAT := TRY_TO_NUMBER(v_ev_value);
+                        IF (v_ev_num_ds IS NULL) THEN
+                            v_claim_ok := FALSE;
+                            v_strip_reason := 'check5_type_match: numeric claim but ASSERTION.value is not numeric';
+                        ELSEIF (ABS(v_asserted::FLOAT - v_ev_num_ds) / GREATEST(ABS(v_asserted::FLOAT), 1) > 0.01) THEN
+                            v_claim_ok := FALSE;
+                            v_strip_reason := 'check5_type_match: asserted ' || v_asserted::VARCHAR
+                                              || ' vs assertion ' || v_ev_value || ' exceeds 1% tolerance';
+                        END IF;
+                    ELSEIF (v_claim_type = 'status' AND v_asserted IS NOT NULL AND v_ev_value IS NOT NULL) THEN
+                        IF (LOWER(v_asserted::VARCHAR) != LOWER(v_ev_value)) THEN
+                            v_claim_ok := FALSE;
+                            v_strip_reason := 'check5_type_match: status mismatch (asserted ' || v_asserted::VARCHAR
+                                              || ' vs assertion ' || v_ev_value || ')';
+                        END IF;
+                    ELSEIF (v_claim_type = 'date' AND v_asserted IS NOT NULL) THEN
+                        IF (TRY_TO_DATE(v_asserted::VARCHAR) IS DISTINCT FROM TRY_TO_DATE(v_ev_value)) THEN
+                            v_claim_ok := FALSE;
+                            v_strip_reason := 'check5_type_match: date mismatch';
+                        END IF;
+                    END IF;
+
+                    IF (v_claim_ok) THEN
+                        -- Check 4 — polarity via AI_FILTER (SPEC §7 line 630, F8-verified).
+                        -- Fail-closed: any error returned by AI_FILTER strips the claim
+                        -- (AGENTS.md §3 #10). return_error_details=TRUE gives {value,error}
+                        -- so we distinguish "confirmed false" from "call errored".
+                        LET v_passage VARCHAR := NULL;
+                        SELECT dp.text INTO :v_passage
+                          FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
+                         WHERE dp.doc_id = :v_ev_doc_id
+                           AND (v_ev_page IS NULL OR dp.page_index = v_ev_page)
+                         LIMIT 1;
+
+                        IF (v_passage IS NOT NULL) THEN
+                            LET v_filter_result VARIANT := (
+                                SELECT AI_FILTER(
+                                  PROMPT('Does this passage confirm that {0}? Passage: {1}',
+                                         :v_text, :v_passage),
+                                  TRUE));
+                            IF (GET_PATH(:v_filter_result, 'error') IS NOT NULL) THEN
+                                v_claim_ok := FALSE;
+                                v_strip_reason := 'check4_polarity: AI_FILTER error (' ||
+                                                  GET_PATH(:v_filter_result, 'error')::VARCHAR ||
+                                                  ') - fail-closed strip';
+                            ELSEIF (GET_PATH(:v_filter_result, 'value')::BOOLEAN = FALSE) THEN
+                                v_claim_ok := FALSE;
+                                v_strip_reason := 'check4_polarity: passage does not confirm claim';
+                            END IF;
+                        END IF;
+                    END IF;
                 END IF;
             ELSE
                 v_claim_ok := FALSE; v_strip_reason := 'check5_type_match: unrecognised evidence kind';

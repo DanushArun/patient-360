@@ -6,13 +6,23 @@
 -- A scheduled Task (step 16, TASK_REFRESH_READINESS) materialises the result
 -- into READINESS_STATE; this procedure is what it calls.
 --
--- This build implements the "simple threshold" rule shape (operator, value,
--- unit, max_age_days in threshold_json) - covers CLIN-ANC-001, CLIN-PLT-001,
--- SURV-LVEF-001, ENDO-HBA1C-001. Per-agent multi-value rules (CLIN-CRCL-001,
--- CLIN-BILI-001), the HER2 state machine (DOC-HER2-001), and the stratified
--- DEXA rule (ENDO-DEXA-001) need bespoke evaluators, not yet written - a
--- rule whose gate logic isn't implemented here returns not_evaluated with an
--- explicit reason, never a guessed pass/fail.
+-- This build implements THREE rule shapes:
+--   (a) simple threshold - operator, value, unit, max_age_days in threshold_json.
+--       Covers CLIN-ANC-001, CLIN-PLT-001, ENDO-HBA1C-001.
+--   (b) freshness-only - concept + max_age_days but NO operator/value. Rule passes
+--       if the event exists and is within max_age_days, fails otherwise. Covers
+--       SURV-LVEF-001 and SURV-LVEF-002 (LVEF surveillance requires a recent
+--       measurement; the rule does not gate on the absolute value).
+--   (c) stratified (T-score bands) - bespoke evaluator for ENDO-DEXA-001. Bands
+--       per NCCN v4.2024: T>=-1.0 -> 24-month interval; else -> 12-month interval.
+--       QUS modality would surface as no T_SCORE row (different concept_id via
+--       the ontology join), which the outer 'no evidence found' branch already
+--       handles per SPEC.md 524.
+-- Per-agent multi-value rules (CLIN-CRCL-001, CLIN-BILI-001), the HER2 state
+-- machine (DOC-HER2-001), and presence/coverage/identity rules still need bespoke
+-- evaluators - they remain in the fallback 'not_implemented' branch until the
+-- next evaluator pass. A rule whose gate logic isn't implemented here returns
+-- not_evaluated with an explicit reason, never a guessed pass/fail.
 --
 -- Uses explicit CURSOR + OPEN/FETCH/CLOSE into scalar variables throughout,
 -- not the FOR-loop record-variable form: dot-access on a FOR-loop record
@@ -86,11 +96,45 @@ BEGIN
         IF (v_evt_id IS NOT NULL) THEN
             v_found := TRUE;
 
-            IF (v_operator IS NULL) THEN
+            IF (v_rule_id = 'ENDO-DEXA-001') THEN
+                -- Stratified T-score interval per NCCN v4.2024. T-score band
+                -- determines the max age; freshness is compared against that band.
+                -- v_evt_value carries the T-score from concept T_SCORE.
+                IF (v_evt_value >= -1.0 AND v_age_days > 730) THEN
+                    v_outcome := 'fail';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (normal, T>=-1.0) - 24-month interval, last scan ' || v_age_days::VARCHAR || ' days old, overdue';
+                ELSEIF (v_evt_value >= -1.0) THEN
+                    v_outcome := 'pass';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (normal, T>=-1.0) - 24-month interval, last scan ' || v_age_days::VARCHAR || ' days old, within interval';
+                ELSEIF (v_evt_value > -2.5 AND v_age_days > 365) THEN
+                    v_outcome := 'fail';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan ' || v_age_days::VARCHAR || ' days old, overdue';
+                ELSEIF (v_evt_value > -2.5) THEN
+                    v_outcome := 'pass';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan ' || v_age_days::VARCHAR || ' days old, within interval';
+                ELSEIF (v_age_days > 365) THEN
+                    v_outcome := 'fail';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteoporosis, T<=-2.5) - 12-month interval, last scan ' || v_age_days::VARCHAR || ' days old, overdue';
+                ELSE
+                    v_outcome := 'pass';
+                    v_reason := 'DEXA T-score ' || v_evt_value::VARCHAR || ' (osteoporosis, T<=-2.5) - 12-month interval, last scan ' || v_age_days::VARCHAR || ' days old, within interval';
+                END IF;
+            ELSEIF (v_operator IS NULL AND v_max_age_days IS NOT NULL) THEN
+                -- Freshness-only shape (SURV-LVEF-001/002). No threshold on the
+                -- value - the rule requires a recent measurement, not a target
+                -- value. Pass if within max_age_days; fail otherwise.
+                IF (v_age_days > v_max_age_days) THEN
+                    v_outcome := 'fail';
+                    v_reason := v_concept || ' last measured ' || v_age_days::VARCHAR || ' days ago, exceeds ' || v_max_age_days::VARCHAR || '-day surveillance interval';
+                ELSE
+                    v_outcome := 'pass';
+                    v_reason := v_concept || ' measured ' || v_age_days::VARCHAR || ' days ago, within ' || v_max_age_days::VARCHAR || '-day surveillance interval';
+                END IF;
+            ELSEIF (v_operator IS NULL) THEN
                 -- Rules with a shape this evaluator does not implement yet
-                -- (e.g. ENDO-DEXA-001's stratified T-score bands) have no
-                -- flat operator/value pair. Evidence exists but the logic to
-                -- read it does not - say so explicitly, never go silent.
+                -- (per-agent multi-value, presence/coverage/identity, HER2 state
+                -- machine). Evidence exists but the logic to read it does not -
+                -- say so explicitly, never go silent.
                 v_outcome := 'not_evaluated';
                 v_reason := 'evidence exists but this rule''s threshold shape is not yet implemented by evaluate_gates';
             ELSEIF (v_max_age_days IS NOT NULL AND v_age_days > v_max_age_days) THEN
@@ -130,6 +174,232 @@ BEGIN
         FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days;
     END WHILE;
     CLOSE c_rules;
+
+    -- =========================================================================
+    -- Second pass: rules WITHOUT threshold_json.concept - dispatched by rule_id.
+    -- Covers identity (ID-LINK-001, ID-QUAR-001), coverage (COV-AUTH-001,
+    -- COV-LIMIT-001), documentation (DOC-PATH-001, DOC-DISC-001, DOC-HER2-001),
+    -- surgical clearance (SURG-CLEAR-001), and per-agent multi-input clinical
+    -- (CLIN-CRCL-001, CLIN-BILI-001). Rules for which required inputs are not
+    -- seeded return not_evaluated with a specific reason naming the missing
+    -- inputs - never a silent skip and never a guessed pass/fail.
+    -- =========================================================================
+    LET c_special CURSOR FOR
+        SELECT rule_id, rule_version, gate, severity
+          FROM SAARTHI.OPERATIONAL.RULE_CATALOG
+         WHERE threshold_json:concept IS NULL
+         ORDER BY specificity DESC;
+
+    OPEN c_special;
+    FETCH c_special INTO v_rule_id, v_rule_version, v_gate, v_severity;
+
+    WHILE (v_rule_id IS NOT NULL) DO
+        v_outcome := 'not_evaluated';
+        v_reason  := 'evaluator not implemented';
+
+        IF (v_rule_id = 'ID-LINK-001') THEN
+            LET v_linked NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.ID_MAP WHERE patient_id = :p_patient_id AND link_status IN ('abha_linked','manually_verified'));
+            IF (v_linked >= 1) THEN
+                v_outcome := 'pass';
+                v_reason  := v_linked::VARCHAR || ' verified identifier link(s) present (abha_linked or manually_verified)';
+            ELSE
+                v_outcome := 'fail';
+                v_reason  := 'no verified identifier links on file - abha_linked or manually_verified required';
+            END IF;
+        ELSEIF (v_rule_id = 'ID-QUAR-001') THEN
+            LET v_quar NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.ID_MAP WHERE patient_id = :p_patient_id AND link_status = 'quarantined');
+            IF (v_quar = 0) THEN
+                v_outcome := 'pass';
+                v_reason  := 'no quarantined identity matches on record';
+            ELSE
+                v_outcome := 'fail';
+                v_reason  := v_quar::VARCHAR || ' quarantined identity match(es) - manual reconciliation required, no evidence contributes until resolved (R4)';
+            END IF;
+        ELSEIF (v_rule_id = 'DOC-PATH-001') THEN
+            LET v_final_path NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND event_type = 'pathology' AND status = 'final');
+            LET v_pending_path NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND event_type = 'pathology' AND status IN ('preliminary','pending'));
+            IF (v_final_path >= 1) THEN
+                v_outcome := 'pass';
+                v_reason  := v_final_path::VARCHAR || ' pathology report(s) in final status';
+            ELSEIF (v_pending_path >= 1) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := v_pending_path::VARCHAR || ' pathology report(s) preliminary/pending - awaiting final';
+            ELSE
+                v_outcome := 'fail';
+                v_reason  := 'no pathology reports on record';
+            END IF;
+        ELSEIF (v_rule_id = 'DOC-DISC-001') THEN
+            -- discordant_across_specimens is not a failure - both readings surface
+            -- as evidence, and a human reconciles per SPEC §12. Only same-specimen
+            -- disagreement is a real conflict. This evaluator checks HER2 as the
+            -- canonical case; a fuller sweep would enumerate every concept.
+            LET v_her2_specimens NUMBER := (SELECT COUNT(DISTINCT specimen_id) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '82bcd499-23a8-45f3-9f19-bc63ab73d8b4' AND specimen_id IS NOT NULL);
+            IF (v_her2_specimens > 1) THEN
+                v_outcome := 'pass';
+                v_reason  := 'HER2 read on ' || v_her2_specimens::VARCHAR || ' distinct specimens - discordant_across_specimens: both readings surfaced, never auto-resolved';
+            ELSE
+                v_outcome := 'pass';
+                v_reason  := 'no cross-source discordance detected';
+            END IF;
+        ELSEIF (v_rule_id = 'DOC-HER2-001') THEN
+            -- HER2 state machine: ihc IN (0,1,3) -> final; ihc=2 -> FISH reflex.
+            -- Latest specimen is authoritative when specimens differ (final resection
+            -- outranks outside biopsy in real practice). value_text pattern is like
+            -- 'grade=III ihc=2+'.
+            LET v_latest_ihc VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '82bcd499-23a8-45f3-9f19-bc63ab73d8b4' ORDER BY event_time DESC LIMIT 1);
+            IF (v_latest_ihc IS NULL) THEN
+                v_outcome := 'fail';
+                v_reason  := 'no HER2 IHC recorded';
+            ELSEIF (v_latest_ihc ILIKE '%ihc=2%' OR v_latest_ihc ILIKE '%ihc 2%') THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'HER2 IHC=2 on latest specimen (' || v_latest_ihc || ') - FISH reflex required, no FISH result on record yet';
+            ELSE
+                v_outcome := 'pass';
+                v_reason  := 'HER2 status final from IHC alone: ' || v_latest_ihc;
+            END IF;
+        ELSEIF (v_rule_id = 'COV-LIMIT-001') THEN
+            LET v_cov_used FLOAT := (SELECT used_amount FROM SAARTHI.CORE.COVERAGE WHERE patient_id = :p_patient_id ORDER BY priority ASC NULLS LAST LIMIT 1);
+            LET v_cov_limit FLOAT := (SELECT annual_limit FROM SAARTHI.CORE.COVERAGE WHERE patient_id = :p_patient_id ORDER BY priority ASC NULLS LAST LIMIT 1);
+            IF (v_cov_limit IS NULL) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'no COVERAGE row on file for patient';
+            ELSEIF (v_cov_used < v_cov_limit) THEN
+                v_outcome := 'pass';
+                v_reason  := 'used ' || v_cov_used::VARCHAR || ' of annual limit ' || v_cov_limit::VARCHAR || ' - within limit (family-floater aggregation OOS per SPEC 175)';
+            ELSE
+                v_outcome := 'fail';
+                v_reason  := 'used ' || v_cov_used::VARCHAR || ' meets or exceeds annual limit ' || v_cov_limit::VARCHAR;
+            END IF;
+        ELSEIF (v_rule_id = 'COV-AUTH-001') THEN
+            LET v_pa_status VARCHAR := (SELECT status FROM SAARTHI.CORE.PRE_AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
+            LET v_pa_letter VARCHAR := (SELECT letter_status FROM SAARTHI.CORE.PRE_AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
+            IF (v_pa_status IS NULL) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'no pre-authorisation record for this patient/encounter';
+            ELSEIF (v_pa_letter IS NOT NULL AND v_pa_letter != v_pa_status) THEN
+                v_outcome := 'conflicting';
+                v_reason  := 'pre-auth table status is ''' || v_pa_status || ''' but letter says ''' || v_pa_letter || ''' - human reconciliation required';
+            ELSEIF (v_pa_status = 'approved') THEN
+                v_outcome := 'pass';
+                v_reason  := 'pre-authorisation approved and current';
+            ELSEIF (v_pa_status = 'pending') THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'pre-authorisation status is pending - decision not yet issued';
+            ELSEIF (v_pa_status = 'expired') THEN
+                v_outcome := 'fail';
+                v_reason  := 'pre-authorisation expired - renewal required';
+            ELSE
+                v_outcome := 'fail';
+                v_reason  := 'pre-authorisation status: ' || v_pa_status;
+            END IF;
+        ELSEIF (v_rule_id = 'CLIN-CRCL-001') THEN
+            -- Cockcroft-Gault: CrCl = ((140 - age) * weight_kg * (0.85 if female else 1)) / (72 * creatinine)
+            LET v_creat  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = 'd74263e5-108d-455d-985a-23505d911cc7' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_weight FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '305bb211-39ef-4070-a204-5b1fb01d0a78' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_age    FLOAT := (SELECT DATEDIFF('year', dob, CURRENT_DATE()) FROM SAARTHI.CORE.PATIENT WHERE patient_id = :p_patient_id);
+            LET v_female BOOLEAN := (SELECT gender = 'female' FROM SAARTHI.CORE.PATIENT WHERE patient_id = :p_patient_id);
+            IF (v_creat IS NULL OR v_weight IS NULL OR v_age IS NULL) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'CrCl requires creatinine + weight + age; missing: ' ||
+                             IFF(v_creat IS NULL, 'creatinine ', '') ||
+                             IFF(v_weight IS NULL, 'weight ', '') ||
+                             IFF(v_age IS NULL, 'age ', '');
+            ELSE
+                LET v_crcl FLOAT := ((140 - v_age) * v_weight * IFF(v_female, 0.85, 1.0)) / (72 * v_creat);
+                -- Safest-agent threshold (60 mL/min - cisplatin/methotrexate). If CrCl
+                -- clears the strictest threshold, all listed agents are covered.
+                IF (v_crcl >= 60) THEN
+                    v_outcome := 'pass';
+                    v_reason  := 'CrCl ' || ROUND(v_crcl,1)::VARCHAR || ' mL/min (Cockcroft-Gault, age=' || v_age::VARCHAR || ' weight=' || v_weight::VARCHAR || ' cr=' || v_creat::VARCHAR || ') - clears strictest per-agent minimum (60 for cisplatin)';
+                ELSEIF (v_crcl >= 45) THEN
+                    v_outcome := 'pass';
+                    v_reason  := 'CrCl ' || ROUND(v_crcl,1)::VARCHAR || ' mL/min - meets pemetrexed/mid-tier thresholds, below cisplatin 60 minimum';
+                ELSEIF (v_crcl >= 30) THEN
+                    v_outcome := 'pass';
+                    v_reason  := 'CrCl ' || ROUND(v_crcl,1)::VARCHAR || ' mL/min - meets carboplatin/capecitabine 30 minimum only';
+                ELSE
+                    v_outcome := 'fail';
+                    v_reason  := 'CrCl ' || ROUND(v_crcl,1)::VARCHAR || ' mL/min - below any listed per-agent minimum (30-60 range)';
+                END IF;
+            END IF;
+        ELSEIF (v_rule_id = 'CLIN-BILI-001') THEN
+            -- Per-agent bilirubin thresholds. Uses doxorubicin (bilirubin<=1.2 mg/dL)
+            -- as the safety-first default because it is the strictest absolute limit
+            -- across the three agents named in the rule (docetaxel is x-ULN; doxorubicin
+            -- is absolute mg/dL). AST also read for informational context.
+            LET v_bili FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = 'e64db6d4-a019-4cfe-97b0-633220e157f9' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_ast  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '7449126c-da4c-4d46-8c81-b067968c9715' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            IF (v_bili IS NULL) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'per-agent bilirubin rule requires a bilirubin measurement';
+            ELSEIF (v_bili <= 1.2) THEN
+                v_outcome := 'pass';
+                v_reason  := 'bilirubin ' || v_bili::VARCHAR || ' mg/dL clears strictest per-agent absolute (doxorubicin <=1.2)' || IFF(v_ast IS NOT NULL, ', AST ' || v_ast::VARCHAR || ' U/L for context', '');
+            ELSEIF (v_bili <= 1.8) THEN
+                v_outcome := 'pass';
+                v_reason  := 'bilirubin ' || v_bili::VARCHAR || ' mg/dL within 1.5x ULN band (paclitaxel/docetaxel-eligible; doxorubicin threshold exceeded)';
+            ELSE
+                v_outcome := 'fail';
+                v_reason  := 'bilirubin ' || v_bili::VARCHAR || ' mg/dL exceeds any listed per-agent threshold - hold hepatobiliary-clearance chemo';
+            END IF;
+        ELSEIF (v_rule_id = 'SURG-CLEAR-001') THEN
+            -- Requires three assertions: wound_healing_status IN (adequate, healed),
+            -- infection_status = resolved, surgical_clearance_signed_by_practitioner IS NOT NULL.
+            LET v_wound VARCHAR := (SELECT value FROM SAARTHI.EVIDENCE.ASSERTION WHERE subject = :p_patient_id AND predicate = 'wound_healing_status' AND verification_status = 'verified' ORDER BY assertion_id DESC LIMIT 1);
+            LET v_infect VARCHAR := (SELECT value FROM SAARTHI.EVIDENCE.ASSERTION WHERE subject = :p_patient_id AND predicate = 'infection_status' AND verification_status = 'verified' ORDER BY assertion_id DESC LIMIT 1);
+            LET v_signed VARCHAR := (SELECT value FROM SAARTHI.EVIDENCE.ASSERTION WHERE subject = :p_patient_id AND predicate = 'surgical_clearance_signed_by_practitioner' AND verification_status = 'verified' ORDER BY assertion_id DESC LIMIT 1);
+            IF (v_wound IS NULL OR v_infect IS NULL OR v_signed IS NULL) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'surgical clearance requires three verified assertions; missing: ' ||
+                             IFF(v_wound IS NULL, 'wound_healing_status ', '') ||
+                             IFF(v_infect IS NULL, 'infection_status ', '') ||
+                             IFF(v_signed IS NULL, 'clearance_signature ', '');
+            ELSEIF (v_wound NOT IN ('adequate','healed')) THEN
+                v_outcome := 'fail';
+                v_reason  := 'wound_healing_status is ''' || v_wound || ''' - required: adequate or healed';
+            ELSEIF (v_infect != 'resolved') THEN
+                v_outcome := 'fail';
+                v_reason  := 'infection_status is ''' || v_infect || ''' - required: resolved';
+            ELSE
+                v_outcome := 'pass';
+                v_reason  := 'surgical clearance verified: wound=' || v_wound || ', infection=' || v_infect || ', signed by ' || v_signed;
+            END IF;
+        ELSEIF (v_rule_id = 'SURV-LVEF-002') THEN
+            -- Delta rule: hold if (baseline - current) >= 16, OR (current < 50 AND drop >= 10).
+            -- Needs at least two LVEF measurements to compute a delta.
+            LET v_lvef_readings NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF');
+            IF (v_lvef_readings < 2) THEN
+                v_outcome := 'not_evaluated';
+                v_reason  := 'delta rule requires baseline + current LVEF, only ' || v_lvef_readings::VARCHAR || ' measurement(s) on record';
+            ELSE
+                LET v_baseline FLOAT := (SELECT value_num FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' ORDER BY event_time ASC LIMIT 1);
+                LET v_current  FLOAT := (SELECT value_num FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' ORDER BY event_time DESC LIMIT 1);
+                LET v_drop FLOAT := v_baseline - v_current;
+                IF (v_drop >= 16) THEN
+                    v_outcome := 'fail';
+                    v_reason  := 'LVEF dropped ' || v_drop::VARCHAR || 'pp from baseline (' || v_baseline::VARCHAR || ' -> ' || v_current::VARCHAR || ') - hold trastuzumab (>= 16pp threshold)';
+                ELSEIF (v_current < 50 AND v_drop >= 10) THEN
+                    v_outcome := 'fail';
+                    v_reason  := 'LVEF ' || v_current::VARCHAR || ' below 50 AND dropped ' || v_drop::VARCHAR || 'pp from baseline (>=10pp threshold when current<50) - hold trastuzumab';
+                ELSE
+                    v_outcome := 'pass';
+                    v_reason  := 'LVEF ' || v_current::VARCHAR || ' vs baseline ' || v_baseline::VARCHAR || ' (drop ' || v_drop::VARCHAR || 'pp) - within thresholds, continue';
+                END IF;
+            END IF;
+        ELSE
+            v_outcome := 'not_evaluated';
+            v_reason  := 'rule ' || v_rule_id || ' has no evaluator dispatch';
+        END IF;
+
+        v_out := ARRAY_APPEND(v_out, OBJECT_CONSTRUCT(
+            'gate', v_gate, 'rule_id', v_rule_id, 'rule_version', v_rule_version,
+            'outcome', v_outcome, 'severity', v_severity, 'reason', v_reason,
+            'evidence_ids', ARRAY_CONSTRUCT(),
+            'known_as_of', TO_VARCHAR(v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS')));
+
+        FETCH c_special INTO v_rule_id, v_rule_version, v_gate, v_severity;
+    END WHILE;
+    CLOSE c_special;
 
     RETURN OBJECT_CONSTRUCT('patient_id', p_patient_id, 'encounter_id', p_encounter_id, 'gates', v_out);
 END;

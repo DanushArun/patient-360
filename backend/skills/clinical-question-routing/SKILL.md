@@ -6,9 +6,8 @@ description: >
   the stage that decided it, and for a refusal the practitioner it must be routed to.
 ---
 
-<!-- STATUS: draft scaffold. Body written Days 11-12. Frontmatter is correct as-is:
-     name and description only. Execution instructions belong HERE, in the body -
-     an agent ignores an instructions: key in frontmatter and fails silently. -->
+<!-- Frontmatter carries name and description only; agents ignore an instructions:
+     key in frontmatter, so execution instructions must live in the markdown body. -->
 
 # Clinical question routing
 

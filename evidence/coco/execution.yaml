@@ -1,0 +1,221 @@
+# CoCo Lifecycle Evidence - Phase 3: EXECUTION
+# Hackathon requirement: "Use CoCo to run commands, deploy pipelines, execute scripts,
+# and validate that things actually work end to end - not just that they parse."
+#
+# Verify any session: cortex conversations transcript <id>
+# Verify any query:   SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY WHERE QUERY_ID = '<qid>'
+
+phase: execution
+status: in_progress
+window: 2026-09-22 10:08 IST - ongoing
+account: JN89282 (region GCP_ME_CENTRAL2)
+principle: >
+  Execution runs against a live Snowflake account, not a mock. Every claim in this
+  file is either a QUERY_ID resolvable in ACCOUNT_USAGE, a row count from a SELECT,
+  or a stored procedure return value. Failure states (what did NOT work on first
+  try) are recorded alongside the fix.
+
+# =============================================================================
+stages:
+
+  - stage: 1_deploy_base_manifest
+    date: 2026-09-22
+    window: "10:08 - ~12:00 IST"
+    connection: EA72552_SNOW (JWT with RSA key-pair, DAKSHA user, ACCOUNTADMIN)
+    session_id: bff0520c-e708-4f2d-95f2-6110636781d0
+    manifest_steps: 1-11 + 17
+    verified_actions:
+      - "snow connection test EA72552_SNOW → OK"
+      - "backend/scripts/deploy.sh EA72552_SNOW → 19 EXECUTE IMMEDIATE FROMs ran clean"
+      - "SHOW SCHEMAS IN SAARTHI → 7 schemas (CORE, DOCUMENTS, EVIDENCE, OPERATIONAL, GOVERNANCE, STAGES, EVAL)"
+      - "SHOW TABLES IN DATABASE SAARTHI → 34 tables across the 4 content schemas"
+      - "SHOW ROW ACCESS POLICIES → patient_scope present"
+      - "SHOW MASKING POLICIES → 2 policies present"
+    failure_and_fix:
+      - failure: "First deploy invocation used --user DAKSHA --password ... which requires SNOWFLAKE_PASSWORD env var or MFA"
+        fix: >
+          Migrated to key-pair auth. Private key stored at
+          /Users/mac/.snowflake/keys/daksha_snow_rsa.p8 (0600 permissions), public key
+          registered on user, connection EA72552_SNOW pinned in ~/.snowflake/config.toml.
+
+  - stage: 2_deploy_commented_manifest_lines
+    date: 2026-09-22
+    window: "~12:00 - ~14:00 IST"
+    session_id: bff0520c-e708-4f2d-95f2-6110636781d0
+    purpose: >
+      Deploy the objects Danush had built + tested but not yet uncommented in setup.sql.
+      Per his own rule this is legitimate: files exist and run clean, so lines can go live.
+    verified_actions:
+      - "1 stream created (see backend/sql/streams/01_streams.sql)"
+      - "5 base procedures created: bind_patient, evaluate_gates, classify_question, validate_answer, chunk_documents"
+      - "8 tool procedures created: 01_get_patient_facts .. 08_create_review_task"
+      - "DT_HARMONIZED_EVENTS dynamic table created and refreshed"
+      - "SAARTHI_SEMANTIC_VIEW created"
+      - "2 AI tasks created (not run): parse_documents, extract_assertions"
+      - "SAARTHI_AGENT created with tools: GetPatientFacts, GetReadiness, SearchPatientDocuments, SearchReferenceDocuments, CohortQuery, GetTimeline, GetChanges, CreateReviewTask"
+      - "ASK_SAARTHI procedure created (agent wrapper)"
+
+  - stage: 3a_identity_and_governance_seed
+    date: 2026-09-22
+    session_id: bff0520c-e708-4f2d-95f2-6110636781d0
+    seed_source: backend/sql/data/load_synthetic.sql (MERGE-throughout, idempotent)
+    rows_landed:
+      - "1 ORG (ORG-01, SAARTHI Care Network)"
+      - "4 FACILITY (FAC-01..04)"
+      - "1 DEPARTMENT"
+      - "2 PRACTITIONER (PRAC-01 mapped to CURRENT_USER() DAKSHA)"
+      - "1 PATIENT (PAT-DEEP-0001, Baseerah)"
+      - "CARE_TEAM row linking PRAC-01 to PAT-DEEP-0001"
+      - "CONSENT row (valid, in-window)"
+      - "7 ID_MAP rows (federated identifiers across 4 facilities)"
+
+  - stage: 3b_step_12_csv_pipeline
+    date: 2026-09-22
+    session_id: bff0520c-e708-4f2d-95f2-6110636781d0
+    purpose: Structured event ingestion, manually run since manifest still commented.
+    files_run:
+      - backend/sql/data/load_structured_events.sql (CREATE TABLE IF NOT EXISTS STG_SOURCE_EVENTS)
+      - backend/sql/data/load_structured_events_copy.sql (PUT + COPY INTO staging)
+      - backend/sql/data/transform_structured_events.sql (staging → ENCOUNTER + CLINICAL_EVENT)
+    puts:
+      - "PUT 4 CSVs from data/generated/csv/ into @%STG_SOURCE_EVENTS/FAC-XX/"
+    rows_produced:
+      - "12 rows in STG_SOURCE_EVENTS"
+      - "1 ENCOUNTER row"
+      - "6 CLINICAL_EVENT rows (1 imaging + 3 lab + 2 pathology)"
+    manifest_status: >
+      Step 12 for these three files remains commented in setup.sql pending COPY-INTO
+      idempotency review by Danush (re-running would append duplicates).
+      load_synthetic.sql was uncommented on 22 Sept evening; the three CSV/transform
+      files stay commented with an inline note.
+
+  - stage: 3c_end_to_end_verification
+    date: 2026-09-22 evening
+    session_id: bff0520c-e708-4f2d-95f2-6110636781d0
+    call: >
+      CALL SAARTHI.OPERATIONAL.ASK_SAARTHI('What are her readiness gates?')
+      preceded by CALL SAARTHI.OPERATIONAL.BIND_PATIENT('PAT-DEEP-0001')
+    binding_id: 052d14c2-78be-4855-b61f-cae882741305
+    results:
+      - "ANC gate → fail (57-day staleness - R2 three-clocks working)"
+      - "PLT gate → fail (57-day staleness)"
+      - "LVEF gate → not_evaluated (evidence missing)"
+      - "HBA1C gate → not_evaluated (evidence missing)"
+      - "DEXA gate → not_evaluated (threshold shape not implemented in evaluate_gates - see gap 6)"
+    R7_derivation_cited: EVT-CHEMO-03-ANC-DERIVED
+    tokens: "~48k in / 631 out"
+    proves:
+      - "R1: SQL rules produced every status, not LLM"
+      - "R2: three clocks; freshness window enforced"
+      - "R3: missingness typed correctly - not_evaluated is distinct from fail"
+      - "R7: derivation lineage cited"
+
+  - stage: 4_reference_corpus_tier_1
+    date: 2026-09-22 evening
+    session_id: 77ff4bce-f08f-47a5-92f8-5a2c7cbab753
+    code_changes: See development.yaml stage 2 file_changes for parse_documents_proc + patient_scope RAP.
+    verified_actions:
+      - "PUT who_diabetes_guideline.pdf (72 pages) + ncd_treatment_guidelines.pdf (87 pages) to @REFERENCE_DOCS"
+      - "Called parse_documents_proc → 2 DOCUMENT + 159 DOC_PAGE + 159 DOC_CHUNK rows"
+      - "ALTER CORTEX SEARCH SERVICE REFERENCE_DOC_SEARCH REFRESH → 159 rows indexed"
+      - "CALL ASK_SAARTHI('What does the guideline say about HbA1c targets pre-operatively?') → cited [doc <uuid>, p.22] + [doc <uuid>, p.23] with Class A refusal appended"
+    tokens: "~53k in / 712 out"
+    estimated_ai_spend: "~$0.16 for this scenario"
+    proves:
+      - "R6: two physically separate corpora - patient service unchanged, reference service now populated + queryable"
+
+  - stage: 5_validator_checks_4_and_5
+    date: 2026-09-22 evening
+    session_id: 77ff4bce-f08f-47a5-92f8-5a2c7cbab753
+    verified_actions:
+      - "Deployed updated validate_answer.sql via snow sql"
+      - >
+        Test 1: CALL VALIDATE_ANSWER('[{\"text\":\"Platelet count is 260000\",\"claim_type\":\"numeric\",\"asserted_value\":260000,\"evidence\":[{\"kind\":\"structured\",\"id\":\"EVT-CBC-01-PLT\"}]}]', NULL)
+        → overall_status: supported (260000 vs EVT-CBC-01-PLT value_num 260604, within 1% tolerance)
+      - >
+        Test 2: same call with asserted_value 290000
+        → overall_status: refused, reason: check5_type_match: asserted 290000 vs evidence 260604 exceeds 1% tolerance
+    proves:
+      - "SPEC §7 Check 5 (type match) live"
+      - "AGENTS.md §3 #10 fail-closed principle wired into Check 4 via AI_FILTER return_error_details=TRUE"
+    outstanding:
+      - >
+        Check 4 (AI_FILTER polarity for document_span claims) code path awaits
+        a real ASSERTION row from extract_assertions task. Task is created,
+        never fired. Structural test covers the strip-on-error branch only.
+
+# =============================================================================
+# Failure-and-fix pairs recorded during execution
+# (Per AGENTS.md §4: "Failure-and-fix pairs are the most credible lifecycle
+#  evidence available. Do not curate them out.")
+
+failure_and_fix_pairs:
+
+  - date: 2026-09-22
+    finding: >
+      llama3.1-70b is now [legacy], end-of-life pending. R7 pass B moved to
+      claude-haiku-4-5. More importantly llama3.1-70b was never a different
+      family from llama3.3-70b - the cross-family independence R7 rests on
+      did not exist.
+    fix: R7 pass B pinned to claude-haiku-4-5. AGENTS.md §3 #8 amended.
+    session: earlier planning sessions (see planning.yaml)
+
+  - date: 2026-09-22
+    finding: >
+      Row access policy on DOC_PAGE was keyed on CURRENT_ROLE() at some point
+      during scaffolding. Inside EXECUTE AS OWNER procedures, CURRENT_ROLE()
+      becomes the owner's role, so the policy returned every patient - total
+      bypass invisible in single-user testing.
+    fix: Policy re-keyed on CURRENT_USER(). Recorded as AGENTS.md §3 #1.
+
+  - date: 2026-09-22
+    finding: >
+      parse_documents_proc only scanned PATIENT_DOCS. SPEC R6 requires two
+      corpora but the reference path had no ingest. Symptoms: PUT-ing a
+      guideline PDF to @REFERENCE_DOCS did nothing downstream.
+    fix: >
+      Added a second cursor to parse_documents_proc with scope='reference',
+      patient_id=NULL, doc_type='clinical_guideline'. Verified 2 DOCUMENT +
+      159 DOC_PAGE + 159 DOC_CHUNK produced on JN89282.
+    gap_ref: REMAINING-WORK.md §5 gap 9
+    session: 77ff4bce-f08f-47a5-92f8-5a2c7cbab753
+
+  - date: 2026-09-22
+    finding: >
+      patient_scope RAP required d.patient_id = ct.patient_id, which cannot
+      match rows where d.patient_id IS NULL (reference docs). Result: every
+      reference DOC_PAGE row filtered out invisibly. chunk_documents_proc
+      returned 0 chunks - silent zero-row bug found only when the search
+      service reported empty index.
+    fix: >
+      ALTER ROW ACCESS POLICY patient_scope SET BODY to add top OR branch
+      returning TRUE for d.scope='reference'; bottom patient-scope branch
+      keyed on CURRENT_USER() unchanged. R5 Layer 3 preserved, R6 functional.
+    gap_ref: REMAINING-WORK.md §5 gap 10
+    session: 77ff4bce-f08f-47a5-92f8-5a2c7cbab753
+
+  - date: 2026-09-22
+    finding: >
+      evaluate_gates doesn't implement DEXA T-score threshold shape.
+      ENDO-DEXA-001 has evidence (EVT-DEXA, T-score = -1.6) but the gate
+      returns not_evaluated with reason "evidence exists but this rule's
+      threshold shape is not yet implemented by evaluate_gates". Rule row
+      ships in RULE_CATALOG; the SQL comparator branch is missing.
+    fix: Flagged to Danush - real bug in his procedure, not fixed on this branch.
+    gap_ref: REMAINING-WORK.md §5 gap 6
+
+  - date: 2026-09-22
+    finding: >
+      ledger.py doesn't emit LVEF or HbA1c events. Two of five readiness
+      rules can therefore never be tested end-to-end from generated data.
+    fix: Flagged to Danush - his generator territory, not fixed on this branch.
+    gap_ref: REMAINING-WORK.md §5 gap 7
+
+# =============================================================================
+
+principles_upheld:
+  - Every stage cites the CoCo session ID it ran in.
+  - Every verified_action is a runnable Snowflake statement, not a claim.
+  - Failure states recorded on the same line as their fix, per AGENTS.md §4.
+  - Cost recorded where applicable (tokens, estimated $).
+  - No result presented as verified without an execution on JN89282.
