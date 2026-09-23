@@ -1,0 +1,479 @@
+# Rule fixtures - SAARTHI regression corpus
+# ==========================================
+# Per SPEC.md §14 line 851: "16 rules x 5 cases (pass, fail, exact-boundary,
+# missing-input, conflicting-input) = 80 SQL assertions. Doubles as CoCo
+# Testing-phase evidence."
+#
+# Each fixture is a named test scenario for evaluate_gates. The "inputs" section
+# describes what facts must be seeded before invoking the rule; "expected" is
+# what evaluate_gates should return.
+#
+# HOW TO USE
+#   A future backend/scripts/run_rule_fixtures.py will:
+#     1. For each fixture: seed the described inputs into a scratch schema
+#     2. CALL SAARTHI.OPERATIONAL.EVALUATE_GATES(patient_id, rule_id_filter)
+#     3. Assert outcome == expected.outcome AND expected_reason regex matches
+#     4. Emit machine-readable results (JSONL, one row per fixture)
+#   Not yet built. This file is the corpus; the runner is a Danush-territory
+#   item (touches evaluate_gates test wiring).
+#
+# GAP NOTE - 3 of the 16 rules have current implementation gaps flagged in
+# REMAINING-WORK.md §5:
+#   gap 6: ENDO-DEXA-001 threshold shape not implemented (returns not_evaluated
+#          when it should return pass/fail based on T-score)
+#   gap 7: LVEF and HbA1c events not emitted by ledger.py (so SURV-LVEF-*,
+#          ENDO-HBA1C-001 fixtures cannot run against generated data until
+#          the ledger emits them or fixtures self-seed)
+#   The fixtures below are still authored as if the gaps were closed - they
+#   describe the CORRECT expected behaviour once the underlying gate/generator
+#   is complete. Running them against the current build should surface exactly
+#   the gap-6 and gap-7 failures.
+
+version: 1
+last_updated: 2026-09-22
+rules_count: 16
+scenarios_per_rule: 5
+total_fixtures: 80
+
+# =============================================================================
+# 1. CLIN-ANC-001  -  Absolute Neutrophil Count for chemotherapy readiness
+# =============================================================================
+# Threshold: ANC >= 1500/uL within 7 days of chemo cycle start.
+# ANC may be reported directly OR derived from WBC * (neutrophil% + band%) / 100.
+
+CLIN-ANC-001:
+  - id: CLIN-ANC-001__pass
+    scenario: pass
+    inputs: {anc: 2100, source_recorded_at: "T-3d"}
+    expected: {outcome: pass, reason_regex: "ANC.*(2100|>=.*1500)"}
+  - id: CLIN-ANC-001__fail
+    scenario: fail
+    inputs: {anc: 900, source_recorded_at: "T-2d"}
+    expected: {outcome: fail, reason_regex: "ANC.*(900|<.*1500)"}
+  - id: CLIN-ANC-001__boundary
+    scenario: exact-boundary
+    inputs: {anc: 1500, source_recorded_at: "T-1d"}
+    expected: {outcome: pass, reason_regex: "ANC.*1500"}
+  - id: CLIN-ANC-001__missing
+    scenario: missing-input
+    inputs: {anc: null}
+    expected: {outcome: not_evaluated, reason_regex: "(not_received|missing|no.*ANC)"}
+  - id: CLIN-ANC-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{anc: 1600, from: FAC-01, at: "T-2d"}, {anc: 900, from: FAC-02, at: "T-2d"}]}
+    expected: {outcome: conflicting, reason_regex: "conflict|disagree"}
+
+# =============================================================================
+# 2. CLIN-PLT-001  -  Platelet count for chemotherapy readiness
+# =============================================================================
+# Threshold: PLT >= 100000/uL within 7 days.
+
+CLIN-PLT-001:
+  - id: CLIN-PLT-001__pass
+    scenario: pass
+    inputs: {plt: 260000, source_recorded_at: "T-3d"}
+    expected: {outcome: pass, reason_regex: "PLT.*(260000|>=.*100000)"}
+  - id: CLIN-PLT-001__fail
+    scenario: fail
+    inputs: {plt: 78000, source_recorded_at: "T-1d"}
+    expected: {outcome: fail, reason_regex: "PLT.*(78000|<.*100000)"}
+  - id: CLIN-PLT-001__boundary
+    scenario: exact-boundary
+    inputs: {plt: 100000, source_recorded_at: "T-1d"}
+    expected: {outcome: pass, reason_regex: "PLT.*100000"}
+  - id: CLIN-PLT-001__missing
+    scenario: missing-input
+    inputs: {plt: null}
+    expected: {outcome: not_evaluated, reason_regex: "(not_received|missing)"}
+  - id: CLIN-PLT-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{plt: 110000, from: FAC-01}, {plt: 70000, from: FAC-02}]}
+    expected: {outcome: conflicting, reason_regex: "conflict|disagree"}
+
+# =============================================================================
+# 3. DOC-HER2-001  -  HER2 status documented (IHC + FISH if IHC 2+)
+# =============================================================================
+
+DOC-HER2-001:
+  - id: DOC-HER2-001__pass
+    scenario: pass
+    inputs: {ihc: "3+", fish: null}
+    expected: {outcome: pass, reason_regex: "HER2.*IHC.*3\\+"}
+  - id: DOC-HER2-001__fail
+    scenario: fail
+    inputs: {ihc: null, fish: null}
+    expected: {outcome: fail, reason_regex: "(HER2 not documented|no IHC)"}
+  - id: DOC-HER2-001__boundary
+    scenario: exact-boundary
+    inputs: {ihc: "2+", fish: "amplified"}
+    expected: {outcome: pass, reason_regex: "IHC 2\\+.*FISH"}
+  - id: DOC-HER2-001__missing
+    scenario: missing-input
+    inputs: {ihc: "2+", fish: null}
+    expected: {outcome: not_evaluated, reason_regex: "FISH.*(pending|not_received)"}
+  - id: DOC-HER2-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{ihc: "1+", from: outside_biopsy}, {ihc: "2+", from: surgical}]}
+    expected: {outcome: pass, reason_regex: "discordant.*specimens|both.*IHC"}
+    notes: "discordant_across_specimens - neither wrong, both shown; not conflicting"
+
+# =============================================================================
+# 4. DOC-PATH-001  -  Pathology report present and readable
+# =============================================================================
+
+DOC-PATH-001:
+  - id: DOC-PATH-001__pass
+    scenario: pass
+    inputs: {pathology_reports: 2, at_least_one_readable: true}
+    expected: {outcome: pass, reason_regex: "pathology.*documented"}
+  - id: DOC-PATH-001__fail
+    scenario: fail
+    inputs: {pathology_reports: 0}
+    expected: {outcome: fail, reason_regex: "(no pathology|not documented)"}
+  - id: DOC-PATH-001__boundary
+    scenario: exact-boundary
+    inputs: {pathology_reports: 1, at_least_one_readable: true}
+    expected: {outcome: pass, reason_regex: "pathology"}
+  - id: DOC-PATH-001__missing
+    scenario: missing-input
+    inputs: {pathology_reports: 1, at_least_one_readable: false, unreadable_reason: "poor scan quality"}
+    expected: {outcome: not_evaluated, reason_regex: "unreadable"}
+  - id: DOC-PATH-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{diagnosis: "IDC", from: outside_biopsy}, {diagnosis: "ILC", from: surgical}]}
+    expected: {outcome: conflicting, reason_regex: "conflict.*diagnosis|disagree"}
+
+# =============================================================================
+# 5. DOC-DISC-001  -  Discordance across sources flagged
+# =============================================================================
+
+DOC-DISC-001:
+  - id: DOC-DISC-001__pass
+    scenario: pass
+    inputs: {sources_agree: true}
+    expected: {outcome: pass, reason_regex: "no discordance"}
+  - id: DOC-DISC-001__fail
+    scenario: fail
+    inputs: {sources: [{grade: "II"}, {grade: "III"}], same_specimen: true}
+    expected: {outcome: fail, reason_regex: "discordance.*same specimen"}
+  - id: DOC-DISC-001__boundary
+    scenario: exact-boundary
+    inputs: {sources: [{value: 100, tolerance_pct: 5}, {value: 105}]}
+    expected: {outcome: pass, reason_regex: "within tolerance"}
+  - id: DOC-DISC-001__missing
+    scenario: missing-input
+    inputs: {sources: []}
+    expected: {outcome: not_evaluated, reason_regex: "no sources to compare"}
+  - id: DOC-DISC-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{grade: "II", specimen: "SP-A"}, {grade: "III", specimen: "SP-B"}]}
+    expected: {outcome: pass, reason_regex: "discordant_across_specimens"}
+    notes: "Different specimens - both readings surfaced, not a conflict"
+
+# =============================================================================
+# 6. SURV-LVEF-001  -  LVEF >= 50% before trastuzumab initiation
+# =============================================================================
+# GAP 7 - ledger.py doesn't emit LVEF events. Fixtures below assume it will.
+
+SURV-LVEF-001:
+  - id: SURV-LVEF-001__pass
+    scenario: pass
+    inputs: {lvef_pct: 62, at: "T-30d"}
+    expected: {outcome: pass, reason_regex: "LVEF.*(62|>=.*50)"}
+  - id: SURV-LVEF-001__fail
+    scenario: fail
+    inputs: {lvef_pct: 42, at: "T-15d"}
+    expected: {outcome: fail, reason_regex: "LVEF.*(42|<.*50)"}
+  - id: SURV-LVEF-001__boundary
+    scenario: exact-boundary
+    inputs: {lvef_pct: 50, at: "T-30d"}
+    expected: {outcome: pass, reason_regex: "LVEF.*50"}
+  - id: SURV-LVEF-001__missing
+    scenario: missing-input
+    inputs: {lvef_pct: null}
+    expected: {outcome: not_evaluated, reason_regex: "(not_received|no ECHO)"}
+  - id: SURV-LVEF-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{lvef_pct: 55, modality: echo}, {lvef_pct: 45, modality: MUGA}]}
+    expected: {outcome: conflicting, reason_regex: "conflict|disagree"}
+
+# =============================================================================
+# 7. SURV-LVEF-002  -  LVEF surveillance every 3 months during trastuzumab
+# =============================================================================
+
+SURV-LVEF-002:
+  - id: SURV-LVEF-002__pass
+    scenario: pass
+    inputs: {last_lvef_at: "T-60d", days_since: 60}
+    expected: {outcome: pass, reason_regex: "within.*90 days"}
+  - id: SURV-LVEF-002__fail
+    scenario: fail
+    inputs: {last_lvef_at: "T-120d", days_since: 120}
+    expected: {outcome: fail, reason_regex: "(overdue|>.*90.*days)"}
+  - id: SURV-LVEF-002__boundary
+    scenario: exact-boundary
+    inputs: {last_lvef_at: "T-90d", days_since: 90}
+    expected: {outcome: pass, reason_regex: "90.*days"}
+  - id: SURV-LVEF-002__missing
+    scenario: missing-input
+    inputs: {last_lvef_at: null}
+    expected: {outcome: not_evaluated, reason_regex: "(never|no.*LVEF)"}
+  - id: SURV-LVEF-002__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{last_lvef_at: "T-60d", from: cardiology}, {last_lvef_at: "T-100d", from: oncology}]}
+    expected: {outcome: conflicting, reason_regex: "conflict"}
+
+# =============================================================================
+# 8. CLIN-CRCL-001  -  CrCl (Cockcroft-Gault) >= 30 mL/min for cisplatin
+# =============================================================================
+
+CLIN-CRCL-001:
+  - id: CLIN-CRCL-001__pass
+    scenario: pass
+    inputs: {crcl: 68, formula: "cockcroft-gault", weight: 62, creatinine: 0.9, age: 54}
+    expected: {outcome: pass, reason_regex: "CrCl.*(68|>=.*30)"}
+  - id: CLIN-CRCL-001__fail
+    scenario: fail
+    inputs: {crcl: 22, weight: 55, creatinine: 2.4, age: 68}
+    expected: {outcome: fail, reason_regex: "CrCl.*(22|<.*30)"}
+  - id: CLIN-CRCL-001__boundary
+    scenario: exact-boundary
+    inputs: {crcl: 30}
+    expected: {outcome: pass, reason_regex: "CrCl.*30"}
+  - id: CLIN-CRCL-001__missing
+    scenario: missing-input
+    inputs: {weight: null, creatinine: 1.1, age: 54}
+    expected: {outcome: not_evaluated, reason_regex: "(weight|body.*mass).*(missing|not_received)"}
+    notes: "CrCl requires weight - if unavailable, gate cannot evaluate"
+  - id: CLIN-CRCL-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{creatinine: 0.9, from: FAC-01}, {creatinine: 2.1, from: FAC-02}]}
+    expected: {outcome: conflicting, reason_regex: "creatinine.*conflict"}
+
+# =============================================================================
+# 9. CLIN-BILI-001  -  Total bilirubin within 1.5x ULN for hepatobiliary safety
+# =============================================================================
+
+CLIN-BILI-001:
+  - id: CLIN-BILI-001__pass
+    scenario: pass
+    inputs: {bili_mg_dl: 0.9, uln_mg_dl: 1.2}
+    expected: {outcome: pass, reason_regex: "bilirubin.*(0.9|within)"}
+  - id: CLIN-BILI-001__fail
+    scenario: fail
+    inputs: {bili_mg_dl: 3.4, uln_mg_dl: 1.2}
+    expected: {outcome: fail, reason_regex: "bilirubin.*(3.4|>.*1.5x)"}
+  - id: CLIN-BILI-001__boundary
+    scenario: exact-boundary
+    inputs: {bili_mg_dl: 1.8, uln_mg_dl: 1.2}
+    expected: {outcome: pass, reason_regex: "1.8|1.5x.*1.2"}
+  - id: CLIN-BILI-001__missing
+    scenario: missing-input
+    inputs: {bili_mg_dl: null}
+    expected: {outcome: not_evaluated, reason_regex: "(not_received|missing)"}
+  - id: CLIN-BILI-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{bili: 0.8, at: "T-2d"}, {bili: 2.6, at: "T-2d"}]}
+    expected: {outcome: conflicting, reason_regex: "conflict|disagree"}
+
+# =============================================================================
+# 10. ENDO-HBA1C-001  -  HbA1c < 8.5% within 90 days (ADVISORY, never blocks)
+# =============================================================================
+# Per SPEC 522 - HbA1c is advisory; cancer surgery not deferred for glycaemic
+# optimisation. Fixtures must confirm gate NEVER returns fail-as-blocker.
+# GAP 7 - ledger doesn't emit HbA1c yet.
+
+ENDO-HBA1C-001:
+  - id: ENDO-HBA1C-001__pass
+    scenario: pass
+    inputs: {hba1c_pct: 7.4, at: "T-30d"}
+    expected: {outcome: pass, severity: advisory, reason_regex: "HbA1c.*7.4"}
+  - id: ENDO-HBA1C-001__fail
+    scenario: fail
+    inputs: {hba1c_pct: 9.8, at: "T-45d"}
+    expected: {outcome: fail, severity: advisory, reason_regex: "(HbA1c.*9.8|advisory.*never blocks)"}
+    notes: "Even 'fail' must carry severity=advisory - endocrine review only, not a blocker"
+  - id: ENDO-HBA1C-001__boundary
+    scenario: exact-boundary
+    inputs: {hba1c_pct: 8.5, at: "T-60d"}
+    expected: {outcome: fail, severity: advisory, reason_regex: "8.5"}
+  - id: ENDO-HBA1C-001__missing
+    scenario: missing-input
+    inputs: {hba1c_pct: null}
+    expected: {outcome: not_evaluated, reason_regex: "(not_received|missing)"}
+  - id: ENDO-HBA1C-001__conflicting
+    scenario: conflicting-input
+    inputs: {haemoglobinopathy: "thalassaemia_trait", hba1c_pct: 9.1}
+    expected: {outcome: not_evaluated, reason_regex: "(haemoglobinopathy|thalassaemia).*HbA1c.*unreliable"}
+    notes: "SPEC 522 - thalassaemia trait renders HbA1c unreliable; gate returns not_evaluated"
+
+# =============================================================================
+# 11. ENDO-DEXA-001  -  DEXA T-score stratified surveillance
+# =============================================================================
+# GAP 6 - evaluate_gates doesn't implement T-score threshold shape yet.
+
+ENDO-DEXA-001:
+  - id: ENDO-DEXA-001__pass
+    scenario: pass
+    inputs: {t_score: -0.4, at: "T-6mo", on_bone_modifying_agent: false}
+    expected: {outcome: pass, reason_regex: "T-score.*(normal|-0.4)"}
+    notes: "Normal T-score (>= -1.0) with no BMA -> 24-month interval"
+  - id: ENDO-DEXA-001__fail
+    scenario: fail
+    inputs: {t_score: -1.6, at: "T-15mo", on_bone_modifying_agent: true}
+    expected: {outcome: fail, reason_regex: "(osteopenia|BMA).*overdue.*12"}
+    notes: "Osteopenia + BMA -> 12-month interval; last DEXA 15mo ago is overdue"
+  - id: ENDO-DEXA-001__boundary
+    scenario: exact-boundary
+    inputs: {t_score: -1.0, at: "T-12mo", on_bone_modifying_agent: false}
+    expected: {outcome: pass, reason_regex: "T-score.*-1.0"}
+  - id: ENDO-DEXA-001__missing
+    scenario: missing-input
+    inputs: {t_score: null, modality: "QUS"}
+    expected: {outcome: not_evaluated, reason_regex: "QUS.*(cannot|not).*T-score"}
+    notes: "SPEC 524 - QUS cannot produce T-score; not_evaluated, never pass"
+  - id: ENDO-DEXA-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{t_score: -0.9, at: "T-9mo"}, {t_score: -2.1, at: "T-9mo"}]}
+    expected: {outcome: conflicting, reason_regex: "T-score.*conflict"}
+
+# =============================================================================
+# 12. SURG-CLEAR-001  -  Pre-operative clearance documented
+# =============================================================================
+
+SURG-CLEAR-001:
+  - id: SURG-CLEAR-001__pass
+    scenario: pass
+    inputs: {clearance_note: present, cleared_by: "consultant_anaesthetist"}
+    expected: {outcome: pass, reason_regex: "clearance.*(present|documented)"}
+  - id: SURG-CLEAR-001__fail
+    scenario: fail
+    inputs: {clearance_note: absent}
+    expected: {outcome: fail, reason_regex: "(no clearance|not documented)"}
+  - id: SURG-CLEAR-001__boundary
+    scenario: exact-boundary
+    inputs: {clearance_note: present, at: "T-7d"}
+    expected: {outcome: pass, reason_regex: "within.*7"}
+  - id: SURG-CLEAR-001__missing
+    scenario: missing-input
+    inputs: {clearance_note: present, cleared_by: null}
+    expected: {outcome: not_evaluated, reason_regex: "(cleared_by|signatory).*missing"}
+  - id: SURG-CLEAR-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{cleared: true, by: FAC-01}, {cleared: false, by: FAC-02, reason: "raised INR"}]}
+    expected: {outcome: conflicting, reason_regex: "conflict.*clearance"}
+
+# =============================================================================
+# 13. COV-AUTH-001  -  Pre-authorisation for scheme package present and valid
+# =============================================================================
+
+COV-AUTH-001:
+  - id: COV-AUTH-001__pass
+    scenario: pass
+    inputs: {auth_status: approved, scheme: "PM-JAY", package_code: "PKG-ONCO-001", expiry: "T+30d"}
+    expected: {outcome: pass, reason_regex: "authorisation.*approved"}
+  - id: COV-AUTH-001__fail
+    scenario: fail
+    inputs: {auth_status: denied, scheme: "PM-JAY"}
+    expected: {outcome: fail, reason_regex: "(denied|not authorised)"}
+  - id: COV-AUTH-001__boundary
+    scenario: exact-boundary
+    inputs: {auth_status: approved, expiry: "T+0d"}
+    expected: {outcome: pass, reason_regex: "expires.*(today|T\\+0)"}
+  - id: COV-AUTH-001__missing
+    scenario: missing-input
+    inputs: {auth_status: pending}
+    expected: {outcome: not_evaluated, reason_regex: "authorisation.*pending"}
+  - id: COV-AUTH-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{auth_status: approved, scheme: "PM-JAY"}, {auth_status: denied, scheme: "PM-JAY"}]}
+    expected: {outcome: conflicting, reason_regex: "conflict.*authorisation"}
+
+# =============================================================================
+# 14. COV-LIMIT-001  -  Annual coverage limit not exceeded
+# =============================================================================
+# SPEC 175 - patient-level annual limit only; family-floater explicitly OOS.
+
+COV-LIMIT-001:
+  - id: COV-LIMIT-001__pass
+    scenario: pass
+    inputs: {ytd_spend_inr: 180000, annual_limit_inr: 500000}
+    expected: {outcome: pass, reason_regex: "180000.*within.*500000"}
+  - id: COV-LIMIT-001__fail
+    scenario: fail
+    inputs: {ytd_spend_inr: 495000, annual_limit_inr: 500000, next_estimated_inr: 40000}
+    expected: {outcome: fail, reason_regex: "(exceeded|insufficient.*limit)"}
+  - id: COV-LIMIT-001__boundary
+    scenario: exact-boundary
+    inputs: {ytd_spend_inr: 500000, annual_limit_inr: 500000}
+    expected: {outcome: fail, reason_regex: "limit.*reached"}
+  - id: COV-LIMIT-001__missing
+    scenario: missing-input
+    inputs: {ytd_spend_inr: null}
+    expected: {outcome: not_evaluated, reason_regex: "spend.*(not_received|missing)"}
+  - id: COV-LIMIT-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{ytd_spend_inr: 180000, from: PM-JAY}, {ytd_spend_inr: 340000, from: state_scheme}]}
+    expected: {outcome: conflicting, reason_regex: "(spend|ledger).*conflict"}
+    notes: "Household/family-floater aggregation is OOS per SPEC 175"
+
+# =============================================================================
+# 15. ID-LINK-001  -  ABHA anchor exists and links all federated identifiers
+# =============================================================================
+
+ID-LINK-001:
+  - id: ID-LINK-001__pass
+    scenario: pass
+    inputs: {abha_ref: "ABHA-1234-5678", id_map_rows: 7, facilities: [FAC-01, FAC-02, FAC-03, FAC-04]}
+    expected: {outcome: pass, reason_regex: "ABHA.*7 identifiers"}
+  - id: ID-LINK-001__fail
+    scenario: fail
+    inputs: {abha_ref: null, id_map_rows: 4}
+    expected: {outcome: fail, reason_regex: "(no ABHA|missing anchor)"}
+  - id: ID-LINK-001__boundary
+    scenario: exact-boundary
+    inputs: {abha_ref: "ABHA-1234-5678", id_map_rows: 1}
+    expected: {outcome: pass, reason_regex: "ABHA.*1 identifier"}
+  - id: ID-LINK-001__missing
+    scenario: missing-input
+    inputs: {abha_ref: "ABHA-1234-5678", id_map_rows: 0}
+    expected: {outcome: not_evaluated, reason_regex: "(no ID_MAP|no linked)"}
+  - id: ID-LINK-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{abha_ref: "ABHA-1111"}, {abha_ref: "ABHA-2222"}]}
+    expected: {outcome: conflicting, reason_regex: "multiple.*ABHA"}
+    notes: "R4 - never join on name; multiple ABHA anchors is a data-quality event, not a merge"
+
+# =============================================================================
+# 16. ID-QUAR-001  -  Ambiguous identity match placed in quarantine
+# =============================================================================
+# Per R4 - ambiguous matches quarantine and contribute NO evidence.
+
+ID-QUAR-001:
+  - id: ID-QUAR-001__pass
+    scenario: pass
+    inputs: {match_confidence: high, quarantined: false}
+    expected: {outcome: pass, reason_regex: "high.*confidence.*not quarantined"}
+  - id: ID-QUAR-001__fail
+    scenario: fail
+    inputs: {match_confidence: ambiguous, quarantined: true, evidence_contributes: false}
+    expected: {outcome: fail, reason_regex: "quarantine.*no evidence"}
+    notes: "R4 - quarantine is correct behaviour; 'fail' here means 'this match is not usable'"
+  - id: ID-QUAR-001__boundary
+    scenario: exact-boundary
+    inputs: {match_confidence: borderline, quarantined: true}
+    expected: {outcome: fail, reason_regex: "borderline.*quarantine"}
+  - id: ID-QUAR-001__missing
+    scenario: missing-input
+    inputs: {match_confidence: null}
+    expected: {outcome: not_evaluated, reason_regex: "(no.*confidence|not scored)"}
+  - id: ID-QUAR-001__conflicting
+    scenario: conflicting-input
+    inputs: {sources: [{name: "Baseerah K", dob: "1972-03-01", from: FAC-01}, {name: "Basira K", dob: "1972-03-01", from: FAC-02}]}
+    expected: {outcome: fail, reason_regex: "quarantine.*(fuzzy|name.*differs)"}
+    notes: "R4 - never join on name; near-match name with same DOB still quarantines"
+
+# =============================================================================
+# END OF FIXTURES
+# 16 rules x 5 scenarios = 80 fixtures
+# =============================================================================

@@ -1,0 +1,144 @@
+# CoCo Lifecycle Evidence - Phase 2: DEVELOPMENT
+# Hackathon requirement: "Use CoCo throughout code creation, refactoring, adding features,
+# extending the data model, generating queries and scripts, and building automation."
+#
+# Verify any session:  cortex conversations transcript <id>
+# Raw unedited export: evidence/coco/sessions-raw.csv
+
+phase: development
+status: in_progress
+window: 2026-09-18 - ongoing
+principle: >
+  Development runs as small focused sessions - one problem, one file, one verification.
+  Every code change carries a session ID and a live-tested outcome. Failures are
+  recorded alongside fixes in the same session.
+
+# =============================================================================
+stages:
+
+  - stage: 1_backend_scaffolding
+    date: 2026-09-18 - 2026-09-20
+    purpose: >
+      Danush's build: tables, procedures, tools, agent, semantic view, search services.
+      Coded, live-tested per commit message, deployed via deploy.sh.
+    owner: Danush
+    commits:
+      - shas: [0734c34, 3d6d3dc, 373081e, 83cc9a2, 568a023, a6169fd, 8747652, 1b83811, 3ea4bfc, a59ab95, bdd7cf9, d2e499f, 72fbac1]
+        note: See REMAINING-WORK.md §1 for the full reconciliation table.
+    outputs:
+      - backend/sql/tables/{10_governance,20_core,30_documents,40_evidence,50_operational}.sql
+      - backend/sql/procedures/*.sql (12 procedures)
+      - backend/sql/agent/saarthi_agent.sql
+      - backend/sql/semantic/01_semantic_view.sql
+      - backend/sql/search/01_patient_doc_search.sql
+      - backend/sql/search/02_reference_doc_search.sql
+
+  - stage: 2_daksha_local_deploy_and_extensions
+    date: 2026-09-22
+    window: "10:08 IST onward"
+    owner: Daksha
+    purpose: >
+      Deploy the vertical slice to a personal Snowflake account (JN89282), verify
+      end-to-end, and extend two components where SPEC.md described more than the
+      code implemented.
+    sessions:
+      - id: bff0520c-e708-4f2d-95f2-6110636781d0
+        msgs: 104
+        title: Planning Deployment of Repository Changes to Snowflake
+        purpose: >
+          Phases 1-3 of the deploy playbook - base 18 manifest steps, then the
+          Danush-built objects the manifest still comments (streams, procedures,
+          DT, semantic view, tasks, agent, ASK_SAARTHI), then identity + governance
+          seed, then Step 12 CSV pipeline manually, then end-to-end verification.
+      - id: 77ff4bce-f08f-47a5-92f8-5a2c7cbab753
+        msgs: 78
+        title: Pulling Latest Changes from Main Branch
+        purpose: >
+          Phase 4 (reference corpus Tier 1) then validator Checks 4+5 build, skill
+          bodies review, 100-patients scoping decision, and this development.yaml.
+    file_changes:
+      - path: backend/sql/procedures/parse_documents.sql
+        change: Extended parse_documents_proc with a second cursor for REFERENCE_DOCS.
+        reason: >
+          SPEC R6 requires two physically separate corpora but the proc only scanned
+          PATIENT_DOCS. Reference PDFs had no ingest path. Second WHILE loop with
+          scope='reference', patient_id=NULL, doc_type='clinical_guideline'.
+        verified_on: JN89282
+        rows_produced: 2 DOCUMENT + 159 DOC_PAGE + 159 DOC_CHUNK (WHO + NCD guidelines)
+        gap_ref: REMAINING-WORK.md §5 gap 9
+      - path: backend/sql/governance/01_policies.sql
+        change: patient_scope RAP - added OR branch for scope='reference'.
+        reason: >
+          Original RAP required d.patient_id = ct.patient_id, which cannot match
+          rows where d.patient_id IS NULL (reference docs). Result: every reference
+          DOC_PAGE row filtered out invisibly, chunk_documents_proc returned 0.
+          Fix: top branch returns TRUE for scope='reference' unconditionally;
+          bottom branch (patient-scope, keyed on CURRENT_USER() per AGENTS.md §3 #1)
+          unchanged. R5 Layer 3 preserved; R6 now functional.
+        applied_via: ALTER ROW ACCESS POLICY SET BODY
+        verified_on: JN89282
+        gap_ref: REMAINING-WORK.md §5 gap 10
+      - path: backend/sql/procedures/validate_answer.sql
+        change: Added Check 4 (AI_FILTER polarity, fail-closed) and Check 5 (type match with 1% numeric tolerance).
+        reason: >
+          STATUS reported "4 of 6 checks live-tested" and the file left two branches
+          empty. SPEC §7 requires all six. Check 4 uses AI_FILTER with
+          return_error_details=TRUE - any non-NULL error strips the claim (AGENTS.md
+          §3 #10 fail-closed). Check 5 tolerance settled at 1% relative difference
+          (see design considerations §6 item 1).
+        runtime_order_note: >
+          Runtime order (1 → 2 → 3 → 6 for document_span → 5 → 4) intentionally
+          differs from SPEC's declared 1..6 order. Reason: 4 is the only AI call,
+          cost-optimise by short-circuiting on cheap SQL checks first.
+        verified_on: JN89282
+        tests:
+          - "Test 1: asserted 260000 vs EVT-CBC-01-PLT value_num 260604 → overall_status: supported (within 1% tolerance)"
+          - "Test 2: asserted 290000 vs 260604 → overall_status: refused, reason exceeds 1% tolerance"
+      - path: backend/skills/{clinical-question-routing,evidence-retrieval,risk-stratification,evidence-reconciliation}/SKILL.md
+        change: Removed stale "STATUS: draft scaffold. Body written Days 11-12." comments.
+        reason: >
+          The bodies WERE written (60+ lines each) - the status comments misrepresented
+          what was in the file. Comments replaced with an accurate one-line note that
+          instructions live in the markdown body, not in frontmatter.
+      - path: backend/sql/setup.sql
+        change: Uncommented EXECUTE IMMEDIATE FROM './data/load_synthetic.sql'.
+        reason: >
+          Per Danush's own manifest rule ("Uncomment a line the moment its file
+          exists AND runs clean on its own"). load_synthetic.sql is MERGE-throughout,
+          idempotent, and deployed. The structured-events + transform files are
+          deployed but stay commented pending COPY-INTO idempotency review.
+        verified_via: python3 backend/scripts/check_gate.py --manifest → PASS
+    verified_platform_facts_touched:
+      - "F1 (RAP keys on CURRENT_USER, not CURRENT_ROLE) - preserved in the reference-scope OR branch"
+      - "F3 (Cortex Search ignores RAP) - unchanged"
+      - "F7 (stages use SNOWFLAKE_SSE) - REFERENCE_DOCS already correct"
+      - "F10 (fail closed) - Check 4 fails closed on AI_FILTER error"
+
+  - stage: 3_pending_daksha_safe_backend_work
+    date: 2026-09-22 - ongoing
+    owner: Daksha
+    scope_boundary: >
+      Per AGENTS.md §5/§6 scope discipline, only items in Daksha's column are being
+      built on this branch. Danush-territory items (generator files, DDL,
+      corruptions.py, ledger.py, FHIR bundles per patient) are logged in
+      REMAINING-WORK.md §5 gaps 6, 7, 11 for his review.
+    remaining_small_medium:
+      - 80 eval questions (40 dev + 40 held-out per SPEC 844; STATUS says 160, SPEC wins per AGENTS.md §6)
+      - 80 rule fixtures (16 rules × 5 scenarios each)
+    frontend_phase_after:
+      - Navigator View (4 languages) per SPEC §5
+      - Judge Console (8 probes) per SPEC §5
+
+# =============================================================================
+# What we deliberately did NOT do
+
+principles_upheld:
+  - No commit created by CoCo. AGENTS.md §1 - Danush handles all commits.
+  - No file in Danush's generator territory edited (ledger.py, corruptions.py,
+    projections.py, fhir_bundles.py). Gaps logged for his review.
+  - No new tables, rules, or features beyond what SPEC.md names. Every change
+    completes something SPEC already described.
+  - Every code change has a verified_on: entry - JN89282 execution, not desk-check.
+  - Runtime-order-vs-declared-order and 1%-tolerance calibration decisions logged
+    in REMAINING-WORK.md §6 design considerations - judgment calls surface for
+    team review, never buried inline.

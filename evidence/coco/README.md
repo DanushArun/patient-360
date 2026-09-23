@@ -23,8 +23,8 @@ This directory is the audit trail. Everything in it is machine-verifiable — se
 | Phase | Manifest | Status |
 |---|---|---|
 | **Planning** | `planning.yaml` | Complete — 52 sessions, 16–17 Sept |
-| **Development** | `development.yaml` | In progress |
-| **Execution** | `execution.yaml` | Not started |
+| **Development** | `development.yaml` | In progress — Daksha's JN89282 deploy + extensions (22 Sept), Danush's Days 1–5 scaffolding (18–20 Sept) |
+| **Execution** | `execution.yaml` | In progress — vertical slice verified end-to-end on JN89282 (22 Sept), 6 failure/fix pairs recorded |
 | **Testing & validation** | `testing.yaml` | Partial — platform verification done, see `verification-query-ids.md` |
 
 ---
