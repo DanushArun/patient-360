@@ -32,3 +32,15 @@ GRANT USAGE ON FUTURE PROCEDURES IN SCHEMA SAARTHI.OPERATIONAL TO ROLE SAARTHI_A
 GRANT ROLE SAARTHI_APP TO ROLE SAARTHI_COORDINATOR;
 GRANT ROLE SAARTHI_APP TO ROLE SAARTHI_ONCOLOGIST;
 GRANT ROLE SAARTHI_APP TO ROLE SAARTHI_NAVIGATOR;
+
+-- Agent + MCP server access. Snowflake docs are explicit that USAGE on an
+-- MCP SERVER does NOT confer USAGE on the underlying tools; both grants are
+-- required for a caller to invoke the agent via MCP. SAARTHI_APP is the
+-- effective role for every Streamlit / Cortex Agent REST call and for
+-- external MCP clients that authenticate as a role linked to SAARTHI_APP.
+--
+-- No secondary-role trap here either: the agent's RAP (patient_scope on
+-- CURRENT_USER) still fires regardless of which role wraps the session,
+-- and USE SECONDARY ROLES NONE remains mandatory app-side.
+GRANT USAGE ON AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT TO ROLE SAARTHI_APP;
+GRANT USAGE ON MCP SERVER SAARTHI.OPERATIONAL.SAARTHI_MCP TO ROLE SAARTHI_APP;

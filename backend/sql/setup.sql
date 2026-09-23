@@ -278,7 +278,7 @@ EXECUTE IMMEDIATE FROM './semantic/01_semantic_view.sql';
 EXECUTE IMMEDIATE FROM './agent/saarthi_agent.sql';
 EXECUTE IMMEDIATE FROM './agent/ask_saarthi.sql'; -- entry point INTO the agent, not a Contract 2 tool
 -- EXECUTE IMMEDIATE FROM './tasks/orchestrator.sql'; -- [NOT BUILT]
--- EXECUTE IMMEDIATE FROM './agent/saarthi_mcp.sql'; -- [NOT BUILT]
+EXECUTE IMMEDIATE FROM './agent/saarthi_mcp.sql';
 
 
 -- ---------------------------------------------------------------------------

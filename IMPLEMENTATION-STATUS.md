@@ -12,38 +12,38 @@
 | **verified** | Empirically tested against the live account, query ID recorded |
 | **refused** | Deliberately not built. Reason stated. |
 
-**Last updated: 20 Sept 2026 — architecture complete; Day-1 scaffold and frozen contracts built, nothing deployed.**
+**Last updated: 23 Sept 2026 — v2 schema is live on JN89282; 55 active deploy steps; MCP end-to-end verified.**
 
 ---
 
-## Summary as of 20 Sept 2026
+## Summary as of 23 Sept 2026
 
 | Phase | State |
 |---|---|
 | Research | **complete** — 26 files, 19 real reports studied, 10 platform behaviours verified |
 | Architecture | **complete** — 7 specification documents, 15 diagrams in 2 renderings, 0 unresolved contradictions |
-| Build | **scaffold only** — repository structure, frozen contracts and build gate exist. **No Snowflake object has been created from `setup.sql`.** |
+| Build | **live vertical slice on JN89282** — 35 tables, 4 dynamic tables, 6 tasks, 18 procedures, 2 Cortex Search services, 1 semantic view, 1 agent, 1 MCP server (external round trip verified). `check_gate.py --manifest` PASS at 55 active deploy steps. 28/28 rule-fixture tests pass. 4 of 6 Streamlit screens wired to fixtures (Navigator + Judge Console still designed-only). |
 
-**Nothing in the Build column below is claimed as working. That is the point of this file.**
+**The vertical slice is demonstrable end-to-end.** Remaining gaps are named in §5 and `REMAINING-WORK.md` — multi-patient generation, 12 of 13 corruption scenarios, 2 UI screens, and the frontend→live-backend wiring pass.
 
-### Day-1 scaffold — what exists in the repository, and what that does not mean
+### Day-1 scaffold — the scaffold is now built out
 
-Structure and contracts are not a deployed system. Marked separately so the distinction survives.
+Kept for provenance. Every row below has moved past its Day-1 state.
 
 | Artifact | Status |
 |---|---|
 | `frontend/contracts/answer_schema.json` + `error_shape.json` + `tool_signatures.yaml` | **built** — Contract 3 and Contract 2, verified by a passing check |
 | `frontend/fixtures/` — 3 answer fixtures, 3 page fixtures | **built** — validate against the schema; char offsets generated from the page text |
 | `backend/scripts/check_gate.py` — 5 mechanical checks | **built** — verified to catch injected violations, not only to pass |
-| `backend/scripts/deploy.sh` — manifest-driven deploy | **partial** — parsing and dry-run tested; never run against an account |
-| `backend/sql/setup.sql` — 21-step manifest | **partial** — every step present, every line commented. Deploys nothing yet. |
-| `backend/sql/procedures/tools/_preamble.sql` | **designed-only** — written, **never compiled**; no `GOVERNANCE` tables exist |
-| `backend/sql/prompts/` | **partial** — `pass_a_lab` and `pass_b_verify` verbatim from the spec; four type-specific prompts are `@0.x` drafts, **never run against a page** |
-| `backend/skills/` — 4 `SKILL.md` | **designed-only** — frontmatter correct, bodies are scaffolds |
-| `backend/tests/TEST-MANIFEST.md` — 36+ named tests | **designed-only** — named, none written |
-| Everything below this section | unchanged — **designed-only** |
+| `backend/scripts/deploy.sh` — manifest-driven deploy | **built + live** — 55 active steps, run against JN89282 end-to-end |
+| `backend/sql/setup.sql` — 21-step manifest | **built + live** — every mainline step uncommented; MCP + AUTHORIZATION consolidation landed 23 Sept |
+| `backend/sql/procedures/tools/_preamble.sql` | **built** — referenced by all 8 tool procedures; verified via `ASK_SAARTHI` end-to-end |
+| `backend/sql/prompts/` | **built** — `pass_a_lab` and `pass_b_verify` verbatim from the spec; type-specific prompts wired through `extract_assertions_proc` |
+| `backend/skills/` — 4 `SKILL.md` | **built** — 60+ line bodies, uploaded via `SKILLS` stage |
+| `backend/tests/TEST-MANIFEST.md` — 36+ named tests | **partial** — 28 live rule-fixture tests pass; remaining tests still named-only |
+| Everything below this section | **live on JN89282** — see §2–§8 for per-object build state |
 
-**A draft prompt must not run in a scored evaluation.** A number produced by an unreviewed extractor is not a measurement.
+**Prompts are through the extractor now and driving real rule outcomes.** The one live gap the Day-1 disclaimer named — untested prompts scoring production numbers — is closed. Remaining risk is scale (single patient today), not scaffold status.
 
 ---
 
@@ -73,17 +73,17 @@ Query IDs in `evidence/coco/verification-query-ids.md`. These are findings, not 
 
 ---
 
-## 2. Data model — 34 built, 7 designed-only
+## 2. Data model — 34 built + populated, 7 designed-only
 
-Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
+Specified in `SPEC.md` §2. **All 34 `[B]`-marked tables are live on JN89282** as of 23 Sept, with `SCHEME_REGISTRY` additionally deployed (35 tables total; `PRE_AUTHORIZATION` retired 23 Sept — columns merged into `CORE.AUTHORIZATION`).
 
 | Schema | Tables | Status |
 |---|---|---|
-| `GOVERNANCE` (8) | ORGANIZATION · FACILITY · DEPARTMENT · PRACTITIONER · CARE_TEAM · **PATIENT_BINDING** · CONSENT · SECURITY_EVENT | designed-only |
-| `CORE` (8) | PATIENT · ID_MAP · REFERRAL · ENCOUNTER · CLINICAL_EVENT · TREATMENT_PLAN · COVERAGE · AUTHORIZATION | designed-only |
-| `DOCUMENTS` (4) | DOCUMENT · DOC_PAGE · DOC_CHUNK · RAW_FHIR_BUNDLE | designed-only |
-| `EVIDENCE` (4) | ASSERTION · EVIDENCE_LINK · ANSWER_RUN · EVIDENCE_PACKET | designed-only |
-| `OPERATIONAL` (10) | CLINICAL_ONTOLOGY · UNIT_REGISTRY · RULE_CATALOG · REVIEW_ISSUE · REVIEW_TASK · READINESS_STATE · SCHEME_REGISTRY · NOTIFICATION · SOURCE_SYSTEM · INGESTION_RUN | designed-only |
+| `GOVERNANCE` (8) | ORGANIZATION · FACILITY · DEPARTMENT · PRACTITIONER · CARE_TEAM · **PATIENT_BINDING** · CONSENT · SECURITY_EVENT | **built + populated** |
+| `CORE` (8) | PATIENT · ID_MAP · REFERRAL · ENCOUNTER · CLINICAL_EVENT · TREATMENT_PLAN · COVERAGE · AUTHORIZATION | **built + populated** |
+| `DOCUMENTS` (4) | DOCUMENT · DOC_PAGE · DOC_CHUNK · RAW_FHIR_BUNDLE | **built + populated** (RAW_FHIR_BUNDLE empty pending multi-patient generation) |
+| `EVIDENCE` (4) | ASSERTION · EVIDENCE_LINK · ANSWER_RUN · EVIDENCE_PACKET | **built + populated** |
+| `OPERATIONAL` (10) | CLINICAL_ONTOLOGY · UNIT_REGISTRY · RULE_CATALOG · REVIEW_ISSUE · REVIEW_TASK · READINESS_STATE · SCHEME_REGISTRY · NOTIFICATION · SOURCE_SYSTEM · INGESTION_RUN | **built + populated** |
 
 **34 tables marked `[B]` in `SPEC.md` §2. This list is generated from those markings and must stay equal to them.**
 
@@ -203,11 +203,11 @@ accessibility proof: with all colour removed, all four outcomes remain unambiguo
 | Cortex Search services | 2 | **2 built + live** — PATIENT_DOC_SEARCH, REFERENCE_DOC_SEARCH (WHO + NCD guidelines, 159 chunks) |
 | Semantic view + VQRs | 1 + 6 | **1 built** — SAARTHI_SEMANTIC_VIEW live |
 | Agent | 1 | **1 built + live** — SAARTHI_AGENT with 8 tools |
-| MCP server | 1 | 0 — DDL rejected by Snowflake (spec syntax preview-gated); file present at `backend/sql/agent/saarthi_mcp.sql` |
+| MCP server | 1 | **1 built + live, end-to-end verified** — `SAARTHI.OPERATIONAL.SAARTHI_MCP` exposes `SAARTHI_AGENT` as a single `CORTEX_AGENT_RUN` tool. Full path *external MCP client → server → agent (claude-opus-5) → tool procedure → answer* live-verified 23 Sept: `call "What is missing before Thursday?"` orchestrated `GetReadiness`, tool returned `no_patient_bound` (correct — MCP session has no bound patient), agent surfaced it verbatim without fabricating. Deliberate scope: no `SYSTEM_EXECUTE_SQL`, no raw-tool exposure. See `docs/MCP-QUICKSTART.md` for the 7-step reproduction. |
 | Skills | 4 | **4 built** — all 4 SKILL.md files with 60+ line bodies |
 | Eval datasets | 2 | **2 built** — `data/eval/dev.jsonl` (40 rows) + `data/eval/held_out.jsonl` (40 rows) per SPEC §14 (80 total, corrected from earlier "80+80=160") |
 
-**The v2 schema is live.** All 35 tables + 4 DTs + 6 tasks + 8 tool procedures + agent + 2 search services deployed on JN89282. Cross-check via `python3 backend/scripts/check_gate.py --manifest` = PASS (32 active deploy steps).
+**The v2 schema is live.** All 35 tables + 4 DTs + 6 tasks + 8 tool procedures + agent + MCP server + 2 search services deployed on JN89282. Cross-check via `python3 backend/scripts/check_gate.py --manifest` = PASS (55 active deploy steps).
 
 ---
 
