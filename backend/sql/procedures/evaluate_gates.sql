@@ -88,7 +88,8 @@ class Ctx:
     """Everything the rules read, fetched once, cut off at known_as_of."""
 
     def __init__(self, known_as_of, scheduled, patient, encounter, plan, regimen,
-                 diagnoses, events, id_map, coverage, authorization, documents, assertions):
+                 diagnoses, events, id_map, coverage, authorization, documents, assertions,
+                 conflicted=None):
         self.known_as_of = known_as_of
         self.scheduled = scheduled
         self.patient = patient or {}
@@ -107,6 +108,9 @@ class Ctx:
         self.authorization = authorization
         self.documents = documents
         self.assertions = assertions
+        # event_id -> ids of verified document readings that contradict it, where
+        # nothing supports the record value (reconcile_evidence, R3).
+        self.conflicted = conflicted or {}
 
     # regimen ---------------------------------------------------------------
     @property
@@ -204,6 +208,11 @@ def fresh_value(ctx, concept, max_age, unreadable_ok=False):
     ev = ctx.latest(concept)
     if ev is None:
         return None, result("not_evaluated", f"no {concept} result on record as of {ctx.known_as_of.strftime(TS)}")
+    if ev["EVENT_ID"] in ctx.conflicted:
+        return None, result("conflicting", f"{concept} {num(ev['VALUE_NUM'])} on record disagrees with a verified "
+                                           "reading of a source document - both surfaced for human reconciliation, "
+                                           "never resolved automatically",
+                            [ev["EVENT_ID"]] + ctx.conflicted[ev["EVENT_ID"]])
     age = ctx.age_days(ev)
     if max_age is not None and age > max_age:
         return None, result("fail", f"{concept} {num(ev['VALUE_NUM'])} is {age} days old at the visit; "
@@ -829,8 +838,18 @@ def load(session, patient_id, encounter_id, known_as_of_text):
         SELECT assertion_id, predicate, value FROM SAARTHI.EVIDENCE.ASSERTION
          WHERE subject = ? AND verification_status = 'verified'
          ORDER BY assertion_id DESC""", [patient_id])
+    conflicted = {r["EVENT_ID"]: _json(r["ASSERTION_IDS"]) for r in _rows(session, """
+        SELECT l.target_id AS event_id, ARRAY_AGG(l.assertion_id) AS assertion_ids
+          FROM SAARTHI.EVIDENCE.EVIDENCE_LINK l
+          JOIN SAARTHI.EVIDENCE.ASSERTION a
+            ON a.assertion_id = l.assertion_id AND a.verification_status = 'verified'
+          JOIN SAARTHI.CORE.CLINICAL_EVENT ce ON ce.event_id = l.target_id AND ce.patient_id = ?
+         WHERE l.relation = 'conflicts_with' AND l.target_type = 'clinical_event'
+           AND NOT EXISTS (SELECT 1 FROM SAARTHI.EVIDENCE.EVIDENCE_LINK s
+                            WHERE s.target_id = l.target_id AND s.relation = 'supports')
+         GROUP BY l.target_id""", [patient_id])}
     return Ctx(kao, scheduled, patient, encounter, plan, regimen, diagnoses, events,
-               id_map, coverage, authorization, documents, assertions)
+               id_map, coverage, authorization, documents, assertions, conflicted)
 
 
 def current_rules(session):

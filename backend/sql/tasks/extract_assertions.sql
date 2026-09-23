@@ -33,9 +33,14 @@ DECLARE
     v_findings    VARIANT;
     v_count       INTEGER DEFAULT 0;
 
+    -- Patient documents only. Reference guidelines are searched (R6), never
+    -- extracted as patient facts: without this join the task sent every one of
+    -- ~690 guideline pages to two models and wrote guideline sentences into
+    -- ASSERTION - found live on 24 Sept, cancelled after 8 calls.
     c_pages CURSOR FOR
         SELECT dp.doc_id, dp.page_index, dp.text
           FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = dp.doc_id AND d.scope = 'patient'
          WHERE NOT EXISTS (
                  SELECT 1 FROM SAARTHI.EVIDENCE.ASSERTION a
                   WHERE a.doc_id = dp.doc_id AND a.page_index = dp.page_index

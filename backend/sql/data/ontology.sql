@@ -10,23 +10,28 @@ USING (
   UNION ALL SELECT 'PLT',        'analyte',   TRUE,  ARRAY_CONSTRUCT('PLT','thrombocytes','platelet count','platelets')
   UNION ALL SELECT 'HER2_IHC',   'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 immunohistochemistry')
   UNION ALL SELECT 'HER2_FISH',  'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 in-situ hybridisation')
-  UNION ALL SELECT 'CREATININE', 'analyte',   TRUE,  ARRAY_CONSTRUCT('Cr','serum creatinine')
-  UNION ALL SELECT 'BILIRUBIN',  'analyte',   TRUE,  ARRAY_CONSTRUCT('T.Bil','total bilirubin')
+  UNION ALL SELECT 'CREATININE', 'analyte',   TRUE,  ARRAY_CONSTRUCT('Cr','serum creatinine','S. Creatinine','S.Creatinine','creatinine, serum')
+  UNION ALL SELECT 'BILIRUBIN',  'analyte',   TRUE,  ARRAY_CONSTRUCT('T.Bil','total bilirubin','S. Bilirubin','bilirubin total','bilirubin, total')
   UNION ALL SELECT 'AST',        'analyte',   TRUE,  ARRAY_CONSTRUCT('SGOT')
   UNION ALL SELECT 'ALT',        'analyte',   TRUE,  ARRAY_CONSTRUCT('SGPT')
   UNION ALL SELECT 'LVEF',       'procedure', TRUE,  ARRAY_CONSTRUCT('ejection fraction','EF')
   UNION ALL SELECT 'HBA1C',      'analyte',   FALSE, ARRAY_CONSTRUCT('glycated haemoglobin','A1c')
   UNION ALL SELECT 'T_SCORE',    'procedure', FALSE, ARRAY_CONSTRUCT('DEXA T-score','BMD')
   UNION ALL SELECT 'WEIGHT',     'analyte',   FALSE, ARRAY_CONSTRUCT('body weight','wt')
+  -- Spellings as Indian lab reports print them (SPEC.md line 346 names
+  -- 'Haemoglobin|Hb|HGB'; missing it left a live CBC's haemoglobin unmatched,
+  -- so it never got a second pass and was never promoted - 24 Sept).
   -- Not in SPEC.md/WORK-PLAN.md's 12-concept ontology list, but UNIT_REGISTRY's
   -- GM% pattern (WORK-PLAN.md Day 4) is a haemoglobin unit and needs a concept
   -- to join to. Added to close that cross-reference gap; flagged, not silent.
-  UNION ALL SELECT 'HEMOGLOBIN', 'analyte',   FALSE, ARRAY_CONSTRUCT('Hb','HGB')
+  UNION ALL SELECT 'HEMOGLOBIN', 'analyte',   TRUE,  ARRAY_CONSTRUCT('Hb','HGB','Hgb','Haemoglobin','Hemoglobin','Hb%')
   -- Same gap, same reason: WBC and neutrophil percent are the two raw inputs
   -- to the ANC derivation (WBC x neutrophil% / 100, WORK-PLAN.md Day 4-5)
   -- but neither is a named concept in SPEC.md/WORK-PLAN.md's ontology list.
-  UNION ALL SELECT 'WBC',        'analyte',   FALSE, ARRAY_CONSTRUCT('white blood cell count','WBC count')
-  UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', FALSE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%')
+  -- Safety-critical since 24 Sept: ANC, a blocking gate, is computed from WBC and
+  -- neutrophil %, so its inputs never rest on a single extraction pass (R7).
+  UNION ALL SELECT 'WBC',        'analyte',   TRUE,  ARRAY_CONSTRUCT('white blood cell count','WBC count','TLC','total leucocyte count','total leukocyte count','total WBC count')
+  UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', TRUE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%','neutrophils (differential)','neutrophils','polymorphs','polymorphs %')
   -- Pre-cycle panels named in the regimen protocols' "TESTS - before each
   -- treatment" sections (evidence/clinical/requirements.yaml, CLIN-PANEL-001).
   UNION ALL SELECT 'SODIUM',     'analyte',   FALSE, ARRAY_CONSTRUCT('Na','serum sodium')

@@ -69,7 +69,7 @@ def ev(concept, value=None, days_before=0.5, text=None, status="final", event_ty
 
 
 def ctx(regimen="AC", events=(), cycle=3, dob=date(1970, 1, 1), gender="female", docs=(),
-        assertions=(), forum="tumour_board", plan_decided_days=100, known_as_of=None):
+        assertions=(), forum="tumour_board", plan_decided_days=100, known_as_of=None, conflicted=None):
     if regimen:
         agents, cycle_days, myelo, proto = REGIMENS[regimen]
         reg = {"REGIMEN_CODE": regimen, "AGENTS": json.dumps(agents), "CYCLE_DAYS": cycle_days,
@@ -81,7 +81,7 @@ def ctx(regimen="AC", events=(), cycle=3, dob=date(1970, 1, 1), gender="female",
     return ENGINE["Ctx"](known_as_of or VISIT - timedelta(hours=12), VISIT,
                          {"DOB": dob, "GENDER": gender}, {"CYCLE_NUMBER": cycle}, plan, reg,
                          ["C50.9"], list(events), [{"MAP_ID": "M1", "LINK_STATUS": "manually_verified"}],
-                         None, None, list(docs), list(assertions))
+                         None, None, list(docs), list(assertions), conflicted)
 
 
 def gate(c, rule_id):
@@ -368,6 +368,12 @@ def test_addendum_recorded_later_supersedes_the_original_result():
 def test_deep_case_three_weekly_paclitaxel_uses_brajactt(anc, plt, expected):
     c = ctx("AC-TH", [ev("ANC", anc), ev("PLT", plt)])        # BRAJACTT p3: >= 1.5 and >= 90
     assert outcome(c, "CLIN-ANC-001") == expected and outcome(c, "CLIN-PLT-001") == "pass"
+
+
+def test_a_record_value_contradicted_by_a_verified_document_is_conflicting():
+    plt = ev("PLT", 95000)
+    g = gate(ctx("AC", [plt], conflicted={plt["EVENT_ID"]: ["ASS-1"]}), "CLIN-PLT-001")
+    assert g["outcome"] == "conflicting" and g["evidence_ids"] == [plt["EVENT_ID"], "ASS-1"]
 
 
 def test_her2_2plus_waits_for_fish():

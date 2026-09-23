@@ -13,7 +13,13 @@
 --                         made background refresh return zero rows, found
 --                         live and documented in evidence/coco/execution.yaml)
 --   extract_assertions -> R7 two-pass typed extraction over new DOC_CHUNK rows
---   refresh_readiness  -> re-evaluate all 16 gates and MERGE into READINESS_STATE
+--   reconcile_evidence -> date documents, corroborate / conflict / promote
+--                         verified values into CLINICAL_EVENT (the bridge from
+--                         a document to a gate)
+--   DT refresh         -> DT_HARMONIZED_EVENTS refreshed synchronously, so the
+--                         gates see a promoted value now, not after target lag
+--   refresh_readiness  -> re-evaluate every gate, replace READINESS_STATE
+--   notify             -> REVIEW_TASK + NOTIFICATION for blockers within 3 days
 --
 -- Everything each step needs is already present as a procedure; the task
 -- exists so a coordinator can hit "refresh" once and the whole chain runs
@@ -28,7 +34,7 @@
 CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.orchestrator_proc()
   RETURNS VARIANT
   LANGUAGE SQL
-  COMMENT = 'Task on top - orchestrates parse -> chunk -> extract -> refresh in order.'
+  COMMENT = 'Task on top - parse -> chunk -> extract -> reconcile -> DT refresh -> readiness -> notify, in order.'
   EXECUTE AS OWNER
 AS
 $$
@@ -36,20 +42,27 @@ DECLARE
     v_parsed VARIANT;
     v_chunked VARIANT;
     v_extracted VARIANT;
+    v_reconciled VARIANT;
     v_refreshed VARIANT;
+    v_notified VARIANT;
     v_error VARCHAR;
 BEGIN
     v_parsed := (CALL SAARTHI.OPERATIONAL.parse_documents_proc());
     v_chunked := (CALL SAARTHI.OPERATIONAL.chunk_documents_proc());
     v_extracted := (CALL SAARTHI.OPERATIONAL.extract_assertions_proc());
+    v_reconciled := (CALL SAARTHI.OPERATIONAL.reconcile_evidence_proc());
+    ALTER DYNAMIC TABLE SAARTHI.CORE.DT_HARMONIZED_EVENTS REFRESH;
     v_refreshed := (CALL SAARTHI.OPERATIONAL.refresh_readiness_proc());
+    v_notified := (CALL SAARTHI.OPERATIONAL.notify_proc());
 
     RETURN OBJECT_CONSTRUCT(
         'orchestration_at', TO_VARCHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD"T"HH24:MI:SS'),
         'parse', :v_parsed,
         'chunk', :v_chunked,
         'extract', :v_extracted,
-        'readiness', :v_refreshed
+        'reconcile', :v_reconciled,
+        'readiness', :v_refreshed,
+        'notify', :v_notified
     );
 EXCEPTION
     WHEN OTHER THEN
