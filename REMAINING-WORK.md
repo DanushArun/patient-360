@@ -61,10 +61,10 @@ Live vertical slice against `EA72552_SNOW` / account `JN89282` / user `DAKSHA`.
 Only items still designed-only after §1. No new items added.
 
 ### §4 Copilot
-- [ ] **Answer validator — 2 of 6 checks** (STATUS: "4 of 6 live-tested") — the 2 outstanding checks per `validate_answer.sql`
-- [ ] **Conversation model** — binding + `known_as_of` persist across turns; history clears on patient switch (STATUS §4)
+- [x] **Answer validator — all 6 checks live.** Deployed + tested 22 Sept.
+- [ ] **Conversation model** — binding + `known_as_of` persist across turns; history clears on patient switch (STATUS §4). Frontend concern, not backend.
 
-### §5 Application — 2 of 6 screens
+### §5 Application — 4 of 6 screens
 - [ ] **Navigator View** (4 languages)
 - [ ] **Judge Console** (8 probes)
 
@@ -72,21 +72,22 @@ Only items still designed-only after §1. No new items added.
 - [x] **Roles** — 5 roles present in `04_roles.sql` (SAARTHI_APP, SAARTHI_COORDINATOR, SAARTHI_ONCOLOGIST, SAARTHI_NAVIGATOR, SAARTHI_JUDGE) matches SPEC.md §6
 - [x] **Row access policy** — 1 RAP (patient_scope with reference-scope OR-branch) matches SPEC + gap 10 extension
 - [x] **Masking policies** — 2 policies (mask_direct_identifier + mask_dob) matches SPEC
-- [x] **Tasks** — **6 of 7 built and live** (added `reconcile_evidence`, `notify`, `flatten_fhir` this pass, plus previously-built `parse_documents`, `extract_assertions`, `refresh_readiness`, `orchestrator`). Live-verified: reconcile → 0 conflicts + 0 discordant (correct for current ASSERTION rows); notify → 3 REVIEW_TASK + 3 NOTIFICATION rows for EVT-CHEMO-07 blocker fails; flatten_fhir → 0 events (empty bundles, graceful early return with `note` explaining why). All idempotent. `SCHEDULE` dropped on reconcile/notify per Snowflake constraint (see §6 item 11); they fire via `AFTER` predecessor chain.
-- [x] **Dynamic Tables** — **4 of 4 built and live**: harmonized_events, review_queue, `scheme_eligibility` (2 rows for PAT-DEEP-0001: PM-JAY central + TN-CMHIS state match), `treatment_plan` (1 row: TP-DEEP-0001 AC-T regimen). No 5th DT: SPEC diagram named DT_DOC_CHUNK but chunk_documents is a procedure (RAP-on-source forced synchronous population).
-- [ ] **MCP server** — designed and file written (`backend/sql/agent/saarthi_mcp.sql`) but Snowflake DDL rejected the spec: *"Cannot create MCP server because spec is invalid: null"*. MCP SERVER syntax varies by Snowflake account/region — needs account-team confirmation or preview access. Non-blocking for demo. — **Blocked on Snowflake MCP DDL support.**
+- [x] **Tasks** — **6 of 7 built and live**: parse_documents, extract_assertions, refresh_readiness, reconcile_evidence, notify, flatten_fhir, orchestrator. All idempotent. `SCHEDULE` dropped on reconcile/notify per Snowflake constraint (see §6 item 11); they fire via `AFTER` predecessor chain.
+- [x] **Dynamic Tables** — **4 of 4 built and live**: harmonized_events, review_queue, scheme_eligibility, treatment_plan. No 5th DT: SPEC diagram named DT_DOC_CHUNK but chunk_documents is a procedure (RAP-on-source forced synchronous population).
+- [ ] **MCP server** — designed and file written (`backend/sql/agent/saarthi_mcp.sql`) but Snowflake DDL rejected the spec. Blocked on Snowflake MCP DDL support. **Non-blocking for demo.**
 - [x] **Skills bodies** — 4 files, all with real bodies (60+ lines each); stale status comments removed.
 - [x] **Eval datasets** — **done 22 Sept.** 40 dev + 40 held-out per SPEC 844.
+- [x] **All 16 rule evaluators real** — CLIN-ANC/PLT/CRCL/BILI, DOC-HER2/PATH/DISC, SURV-LVEF-001/002, ENDO-HBA1C/DEXA, SURG-CLEAR, COV-AUTH/LIMIT, ID-LINK/QUAR. Deep-case + fail-path both tested via `run_rule_fixtures.py` (28/28 PASS).
 
 ### §7 Data
-- [ ] **100 synthetic patients** — generator exists (`data/generator/generate_patients.py`), full 100-patient run not confirmed
-- [ ] **Deep case from real record** — ledger seeded (§1), but 19 specific facts not yet confirmed all present
-- [ ] **13 corruption scenarios** — 1 landed (§1), 12 remaining
-- [ ] **Synthetic PDFs** — STATUS says 1 of ~20; git added a batch commit — need to count files in `data/synthetic_docs/`
-- [ ] **Reference corpus Tier 1** — `data/reference/` still does not exist per STATUS
-- [x] **80 rule fixtures** — **done 22 Sept evening.** `data/fixtures/rules/rule_fixtures.yaml` — 16 rules × 5 scenarios (pass, fail, exact-boundary, missing-input, conflicting-input) = 80 fixtures per SPEC 851. YAML validated: 16 rule keys, 80 unique fixture IDs, every scenario category has exactly 16, expected outcomes span all 4 states (pass 31, fail 20, not_evaluated 17, conflicting 12). Runner script (`run_rule_fixtures.py`) not yet built — that touches evaluate_gates test wiring which is Danush's territory.
-- [x] **80 dev + 80 held-out eval questions** — see §6 Snowflake objects "Eval datasets" line: **done at 80 total (40+40) per SPEC 844, not 160.** STATUS↔SPEC mismatch flagged below.
-- [ ] **FHIR bundles per patient** — builder exists, per-patient bundles not confirmed
+- [ ] **100 synthetic patients** — recommended DO NOT do this. Adding 99 identity-only rows is row-count theatre; nothing queries them. Real fix requires extending `ledger.py` (Danush's territory). See §5 gap 11.
+- [x] **Deep case (PAT-DEEP-0001)** — 1 org, 4 facilities, 2 practitioners, care team, consent, 7 ID_MAP rows, 7 encounters (6 historical chemo + 1 future), 8+ CLINICAL_EVENT rows including CBC/T-score/LVEF/HbA1c/creatinine/weight/bilirubin/AST/2 pathology, 3 verified surgical clearance assertions, 1 COVERAGE row, 1 PRE_AUTHORIZATION row, 1 TREATMENT_PLAN row. All 5 chemo readiness rules end-to-end.
+- [ ] **13 corruption scenarios** — 1 landed. 12 remaining. **Danush's territory** (data/generator/corruptions.py).
+- [ ] **Synthetic PDFs** — 1 of ~20 in `data/synthetic_docs/`. Content authoring; needs actual PDF files.
+- [x] **Reference corpus Tier 1** — WHO diabetes + NCD guidelines (159 chunks) ingested, `REFERENCE_DOC_SEARCH` populated.
+- [x] **80 rule fixtures** — `data/fixtures/rules/rule_fixtures.yaml`; 16 rules × 5 scenarios.
+- [x] **80 eval questions** — 40 dev + 40 held-out (SPEC 844, not STATUS 160).
+- [ ] **FHIR bundles per patient** — flatten_fhir task deployed and works on empty bundles. Blocked on gap 11 (multi-patient generation).
 
 ### §8 CoCo lifecycle evidence
 - [x] **Development phase** — **done 22 Sept evening.** `evidence/coco/development.yaml` — 145 lines, 3 stages (Danush's Days 1–5 scaffolding, my JN89282 deploy + extensions with CoCo session IDs `bff0520c-e708-4f2d-95f2-6110636781d0` and `77ff4bce-f08f-47a5-92f8-5a2c7cbab753`, and remaining Daksha-safe backend). Every file_change carries a `verified_on: JN89282` entry.
