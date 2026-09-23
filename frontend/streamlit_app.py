@@ -23,8 +23,12 @@ THE SHAPE, AND WHY
     Margin   — evidence, revealed in place beside the claim it supports. Verifying a
                citation means comparing answer and source, which needs both visible at
                once; a modal that covers the answer defeats its own purpose.
-    Unbound  — the review queue IS the home state. It is the inbox: the work waiting
-               before a patient is chosen.
+    Unbound  — tomorrow's day-care list IS the home state, blocked chairs first. The
+               work that matters is the visit that will fail on the day unless someone
+               acts today - a stale CBC, a pending PM-JAY approval - so that is the inbox.
+    Family   — once a patient is bound, the same gates become the family's pre-visit
+               checklist in their language (Navigator View), so the readiness check
+               happens before the journey, not at the day-care desk.
 
     Progressive disclosure throughout: nothing is a page, everything reveals.
 
@@ -39,15 +43,15 @@ LIVE, WITH AN HONEST FALLBACK
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import streamlit as st
 
 from frontend.core import answer_render as ar
+from frontend.core import census, navigator
 from frontend.core.design import stylesheet
 from frontend.core.live import AgentTurn, Session, parse_agent_response
-from frontend.core.review_queue import open_issues_by_urgency
 from frontend.core.review_task import create_review_task as _offline_create_review_task
 
 _FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -91,7 +95,7 @@ def _reset_conversation() -> None:
 
 
 st.session_state.setdefault("turns", [])
-st.session_state.setdefault("selected_evidence", None)  # (turn_index, gate_name) | None
+st.session_state.setdefault("selected_evidence", None)  # (turn_index, rule_id) | None
 st.session_state.setdefault("offline_review_tasks", [])  # in-memory ReviewTask stand-in
 
 
@@ -184,44 +188,37 @@ if st.session_state.get("bind_error"):
 # ---------------------------------------------------------------------------
 
 @st.cache_data(show_spinner=False)
-def _queue_issues() -> list[dict]:
-    return json.loads((_FIXTURES / "review_queue.json").read_text())["issues"]
+def _recorded_census() -> list[dict]:
+    """A recorded snapshot of the live census, for offline mode. Captured from
+    READINESS_STATE on the demo account - evaluator output, not hand-written."""
+    return json.loads((_FIXTURES / "daycare_census_recorded.json").read_text())["rows"]
 
 
-def _open_issue_for(patient_id: str | None, gate_name: str) -> dict | None:
-    """The real open queue issue behind a gate, if one exists.
+# The live create_review_task enum, minus "reassign" and "close": a gate changes
+# state when new evidence arrives and the evaluator re-runs, never because a
+# button was pressed (R1). "approve treatment" is not a value anywhere.
+_ACTIONS = {"request_document": "Request document", "escalate": "Escalate to treating doctor"}
 
-    Never fabricates an issue_id: an action can only be filed against a row
-    that actually exists in the queue, same as the retired Review + History
-    page required. If nothing matches, the action simply does not appear —
-    that absence is honest, not a bug.
+
+def _render_action_row(patient_id: str, gate: dict) -> None:
+    """File a review task against the bound patient's gate - the one write action.
+
+    The issue reference is patient + rule: a real, stable key for a real
+    readiness row. REVIEW_ISSUE is not materialised by anything yet, so there is
+    no issue_id to borrow, and a fixture id would point at nothing.
     """
-    if not patient_id:
-        return None
-    for issue in _queue_issues():
-        if issue["patient_id"] == patient_id and issue["gate"] == gate_name \
-                and issue["state"] in ("open", "evidence_received"):
-            return issue
-    return None
-
-
-def _render_action_row(issue: dict) -> None:
-    """Request evidence / escalate / mark resolved — the one write action,
-    restored from the retired Review + History page. Deliberately absent:
-    an "approve treatment" option — SPEC.md 605's own test case for what
-    this tool must refuse to become."""
-    cols = st.columns(3)
-    labels = {"request_evidence": "Request evidence", "escalate": "Escalate",
-              "mark_resolved": "Mark resolved"}
-    for col, (action, label) in zip(cols, labels.items()):
-        key = f"act_{issue['issue_id']}_{action}"
+    issue_ref = f"{patient_id}:{gate.get('rule_id') or gate['gate']}"
+    cols = st.columns(len(_ACTIONS))
+    for col, (action, label) in zip(cols, _ACTIONS.items()):
+        key = f"act_{issue_ref}_{action}"
         with col:
             if st.button(label, key=key, use_container_width=True):
                 # Stable per issue+action, not per click: a second click on the same
                 # button is a retry, and per SPEC.md 373 a retry must return the
                 # existing task rather than mint a duplicate.
-                idempotency_key = f"{issue['issue_id']}:{action}"
-                reason = f"{label} — filed from the conversation on {issue['gate']}"
+                idempotency_key = f"{issue_ref}:{action}"
+                reason = f"{label} — {gate.get('rule_id')}: {gate.get('reason') or gate['outcome']}"
+                issue = {"issue_id": issue_ref}
                 if live:
                     result = session.create_review_task(
                         issue_id=issue["issue_id"], action=action, reason=reason,
@@ -264,6 +261,15 @@ def _latest_gates() -> tuple[list[dict], str | None]:
     return [], None
 
 
+_STRIP_COLS = 4  # 16 gates in one st.columns() row squeezes every label to ~70px -
+                 # chunked rows keep each card readable at any of the 16 rules' widths.
+
+
+def _chunked(items: list, size: int):
+    for i in range(0, len(items), size):
+        yield items[i:i + size]
+
+
 if binding:
     gates, gates_as_of = _latest_gates()
     if gates:
@@ -275,17 +281,18 @@ if binding:
             )
             + "</div>"
         )
-        strip = st.columns(len(gates))
-        for column, gate in zip(strip, gates):
-            with column:
-                st.html(
-                    '<div style="padding:8px 0;border-top:1px solid #D8DCDF">'
-                    f'<div class="sa-field-label">{gate["gate"]}</div>'
-                    f'{ar.status_chip(gate["outcome"])}'
-                    f'<div class="sa-meta" style="margin-top:6px">'
-                    f'<code>{gate.get("rule_id","")}'
-                    f' v{gate.get("rule_version","")}</code></div></div>'
-                )
+        for row_gates in _chunked(gates, _STRIP_COLS):
+            strip = st.columns(_STRIP_COLS)
+            for column, gate in zip(strip, row_gates):
+                with column:
+                    st.html(
+                        '<div style="padding:8px 0;border-top:1px solid #D8DCDF">'
+                        f'<div class="sa-field-label">{gate["gate"]}</div>'
+                        f'{ar.status_chip(gate["outcome"])}'
+                        f'<div class="sa-meta" style="margin-top:6px">'
+                        f'<code>{gate.get("rule_id","")}'
+                        f' v{gate.get("rule_version","")}</code></div></div>'
+                    )
 
 st.html('<hr style="border:none;border-top:1px solid #D8DCDF;margin:16px 0">')
 
@@ -318,24 +325,31 @@ def _render_turn(turn: dict, turn_index: int) -> None:
         # backs — not a generic dump at the bottom of the screen. Clicking one
         # pins its full evidence in the margin, the same way an artifact panel
         # follows what you're looking at rather than showing everything at once.
+        #
+        # Keyed on rule_id, not gate (category): "clinical" alone covers CLIN-ANC-001
+        # AND CLIN-PLT-001 in the same turn, so gate is not unique within a turn —
+        # using it as a widget key crashed with StreamlitDuplicateElementKey the
+        # first time a real readiness answer carried two rules in one category.
         gates = turn.get("gates") or []
         if gates:
             st.html('<div style="margin-top:12px"></div>')
-            chip_cols = st.columns(len(gates))
-            for column, gate in zip(chip_cols, gates):
-                with column:
-                    st.html(ar.gate_row(gate))
-                    is_selected = st.session_state["selected_evidence"] == \
-                        (turn_index, gate["gate"])
-                    if st.button(
-                        "Evidence ▸" if not is_selected else "Evidence ▾",
-                        key=f"cite_{turn_index}_{gate['gate']}",
-                        use_container_width=True,
-                    ):
-                        st.session_state["selected_evidence"] = (
-                            None if is_selected else (turn_index, gate["gate"])
-                        )
-                        st.rerun()
+            for row_gates in _chunked(gates, _STRIP_COLS):
+                chip_cols = st.columns(_STRIP_COLS)
+                for column, gate in zip(chip_cols, row_gates):
+                    with column:
+                        st.html(ar.gate_row(gate))
+                        rule_id = gate.get("rule_id") or gate["gate"]
+                        is_selected = st.session_state["selected_evidence"] == \
+                            (turn_index, rule_id)
+                        if st.button(
+                            "Evidence ▸" if not is_selected else "Evidence ▾",
+                            key=f"cite_{turn_index}_{rule_id}",
+                            use_container_width=True,
+                        ):
+                            st.session_state["selected_evidence"] = (
+                                None if is_selected else (turn_index, rule_id)
+                            )
+                            st.rerun()
 
 
 _ERRORS = {
@@ -346,49 +360,150 @@ _ERRORS = {
     "nothing_found": "Nothing found for that question.",
 }
 
+def _day_label(iso_day: str) -> str:
+    day = date.fromisoformat(iso_day)
+    delta = (day - date.today()).days
+    prefix = {0: "Today", 1: "Tomorrow"}.get(delta)
+    pretty = day.strftime("%a, %d %b").replace(" 0", " ")
+    return f"{prefix} · {pretty}" if prefix else pretty
+
+
+def _bind(patient_id: str) -> None:
+    result = session.bind(patient_id)
+    if result.get("error"):
+        st.session_state["bind_error"] = result["error"]
+    else:
+        _reset_conversation()
+    st.rerun()
+
+
+def _render_census() -> set[str]:
+    """Tomorrow's chairs, blocked first. Returns the patient ids shown."""
+    rows = session.daycare_census(7) if live else _recorded_census()
+    chairs = census.build_census(rows)
+    if not live:
+        st.html(ar.limitation(
+            "Recorded snapshot of the live day-care list - not connected, so rows "
+            "cannot be opened. Readiness below is evaluator output captured from the "
+            "demo account, not hand-written."))
+    if not chairs:
+        st.html(
+            '<div class="sa-census-day">Day-care</div>'
+            '<div class="sa-meta">No day-care visits in the next 7 days for patients '
+            f'under your care, as of {datetime.now().strftime("%d %b %Y, %H:%M")}.</div>'
+        )
+        return set()
+
+    by_day: dict[str, list] = {}
+    for chair in chairs:
+        by_day.setdefault((chair.scheduled or "")[:10], []).append(chair)
+    for iso_day, day_chairs in sorted(by_day.items()):
+        st.html(ar.census_summary(census.counts(day_chairs), _day_label(iso_day)))
+        for chair in day_chairs:
+            text_col, action_col = st.columns([6, 1], vertical_alignment="center")
+            with text_col:
+                st.html(ar.census_row(chair))
+            with action_col:
+                if live and st.button("Open", key=f"open_{chair.encounter_id}",
+                                      use_container_width=True):
+                    _bind(chair.patient_id)
+    st.html(
+        '<div class="sa-meta" style="margin-top:12px">Every status comes from the SQL '
+        "rule evaluator over the record as it stands; no model decides it. A patient "
+        "is listed only with an active care-team row and valid consent.</div>"
+    )
+    return {c.patient_id for c in chairs}
+
+
+def _render_family_checklist() -> None:
+    """Navigator View: the family's pre-visit checklist, in their language."""
+    context = (session.patient_context(binding["patient_id"]) if live
+               else {"language": "Marathi", "next_visit": None})
+    gates, _ = _latest_gates()
+    if not context.get("next_visit"):
+        st.html(ar.limitation(
+            "No upcoming day-care visit is on record for this patient, so there is no "
+            "visit to prepare the family for."))
+        return
+    if not gates:
+        st.html(ar.limitation("Readiness has not been computed for this patient yet."))
+        return
+
+    visit = date.fromisoformat(context["next_visit"])
+    codes = list(navigator.LANGUAGES)
+    default = navigator.language_code(context.get("language"))
+    lang = st.selectbox(
+        "Family's language", codes, index=codes.index(default),
+        format_func=navigator.LANGUAGES.get, key=f"nav_lang_{binding['patient_id']}",
+    )
+
+    items = navigator.checklist(gates)
+    earliest = (visit - timedelta(days=7)).strftime("%d %b").lstrip("0")
+    st.html(
+        '<div class="sa-field-label" style="margin:8px 0 4px">What the family needs to do'
+        f' before {visit.strftime("%d %b").lstrip("0")}</div>'
+    )
+    if items:
+        for n, (key, rules) in enumerate(items, start=1):
+            st.html(ar.checklist_item(
+                n, navigator.TEXT[key]["en"].format(earliest=earliest), rules))
+    else:
+        st.html('<div class="sa-meta">' + navigator.TEXT["all_clear"]["en"] + "</div>")
+
+    st.html('<div class="sa-field-label" style="margin:16px 0 4px">Message for the family</div>')
+    st.code(navigator.message(name=binding["patient_name"], visit=visit, gates=gates, lang=lang),
+            language=None, wrap_lines=True)
+    st.html(
+        '<div class="sa-meta">SAARTHI does not send messages. Copy this into WhatsApp '
+        "or read it to the family. Translations are drafted for review: have a "
+        "native-speaking navigator check them before first use.</div>"
+    )
+
+
 with body:
     if not binding:
-        # Unbound home state: the inbox. Work waiting, before a patient is chosen.
-        st.html('<div class="sa-field-label">Waiting on you</div>')
-        issues = _queue_issues()
-        queue = open_issues_by_urgency(issues)
-        if not queue:
-            st.html(
-                '<div class="sa-meta" style="margin-bottom:12px">Nothing open, as of '
-                f'{datetime.now().strftime("%d %b %Y, %H:%M")}.</div>'
-            )
-        else:
-            st.html(
-                '<div class="sa-meta" style="margin-bottom:12px">'
-                f"{len(queue)} open of {len(issues)} · soonest first, blockers before "
-                "advisories. Select a patient above to ask about one.</div>"
-            )
-        for issue in queue:
-            st.html(ar.queue_row(issue))
-            with st.expander("Act on this", expanded=False):
-                _render_action_row(issue)
+        # Unbound home state: tomorrow's chairs. The inbox is the list of visits
+        # that will fail on the day unless someone acts today.
+        shown_on_census = _render_census()
     else:
-        for index, turn in enumerate(st.session_state["turns"]):
-            _render_turn(turn, index)
+        mode = st.segmented_control(
+            "View", ["Ask the record", "Family checklist"], default="Ask the record",
+            key="body_mode", label_visibility="collapsed",
+        )
+        if mode == "Family checklist":
+            _render_family_checklist()
+        else:
+            for index, turn in enumerate(st.session_state["turns"]):
+                _render_turn(turn, index)
 
-        if not st.session_state["turns"]:
-            st.html(
-                '<div class="sa-meta">Ask about this patient\'s record — what you have, '
-                "what is missing, what contradicts what. Clinical decisions are referred "
-                "to the treating practitioner.</div>"
-            )
+            if not st.session_state["turns"]:
+                st.html(
+                    '<div class="sa-meta">Ask about this patient\'s record — what you have, '
+                    "what is missing, what contradicts what. Clinical decisions are referred "
+                    "to the treating practitioner.</div>"
+                )
 
-        # Follow-ups the agent itself proposed. Cheaper than typing, and they keep the
-        # conversation inside what the record can actually answer.
-        last = st.session_state["turns"][-1] if st.session_state["turns"] else None
-        if isinstance(last, dict) and last.get("suggested"):
-            st.html('<div class="sa-field-label" style="margin-top:12px">Follow on</div>')
-            for index, suggestion in enumerate(last["suggested"][:3]):
-                if st.button(suggestion, key=f"sugg_{index}", use_container_width=True):
-                    st.session_state["pending"] = suggestion
-                    st.rerun()
+            # Follow-ups the agent itself proposed. Cheaper than typing, and they keep
+            # the conversation inside what the record can actually answer.
+            last = st.session_state["turns"][-1] if st.session_state["turns"] else None
+            if isinstance(last, dict) and last.get("suggested"):
+                st.html('<div class="sa-field-label" style="margin-top:12px">Follow on</div>')
+                for index, suggestion in enumerate(last["suggested"][:3]):
+                    if st.button(suggestion, key=f"sugg_{index}", use_container_width=True):
+                        st.session_state["pending"] = suggestion
+                        st.rerun()
 
 with margin:
+    if not binding:
+        # Unbound: everyone else under this practitioner's care, so a patient who
+        # is not on the day-care list (e.g. between cycles) is still one click away.
+        others = [(pid, label) for pid, label in (session.bindable_patients() if live else [])
+                  if pid not in shown_on_census]
+        if others:
+            st.html('<div class="sa-field-label">Also under your care</div>')
+            for pid, label in others:
+                if st.button(label, key=f"other_{pid}", use_container_width=True):
+                    _bind(pid)
     turns = st.session_state["turns"]
     last = turns[-1] if turns else None
     selection = st.session_state["selected_evidence"]
@@ -398,10 +513,11 @@ with margin:
     # static sidebar that always shows the same dump regardless of what's asked.
     pinned_gate = None
     if selection:
-        sel_index, sel_gate_name = selection
+        sel_index, sel_rule_id = selection
         if 0 <= sel_index < len(turns):
             pinned_gate = next(
-                (g for g in turns[sel_index].get("gates", []) if g["gate"] == sel_gate_name),
+                (g for g in turns[sel_index].get("gates", [])
+                 if (g.get("rule_id") or g["gate"]) == sel_rule_id),
                 None,
             )
 
@@ -424,10 +540,9 @@ with margin:
             )
             + "</div>"
         )
-        issue = _open_issue_for(binding.get("patient_id") if binding else None, pinned_gate["gate"])
-        if issue and pinned_gate["outcome"] in ("fail", "conflicting", "not_evaluated"):
+        if binding and pinned_gate["outcome"] in ("fail", "conflicting", "not_evaluated"):
             st.html('<div class="sa-field-label" style="margin-top:16px">Act on this</div>')
-            _render_action_row(issue)
+            _render_action_row(binding["patient_id"], pinned_gate)
         if st.button("Show everything for this answer instead", key="unpin"):
             st.session_state["selected_evidence"] = None
             st.rerun()

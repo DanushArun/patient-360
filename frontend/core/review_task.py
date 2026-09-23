@@ -21,7 +21,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 _ALLOWED_ROLES = frozenset({"treating", "coordinator"})
-_ALLOWED_ACTIONS = frozenset({"request_evidence", "mark_resolved", "escalate", "reject"})
+# Must match the live procedure's enum exactly (backend/sql/procedures/tools/
+# 08_create_review_task.sql). An earlier offline-only enum had drifted from it,
+# so the UI offered actions the live proc rejected as invalid_argument.
+_ALLOWED_ACTIONS = frozenset({"request_document", "escalate", "reassign", "close"})
 
 
 @dataclass(frozen=True)
