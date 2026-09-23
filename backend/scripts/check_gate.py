@@ -295,7 +295,18 @@ def manifest_targets() -> list[str]:
             (MANIFEST_LINE.match(ln) for ln in setup.read_text().splitlines()) if m]
 
 
+CONFLICT_MARKER = re.compile(r"^(<<<<<<< |=======$|>>>>>>> )", re.M)
+
+
 def check_manifest() -> None:
+    # A merge-conflict marker is invalid SQL: EXECUTE IMMEDIATE FROM on the repo
+    # stage fails at it, while deploy.sh (which greps only EXECUTE lines) runs
+    # both sides of the conflict. Found in setup.sql on 23 Sept.
+    conflicted = [str(p.relative_to(ROOT)) for p in sorted((ROOT / "backend/sql").rglob("*.sql"))
+                  if CONFLICT_MARKER.search(p.read_text(encoding="utf-8"))]
+    if conflicted:
+        record(FAIL, "manifest", "unresolved merge-conflict markers in: " + ", ".join(conflicted))
+        return
     targets = manifest_targets()
     if not targets:
         record(SKIP, "manifest",
