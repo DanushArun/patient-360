@@ -146,6 +146,7 @@ EXECUTE IMMEDIATE FROM './data/unit_registry.sql';
 -- three thresholds are practice consensus, not guideline requirement, and must
 -- say so wherever they surface.
 EXECUTE IMMEDIATE FROM './data/rules.sql';
+EXECUTE IMMEDIATE FROM './data/regimens.sql';   -- regimen -> drugs, cycle, protocol (rules read it)
 
 
 -- ---------------------------------------------------------------------------

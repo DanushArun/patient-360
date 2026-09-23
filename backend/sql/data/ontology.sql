@@ -27,6 +27,29 @@ USING (
   -- but neither is a named concept in SPEC.md/WORK-PLAN.md's ontology list.
   UNION ALL SELECT 'WBC',        'analyte',   FALSE, ARRAY_CONSTRUCT('white blood cell count','WBC count')
   UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', FALSE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%')
+  -- Pre-cycle panels named in the regimen protocols' "TESTS - before each
+  -- treatment" sections (evidence/clinical/requirements.yaml, CLIN-PANEL-001).
+  UNION ALL SELECT 'SODIUM',     'analyte',   FALSE, ARRAY_CONSTRUCT('Na','serum sodium')
+  UNION ALL SELECT 'POTASSIUM',  'analyte',   FALSE, ARRAY_CONSTRUCT('K','serum potassium')
+  UNION ALL SELECT 'CALCIUM',    'analyte',   FALSE, ARRAY_CONSTRUCT('Ca','serum calcium')
+  UNION ALL SELECT 'MAGNESIUM',  'analyte',   FALSE, ARRAY_CONSTRUCT('Mg','serum magnesium')
+  UNION ALL SELECT 'ALBUMIN',    'analyte',   FALSE, ARRAY_CONSTRUCT('Alb','serum albumin')
+  UNION ALL SELECT 'ALP',        'analyte',   FALSE, ARRAY_CONSTRUCT('alkaline phosphatase','ALKP')
+  UNION ALL SELECT 'LDH',        'analyte',   FALSE, ARRAY_CONSTRUCT('lactate dehydrogenase')
+  UNION ALL SELECT 'INR',        'analyte',   TRUE,  ARRAY_CONSTRUCT('PT-INR','international normalised ratio')
+  -- Screening tests before systemic therapy (SAFE-HBV-001, SAFE-PREG-001, SAFE-DPYD-001).
+  UNION ALL SELECT 'HBSAG',      'analyte',   TRUE,  ARRAY_CONSTRUCT('HBsAg','hepatitis B surface antigen','Australia antigen')
+  UNION ALL SELECT 'ANTI_HBC',   'analyte',   TRUE,  ARRAY_CONSTRUCT('anti-HBc','HBcoreAb','hepatitis B core antibody')
+  UNION ALL SELECT 'ANTI_HBS',   'analyte',   FALSE, ARRAY_CONSTRUCT('anti-HBs','HBsAb','hepatitis B surface antibody')
+  UNION ALL SELECT 'BETA_HCG',   'analyte',   TRUE,  ARRAY_CONSTRUCT('beta-hCG','urine pregnancy test','UPT','serum hCG')
+  UNION ALL SELECT 'DPYD',       'biomarker', TRUE,  ARRAY_CONSTRUCT('DPYD genotype','DPD deficiency test','DPYD activity score')
+  -- Administrations read by dose rules (DOSE-ANTHRA-001, DOSE-HLOAD-001,
+  -- SAFE-PEMVIT-001, SAFE-INR-001). value_num carries the dose; unit says how.
+  UNION ALL SELECT 'DOXORUBICIN', 'medication', TRUE, ARRAY_CONSTRUCT('adriamycin','doxorubicin hydrochloride')
+  UNION ALL SELECT 'TRASTUZUMAB', 'medication', TRUE, ARRAY_CONSTRUCT('herceptin','trastuzumab biosimilar')
+  UNION ALL SELECT 'VITAMIN_B12', 'medication', FALSE, ARRAY_CONSTRUCT('cyanocobalamin','B12 injection')
+  UNION ALL SELECT 'FOLIC_ACID',  'medication', FALSE, ARRAY_CONSTRUCT('folate','folic acid tablet')
+  UNION ALL SELECT 'WARFARIN',    'medication', TRUE,  ARRAY_CONSTRUCT('coumadin','warfarin sodium')
 ) s
 ON t.canonical_name = s.canonical_name
 WHEN MATCHED THEN

@@ -5,11 +5,12 @@
 -- Table. NO AI FUNCTIONS HERE - a DT requires deterministic refresh; AI steps
 -- live in Tasks (step 16).
 --
--- This build implements ANC derivation (the Day-5 gate rule) and passthrough
--- unit normalisation via UNIT_REGISTRY. Cockcroft-Gault CrCl is NOT yet
--- implemented - the deep-case patient has no `vitals`/weight event, so CrCl
--- would correctly return not_evaluated (R3: missing input, not a bug) even
--- once wired. Left as a stated gap rather than faked.
+-- ANC derivation (WBC x neutrophil%) and unit conversion to the canonical unit
+-- via UNIT_REGISTRY (creatinine and bilirubin umol/L -> mg/dL, platelets in
+-- lakhs -> /uL). Values outside the plausible range are kept but marked
+-- 'unreadable'; evaluate_gates never reads an unreadable value as evidence.
+-- Cockcroft-Gault CrCl is computed in evaluate_gates, where the regimen's own
+-- threshold is known.
 CREATE OR REPLACE DYNAMIC TABLE SAARTHI.CORE.DT_HARMONIZED_EVENTS
   TARGET_LAG = '1 minute'
   WAREHOUSE = SAARTHI_AI_WH
@@ -21,12 +22,19 @@ WITH normalized AS (
     SELECT
         ce.event_id, ce.patient_id, ce.encounter_id, ce.event_type, ce.concept_id,
         co.canonical_name AS concept_name,
-        ce.value_num,
+        -- Converted to the canonical unit when UNIT_REGISTRY knows the source
+        -- unit; passed through unchanged when it does not (canonical already).
+        ce.value_num * COALESCE(ur.conversion_factor, 1.0) AS value_num,
+        COALESCE(ur.canonical_unit, ce.unit)                AS unit,
+        ce.value_num                                        AS source_value_num,
+        ce.original_unit                                    AS source_unit,
         ce.value_text,
         ce.abnormal_flag,
+        ce.status,
         CASE
             WHEN ur.plausible_min IS NOT NULL
-                 AND (ce.value_num < ur.plausible_min OR ce.value_num > ur.plausible_max)
+                 AND (ce.value_num * ur.conversion_factor < ur.plausible_min
+                      OR ce.value_num * ur.conversion_factor > ur.plausible_max)
             THEN 'unreadable'
             ELSE 'present'
         END AS plausibility_state,
@@ -34,7 +42,8 @@ WITH normalized AS (
     FROM SAARTHI.CORE.CLINICAL_EVENT ce
     LEFT JOIN SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY co ON co.concept_id = ce.concept_id
     LEFT JOIN SAARTHI.OPERATIONAL.UNIT_REGISTRY ur
-      ON ur.concept_id = ce.concept_id AND ur.source_unit_pattern = ce.original_unit
+      ON ur.concept_id = ce.concept_id
+     AND UPPER(ur.source_unit_pattern) = UPPER(COALESCE(ce.original_unit, ce.unit))
 ),
 anc_derived AS (
     -- ANC = WBC x (neutrophil% + band%) / 100, computed only when the lab
@@ -46,8 +55,12 @@ anc_derived AS (
         (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'ANC') AS concept_id,
         'ANC' AS concept_name,
         wbc.value_num * (neut.value_num) / 100 AS value_num,
+        '/uL' AS unit,
+        NULL AS source_value_num,
+        NULL AS source_unit,
         NULL AS value_text,
         NULL AS abnormal_flag,
+        wbc.status,
         'present' AS plausibility_state,
         wbc.event_time, wbc.source_recorded_at, wbc.ingested_at, wbc.valid_until, wbc.specimen_id
     FROM normalized wbc
@@ -62,14 +75,14 @@ anc_derived AS (
           )
 )
 SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
-       value_num, value_text, abnormal_flag, plausibility_state,
+       value_num, unit, source_value_num, source_unit, value_text, abnormal_flag, status, plausibility_state,
        FALSE AS is_derived,
        NULL AS derivation,
        event_time, source_recorded_at, ingested_at, valid_until, specimen_id
 FROM normalized
 UNION ALL
 SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
-       value_num, value_text, abnormal_flag, plausibility_state,
+       value_num, unit, source_value_num, source_unit, value_text, abnormal_flag, status, plausibility_state,
        TRUE AS is_derived,
        'ANC computed as WBC x neutrophil% / 100' AS derivation,
        event_time, source_recorded_at, ingested_at, valid_until, specimen_id

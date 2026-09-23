@@ -54,6 +54,24 @@ CREATE TABLE IF NOT EXISTS SAARTHI.OPERATIONAL.RULE_CATALOG (
     PRIMARY KEY (rule_id, rule_version)
 );
 
+-- Regimen -> drugs, cycle interval and the protocol whose numbers the rules
+-- use. Needed because readiness thresholds are regimen-specific (FOLFOX holds
+-- below ANC 1.2, weekly cisplatin for cervix proceeds at 0.8) and a regimen's
+-- display text does not reliably name its drugs ("FOLFOX, 2-weekly").
+-- threshold_profile is the key into each rule's threshold_json.per_regimen;
+-- a sequential regimen (AC-TH) points at the phase the patient is in.
+-- Added 23 Sept, beyond SPEC.md's table list; see evidence/clinical/.
+CREATE TABLE IF NOT EXISTS SAARTHI.OPERATIONAL.REGIMEN_REGISTRY (
+    regimen_code      VARCHAR PRIMARY KEY,
+    regimen_name      VARCHAR,
+    agents            ARRAY,            -- lower-case generic names, current phase
+    cycle_days        INT,              -- interval between administrations
+    myelosuppressive  BOOLEAN,          -- FALSE -> blood-count gates do not apply
+    threshold_profile VARCHAR,          -- key into RULE_CATALOG.threshold_json per_regimen
+    protocol_ref      VARCHAR,          -- evidence/clinical/sources.yaml id
+    protocol_url      VARCHAR
+);
+
 CREATE TABLE IF NOT EXISTS SAARTHI.OPERATIONAL.REVIEW_ISSUE (
     issue_id      VARCHAR DEFAULT UUID_STRING() PRIMARY KEY,
     rule_id       VARCHAR,

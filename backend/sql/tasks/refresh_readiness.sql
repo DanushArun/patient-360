@@ -7,8 +7,8 @@
 -- than re-invoking the evaluator per query. R1 preserved: this task WRITES
 -- the SQL rule outcomes; it never asks an LLM to decide.
 --
--- Idempotency: MERGE keyed on (patient_id, encounter_id, rule_id, rule_version)
--- with UPDATE-on-match so repeat runs update rather than duplicate.
+-- Idempotency: each run replaces each encounter's snapshot in one transaction
+-- (DELETE + INSERT), so repeat runs never duplicate and never leave stale rows.
 --
 -- Scope: every encounter with a scheduled_time - the deep case's history and
 -- the day-care cohort's upcoming visits (data/load_daycare_cohort.sql). The
@@ -17,7 +17,7 @@
 CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.refresh_readiness_proc()
   RETURNS VARIANT
   LANGUAGE SQL
-  COMMENT = 'Task body for refresh_readiness. Calls evaluate_gates per encounter and MERGEs into READINESS_STATE.'
+  COMMENT = 'Task body for refresh_readiness. Calls evaluate_gates per encounter and replaces its READINESS_STATE snapshot.'
   EXECUTE AS OWNER
 AS
 $$
@@ -40,40 +40,22 @@ BEGIN
             CALL SAARTHI.OPERATIONAL.evaluate_gates(:v_patient_id, :v_encounter_id, NULL)
         );
 
-        MERGE INTO SAARTHI.OPERATIONAL.READINESS_STATE t
-        USING (
-            SELECT :v_patient_id AS patient_id,
-                   :v_encounter_id AS encounter_id,
-                   g.value:gate::VARCHAR         AS gate,
-                   g.value:rule_id::VARCHAR      AS rule_id,
-                   g.value:rule_version::INTEGER AS rule_version,
-                   g.value:outcome::VARCHAR      AS outcome,
-                   g.value:severity::VARCHAR     AS severity,
-                   g.value:reason::VARCHAR       AS reason,
-                   g.value:evidence_ids          AS evidence_ids,
-                   TRY_TO_TIMESTAMP_NTZ(g.value:known_as_of::VARCHAR) AS known_as_of
-              FROM TABLE(FLATTEN(input => :v_gates_response:gates)) g
-        ) s
-        ON t.patient_id = s.patient_id
-           AND t.encounter_id = s.encounter_id
-           AND t.rule_id = s.rule_id
-           AND t.rule_version = s.rule_version
-        WHEN MATCHED THEN UPDATE SET
-            t.gate = s.gate,
-            t.outcome = s.outcome,
-            t.severity = s.severity,
-            t.reason = s.reason,
-            t.evidence_ids = s.evidence_ids,
-            t.known_as_of = s.known_as_of,
-            t.computed_at = CURRENT_TIMESTAMP()
-        WHEN NOT MATCHED THEN INSERT (
+        -- Replace this encounter's snapshot, not upsert into it. An upsert keyed
+        -- on rule_version left the superseded v1 row next to its v2 successor,
+        -- and left behind rows for gates that no longer apply (neutrophils for
+        -- a patient moved to trastuzumab alone). One transaction per encounter,
+        -- so a reader never sees the snapshot half-written.
+        BEGIN TRANSACTION;
+        DELETE FROM SAARTHI.OPERATIONAL.READINESS_STATE WHERE encounter_id = :v_encounter_id;
+        INSERT INTO SAARTHI.OPERATIONAL.READINESS_STATE (
             patient_id, encounter_id, gate, rule_id, rule_version,
-            outcome, severity, reason, evidence_ids, known_as_of, computed_at
-        ) VALUES (
-            s.patient_id, s.encounter_id, s.gate, s.rule_id, s.rule_version,
-            s.outcome, s.severity, s.reason, s.evidence_ids, s.known_as_of, CURRENT_TIMESTAMP()
-        );
-
+            outcome, severity, reason, evidence_ids, known_as_of, computed_at)
+        SELECT :v_patient_id, :v_encounter_id,
+               g.value:gate::VARCHAR, g.value:rule_id::VARCHAR, g.value:rule_version::INTEGER,
+               g.value:outcome::VARCHAR, g.value:severity::VARCHAR, g.value:reason::VARCHAR,
+               g.value:evidence_ids, TRY_TO_TIMESTAMP_NTZ(g.value:known_as_of::VARCHAR), CURRENT_TIMESTAMP()
+          FROM TABLE(FLATTEN(input => :v_gates_response:gates)) g;
+        COMMIT;
         v_rows_written := v_rows_written + (SELECT COUNT(*)
             FROM TABLE(FLATTEN(input => :v_gates_response:gates)));
 
