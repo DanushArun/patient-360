@@ -53,6 +53,13 @@ CREATE OR REPLACE ROW ACCESS POLICY SAARTHI.GOVERNANCE.patient_scope
       SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT d
        WHERE d.doc_id = doc_id AND d.scope = 'reference'
     )
+    -- The pipeline itself. A scheduled task runs as user SYSTEM (verified
+    -- 24 Sept with a probe task: SYSTEM / ACCOUNTADMIN saw 0 patient pages and
+    -- 692 reference pages), so without this branch chunk_documents and
+    -- extract_assertions silently processed no patient document on a
+    -- schedule. No person can sign in as SYSTEM; every human caller is still
+    -- scoped by the care-team branch below (R5 layer 3 unchanged).
+    OR CURRENT_USER() = 'SYSTEM'
     OR EXISTS (
       SELECT 1
       FROM SAARTHI.GOVERNANCE.CARE_TEAM ct

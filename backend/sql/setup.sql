@@ -222,6 +222,7 @@ EXECUTE IMMEDIATE FROM './dynamic_tables/05_treatment_plan.sql';
 -- Document chain (stream-triggered): parse -> extract (R7 two-pass) -> reconcile.
 -- Readiness chain: refresh_readiness -> notify. The orchestrator runs every
 -- step in order on demand; see tasks/orchestrator.sql.
+EXECUTE IMMEDIATE FROM './tasks/00_suspend_tasks.sql';     -- a redeploy cannot replace a child of a running root
 EXECUTE IMMEDIATE FROM './tasks/parse_documents.sql';      -- [2]
 EXECUTE IMMEDIATE FROM './tasks/extract_assertions.sql';   -- [1]  R7 two-pass
 EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]
@@ -279,6 +280,14 @@ EXECUTE IMMEDIATE FROM './procedures/judge/judge_probes.sql';
 -- Least privilege: named entry points and agent tools only. Must follow every
 -- object it grants on - see the file header.
 EXECUTE IMMEDIATE FROM './governance/05_procedure_grants.sql';
+
+
+-- ---------------------------------------------------------------------------
+-- STEP 22 - Resume the schedules.  [2]
+-- ---------------------------------------------------------------------------
+-- Event-driven document chain + the 06:00 IST day-before check. Costs and the
+-- stop switch are in the file header.
+EXECUTE IMMEDIATE FROM './tasks/99_resume_tasks.sql';
 
 
 -- ---------------------------------------------------------------------------

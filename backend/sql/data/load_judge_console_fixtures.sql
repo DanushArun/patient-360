@@ -19,15 +19,19 @@ MERGE INTO SAARTHI.DOCUMENTS.DOCUMENT t USING (SELECT 'DOC-CONTROL-0002' doc_id)
 WHEN NOT MATCHED THEN INSERT (doc_id, patient_id, scope, doc_type, version, source_quality, status, ingestion_method, source_facility_id)
 VALUES ('DOC-CONTROL-0002', 'PAT-CONTROL-0002', 'patient', 'pathology_report', 1, 'clean_pdf', 'active', 'digital_emr', 'FAC-01');
 
-MERGE INTO SAARTHI.DOCUMENTS.DOC_PAGE t USING (SELECT 'DOC-CONTROL-0002' doc_id, 0 page_index) s
-  ON t.doc_id = s.doc_id AND t.page_index = s.page_index
-WHEN NOT MATCHED THEN INSERT (doc_id, page_index, text, char_count)
-VALUES ('DOC-CONTROL-0002', 0,
+-- Guarded on DOC_CHUNK, not a MERGE on DOC_PAGE: DOC_PAGE's row access policy
+-- hides this page from whoever deploys (no one is on this patient's care
+-- team), so a MERGE never saw the existing row and inserted another copy on
+-- every deploy - 6 copies found on 24 Sept, each extracted separately.
+-- DOC_CHUNK carries no RAP and is written below, so it marks "already loaded".
+INSERT INTO SAARTHI.DOCUMENTS.DOC_PAGE (doc_id, page_index, text, char_count)
+SELECT 'DOC-CONTROL-0002', 0,
   'PATHOLOGY REPORT\nPatient: Anjali Nair    MRN: FAC01-CTRL-0002\nSpecimen: Left breast core biopsy\n' ||
   'Diagnosis: Invasive ductal carcinoma, Grade II\nER: Positive (90%)   PR: Positive (70%)\n' ||
   'HER2 immunohistochemistry: Negative (score 1+)\nKi-67: 18%\n' ||
   'This report is unrelated to any other patient in this system.',
-  260);
+  260
+WHERE NOT EXISTS (SELECT 1 FROM SAARTHI.DOCUMENTS.DOC_CHUNK WHERE chunk_id = 'DOC-CONTROL-0002-0');
 
 -- chunk_documents_proc cannot reach this row: it reads DOC_PAGE, which is
 -- RAP-protected, and this patient deliberately has zero CARE_TEAM rows for

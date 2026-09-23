@@ -45,6 +45,14 @@ DECLARE
                   WHERE doc.file_hash = d.etag
                );
 BEGIN
+    -- Consume DOC_STREAM into the ingestion log. The task below fires "WHEN
+    -- SYSTEM$STREAM_HAS_DATA", and a stream only advances when a DML statement
+    -- reads it; this procedure otherwise reads DIRECTORY(), so the stream was
+    -- never consumed and the chain would have re-run every 5 minutes forever
+    -- after the first upload (found 24 Sept, before the task was resumed).
+    INSERT INTO SAARTHI.OPERATIONAL.INGESTION_RUN (run_id, started_at, records_received, file_hashes)
+    SELECT UUID_STRING(), CURRENT_TIMESTAMP(), COUNT(*), ARRAY_AGG(relative_path)
+      FROM SAARTHI.DOCUMENTS.DOC_STREAM;
     OPEN c_new_files;
     FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
 
@@ -158,3 +166,13 @@ CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
   WHEN SYSTEM$STREAM_HAS_DATA('SAARTHI.DOCUMENTS.DOC_STREAM')
 AS
   CALL SAARTHI.OPERATIONAL.parse_documents_proc();
+
+-- Chunking was in no task chain, so a document uploaded between orchestrator
+-- runs never became searchable. Document chain (event-driven, idle = free):
+--   TASK_PARSE_DOCUMENTS -> TASK_CHUNK_DOCUMENTS -> TASK_EXTRACT_ASSERTIONS
+--   -> TASK_RECONCILE_EVIDENCE -> TASK_DOCUMENT_READINESS
+CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_CHUNK_DOCUMENTS
+  WAREHOUSE = SAARTHI_AI_WH
+  AFTER SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
+AS
+  CALL SAARTHI.OPERATIONAL.chunk_documents_proc();

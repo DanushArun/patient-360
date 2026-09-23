@@ -32,6 +32,9 @@ DECLARE
          WHERE e.scheduled_time IS NOT NULL
          ORDER BY e.patient_id, e.encounter_id;
 BEGIN
+    -- Gates read DT_HARMONIZED_EVENTS; refresh it first so a value promoted
+    -- seconds ago is evaluated now, not after the 1-minute target lag.
+    ALTER DYNAMIC TABLE SAARTHI.CORE.DT_HARMONIZED_EVENTS REFRESH;
     OPEN c_encounters;
     FETCH c_encounters INTO v_patient_id, v_encounter_id;
 
@@ -70,9 +73,20 @@ BEGIN
 END;
 $$;
 
+-- The day-before check, every morning: 06:00 India time, before day-care
+-- opens, so the coordinator's list and TASK_NOTIFY reflect today's clock
+-- (freshness windows roll over daily). Was every 5 minutes: ~290 runs a day
+-- re-deriving an unchanged answer.
 CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_REFRESH_READINESS
   WAREHOUSE = SAARTHI_AI_WH
-  SCHEDULE = '5 MINUTE'
+  SCHEDULE = 'USING CRON 0 6 * * * Asia/Kolkata'
+AS
+  CALL SAARTHI.OPERATIONAL.refresh_readiness_proc();
+
+-- And whenever a document has been reconciled: the end of the document chain.
+CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_DOCUMENT_READINESS
+  WAREHOUSE = SAARTHI_AI_WH
+  AFTER SAARTHI.OPERATIONAL.TASK_RECONCILE_EVIDENCE
 AS
   CALL SAARTHI.OPERATIONAL.refresh_readiness_proc();
 

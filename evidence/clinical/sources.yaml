@@ -1,0 +1,175 @@
+# Every document the clinical-completeness ledger (requirements.yaml) quotes.
+#
+# The verifier (backend/scripts/verify_clinical_proof.py) downloads each `url`
+# source into evidence/clinical/.cache/ (git-ignored) and checks it against
+# `sha256`. A changed hash means the publisher revised the document: the
+# verifier still checks every quote, but flags the source for re-review.
+#
+# Layers - why these are the whole question:
+#   regimen         what the treating protocol requires before each cycle
+#   drug            what the drug's own regulatory document requires
+#   administration  what the chair-side nursing check requires
+#   payer           what the scheme requires before it will pay
+#   guideline       what Indian national guidance adds on top
+# Every pre-cycle check comes from one of these places. Evidence that a
+# clinician gathers by examining the patient on the day is Class A and
+# out of scope by design (AGENTS.md section 5).
+#
+# Why BC Cancer for the regimen layer: it publishes one protocol per regimen
+# with a fixed "TESTS - before each treatment" section and numeric
+# dose-modification tables, freely downloadable and dated. It is Canadian
+# provincial guidance, not Indian guidance. Where the National Cancer Grid or
+# Tata Memorial publish an equivalent regimen protocol, add it here and the
+# verifier will compare both.
+
+sources:
+
+  BRAJAC:
+    title: "BC Cancer Protocol Summary BRAJAC: Adjuvant therapy for breast cancer using doxorubicin and cyclophosphamide"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [AC]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJAC_Protocol.pdf
+    revised: "1 Jun 2026"
+    retrieved: "2026-09-23"
+    sha256: 2583c49f6297d392a01c0d1fffc62822e1855d07770cbf13c58a4d4f6a51bacb
+
+  BRAJTTW:
+    title: "BC Cancer Protocol Summary BRAJTTW: Adjuvant therapy for breast cancer using weekly paclitaxel and trastuzumab"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [TH]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJTTW_Protocol.pdf
+    revised: "14 Sep 2026"
+    retrieved: "2026-09-23"
+    sha256: 586a2b98f7e7eaf3cd7a4d3795871dca6c83e563e39a02237b312cfb0b04d00d
+
+  BRAJACTT:
+    title: "BC Cancer Protocol Summary BRAJACTT: Doxorubicin and cyclophosphamide followed by paclitaxel and trastuzumab (3-weekly)"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [AC-TH]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJACTT_Protocol.pdf
+    revised: "1 Jun 2026"
+    retrieved: "2026-09-24"
+    sha256: 000c87171e574f9d948bd304085690d98594fb38952b8068ad7775fb8929ec5c
+
+  BRAJTR:
+    title: "BC Cancer Protocol Summary BRAJTR: Adjuvant trastuzumab following completion of chemotherapy"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [H-MAINT]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJTR_Protocol.pdf
+    revised: "1 Mar 2026"
+    retrieved: "2026-09-23"
+    sha256: 31d26451ef8542458cb9c2a8b65b37f5cbc1d0af0d02f4d466560991c0ed5652
+
+  GIAJFFOX:
+    title: "BC Cancer Protocol Summary GIAJFFOX: Adjuvant oxaliplatin, fluorouracil and leucovorin (FOLFOX) for colon cancer"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [FOLFOX]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Gastrointestinal/GIAJFFOX_Protocol.pdf
+    revised: "1 May 2026"
+    retrieved: "2026-09-23"
+    sha256: 72d4bb82d48f4963b7386f8ec6c73a0fa1efb2663e63f070c41cfc8ffb79a70f
+    caveat: "The cohort (DC-03, DC-11) does not record stage; this is the adjuvant protocol."
+
+  GIGAVCOX:
+    title: "BC Cancer Protocol Summary GIGAVCOX: Capecitabine and oxaliplatin (CAPOX) for advanced gastric cancer"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [CAPOX]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Gastrointestinal/GIGAVCOX_Protocol.pdf
+    revised: "1 May 2026"
+    retrieved: "2026-09-23"
+    sha256: b3ff0e856585f46e92ea957500c0a9557fe7c296639a35b549dfcd425a2fb058
+    caveat: "The cohort (DC-09) does not record stage; this is the advanced-disease protocol."
+
+  HNLAPRT:
+    title: "BC Cancer Protocol Summary HNLAPRT: Cisplatin with radiation for locally advanced head and neck cancer"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [CIS-RT-HN]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Head%20and%20Neck/HNLAPRT_Protocol.pdf
+    revised: "1 Oct 2024"
+    retrieved: "2026-09-23"
+    sha256: 39ce0512b96d02c9160482fe09072bc5f1770c8247547d474cc6924863552a25
+    caveat: "Cohort DC-05 receives weekly cisplatin; this protocol is 3-weekly 100 mg/m2. Its blood-count and kidney thresholds are used as the closest published protocol. A published Indian weekly-cisplatin head-and-neck protocol would be the better source."
+
+  GOCXCRT:
+    title: "BC Cancer Protocol Summary GOCXCRT: Weekly cisplatin with radiation for cervical cancer"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [CIS-RT-CX]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Gynecology/GOCXCRT_Protocol.pdf
+    revised: "1 Aug 2026"
+    retrieved: "2026-09-23"
+    sha256: c1d840871c5d654fd8b799b720e46756a2a6aa52bce3a683001616302a77d695
+
+  LUAVPP:
+    title: "BC Cancer Protocol Summary LUAVPP: Platinum and pemetrexed for advanced non-small cell lung cancer"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: regimen
+    governs: [PEM-CARBO]
+    url: https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Lung/LUAVPP_Protocol.pdf
+    revised: "1 Mar 2025"
+    retrieved: "2026-09-23"
+    sha256: afcbefb4fdc315cf7396c139e88119dbc936be369fd37d7de81ec3b597ba6a26
+    caveat: "Covers pemetrexed with cisplatin or carboplatin; cohort DC-07 receives carboplatin."
+
+  DOXO_MONO:
+    title: "BC Cancer Drug Manual: Doxorubicin monograph"
+    publisher: BC Cancer (Provincial Health Services Authority, British Columbia)
+    layer: drug
+    governs: [AC]
+    url: https://www.bccancer.bc.ca/drug-database-site/Drug%20Index/Doxorubicin_monograph.pdf
+    revised: "1 Mar 2025"
+    retrieved: "2026-09-23"
+    sha256: d37c49263179917118bba594cbc82ae3679069557a1584a268aff691cf093370
+
+  HERCEPTIN_LABEL:
+    title: "US FDA prescribing information: Herceptin (trastuzumab), 2024"
+    publisher: US Food and Drug Administration / Genentech
+    layer: drug
+    governs: [TH, H-MAINT]
+    path: data/reference/fda_herceptin_trastuzumab_label_2024.pdf
+    retrieved: "in repository"
+    sha256: 859f45ac6425f98a51576f2d1e74d0570d29a971a6fdc74321ec73a9bf71d867
+
+  AIIMS_CHECKLIST:
+    title: "Miglani G et al. Chemotherapy administration checklist for patients receiving chemotherapy: development and validation. J Educ Health Promot 2022 (AIIMS Jodhpur). PMC9942124"
+    publisher: Journal of Education and Health Promotion (CC BY-NC-SA 4.0), via Europe PMC
+    layer: administration
+    governs: [ALL]
+    url: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9942124/fullTextXML
+    retrieved: "2026-09-23"
+    sha256: a02afbf38a8ae49166f79949962b228f1c11ee7f7d3e3fe8d4c80e7cf3c03c10
+    caveat: "Journal full text, not a paginated PDF; quotes are checked against the whole document."
+
+  NCG_BREAST_2019:
+    title: "National Cancer Grid: Breast Cancer Management Guidelines 2019"
+    publisher: National Cancer Grid, India
+    layer: guideline
+    governs: [AC, TH, H-MAINT]
+    path: data/reference/ncg_breast_cancer_guidelines_2019.pdf
+    retrieved: "in repository"
+    sha256: 6f270ea7df42a5655bcc97e71a193e95668ff7e8fe8bfd5cdfd0471c8832c226
+    caveat: "Searched, together with the ICMR 2016 breast consensus and the ICMR breast STW (both also in data/reference/), for per-cycle requirements - neutrophils, platelets, LVEF/echo, creatinine, bilirubin, hepatitis B, consent. None states one. Indian national guidelines set which treatment to give, not the checks before each cycle, which is why the regimen layer uses published regimen protocols."
+
+  PMJAY_HBP22:
+    title: "National Health Authority: Health Benefit Package 2.2 User Guidelines (PM-JAY)"
+    publisher: National Health Authority, Government of India
+    layer: payer
+    governs: [ALL]
+    path: data/reference/pmjay_health_benefit_package_2.2_manual.pdf
+    retrieved: "in repository"
+    sha256: 9bd399d781f57d7ae0009aa157697f78ca8a0b7507dc895d1eb56962fd1eaf61
+    caveat: "The per-package Minimum Document Protocol lives inside the PM-JAY Transaction Management System and is not published in this manual."
+
+# Sources still to add. Listed so the gap is visible, not hidden.
+not_yet_verified:
+  - "ASCO 2020 provisional clinical opinion on hepatitis B screening before cancer therapy (Hwang et al., JCO 2020;38:3698) - journal access"
+  - "ASCO-ONS Antineoplastic Therapy Administration Safety Standards 2024 (Siegel et al., JCO Oncol Pract 2024;20:1314) - journal access"
+  - "National Cancer Grid / Tata Memorial regimen protocols for the same eight regimens - India-specific thresholds"
+  - "PM-JAY Minimum Document Protocol for the medical-oncology packages used by the cohort - requires TMS access or an RTI request"
