@@ -12,7 +12,52 @@
 | **verified** | Empirically tested against the live account, query ID recorded |
 | **refused** | Deliberately not built. Reason stated. |
 
-**Last updated: 23 Sept 2026 — v2 schema is live on JN89282; 55 active deploy steps; MCP end-to-end verified.**
+**Last updated: 24 Sept 2026: backend completion, live on FV11738 (`HACKATHON`), 58 active deploy steps. The 23 Sept ledger below it is kept as history.**
+
+---
+
+## Status as of 24 Sept 2026: backend completion
+
+Branch `danush/backend-completion`, on top of PR #3. Every row is deployed on account FV11738 and exercised live. Evidence is in `evidence/e2e/2026-09-24-live-runs.md` (query IDs, before/after) and `evidence/clinical/REPORT.md` (ledger).
+
+| Component | Status | Evidence |
+|---|---|---|
+| Deploy from `setup.sql` | **built + verified**: a full run, then a second full run on the populated account (56/56 steps, exit 0). Two task-schedule steps were added afterwards (58 active) and deployed individually | `evidence/e2e/…` §1 |
+| Rule engine `evaluate_gates` (30 rules; 5 corrected at v2, 14 new) | **built + verified**: regimen-aware thresholds and reduced-dose bands from each regimen's protocol; every gate cites evidence ids and honours `known_as_of` | 59 unit tests (`backend/tests/test_evaluate_gates.py`); every cohort patient shows exactly its designed blocker |
+| `REGIMEN_REGISTRY` (new table, beyond SPEC) | **built**: regimen → drugs, cycle, source protocol | `backend/sql/data/regimens.sql` |
+| Guarded answer path `ASK_SAARTHI` | **built + verified**: classify first (Class A refused before the agent, 0 tool calls); every number and date must come from a tool result; every cited id must exist and belong to the bound patient; `validate_answer` on the live path; one `ANSWER_RUN` per question | 12 unit tests on a captured live answer; `ANSWER_RUN` ids in `evidence/e2e/…` §5 |
+| Class A/B classifier | **built + verified**: held-out 40/40 (0 clinical answered, 0 record refused), scored once, untuned; dev went from 17/40 to 40/40 | `backend/eval/results/classifier_*_2026-09-24.json` |
+| Document → gate bridge (`reconcile_evidence`) | **built + verified**: dates each document from its printed report date, then corroborates, conflicts or promotes verified values. A CBC PDF uploaded for DC-08 moved ANC and platelets from not_evaluated to pass with no hand-edited rows | `evidence/e2e/…` §2 |
+| Cross-source check of a misread both AI passes agreed on | **verified**: the rotated-photo platelet 2,60,904 conflicts with the record, and the clean PDF supports the record, so the misread is downgraded and never asserted | `evidence/e2e/…` §3 |
+| Scheduled runs | **built + verified**: an uploaded echo report was picked up by the schedule with no manual trigger, and parse → chunk → extract → reconcile → readiness all succeeded as `SYSTEM` in 6 minutes; the LVEF gates now cite it. Idle runs are skipped at no cost. Readiness + notify daily 06:00 IST; orchestrator on demand | `evidence/e2e/…` §7 |
+| Least-privilege grants | **built**: named entry points and tools only; the blanket ALL/FUTURE procedure grant is revoked | `governance/05_procedure_grants.sql` |
+| Judge Console probes | **verified 24 Sept**: 7/7 pass, probe 8 informational, re-run after the policy change | live |
+| Clinical completeness ledger | **verified**: 60/60 quotes found verbatim in 14 official documents; 49/55 requirements fully met, 52/55 met or partly met, 0 unsafe | `backend/scripts/verify_clinical_proof.py` |
+
+**Defects found and fixed on the way.** Each is recorded in its commit:
+- `setup.sql` conflict markers from PR #3.
+- The agent and MCP grants ran at step 9, before those objects exist.
+- Regimen-blind renal and hepatic rules that passed a cisplatin patient at CrCl 40.
+- Rules with no evidence ids and no time cutoff.
+- A unit registry missing the µmol/L conversions it warned about.
+- Readiness snapshots that kept superseded rule versions.
+- Deep-case dates relative to today (labs judged 547 days stale).
+- A concept UUID copied from another account.
+- PR #3's string compare, which downgraded a reading both passes agreed on.
+- Extraction of ~690 guideline pages as patient facts.
+- The "Haemoglobin" spelling missing from the ontology.
+- Tasks blind to patient pages.
+- A document stream that was never consumed.
+- A fixture that duplicated itself on every deploy through the RAP.
+
+**Known limits, stated rather than hidden:**
+- The regimen protocols are BC Cancer (Canada). The Indian NCG and ICMR guidelines in `data/reference/` state no per-cycle checks.
+- The pregnancy rule uses age under 50 as its proxy for reproductive potential.
+- The FDA (3-month) and BC Cancer (4-month) LVEF intervals disagree, and SAARTHI follows the label.
+- The PM-JAY per-package document list is not public.
+- MCP calls the agent directly and bypasses `ASK_SAARTHI` (`agent/saarthi_mcp.sql`).
+- All deploys run as ACCOUNTADMIN; a least-privilege app user has not been exercised.
+- Clinical validity is not established. The next step is `evidence/clinical/clinician_review.csv`.
 
 ---
 
