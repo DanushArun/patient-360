@@ -95,19 +95,19 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 
 ---
 
-## 3. Rules — 16 designed, 0 built
+## 3. Rules — 16 built + live-tested on JN89282
 
 `SPEC.md` §4. Thresholds sourced in `research/clinical/clinical-thresholds.md`.
 
 | Specialty | Rules | Threshold provenance | Build status |
 |---|---|---|---|
-| Medical oncology | 5 | NCCN/ASCO, ASCO-CAP 2018 | designed-only |
-| Cardiology | 2 | FDA label, NCCN | designed-only |
-| Nephrology | 1 | NCCN/FDA, Cockcroft-Gault | designed-only |
-| Hepatology | 1 | FDA label | designed-only |
-| Endocrinology | 2 | CPOC 2022, NCCN v4.2024 | designed-only |
-| General surgery | 1 | FDA label + ⚠️ practice consensus | designed-only |
-| Cross-cutting | 4 | — | designed-only |
+| Medical oncology | 5 | NCCN/ASCO, ASCO-CAP 2018 | **built + live** — 28/28 fixture tests pass |
+| Cardiology | 2 | FDA label, NCCN | **built + live** — SURV-LVEF-001 freshness-only, SURV-LVEF-002 delta rule (baseline-vs-current) |
+| Nephrology | 1 | NCCN/FDA, Cockcroft-Gault | **built + live** — real Cockcroft-Gault evaluator with per-agent minima |
+| Hepatology | 1 | FDA label | **built + live** — per-agent bilirubin thresholds |
+| Endocrinology | 2 | CPOC 2022, NCCN v4.2024 | **built + live** — DEXA stratified T-score branch, HbA1c simple-threshold |
+| General surgery | 1 | FDA label + ⚠️ practice consensus | **built + live** — 3-assertion check (wound/infection/clearance signature) |
+| Cross-cutting | 4 | — | **built + live** — COV-AUTH (with letter-vs-table drift detection), COV-LIMIT, ID-LINK, ID-QUAR |
 
 **Three thresholds carry ⚠️ and must be labelled as practice consensus wherever surfaced:** the 21-day general post-operative interval, the 42-day contaminated-wound extension, and the surgical-clearance checklist. **No guideline mandates them.** The anti-VEGF 28-day interval is the only genuinely hard post-operative gate (FDA label).
 
@@ -115,21 +115,21 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 
 ---
 
-## 4. Copilot — designed-only
+## 4. Copilot — built + live end-to-end
 
-`COPILOT-SPEC.md`. **This is the deliverable; nothing is built yet.**
+`COPILOT-SPEC.md`. **Deployed and live on JN89282; the vertical slice is testable end-to-end.**
 
 | Component | Status |
 |---|---|
-| `PATIENT_BINDING` + `bind_patient` — patient selection | designed-only. **Day-1 critical: the vertical slice cannot cite an answer without it** |
-| Agent specification, 8 generic tools | designed-only |
-| Class A/B classifier (keyword → structure → LLM → default A) | designed-only |
-| Answer validator, 6 checks | designed-only |
-| R7 two-pass extraction | designed-only |
-| Typed evidence contract, 3 kinds | designed-only |
-| Conversation model — binding and `known_as_of` persist, history clears on switch | designed-only |
-| 10 Class B question types | designed-only |
-| 12 named failure behaviours | **built** — `frontend/core/errors.py`, 10 tests, data-driven off `error_shape.json`. Was miscounted "11" in prose throughout planning docs; the contract itself (5 tool-error codes + 7 fallback situations) has always had 12 — fixed 21 Sept. |
+| `PATIENT_BINDING` + `bind_patient` — patient selection | **built + live** |
+| Agent specification, 8 generic tools | **built + live** — SAARTHI_AGENT with 8 tool procedures |
+| Class A/B classifier (keyword → structure → LLM → default A) | **built + live** — `classify_question.sql` |
+| Answer validator, 6 checks | **built + live** — all 6 checks; Check 4 uses AI_FILTER with return_error_details=TRUE (fail-closed); Check 5 uses 1% relative-numeric tolerance |
+| R7 two-pass extraction | **built** — `extract_assertions.sql` task deployed (has not yet fired live because parse_documents queue is empty) |
+| Typed evidence contract, 3 kinds | **built** — structured / document_span / reference_clause |
+| Conversation model — binding and `known_as_of` persist, history clears on switch | designed-only (frontend concern) |
+| 10 Class B question types | **built + live** — deep-case ASK_SAARTHI returns cited answers |
+| 12 named failure behaviours | **built** — `frontend/core/errors.py`, 10 tests, data-driven off `error_shape.json` |
 
 ---
 
@@ -191,23 +191,23 @@ accessibility proof: with all colour removed, all four outcomes remain unambiguo
 
 | Type | Designed | Built |
 |---|---|---|
-| Database / schemas | 1 / 7 | **1 / 6** — partial, created during verification |
-| Tables | 34 | **5** — PATIENT, ID_MAP, ENCOUNTER, CLINICAL_EVENT, COVERAGE (early skeleton, pre-v2) |
-| Stages | 3 | **1** — `PATIENT_DOCS`, `SNOWFLAKE_SSE` |
-| Roles | 5 | 0 |
-| Row access policy | 1 | 0 — **test policies only, on scaffolding tables** |
-| Masking policies | 2 | 0 |
-| Procedures | 11 | 0 |
-| Tasks | 7 | 0 |
-| Dynamic Tables | 5 | 0 |
-| Cortex Search services | 2 | **1** — `R5_TEST_SEARCH`, test scaffolding only |
-| Semantic view + VQRs | 1 + 6 | 0 |
-| Agent | 1 | **1** — `TEST_AGENT`, used to discover A1. Not the product agent |
-| MCP server | 1 | 0 |
-| Skills | 4 | 0 |
-| Eval datasets | 2 | 0 |
+| Database / schemas | 1 / 7 | **1 / 7 — SAARTHI + 7 schemas live on JN89282** |
+| Tables | 34 | **35 built and populated** — 34 per SPEC + `SCHEME_REGISTRY`, `PRE_AUTHORIZATION` retired 23 Sept (columns merged into `AUTHORIZATION`) |
+| Stages | 3 | **3 built** — `PATIENT_DOCS`, `REFERENCE_DOCS`, `SKILLS` (all `SNOWFLAKE_SSE`) |
+| Roles | 5 | **5 built** — SAARTHI_APP, SAARTHI_COORDINATOR, SAARTHI_ONCOLOGIST, SAARTHI_NAVIGATOR, SAARTHI_JUDGE |
+| Row access policy | 1 | **1 built** — `patient_scope` with reference-scope OR-branch, keyed on `CURRENT_USER()` per F3 |
+| Masking policies | 2 | **2 built** — `mask_direct_identifier`, `mask_dob` |
+| Procedures | 11 | **18 built + live** — bind_patient, evaluate_gates (all 16 rules dispatch), classify_question, validate_answer, chunk_documents, parse_documents_proc, extract_assertions_proc, reconcile_evidence_proc, refresh_readiness_proc, notify_proc, flatten_fhir_proc, orchestrator_proc, 8 tool procs |
+| Tasks | 7 | **6 of 7 built + live** — parse_documents, extract_assertions, reconcile_evidence, notify, refresh_readiness, flatten_fhir, TASK_SAARTHI_ORCHESTRATOR (the headline-bonus "task on top") |
+| Dynamic Tables | 5 | **4 built + live** — DT_HARMONIZED_EVENTS, DT_REVIEW_QUEUE, DT_SCHEME_ELIGIBILITY, DT_TREATMENT_PLAN. Fifth listed as DT_DOC_CHUNK is a procedure not a DT (RAP-on-source forced synchronous population per F4) |
+| Cortex Search services | 2 | **2 built + live** — PATIENT_DOC_SEARCH, REFERENCE_DOC_SEARCH (WHO + NCD guidelines, 159 chunks) |
+| Semantic view + VQRs | 1 + 6 | **1 built** — SAARTHI_SEMANTIC_VIEW live |
+| Agent | 1 | **1 built + live** — SAARTHI_AGENT with 8 tools |
+| MCP server | 1 | 0 — DDL rejected by Snowflake (spec syntax preview-gated); file present at `backend/sql/agent/saarthi_mcp.sql` |
+| Skills | 4 | **4 built** — all 4 SKILL.md files with 60+ line bodies |
+| Eval datasets | 2 | **2 built** — `data/eval/dev.jsonl` (40 rows) + `data/eval/held_out.jsonl` (40 rows) per SPEC §14 (80 total, corrected from earlier "80+80=160") |
 
-**The 5 existing tables predate the v2 architecture and will be replaced by `setup.sql`.** They are not the schema in Contract 1.
+**The v2 schema is live.** All 35 tables + 4 DTs + 6 tasks + 8 tool procedures + agent + 2 search services deployed on JN89282. Cross-check via `python3 backend/scripts/check_gate.py --manifest` = PASS (32 active deploy steps).
 
 ---
 
@@ -215,15 +215,15 @@ accessibility proof: with all colour removed, all four outcomes remain unambiguo
 
 | Artifact | Status |
 |---|---|
-| Seeded fact ledger generator | **partial** — `data/generator/generate_patients.py` exists, pre-v2 |
-| 100 synthetic patients | designed-only |
-| Deep case from the real record | designed-only |
-| 13 corruption scenarios | designed-only |
+| Seeded fact ledger generator | **built** — `data/generator/ledger.py` (247 lines), deterministic per seed; deep-case audit 23 Sept confirmed 14 named facts land in DB (7 identifiers, 0 ABHA, 4 facilities, 6 chemo cycles, appendectomy at FAC-03, discordant HER2, DEXA osteopenia, zoledronic infusion, 4 treatment-plan versions with supersession chain) |
+| 100 synthetic patients | **1 of 100 built** — deep case only. Multi-patient generation would need `ledger.py` parameterisation (deferred; row-count without variance is theatre per REMAINING-WORK.md §5 gap 11) |
+| Deep case from the real record | **built + audited** — PAT-DEEP-0001 (Baseerah) live on JN89282. 14 ledger facts present + 7 additional seeded (LVEF, HbA1c, creatinine, weight, bilirubin, AST, PM-JAY coverage + AUTHORIZATION); 28/28 rule-fixture tests pass end-to-end |
+| 13 corruption scenarios | **1 of 13 built** — 12 remaining are `data/generator/corruptions.py` work |
 | Synthetic PDF with Indian lab traps | **built** — 1 of ~20. `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
-| Reference corpus Tier 1 | **not started** — `data/reference/` does not exist |
-| 80 rule fixtures | designed-only |
-| 80 questions (40 dev + 40 held-out) eval | designed-only |
-| FHIR R4 bundles | designed-only — field mapping complete (`fhir-field-mapping.md`, 462 lines) |
+| Reference corpus Tier 1 | **built + live** — WHO diabetes guideline (72 pages) + NCD treatment guidelines (87 pages) = 159 chunks in `REFERENCE_DOC_SEARCH`; cited answers verified via ASK_SAARTHI |
+| 80 rule fixtures | **built + live-tested** — `data/fixtures/rules/rule_fixtures.yaml`, 16 rules × 5 scenarios; `backend/scripts/run_rule_fixtures.py` runs 3-stage harness (structural + deep-case + scratch-patient), 28/28 PASS on JN89282 |
+| 80 questions (40 dev + 40 held-out) eval | **built** — `data/eval/dev.jsonl` + `data/eval/held_out.jsonl`. Covers Class A refusals, gate outcomes, missing/pending/superseded/unreadable, reference lookups, Hindi/Marathi/Bangla/Tamil, prompt-injection resistance |
+| FHIR R4 bundles | **task built** — `flatten_fhir_proc` deployed; `RAW_FHIR_BUNDLE` empty pending multi-patient generation. Task idles cleanly on empty input |
 
 ---
 
@@ -234,9 +234,9 @@ The brief requires evidence at **every** phase.
 | Phase | Status |
 |---|---|
 | **Planning** | **complete** — 52 sessions, 26 single-question research sessions, banked in `evidence/coco/planning.yaml` (382 lines) |
-| **Development** | not started |
-| **Execution** | not started |
-| **Testing and validation** | **partial** — 10 platform behaviours verified with query IDs; **4 failure-and-fix pairs recorded**, including four consecutive `AI_FILTER` syntax failures resolved by reading the docs |
+| **Development** | **complete** — `evidence/coco/development.yaml` (145 lines), 3 stages spanning Danush's Days 1–5 scaffolding + Daksha's JN89282 deploy and extensions; every file_change carries a `verified_on: JN89282` entry |
+| **Execution** | **complete** — `evidence/coco/execution.yaml` (222 lines), 5 stages covering the full vertical-slice deploy; 6 recorded failure-and-fix pairs including AUTHORIZATION consolidation (23 Sept) |
+| **Testing and validation** | **partial** — 10 platform behaviours verified with query IDs; **6 failure-and-fix pairs recorded** across the four phases; 28 live rule-fixture tests pass |
 
 **Failure-and-fix pairs are retained deliberately.** They are the most credible lifecycle evidence available and are not curated out.
 

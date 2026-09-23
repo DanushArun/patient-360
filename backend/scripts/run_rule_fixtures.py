@@ -203,7 +203,7 @@ def teardown_all_scratch(connection: str) -> None:
     DELETE FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id LIKE 'PAT-FX-%';
     DELETE FROM SAARTHI.CORE.ENCOUNTER WHERE patient_id LIKE 'PAT-FX-%';
     DELETE FROM SAARTHI.DOCUMENTS.DOCUMENT WHERE patient_id LIKE 'PAT-FX-%';
-    DELETE FROM SAARTHI.CORE.PRE_AUTHORIZATION WHERE patient_id LIKE 'PAT-FX-%';
+    DELETE FROM SAARTHI.CORE.AUTHORIZATION WHERE patient_id LIKE 'PAT-FX-%';
     DELETE FROM SAARTHI.CORE.COVERAGE WHERE patient_id LIKE 'PAT-FX-%';
     DELETE FROM SAARTHI.CORE.ID_MAP WHERE patient_id LIKE 'PAT-FX-%';
     DELETE FROM SAARTHI.GOVERNANCE.CARE_TEAM WHERE patient_id LIKE 'PAT-FX-%';
@@ -256,13 +256,13 @@ def stage3_scratch_harness(connection: str) -> tuple[list[dict], list[str]]:
             f"WHEN NOT MATCHED THEN INSERT (coverage_id,patient_id,payer_type,payer_name,policy_number,is_family_floater,effective_from,effective_to,annual_limit,used_amount,priority,portability) "
             f"VALUES ('COV-FX-{p}','{p}','scheme','PM-JAY','PMJAY-FX-{p}',FALSE,DATEADD(day,-90,CURRENT_DATE()),DATEADD(day,90,CURRENT_DATE()),500000,510000,1,'within_state');"),
         ("COV-AUTH-denied", "COV-AUTH-001", "fail", lambda p:
-            f"MERGE INTO SAARTHI.CORE.PRE_AUTHORIZATION t USING (SELECT 'PA-FX-{p}' k) s ON t.pre_auth_id=s.k "
-            f"WHEN NOT MATCHED THEN INSERT (pre_auth_id,patient_id,encounter_id,coverage_id,scheme,status,letter_status,requested_at,decided_at,expires_at) "
-            f"VALUES ('PA-FX-{p}','{p}','{SCRATCH_ENCOUNTER}-{p}',NULL,'PM-JAY','denied','denied',DATEADD(day,-10,CURRENT_TIMESTAMP()),DATEADD(day,-5,CURRENT_TIMESTAMP()),DATEADD(day,60,CURRENT_TIMESTAMP()));"),
+            f"MERGE INTO SAARTHI.CORE.AUTHORIZATION t USING (SELECT 'PA-FX-{p}' k) s ON t.auth_id=s.k "
+            f"WHEN NOT MATCHED THEN INSERT (auth_id,patient_id,encounter_id,coverage_id,scheme,status,letter_status,requested_at,decided_at,expires_at) "
+            f"VALUES ('PA-FX-{p}','{p}','{SCRATCH_ENCOUNTER}-{p}','COV-FX-STUB-{p}','PM-JAY','denied','denied',DATEADD(day,-10,CURRENT_TIMESTAMP()),DATEADD(day,-5,CURRENT_TIMESTAMP()),DATEADD(day,60,CURRENT_TIMESTAMP()));"),
         ("COV-AUTH-conflicting", "COV-AUTH-001", "conflicting", lambda p:
-            f"MERGE INTO SAARTHI.CORE.PRE_AUTHORIZATION t USING (SELECT 'PA-FX-{p}' k) s ON t.pre_auth_id=s.k "
-            f"WHEN NOT MATCHED THEN INSERT (pre_auth_id,patient_id,encounter_id,coverage_id,scheme,status,letter_status,requested_at,decided_at,expires_at) "
-            f"VALUES ('PA-FX-{p}','{p}','{SCRATCH_ENCOUNTER}-{p}',NULL,'PM-JAY','approved','denied',DATEADD(day,-10,CURRENT_TIMESTAMP()),DATEADD(day,-5,CURRENT_TIMESTAMP()),DATEADD(day,60,CURRENT_TIMESTAMP()));"),
+            f"MERGE INTO SAARTHI.CORE.AUTHORIZATION t USING (SELECT 'PA-FX-{p}' k) s ON t.auth_id=s.k "
+            f"WHEN NOT MATCHED THEN INSERT (auth_id,patient_id,encounter_id,coverage_id,scheme,status,letter_status,requested_at,decided_at,expires_at) "
+            f"VALUES ('PA-FX-{p}','{p}','{SCRATCH_ENCOUNTER}-{p}','COV-FX-STUB-{p}','PM-JAY','approved','denied',DATEADD(day,-10,CURRENT_TIMESTAMP()),DATEADD(day,-5,CURRENT_TIMESTAMP()),DATEADD(day,60,CURRENT_TIMESTAMP()));"),
         ("CRCL-fail-low", "CLIN-CRCL-001", "fail", lambda p:
             # elderly patient (dob 1945) + very high creatinine + low weight -> CrCl below all agent minima
             f"UPDATE SAARTHI.CORE.PATIENT SET dob='1945-01-01' WHERE patient_id='{p}';"

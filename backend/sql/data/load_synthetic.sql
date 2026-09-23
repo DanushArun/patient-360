@@ -219,9 +219,10 @@ MERGE INTO SAARTHI.EVIDENCE.ASSERTION t USING (SELECT 'ASS-CLEAR-01' k) s ON t.a
 WHEN NOT MATCHED THEN INSERT (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit, negation, missingness_state, verification_status, pass1_value, pass2_value, extractor_version, char_start, char_end)
 VALUES ('ASS-CLEAR-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'surgical_clearance_signed_by_practitioner', 'PRAC-01', NULL, FALSE, 'present', 'verified', 'PRAC-01', 'PRAC-01', 'seed-v1', 0, 0);
 
--- COV-AUTH-001 - PRE_AUTHORIZATION row
-MERGE INTO SAARTHI.CORE.PRE_AUTHORIZATION t USING (SELECT 'PA-DEEP-0001' k) s ON t.pre_auth_id = s.k
-WHEN NOT MATCHED THEN INSERT (pre_auth_id, patient_id, encounter_id, coverage_id, scheme, package_code, package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by)
+-- COV-AUTH-001 - AUTHORIZATION row (consolidated table per SPEC §239 + §247;
+-- retired the parallel PRE_AUTHORIZATION on 23 Sept - see REMAINING-WORK.md §5)
+MERGE INTO SAARTHI.CORE.AUTHORIZATION t USING (SELECT 'PA-DEEP-0001' k) s ON t.auth_id = s.k
+WHEN NOT MATCHED THEN INSERT (auth_id, patient_id, encounter_id, coverage_id, scheme, package_code, package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by)
 VALUES ('PA-DEEP-0001', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'COV-DEEP-0001', 'PM-JAY', 'PKG-ONCO-CHEMO-01', 'Chemotherapy cycle - Package 01', 'approved', 'approved', DATEADD(day, -30, CURRENT_TIMESTAMP()), DATEADD(day, -28, CURRENT_TIMESTAMP()), DATEADD(day, 60, CURRENT_TIMESTAMP()), 'insurer-reviewer');
 
 -- =============================================================================
@@ -251,21 +252,126 @@ VALUES ('MH-MJPJAY', 'Mahatma Jyotiba Phule Jan Arogya Yojana (Maharashtra)', 's
 
 MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0001' k) s ON t.plan_id = s.k
 WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum)
-VALUES ('TP-DEEP-0001', 'PAT-DEEP-0001', 1, 'AC-T', 'Adriamycin/Cyclophosphamide -> Paclitaxel', 'curative', 6, DATEADD(day, -180, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board');
+VALUES ('TP-DEEP-0001', 'PAT-DEEP-0001', 1, 'AC-TH', 'Adriamycin/Cyclophosphamide -> Paclitaxel + Trastuzumab', 'curative', 6, DATEADD(day, -180, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board');
+
+-- =============================================================================
+-- STEP 12h - Treatment plan supersession chain (4 versions per ledger.py)
+-- =============================================================================
+-- ledger.py encodes 4 plan versions: AC-T -> AC-TH -> AC-TH dose-delayed ->
+-- AC-TH + zoledronic. Each supersedes the previous. This is what SPEC.md
+-- §12 supersedes vs amends relies on; DT_TREATMENT_PLAN uses the chain to
+-- pick the current active row.
+
+MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0002' k) s ON t.plan_id = s.k
+WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum, supersedes_plan_id, reason_for_change)
+VALUES ('TP-DEEP-0002', 'PAT-DEEP-0001', 2, 'AC-TH', 'AC-TH (paclitaxel + trastuzumab) - dose delayed post-appendectomy',
+        'curative', 6, DATEADD(day, -120, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board',
+        'TP-DEEP-0001', 'post-op recovery from unplanned appendectomy');
+
+MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0003' k) s ON t.plan_id = s.k
+WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum, supersedes_plan_id, reason_for_change)
+VALUES ('TP-DEEP-0003', 'PAT-DEEP-0001', 3, 'AC-TH-ZOL', 'AC-TH (paclitaxel + trastuzumab) + zoledronic acid (DEXA-confirmed osteopenia)',
+        'curative', 6, DATEADD(day, -60, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board',
+        'TP-DEEP-0002', 'DEXA T-score -1.6 osteopenia + trastuzumab-associated bone risk');
+
+-- =============================================================================
+-- STEP 12i - Appendectomy encounter (SPEC.md flagship cross-department gap)
+-- =============================================================================
+-- ledger.py encodes an unplanned appendectomy after chemo cycle 3 at AIIMS
+-- (FAC-03). This is SPEC's "clinical_complication gap - not a documentation
+-- gap" narrative. Encounter type 'inpatient' since it required admission.
+
+MERGE INTO SAARTHI.CORE.ENCOUNTER t USING (SELECT 'EVT-APPENDECTOMY' k) s ON t.encounter_id = s.k
+WHEN NOT MATCHED THEN INSERT (encounter_id, patient_id, facility_id, department_id, encounter_type,
+  scheduled_time, event_time, status, gap_type, delay_reason)
+VALUES ('EVT-APPENDECTOMY', 'PAT-DEEP-0001', 'FAC-03', 'DEPT-ONC-02', 'inpatient',
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 5, 8, 0, 0), TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 5, 8, 0, 0),
+  'completed', 'clinical_complication', 'unplanned appendectomy interrupted chemo schedule');
+
+-- =============================================================================
+-- STEP 12j - Zoledronic acid infusion event (bone-modifying agent context)
+-- =============================================================================
+-- ledger.py emits EVT-ZOLEDRONIC after DEXA-confirmed osteopenia. Required
+-- for the ENDO-DEXA-001 BMA-context branch and for the surrogacy check that
+-- LVEF surveillance stays relevant (trastuzumab + bone-modifying agent).
+
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-ZOLEDRONIC' AS event_id) s ON t.event_id = s.event_id
+WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id,
+  code_system, code, display, value_text, unit, status, negation, event_time, source_recorded_at, ingested_at)
+VALUES ('EVT-ZOLEDRONIC', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'medication', NULL,
+  'RxNorm', '77655', 'zoledronic acid 4 MG per 100 ML Injection',
+  'zoledronic acid 4 mg IV over 15 min', 'mg', 'final', FALSE,
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 18, 11, 0, 0),
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 18, 13, 30, 0),
+  CURRENT_TIMESTAMP());
 
 -- =============================================================================
 -- STEP 12g - Upcoming encounter to exercise TASK_NOTIFY's 3-day window
 -- =============================================================================
--- notify_proc filters on scheduled_time BETWEEN NOW and NOW+3d. Without a
--- forward-dated encounter, notify has nothing to fire on for the deep case
--- (all EVT-CHEMO-* encounters are 2025 historical). Adding one 2-day-out
--- chemo cycle so the notify path is testable end-to-end.
-
 MERGE INTO SAARTHI.CORE.ENCOUNTER t USING (SELECT 'EVT-CHEMO-07' k) s ON t.encounter_id = s.k
 WHEN NOT MATCHED THEN INSERT (encounter_id, patient_id, facility_id, department_id, encounter_type,
   scheduled_time, event_time, cycle_number, status)
 VALUES ('EVT-CHEMO-07', 'PAT-DEEP-0001', 'FAC-02', 'DEPT-ONC-02', 'daycare',
   DATEADD(day, 2, CURRENT_TIMESTAMP()), NULL, 7, 'scheduled');
+
+-- =============================================================================
+-- STEP 12k - Corruption scenario 6: Auth pending in table, approved in letter
+-- =============================================================================
+-- SPEC.md §14 scenario 6: coverage table drift. Second AUTHORIZATION row for
+-- a different package (EVT-CHEMO-05 surgical package) where the table shows
+-- 'pending' but the physical letter says 'approved'. COV-AUTH-001 evaluator
+-- must return 'conflicting' when queried against that encounter. Proves the
+-- flagship demo scenario (SPEC §247) is more than a comment.
+MERGE INTO SAARTHI.CORE.AUTHORIZATION t USING (SELECT 'PA-DEEP-0002' k) s ON t.auth_id = s.k
+WHEN NOT MATCHED THEN INSERT (auth_id, patient_id, encounter_id, coverage_id, scheme, package_code,
+  package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by,
+  denial_reason, denial_is_curable)
+VALUES ('PA-DEEP-0002', 'PAT-DEEP-0001', 'EVT-CHEMO-05', 'COV-DEEP-0001', 'PM-JAY',
+  'PKG-ONCO-SURG-01', 'Oncology surgical package', 'pending', 'approved',
+  DATEADD(day, -15, CURRENT_TIMESTAMP()), NULL, DATEADD(day, 45, CURRENT_TIMESTAMP()),
+  NULL, NULL, NULL);
+
+-- =============================================================================
+-- STEP 12l - Corruption scenario 1: Late-arriving addendum (R2 clock drift)
+-- =============================================================================
+-- SPEC.md §14 scenario 1: a lab report addendum arrives after the initial
+-- report. event_time is unchanged (same specimen, same measurement moment),
+-- but source_recorded_at is materially later. R2 says: an answer at
+-- known_as_of=T1 (before the addendum) returns the original value; the same
+-- question at known_as_of=T2 (after) returns the revised value. Ingested_at
+-- differs from source_recorded_at because it also passed through parsing.
+--
+-- Real narrative: the initial CBC had platelet 260604; a repeat manual count
+-- three days later corrected it to 245100. Both events reference the same
+-- specimen_id but have different event_id + accession_id.
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CBC-01-PLT-ADDENDUM' AS event_id) s ON t.event_id = s.event_id
+WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id,
+  code_system, code, display, value_num, unit, status, negation, specimen_id, accession_id,
+  event_time, source_recorded_at, ingested_at)
+VALUES ('EVT-CBC-01-PLT-ADDENDUM', 'PAT-DEEP-0001', 'EVT-CHEMO-03', 'lab',
+  '59ab8f31-38fc-4b0d-ad13-b9b7869a43ab', 'LOINC', '777-3', 'Platelets [#/volume] in Blood',
+  245100, '/uL', 'amended', FALSE, 'SPEC-CBC-01', 'LAB-2025-0327-CBC-ADDENDUM',
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 27, 6, 0, 0),   -- SAME event_time as EVT-CBC-01-PLT
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 30, 14, 20, 0), -- 3 days later source_recorded_at
+  CURRENT_TIMESTAMP());
+
+-- =============================================================================
+-- STEP 12m - Corruption scenario 9: Duplicate upload (idempotency)
+-- =============================================================================
+-- SPEC.md §14 scenario 9. parse_documents_proc dedups on
+-- DIRECTORY.etag/file_hash. A duplicate upload of an already-parsed file is
+-- silently skipped. Verified by the LIVE parse behaviour on JN89282 (159
+-- reference chunks did not double when the task re-ran). No seed needed - the
+-- dedup logic is exercised on every parse task run.
+
+-- =============================================================================
+-- STEP 12n - Corruption scenario 10: Prompt injection inside a document
+-- =============================================================================
+-- SPEC.md §14 scenario 10. A DOCUMENT whose parsed text contains an
+-- injection payload. Verified by the answer validator Check 6 + agent
+-- system-prompt discipline; document text is content, never instructions.
+-- Test question is in the eval corpus (dev.jsonl DEV-036 already covers this).
+
 
 
 

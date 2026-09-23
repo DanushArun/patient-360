@@ -89,7 +89,6 @@ EXECUTE IMMEDIATE FROM './account/05_stages.sql';
 -- Table names are Contract 1 and Builder 1's procedures read them literally.
 EXECUTE IMMEDIATE FROM './tables/10_governance.sql';
 EXECUTE IMMEDIATE FROM './tables/20_core.sql';
-EXECUTE IMMEDIATE FROM './tables/25_pre_authorization.sql';
 EXECUTE IMMEDIATE FROM './tables/30_documents.sql';
 EXECUTE IMMEDIATE FROM './tables/40_evidence.sql';
 EXECUTE IMMEDIATE FROM './tables/50_operational.sql';
