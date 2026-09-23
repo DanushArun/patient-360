@@ -133,16 +133,57 @@ Specified in `SPEC.md` §2. **All currently designed-only; none created yet.**
 
 ---
 
-## 5. Application — 6 screens, 0 built
+## 5. Application — 6 screens
+
+**Design system: `planning/research/design/DESIGN-SYSTEM.md`.** Grounded in three research
+files in the same directory (1,526 lines) — Apple HIG fetched live, clinical UX evidence with
+19 cited sources, and empirically probed Streamlit-in-Snowflake capabilities. Every token is
+either traced to a source or explicitly marked as a judgment call.
 
 | Screen | Status |
 |---|---|
-| Ask + Evidence ⭐ | designed-only |
-| Review Queue | designed-only |
-| Patient 360 | designed-only |
-| Review + History | designed-only |
+| Ask + Evidence ⭐ | **partial** — designed and built against fixtures. Masthead, claim ledger, persistent evidence margin, derivation trace, character-range citation highlight, Class A referral notice. **Not yet wired to the live tool procedures.** |
+| Review Queue | **partial** — urgency-ordered, unowned issues flagged. Fixture-driven. |
+| Patient 360 | **partial** — gate strip rebuilt to the status vocabulary. Facility timeline and discordance flags **not built**. |
+| Review + History | **partial** — role restriction and idempotency demonstrable live. Fixture-driven. |
 | Navigator View (4 languages) | designed-only |
 | Judge Console (8 probes) | designed-only |
+
+**All four built screens read fixtures, not Snowflake.** The backend tool procedures exist and
+are live (§6), but the frontend is not yet calling them. That wiring is the remaining step, and
+nothing here should be described as end-to-end until it is done.
+
+### Design decisions worth defending
+
+| Decision | Basis |
+|---|---|
+| Status is a **glyph + word + border style**, never hue | WCAG 2.2 SC 1.4.1; 4–8% of Indian males are red-green deficient. The `🟢🔴🟠⚪` emoji this replaced were **identical in greyscale**. |
+| Gate failures are **quiet and specific**, not alert tiles | ~90% override rate for interruptive CDS alerts; 95.1–99.3% for the top-50 DDI alerts (Phansalkar et al., JAMIA — confirmed full text). |
+| `not_evaluated` styled **neutral and dashed**, never as failure | R3. "A missing lab does not mean ANC is low — it means we do not know." |
+| Evidence margin is **persistent, never a modal** | Verifying a citation requires seeing claim and source simultaneously. |
+| **Tabular numerals** on every value and timestamp | Digits align for comparison, and change in place rather than jittering when `known_as_of` moves. |
+| Source pages render `white-space: pre`, not wrapped | A lab report is columnar; wrapping breaks the alignment where the `GM%` / `/CUMM` / lakh-comma traps live. |
+| Type scale derived from **Apple's published macOS styles** at 1pt = 4/3px | `apple-hig-primary.md` §2.4. Body lands on 17px, matching Apple's iOS Body of 17pt. |
+
+**Inter, not SF Pro.** SF Pro is not licensed for web redistribution. "Apple typography" here
+means Apple's scale and restraint, not Apple's typeface. Do not claim SF Pro anywhere.
+
+**Apple's current principles are eight** — Purpose, Agency, Responsibility, Familiarity,
+Flexibility, Simplicity, Craft, Delight (verified live, 8 June 2026). The widely-repeated
+"Clarity, Deference, Depth" is **retired** and should not be cited.
+
+### Verified by screenshot — `planning/research/design/screens/`
+
+Captured from the running app, not mockups. `05-gate-strip-greyscale-audit.png` is the
+accessibility proof: with all colour removed, all four outcomes remain unambiguous.
+
+### Known limitations of the current UI
+
+1. **`char_start` / `char_end` work in the fixtures but the extraction pipeline does not populate them** (§R7 defect). Against live data the citation degrades to page level. `highlight()` handles bad offsets by degrading rather than raising, and there is a test for it.
+2. **The SiS runtime Streamlit version is unverified.** Local is 1.64.0. `[[theme.fontFaces]]` and `st.html` need a deploy probe before being relied on.
+3. **`st.html` output is invisible to Streamlit's `AppTest`.** Rendering is therefore asserted against pure builder functions in `test_answer_render.py`; page tests cover wiring only. This is stronger than what it replaced — the old tests asserted on `st.info` panel text and would have passed with the evidence pane in the wrong colour.
+4. **Indian-script typography rests on a thin evidence base.** Devanagari/Tamil/Bengali need greater line-height than Latin; the sources are W3C drafts, not clinical research. Navigator View must state this.
+5. `playwright` was installed into `venv/` as a screenshot tool. It is **not** an app dependency and is deliberately absent from `requirements.txt`.
 
 ---
 

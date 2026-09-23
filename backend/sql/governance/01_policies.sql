@@ -15,6 +15,24 @@
 -- requirement: PATIENT.name/abha_ref get a full-mask, PATIENT.dob gets a
 -- year-only mask. Flagging this as a judgment call, not a spec citation.
 
+-- Idempotency: CREATE OR REPLACE ROW ACCESS POLICY fails once the policy is
+-- attached to DOC_PAGE ("cannot be dropped/replaced as it is associated with
+-- one or more entities") - verified live on a second deploy run. A fresh
+-- account has nothing attached yet, so the detach must not fail there either;
+-- an anonymous scripting block with EXCEPTION WHEN OTHER makes "nothing to
+-- detach" and "something to detach" both succeed. 02_attach_policies.sql
+-- re-attaches it afterward - detach-then-recreate-then-reattach is the only
+-- sequence Snowflake allows for a policy that must change while in use.
+EXECUTE IMMEDIATE $$
+BEGIN
+    ALTER TABLE SAARTHI.DOCUMENTS.DOC_PAGE DROP ROW ACCESS POLICY SAARTHI.GOVERNANCE.patient_scope;
+    RETURN 'detached';
+EXCEPTION
+    WHEN OTHER THEN
+        RETURN 'nothing to detach';
+END;
+$$;
+
 -- Layer 3 of R5: even a leaked chunk_id yields nothing, because DOC_PAGE
 -- content is re-fetched through this policy, keyed on the real caller.
 --

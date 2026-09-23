@@ -171,10 +171,20 @@ Left in place in `SAARTHI.GOVERNANCE` as the seed of the real implementation and
 
 ---
 
+## Resolved 21 Sept — U1, model availability, live pipeline
+
+| Query ID | What it established |
+|---|---|
+| `01c73918-0003-7ddc-0001-fd06002fbaf6` | `AI_COMPLETE('llama3.3-70b', ...)` reachable — R7 pass A |
+| `01c73919-0003-7ddc-0001-fd06002fbafe` | `AI_COMPLETE('claude-haiku-4-5', ...)` reachable — R7 pass B, different vendor/architecture from pass A |
+| (see `parse_documents.sql` run, 21 Sept) | `AI_PARSE_DOCUMENT` on `PAT-DEEP-0001/EVT-CBC-01` — U1 resolved. Extracted "2,60,604 /CUMM" verbatim, Indian comma-grouping intact, confirming the client-side `PUT` blocker from 17 Sept no longer applies on this machine. 4/4 staged PDFs parsed correctly in one backfill run. |
+| (see `evaluate_gates` run, 21 Sept) | `evaluate_gates('PAT-DEEP-0001','EVT-CHEMO-03')` → `CLIN-ANC-001: pass, "ANC is 2100, meets threshold 1500"`, evidence `EVT-CHEMO-03-ANC-DERIVED`, derivation string attached — R1 and the Day-4 ANC acceptance test both proven live, not designed. |
+| (see `bind_patient` run, 21 Sept) | Authorized bind → `binding_id` returned. Bind to a nonexistent patient → identical `no_patient_access` as an unauthorized-but-real patient would get. Zero information leakage, confirmed by direct comparison of both responses. |
+
 ## Still unverified
 
 | Test | Blocker | Fallback |
 |---|---|---|
-| `AI_PARSE_DOCUMENT` per-page cost and trap survival | client-side `PUT` unavailable — `snow` CLI holds a stale OAuth token while CoCo refreshes its own | function already confirmed authorized; R7 two-pass handles quality regardless |
 | `CURRENT_USER()` inside deployed Streamlit container runtime | needs a deployed app | if it returns the owner, use a dedicated service user |
 | `CREATE STREAMLIT … COMPUTE_POOL` on a trial account | needs the app | warehouse runtime plus `AGENT_RUN`, already proven |
+| R7 two-pass disagreement on the ambiguous CBC | extraction task not yet built | in progress |

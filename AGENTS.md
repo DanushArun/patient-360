@@ -4,13 +4,13 @@
 
 ---
 
-## 1. GIT — NEVER COMMIT
+## 1. GIT — COMMIT ALLOWED, NOTHING ELSE DESTRUCTIVE
 
-**Do not run `git commit`, `git push`, `git merge`, `git rebase`, `git reset`, or `git tag`. Ever. Under any circumstances. Even if asked politely. Even if it seems obviously helpful.**
+**Updated 21 Sept 2026 by Danush: given the volume of build work in the final push, `git commit` is allowed** — commit working, reviewed progress with clear imperative messages, one logical change per commit, same discipline as if Danush wrote it himself.
 
-Danush handles all commits himself.
+**Still never run `git push`, `git merge`, `git rebase`, `git reset`, or `git tag` without being explicitly asked in that exact moment.** Those touch shared/remote state or rewrite history; commits to the local working tree do not.
 
-**What you may do:**
+**What you may always do:**
 - `git status`, `git diff`, `git log`, `git show`, `git ls-files` — read-only inspection
 - `git add` / `git rm --cached` **only if explicitly asked to stage something**
 

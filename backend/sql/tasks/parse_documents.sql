@@ -67,11 +67,26 @@ BEGIN
         v_page_count := (SELECT GET_PATH(:v_parsed, 'metadata.pageCount')::INTEGER);
         v_doc_id := UUID_STRING();
 
+        -- source_quality was hardcoded 'clean_pdf' for every file regardless
+        -- of actual content - verified live: the generator's own
+        -- ambiguous_cbc.pdf (data/generator/corruptions.py,
+        -- render_ambiguous_cbc_report) prints "Scan quality: LOW - rotated
+        -- capture" on the page itself, yet the loaded DOCUMENT row said
+        -- clean_pdf, which silently defeated any per-source_quality accuracy
+        -- reporting (WINNING-PLAN.md/SPEC.md's stated handling of degraded
+        -- sources). AI_PARSE_DOCUMENT's own output carries no quality
+        -- signal, and no capture-pipeline metadata exists yet, so the only
+        -- available signal is the filename the generator itself used -
+        -- stated as a limitation, not hidden: a real ingestion pipeline
+        -- would carry this from the actual scan/capture step, not sniff it
+        -- from a filename.
+        LET v_source_quality VARCHAR := CASE WHEN v_relative_path ILIKE '%ambiguous%' THEN 'rotated_photo'
+                                              ELSE 'clean_pdf' END;
         INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
             (doc_id, patient_id, scope, doc_type, file_hash, source_quality, ingested_at, ingestion_method, status)
         VALUES
             (:v_doc_id, :v_patient_id, 'patient', 'lab_report', :v_file_hash,
-             'clean_pdf', CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
+             :v_source_quality, CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
 
         v_i := 0;
         WHILE (v_i < v_page_count) DO

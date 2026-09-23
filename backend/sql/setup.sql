@@ -161,12 +161,17 @@ EXECUTE IMMEDIATE FROM './data/transform_structured_events.sql';
 -- Idempotency note: load_structured_events_copy.sql now TRUNCATEs STG_SOURCE_EVENTS
 -- before COPY INTO. transform_structured_events.sql MERGEs downstream. Safe on re-run.
 
+-- Second synthetic patient, used only by Judge Console probe 2 - see that
+-- file's header for why a single-patient system cannot demonstrate a
+-- cross-patient leak.
+EXECUTE IMMEDIATE FROM './data/load_judge_console_fixtures.sql';
+
 
 -- ---------------------------------------------------------------------------
 -- STEP 13 - Streams.  [2]
 -- ---------------------------------------------------------------------------
 -- Directory table on PATIENT_DOCS, directory table on REFERENCE_DOCS, FHIR staging.
--- EXECUTE IMMEDIATE FROM './streams/01_streams.sql';
+EXECUTE IMMEDIATE FROM './streams/01_streams.sql';
 
 
 -- ---------------------------------------------------------------------------
@@ -177,18 +182,18 @@ EXECUTE IMMEDIATE FROM './data/transform_structured_events.sql';
 -- given a reachable parameter the agent fills it from the question text.
 -- Every tool opens with the block in ./procedures/tools/_preamble.sql, and the
 -- eight copies are diffed against it at the Day-5 gate.
--- EXECUTE IMMEDIATE FROM './procedures/bind_patient.sql';                      -- [2]
--- EXECUTE IMMEDIATE FROM './procedures/evaluate_gates.sql';                    -- [2]
--- EXECUTE IMMEDIATE FROM './procedures/classify_question.sql';                 -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/validate_answer.sql';                   -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/01_get_patient_facts.sql';        -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/02_get_readiness.sql';            -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/03_search_patient_documents.sql'; -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/04_search_reference_documents.sql'; -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/05_cohort_query.sql';             -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/06_get_timeline.sql';             -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/07_get_changes.sql';              -- [1]
--- EXECUTE IMMEDIATE FROM './procedures/tools/08_create_review_task.sql';       -- [1]
+EXECUTE IMMEDIATE FROM './procedures/bind_patient.sql';                      -- [2]
+EXECUTE IMMEDIATE FROM './procedures/evaluate_gates.sql';                    -- [2]
+EXECUTE IMMEDIATE FROM './procedures/classify_question.sql';                 -- [1]
+EXECUTE IMMEDIATE FROM './procedures/validate_answer.sql';                   -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/01_get_patient_facts.sql';        -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/02_get_readiness.sql';            -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/03_search_patient_documents.sql'; -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/04_search_reference_documents.sql'; -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/05_cohort_query.sql';             -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/06_get_timeline.sql';             -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/07_get_changes.sql';              -- [1]
+EXECUTE IMMEDIATE FROM './procedures/tools/08_create_review_task.sql';       -- [1]
 
 
 -- ---------------------------------------------------------------------------
@@ -198,23 +203,23 @@ EXECUTE IMMEDIATE FROM './data/transform_structured_events.sql';
 -- AI steps live in Tasks (step 16); deterministic steps live here.
 -- DT_HARMONIZED_EVENTS is the load-bearing one: unit normalisation with
 -- plausibility rejection, ANC from a differential, Cockcroft-Gault CrCl.
--- EXECUTE IMMEDIATE FROM './dynamic_tables/01_harmonized_events.sql';
--- EXECUTE IMMEDIATE FROM './procedures/chunk_documents.sql'; -- see procedures section - DOC_CHUNK is populated synchronously, not by a Dynamic Table (RAP-on-source made background refresh return zero rows, found live)
--- EXECUTE IMMEDIATE FROM './dynamic_tables/03_review_queue.sql';
--- EXECUTE IMMEDIATE FROM './dynamic_tables/04_scheme_eligibility.sql';
--- EXECUTE IMMEDIATE FROM './dynamic_tables/05_treatment_plan.sql';
+EXECUTE IMMEDIATE FROM './dynamic_tables/01_harmonized_events.sql';
+EXECUTE IMMEDIATE FROM './procedures/chunk_documents.sql'; -- see procedures section - DOC_CHUNK is populated synchronously, not by a Dynamic Table (RAP-on-source made background refresh return zero rows, found live)
+-- EXECUTE IMMEDIATE FROM './dynamic_tables/03_review_queue.sql';   -- [NOT BUILT]
+-- EXECUTE IMMEDIATE FROM './dynamic_tables/04_scheme_eligibility.sql'; -- [NOT BUILT]
+-- EXECUTE IMMEDIATE FROM './dynamic_tables/05_treatment_plan.sql'; -- [NOT BUILT]
 
 
 -- ---------------------------------------------------------------------------
 -- STEP 16 - Tasks.  [1] and [2]
 -- ---------------------------------------------------------------------------
 -- The only place AI functions may run.
--- EXECUTE IMMEDIATE FROM './tasks/parse_documents.sql';      -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';         -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/extract_assertions.sql';   -- [1]  R7 two-pass
--- EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]
--- EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/notify.sql';               -- [2]
+EXECUTE IMMEDIATE FROM './tasks/parse_documents.sql';      -- [2]
+-- EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';         -- [2]  [NOT BUILT]
+EXECUTE IMMEDIATE FROM './tasks/extract_assertions.sql';   -- [1]  R7 two-pass
+-- EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]  [NOT BUILT]
+-- EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]  [NOT BUILT]
+-- EXECUTE IMMEDIATE FROM './tasks/notify.sql';               -- [2]  [NOT BUILT]
 
 
 -- ---------------------------------------------------------------------------
@@ -232,8 +237,8 @@ EXECUTE IMMEDIATE FROM './search/02_reference_doc_search.sql';
 -- ---------------------------------------------------------------------------
 -- STEP 18 - Semantic view + 6 verified queries.  [2]
 -- ---------------------------------------------------------------------------
--- EXECUTE IMMEDIATE FROM './semantic/01_semantic_view.sql';
--- EXECUTE IMMEDIATE FROM './semantic/02_verified_queries.sql';
+EXECUTE IMMEDIATE FROM './semantic/01_semantic_view.sql';
+-- EXECUTE IMMEDIATE FROM './semantic/02_verified_queries.sql'; -- [NOT BUILT]
 
 
 -- ---------------------------------------------------------------------------
@@ -244,10 +249,20 @@ EXECUTE IMMEDIATE FROM './search/02_reference_doc_search.sql';
 -- to write markdown to a stage with no local PUT. Deployment stays reproducible
 -- from SQL alone, which is the whole reason a judge can redeploy this.
 -- The agent references the skill FOLDER, not the SKILL.md file.
--- EXECUTE IMMEDIATE FROM '../skills/upload_skills.sql';
--- EXECUTE IMMEDIATE FROM './agent/saarthi_agent.sql';
--- EXECUTE IMMEDIATE FROM './tasks/orchestrator.sql';
--- EXECUTE IMMEDIATE FROM './agent/saarthi_mcp.sql';
+-- EXECUTE IMMEDIATE FROM '../skills/upload_skills.sql'; -- [NOT BUILT]
+EXECUTE IMMEDIATE FROM './agent/saarthi_agent.sql';
+EXECUTE IMMEDIATE FROM './agent/ask_saarthi.sql'; -- entry point INTO the agent, not a Contract 2 tool
+-- EXECUTE IMMEDIATE FROM './tasks/orchestrator.sql'; -- [NOT BUILT]
+-- EXECUTE IMMEDIATE FROM './agent/saarthi_mcp.sql'; -- [NOT BUILT]
+
+
+-- ---------------------------------------------------------------------------
+-- STEP 19b - Judge Console: 8 security probes.  [2]
+-- ---------------------------------------------------------------------------
+-- SPEC.md §10. Depends on the agent tools (step 14), validate_answer (step 14),
+-- and the second synthetic patient loaded in step 12 (probe 2 needs a real
+-- second patient's chunk content to demonstrate a cross-patient leak).
+EXECUTE IMMEDIATE FROM './procedures/judge/judge_probes.sql';
 
 
 -- ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 MERGE INTO SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY t
 USING (
   SELECT 'ANC' canonical_name, 'analyte' concept_type, TRUE is_safety_critical, ARRAY_CONSTRUCT('absolute neutrophil count','neuts') synonyms
-  UNION ALL SELECT 'PLT',        'analyte',   TRUE,  ARRAY_CONSTRUCT('PLT','thrombocytes')
+  UNION ALL SELECT 'PLT',        'analyte',   TRUE,  ARRAY_CONSTRUCT('PLT','thrombocytes','platelet count','platelets')
   UNION ALL SELECT 'HER2_IHC',   'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 immunohistochemistry')
   UNION ALL SELECT 'HER2_FISH',  'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 in-situ hybridisation')
   UNION ALL SELECT 'CREATININE', 'analyte',   TRUE,  ARRAY_CONSTRUCT('Cr','serum creatinine')
@@ -29,6 +29,12 @@ USING (
   UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', FALSE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%')
 ) s
 ON t.canonical_name = s.canonical_name
+WHEN MATCHED THEN
+  -- Synonyms are allowed to evolve (this file is the source of truth) - a
+  -- redeploy must propagate a widened synonym list, not freeze it at
+  -- whatever first loaded. is_safety_critical stays updatable for the
+  -- same reason.
+  UPDATE SET t.synonyms = s.synonyms, t.is_safety_critical = s.is_safety_critical
 WHEN NOT MATCHED THEN
   INSERT (concept_id, concept_type, canonical_name, specialty, synonyms, is_safety_critical)
   VALUES (UUID_STRING(), s.concept_type, s.canonical_name, NULL, s.synonyms, s.is_safety_critical);

@@ -69,11 +69,16 @@ BEGIN
                   FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE event_id = :v_ev_id;
                 IF (v_ev_patient IS NULL) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check1_existence: ' || v_ev_id || ' does not resolve';
+                    LET v_sec_event_id VARCHAR := UUID_STRING();
+                    LET v_sec_detail VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'fabricated_evidence_id');
+                    INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT (event_id, practitioner_id, event_type, detail)
+                    SELECT :v_sec_event_id, NULL, 'validator_strip', :v_sec_detail;
                 ELSEIF (v_ev_patient != v_patient_id) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check2_scope: evidence belongs to a different patient';
+                    LET v_sec_event_id2 VARCHAR := UUID_STRING();
+                    LET v_sec_detail2 VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'cross_patient_evidence');
                     INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT (event_id, practitioner_id, event_type, detail)
-                    VALUES (UUID_STRING(), NULL, 'validator_strip',
-                            OBJECT_CONSTRUCT('claim', v_text, 'evidence_id', v_ev_id, 'reason', 'cross_patient_evidence'));
+                    SELECT :v_sec_event_id2, NULL, 'validator_strip', :v_sec_detail2;
                 ELSEIF (v_ev_ingested > v_known_as_of) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check3_temporality: evidence ingested after known_as_of';
                 ELSEIF (v_claim_type = 'numeric' AND v_asserted IS NOT NULL) THEN
@@ -113,11 +118,16 @@ BEGIN
                  WHERE a.assertion_id = :v_ev_id;
                 IF (v_ev_verif IS NULL) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check1_existence: ' || v_ev_id || ' does not resolve';
+                    LET v_sec_event_id3 VARCHAR := UUID_STRING();
+                    LET v_sec_detail3 VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'fabricated_evidence_id');
+                    INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT (event_id, practitioner_id, event_type, detail)
+                    SELECT :v_sec_event_id3, NULL, 'validator_strip', :v_sec_detail3;
                 ELSEIF (v_ev_doc_patient IS NOT NULL AND v_ev_doc_patient != v_patient_id) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check2_scope: evidence belongs to a different patient';
+                    LET v_sec_event_id4 VARCHAR := UUID_STRING();
+                    LET v_sec_detail4 VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'cross_patient_evidence');
                     INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT (event_id, practitioner_id, event_type, detail)
-                    VALUES (UUID_STRING(), NULL, 'validator_strip',
-                            OBJECT_CONSTRUCT('claim', v_text, 'evidence_id', v_ev_id, 'reason', 'cross_patient_evidence'));
+                    SELECT :v_sec_event_id4, NULL, 'validator_strip', :v_sec_detail4;
                 ELSEIF (v_ev_verif IN ('conflicting', 'unverified')) THEN
                     -- Check 6. The most important check: evidence <-> reality,
                     -- not just claim <-> evidence. Downgrade, do not silently strip.
