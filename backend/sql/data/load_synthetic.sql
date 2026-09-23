@@ -224,6 +224,49 @@ MERGE INTO SAARTHI.CORE.PRE_AUTHORIZATION t USING (SELECT 'PA-DEEP-0001' k) s ON
 WHEN NOT MATCHED THEN INSERT (pre_auth_id, patient_id, encounter_id, coverage_id, scheme, package_code, package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by)
 VALUES ('PA-DEEP-0001', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'COV-DEEP-0001', 'PM-JAY', 'PKG-ONCO-CHEMO-01', 'Chemotherapy cycle - Package 01', 'approved', 'approved', DATEADD(day, -30, CURRENT_TIMESTAMP()), DATEADD(day, -28, CURRENT_TIMESTAMP()), DATEADD(day, 60, CURRENT_TIMESTAMP()), 'insurer-reviewer');
 
+-- =============================================================================
+-- STEP 12f - Scheme registry + treatment plan for DT_SCHEME_ELIGIBILITY / DT_TREATMENT_PLAN
+-- =============================================================================
+
+MERGE INTO SAARTHI.OPERATIONAL.SCHEME_REGISTRY t USING (SELECT 'PM-JAY' k) s ON t.scheme_id = s.k
+WHEN NOT MATCHED THEN INSERT (scheme_id, scheme_name, scheme_type, eligibility_json, covered_packages, annual_limit, state_scope)
+VALUES ('PM-JAY', 'Pradhan Mantri Jan Arogya Yojana', 'central',
+        PARSE_JSON('{"income_ceiling_inr":180000,"seccc_families_only":true,"covers":["oncology","cardiac","orthopaedic"]}'),
+        ARRAY_CONSTRUCT('PKG-ONCO-CHEMO-01','PKG-ONCO-SURG-01','PKG-ONCO-RT-01'),
+        500000, 'national');
+
+MERGE INTO SAARTHI.OPERATIONAL.SCHEME_REGISTRY t USING (SELECT 'TN-CMHIS' k) s ON t.scheme_id = s.k
+WHEN NOT MATCHED THEN INSERT (scheme_id, scheme_name, scheme_type, eligibility_json, covered_packages, annual_limit, state_scope)
+VALUES ('TN-CMHIS', 'Chief Ministers Comprehensive Health Insurance Scheme (Tamil Nadu)', 'state',
+        PARSE_JSON('{"income_ceiling_inr":75000,"tamil_nadu_domicile":true}'),
+        ARRAY_CONSTRUCT('PKG-ONCO-CHEMO-01','PKG-ONCO-SURG-01'),
+        500000, 'Tamil Nadu');
+
+MERGE INTO SAARTHI.OPERATIONAL.SCHEME_REGISTRY t USING (SELECT 'MH-MJPJAY' k) s ON t.scheme_id = s.k
+WHEN NOT MATCHED THEN INSERT (scheme_id, scheme_name, scheme_type, eligibility_json, covered_packages, annual_limit, state_scope)
+VALUES ('MH-MJPJAY', 'Mahatma Jyotiba Phule Jan Arogya Yojana (Maharashtra)', 'state',
+        PARSE_JSON('{"income_ceiling_inr":100000,"maharashtra_domicile":true}'),
+        ARRAY_CONSTRUCT('PKG-ONCO-CHEMO-01','PKG-ONCO-SURG-01','PKG-ONCO-RT-01'),
+        150000, 'Maharashtra');
+
+MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0001' k) s ON t.plan_id = s.k
+WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum)
+VALUES ('TP-DEEP-0001', 'PAT-DEEP-0001', 1, 'AC-T', 'Adriamycin/Cyclophosphamide -> Paclitaxel', 'curative', 6, DATEADD(day, -180, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board');
+
+-- =============================================================================
+-- STEP 12g - Upcoming encounter to exercise TASK_NOTIFY's 3-day window
+-- =============================================================================
+-- notify_proc filters on scheduled_time BETWEEN NOW and NOW+3d. Without a
+-- forward-dated encounter, notify has nothing to fire on for the deep case
+-- (all EVT-CHEMO-* encounters are 2025 historical). Adding one 2-day-out
+-- chemo cycle so the notify path is testable end-to-end.
+
+MERGE INTO SAARTHI.CORE.ENCOUNTER t USING (SELECT 'EVT-CHEMO-07' k) s ON t.encounter_id = s.k
+WHEN NOT MATCHED THEN INSERT (encounter_id, patient_id, facility_id, department_id, encounter_type,
+  scheduled_time, event_time, cycle_number, status)
+VALUES ('EVT-CHEMO-07', 'PAT-DEEP-0001', 'FAC-02', 'DEPT-ONC-02', 'daycare',
+  DATEADD(day, 2, CURRENT_TIMESTAMP()), NULL, 7, 'scheduled');
+
 
 
 
