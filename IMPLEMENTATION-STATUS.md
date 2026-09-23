@@ -218,6 +218,7 @@ accessibility proof: with all colour removed, all four outcomes remain unambiguo
 | Seeded fact ledger generator | **built** — `data/generator/ledger.py` (247 lines), deterministic per seed; deep-case audit 23 Sept confirmed 14 named facts land in DB (7 identifiers, 0 ABHA, 4 facilities, 6 chemo cycles, appendectomy at FAC-03, discordant HER2, DEXA osteopenia, zoledronic infusion, 4 treatment-plan versions with supersession chain) |
 | 100 synthetic patients | **1 of 100 built** — deep case only. Multi-patient generation would need `ledger.py` parameterisation (deferred; row-count without variance is theatre per REMAINING-WORK.md §5 gap 11) |
 | Deep case from the real record | **built + audited** — PAT-DEEP-0001 (Baseerah) live on JN89282. 14 ledger facts present + 7 additional seeded (LVEF, HbA1c, creatinine, weight, bilirubin, AST, PM-JAY coverage + AUTHORIZATION); 28/28 rule-fixture tests pass end-to-end |
+| Insurance and government schemes | **built + live** — `CORE.COVERAGE` (payer_type ∈ {scheme, private_insurance, self_pay}, `annual_limit`, `used_amount`, `is_family_floater`), `CORE.AUTHORIZATION` (scheme + package_code + letter-vs-table drift + `denial_is_curable`), `OPERATIONAL.SCHEME_REGISTRY` (3 schemes seeded: PM-JAY central + TN-CMHIS + MH-MJPJAY), `DT_SCHEME_ELIGIBILITY` cross-joining patients × schemes. Rules `COV-AUTH-001` + `COV-LIMIT-001` live-tested including the conflicting-letter drift (SPEC §247 flagship). Dedicated extraction prompt `pass_a_claim.md`. PM-JAY manual PDF ingested into `REFERENCE_DOC_SEARCH`; 8 eval questions answered from it. Family-floater balances are flagged, never computed (SPEC decision — no HOUSEHOLD table). |
 | 13 corruption scenarios | **1 of 13 built** — 12 remaining are `data/generator/corruptions.py` work |
 | Synthetic PDF with Indian lab traps | **built** — 1 of ~20. `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
 | Reference corpus Tier 1 | **built + live** — WHO diabetes guideline (72 pages) + NCD treatment guidelines (87 pages) = 159 chunks in `REFERENCE_DOC_SEARCH`; cited answers verified via ASK_SAARTHI |
@@ -252,6 +253,7 @@ The brief requires evidence at **every** phase.
 | Search sharding beyond 400M chunks | Documented in `SCALE-REVIEW.md`; out of scope at 100 patients. |
 | FRAX fracture-risk scoring | Requires inputs we do not model. The T-score gate is the tractable one. |
 | Real patient data in the system | 19 real reports informed **format research only**. Consent held; the patient's son is on the team. |
+| Healthcare supply-chain / drug-substitute recommendation | Different clinician's question. Tools like SupplyFlowQC answer *"drug X is out — what substitute?"* for pharmacy/ops; SAARTHI answers *"is this patient ready for this procedure?"* for the treating team. Substitute-recommendation is also Class A under NMC TPG 2020, which we refuse for every role. Related shape we **do** build: `AUTHORIZATION.denial_is_curable` — flags procedurally recoverable insurance denials before admission (60–70% per RWR). |
 
 ---
 
