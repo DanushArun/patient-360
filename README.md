@@ -1,5 +1,7 @@
 # SAARTHI — Care Readiness & Evidence Copilot
 
+**This is a nationwide clinical product.** Not a single-hospital tool or a pilot demo — SAARTHI is built to work across facilities, states, and languages, for any patient anywhere in the country, on top of federated, ABHA-anchored identity.
+
 **Goal:** Answer, with cited evidence and never an opaque prediction, whether a cancer patient is ready for their next step of care — clinically, documentationally, and financially — and exactly what is missing, so families don't take a 1,000+ km trip for nothing.
 
 Built for the Snowflake CoCo CLI Hackathon 2026 (GCC Edition) — Problem Statement 04: Patient and Member 360 and Clinical or Regulatory Document Copilot. **Synthetic data only. No real patient information.**
