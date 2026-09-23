@@ -10,11 +10,9 @@
 -- Idempotency: MERGE keyed on (patient_id, encounter_id, rule_id, rule_version)
 -- with UPDATE-on-match so repeat runs update rather than duplicate.
 --
--- Scope for this build: iterates active encounters for the deep-case patient
--- only, per SPEC.md 175 / gap 11 (99 identity-only stubs were deliberately not
--- created - see REMAINING-WORK.md §5 item 11). A future multi-patient build
--- widens the cursor's WHERE to include every patient with an upcoming
--- encounter, no other changes.
+-- Scope: every encounter with a scheduled_time - the deep case's history and
+-- the day-care cohort's upcoming visits (data/load_daycare_cohort.sql). The
+-- coordinator's home screen reads this table, never the evaluator directly.
 
 CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.refresh_readiness_proc()
   RETURNS VARIANT
@@ -95,3 +93,9 @@ CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_REFRESH_READINESS
   SCHEDULE = '5 MINUTE'
 AS
   CALL SAARTHI.OPERATIONAL.refresh_readiness_proc();
+
+-- Materialise once at deploy so the day-care list is populated immediately.
+-- The task is left SUSPENDED (Snowflake's default on create): a 5-minute
+-- schedule on a live warehouse costs credits around the clock. For live
+-- operation: ALTER TASK SAARTHI.OPERATIONAL.TASK_REFRESH_READINESS RESUME;
+CALL SAARTHI.OPERATIONAL.refresh_readiness_proc();

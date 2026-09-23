@@ -24,6 +24,14 @@
 -- next evaluator pass. A rule whose gate logic isn't implemented here returns
 -- not_evaluated with an explicit reason, never a guessed pass/fail.
 --
+-- Every concept lookup below resolves concept_id via a CLINICAL_ONTOLOGY subquery
+-- on canonical_name, never a literal UUID. ontology.sql mints a fresh UUID_STRING()
+-- per account, so a hardcoded concept_id is a foreign key to nothing anywhere but
+-- the account it was copied from - verified live: a prior version of this file
+-- hardcoded 6 concept_ids from one account, and on a second account every one of
+-- CLIN-CRCL-001, CLIN-BILI-001 and DOC-HER2-001 silently returned not_evaluated
+-- ("missing") instead of reading the real data that was sitting right there.
+--
 -- Uses explicit CURSOR + OPEN/FETCH/CLOSE into scalar variables throughout,
 -- not the FOR-loop record-variable form: dot-access on a FOR-loop record
 -- (rec.field) inside plain scripting logic (LET/IF, outside an embedded SQL
@@ -61,6 +69,13 @@ DECLARE
     v_reason  VARCHAR;
     v_found   BOOLEAN;
 
+    v_has_plan       BOOLEAN;
+    v_breast         BOOLEAN;
+    v_scope_known    BOOLEAN;
+    v_her2_targeted  BOOLEAN;
+    v_surgical       BOOLEAN;
+
+    -- Binds, in order: scope_known, surgical, breast, her2_targeted.
     c_rules CURSOR FOR
         SELECT rule_id, rule_version, gate, severity,
                threshold_json:concept::VARCHAR   AS concept,
@@ -69,12 +84,45 @@ DECLARE
                threshold_json:max_age_days::FLOAT AS max_age_days
           FROM SAARTHI.OPERATIONAL.RULE_CATALOG
          WHERE threshold_json:concept IS NOT NULL     -- only the "simple threshold" shape
+           AND (disease_scope IS NULL
+                OR NOT ?
+                OR (disease_scope = 'oncology' AND (rule_id <> 'SURG-CLEAR-001' OR ?))
+                OR (disease_scope = 'breast_cancer' AND ?)
+                OR (disease_scope = 'trastuzumab' AND ?))
          ORDER BY specificity DESC;
 BEGIN
     v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:p_known_as_of), CURRENT_TIMESTAMP());
-    v_scheduled := (SELECT scheduled_time FROM SAARTHI.CORE.ENCOUNTER WHERE encounter_id = :p_encounter_id);
+    -- Freshness is measured against the encounter the evidence has to be fresh FOR.
+    -- With no encounter, the only defensible anchor is the moment being asked
+    -- about. A NULL anchor made every age NULL, every "age > max" comparison
+    -- NULL, and every freshness rule fall through to its pass branch with a
+    -- NULL reason - a silent pass on evidence of unknown age (R3), verified live.
+    v_scheduled := COALESCE(
+        (SELECT scheduled_time FROM SAARTHI.CORE.ENCOUNTER WHERE encounter_id = :p_encounter_id),
+        v_known_as_of);
 
-    OPEN c_rules;
+    -- Rule applicability, from RULE_CATALOG.disease_scope. A rule that does not
+    -- apply is omitted, not reported not_evaluated: "LVEF not evaluated" on a
+    -- FOLFOX patient is noise that trains clinicians to ignore the strip.
+    -- When nothing about the patient's disease or regimen is on record, every
+    -- rule applies - unknown scope is not the same as "does not apply" (R3).
+    v_has_plan := (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.TREATMENT_PLAN WHERE patient_id = :p_patient_id);
+    v_breast := (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.CLINICAL_EVENT
+                  WHERE patient_id = :p_patient_id AND event_type = 'diagnosis' AND code LIKE 'C50%');
+    v_scope_known := v_has_plan OR (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.CLINICAL_EVENT
+                  WHERE patient_id = :p_patient_id AND event_type = 'diagnosis');
+    -- applies_to for SURV-LVEF-*: "trastuzumab and other HER2-targeted agents".
+    -- Read from the most recent plan only - a superseded regimen no longer applies.
+    v_her2_targeted := (SELECT COUNT(*) > 0 FROM (
+        SELECT regimen_display FROM SAARTHI.CORE.TREATMENT_PLAN WHERE patient_id = :p_patient_id
+         QUALIFY ROW_NUMBER() OVER (ORDER BY version DESC, decided_at DESC NULLS LAST) = 1) latest
+        WHERE latest.regimen_display ILIKE ANY ('%trastuzumab%', '%pertuzumab%', '%T-DM1%', '%trastuzumab emtansine%'));
+    -- applies_to for SURG-CLEAR-001: "patients with a surgical interruption
+    -- mid-treatment". The structured proxy is a surgical note on record.
+    v_surgical := (SELECT COUNT(*) > 0 FROM SAARTHI.DOCUMENTS.DOCUMENT
+                    WHERE patient_id = :p_patient_id AND doc_type = 'surgical_note');
+
+    OPEN c_rules USING (v_scope_known, v_surgical, v_breast, v_her2_targeted);
     FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days;
 
     WHILE (v_rule_id IS NOT NULL) DO
@@ -188,9 +236,14 @@ BEGIN
         SELECT rule_id, rule_version, gate, severity
           FROM SAARTHI.OPERATIONAL.RULE_CATALOG
          WHERE threshold_json:concept IS NULL
+           AND (disease_scope IS NULL
+                OR NOT ?
+                OR (disease_scope = 'oncology' AND (rule_id <> 'SURG-CLEAR-001' OR ?))
+                OR (disease_scope = 'breast_cancer' AND ?)
+                OR (disease_scope = 'trastuzumab' AND ?))
          ORDER BY specificity DESC;
 
-    OPEN c_special;
+    OPEN c_special USING (v_scope_known, v_surgical, v_breast, v_her2_targeted);
     FETCH c_special INTO v_rule_id, v_rule_version, v_gate, v_severity;
 
     WHILE (v_rule_id IS NOT NULL) DO
@@ -233,7 +286,7 @@ BEGIN
             -- as evidence, and a human reconciles per SPEC §12. Only same-specimen
             -- disagreement is a real conflict. This evaluator checks HER2 as the
             -- canonical case; a fuller sweep would enumerate every concept.
-            LET v_her2_specimens NUMBER := (SELECT COUNT(DISTINCT specimen_id) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '82bcd499-23a8-45f3-9f19-bc63ab73d8b4' AND specimen_id IS NOT NULL);
+            LET v_her2_specimens NUMBER := (SELECT COUNT(DISTINCT specimen_id) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC') AND specimen_id IS NOT NULL);
             IF (v_her2_specimens > 1) THEN
                 v_outcome := 'pass';
                 v_reason  := 'HER2 read on ' || v_her2_specimens::VARCHAR || ' distinct specimens - discordant_across_specimens: both readings surfaced, never auto-resolved';
@@ -246,13 +299,38 @@ BEGIN
             -- Latest specimen is authoritative when specimens differ (final resection
             -- outranks outside biopsy in real practice). value_text pattern is like
             -- 'grade=III ihc=2+'.
-            LET v_latest_ihc VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '82bcd499-23a8-45f3-9f19-bc63ab73d8b4' ORDER BY event_time DESC LIMIT 1);
+            LET v_latest_ihc VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC') ORDER BY event_time DESC LIMIT 1);
             IF (v_latest_ihc IS NULL) THEN
                 v_outcome := 'fail';
                 v_reason  := 'no HER2 IHC recorded';
             ELSEIF (v_latest_ihc ILIKE '%ihc=2%' OR v_latest_ihc ILIKE '%ihc 2%') THEN
-                v_outcome := 'not_evaluated';
-                v_reason  := 'HER2 IHC=2 on latest specimen (' || v_latest_ihc || ') - FISH reflex required, no FISH result on record yet';
+                -- IHC 2+ is equivocal: status is final only once a FISH result on
+                -- or after that IHC exists. ASCO/CAP 2018 dual-probe groups:
+                --   group 1  ratio >= 2.0 AND mean HER2 copies >= 4.0  -> positive
+                --   group 5  ratio <  2.0 AND copies < 4.0             -> negative
+                --   groups 2-4 (discordant ratio/copies)               -> needs
+                --            concurrent IHC review; not final, never guessed.
+                -- value_text carries 'ratio=2.6 copies=5.8'.
+                LET v_ihc_time TIMESTAMP_NTZ := (SELECT MAX(event_time) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC'));
+                LET v_fish VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND status = 'final' AND event_time >= :v_ihc_time AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_FISH') ORDER BY event_time DESC LIMIT 1);
+                LET v_ratio  FLOAT := TRY_TO_DOUBLE(REGEXP_SUBSTR(:v_fish, 'ratio=([0-9.]+)', 1, 1, 'e', 1));
+                LET v_copies FLOAT := TRY_TO_DOUBLE(REGEXP_SUBSTR(:v_fish, 'copies=([0-9.]+)', 1, 1, 'e', 1));
+                IF (v_fish IS NULL) THEN
+                    v_outcome := 'not_evaluated';
+                    v_reason  := 'HER2 IHC=2 on latest specimen (' || v_latest_ihc || ') - FISH reflex required, no FISH result on record yet';
+                ELSEIF (v_ratio IS NULL OR v_copies IS NULL) THEN
+                    v_outcome := 'not_evaluated';
+                    v_reason  := 'FISH result on record but ratio/copy number unreadable (' || v_fish || ') - manual review';
+                ELSEIF (v_ratio >= 2.0 AND v_copies >= 4.0) THEN
+                    v_outcome := 'pass';
+                    v_reason  := 'HER2 status final: IHC 2+ reflexed to FISH, amplified (ratio ' || v_ratio::VARCHAR || ', ' || v_copies::VARCHAR || ' copies/cell - ASCO/CAP 2018 group 1, positive)';
+                ELSEIF (v_ratio < 2.0 AND v_copies < 4.0) THEN
+                    v_outcome := 'pass';
+                    v_reason  := 'HER2 status final: IHC 2+ reflexed to FISH, not amplified (ratio ' || v_ratio::VARCHAR || ', ' || v_copies::VARCHAR || ' copies/cell - ASCO/CAP 2018 group 5, negative)';
+                ELSE
+                    v_outcome := 'not_evaluated';
+                    v_reason  := 'FISH ratio ' || v_ratio::VARCHAR || ' with ' || v_copies::VARCHAR || ' copies/cell is ASCO/CAP 2018 group 2-4 - concurrent IHC review required, not final';
+                END IF;
             ELSE
                 v_outcome := 'pass';
                 v_reason  := 'HER2 status final from IHC alone: ' || v_latest_ihc;
@@ -294,8 +372,8 @@ BEGIN
             END IF;
         ELSEIF (v_rule_id = 'CLIN-CRCL-001') THEN
             -- Cockcroft-Gault: CrCl = ((140 - age) * weight_kg * (0.85 if female else 1)) / (72 * creatinine)
-            LET v_creat  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = 'd74263e5-108d-455d-985a-23505d911cc7' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
-            LET v_weight FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '305bb211-39ef-4070-a204-5b1fb01d0a78' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_creat  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'CREATININE') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_weight FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'WEIGHT') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
             LET v_age    FLOAT := (SELECT DATEDIFF('year', dob, CURRENT_DATE()) FROM SAARTHI.CORE.PATIENT WHERE patient_id = :p_patient_id);
             LET v_female BOOLEAN := (SELECT gender = 'female' FROM SAARTHI.CORE.PATIENT WHERE patient_id = :p_patient_id);
             IF (v_creat IS NULL OR v_weight IS NULL OR v_age IS NULL) THEN
@@ -327,8 +405,8 @@ BEGIN
             -- as the safety-first default because it is the strictest absolute limit
             -- across the three agents named in the rule (docetaxel is x-ULN; doxorubicin
             -- is absolute mg/dL). AST also read for informational context.
-            LET v_bili FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = 'e64db6d4-a019-4cfe-97b0-633220e157f9' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
-            LET v_ast  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = '7449126c-da4c-4d46-8c81-b067968c9715' AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_bili FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'BILIRUBIN') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_ast  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'AST') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
             IF (v_bili IS NULL) THEN
                 v_outcome := 'not_evaluated';
                 v_reason  := 'per-agent bilirubin rule requires a bilirubin measurement';

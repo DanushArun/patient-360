@@ -85,8 +85,21 @@ WHEN NOT MATCHED THEN INSERT (map_id, patient_id, source_system, source_patient_
 -- < 8.5 threshold). The corresponding fail scenarios are covered by the rule
 -- fixture corpus at data/fixtures/rules/rule_fixtures.yaml.
 
+-- concept_id is looked up by canonical_name here, not hardcoded: ontology
+-- rows get a fresh UUID_STRING() on every account (data/ontology.sql), so a
+-- literal concept_id copied from one deploy's account is a foreign key to
+-- nothing on any other account - the join silently drops the event instead
+-- of erroring, which is worse than a failure. Verified live: a prior version
+-- of this file hardcoded UUIDs from a different account and 6 of 12 deep-case
+-- events on a fresh account resolved to no concept at all.
+
 MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
-USING (SELECT 'EVT-LVEF-01' AS event_id) s ON t.event_id = s.event_id
+USING (
+  SELECT 'EVT-LVEF-01' AS event_id,
+         (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY
+           WHERE canonical_name = 'LVEF') AS concept_id
+) s ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (
   event_id, patient_id, encounter_id, event_type, concept_id,
   code_system, code, display, value_num, value_text, unit,
@@ -94,7 +107,7 @@ WHEN NOT MATCHED THEN INSERT (
   status, negation, event_time, source_recorded_at, ingested_at, valid_until
 ) VALUES (
   'EVT-LVEF-01', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'imaging',
-  '047c1aee-f5ff-415b-9f44-1d222bd96b18',  -- LVEF concept_id
+  s.concept_id,
   'LOINC', '10230-1', 'Left ventricular Ejection fraction',
   58, NULL, '%', '58', '%', NULL, NULL, 'ECHO-2025-0418',
   'final', FALSE,
@@ -104,7 +117,12 @@ WHEN NOT MATCHED THEN INSERT (
 );
 
 MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
-USING (SELECT 'EVT-HBA1C-01' AS event_id) s ON t.event_id = s.event_id
+USING (
+  SELECT 'EVT-HBA1C-01' AS event_id,
+         (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY
+           WHERE canonical_name = 'HBA1C') AS concept_id
+) s ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (
   event_id, patient_id, encounter_id, event_type, concept_id,
   code_system, code, display, value_num, value_text, unit,
@@ -112,7 +130,7 @@ WHEN NOT MATCHED THEN INSERT (
   status, negation, event_time, source_recorded_at, ingested_at, valid_until
 ) VALUES (
   'EVT-HBA1C-01', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'lab',
-  'e695965e-646b-44c0-94c0-be884b8739e7',  -- HBA1C concept_id
+  s.concept_id,
   'LOINC', '4548-4', 'Hemoglobin A1c/Hemoglobin.total in Blood',
   7.2, NULL, '%', '7.2', '%', NULL, NULL, 'LAB-2025-0415-HBA1C',
   'final', FALSE,
@@ -147,21 +165,37 @@ VALUES ('COV-DEEP-0001', 'PAT-DEEP-0001', 'scheme', 'PM-JAY', 'PMJAY-800000-DEEP
 -- scenarios live in data/fixtures/rules/rule_fixtures.yaml and are exercised
 -- by the scratch-patient harness in run_rule_fixtures.py.
 
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CREAT-01' AS event_id) s ON t.event_id = s.event_id
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-CREAT-01' AS event_id,
+              (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'CREATININE') AS concept_id) s
+ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code, display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id, accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)
-VALUES ('EVT-CREAT-01','PAT-DEEP-0001','EVT-CHEMO-06','lab','d74263e5-108d-455d-985a-23505d911cc7','LOINC','2160-0','Creatinine [Mass/volume] in Serum or Plasma',0.9,NULL,'mg/dL','0.9','mg/dL',NULL,NULL,'LAB-2025-0415-CREAT','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,10,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,25,0),CURRENT_TIMESTAMP(),NULL);
+VALUES ('EVT-CREAT-01','PAT-DEEP-0001','EVT-CHEMO-06','lab',s.concept_id,'LOINC','2160-0','Creatinine [Mass/volume] in Serum or Plasma',0.9,NULL,'mg/dL','0.9','mg/dL',NULL,NULL,'LAB-2025-0415-CREAT','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,10,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,25,0),CURRENT_TIMESTAMP(),NULL);
 
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-WEIGHT-01' AS event_id) s ON t.event_id = s.event_id
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-WEIGHT-01' AS event_id,
+              (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'WEIGHT') AS concept_id) s
+ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code, display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id, accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)
-VALUES ('EVT-WEIGHT-01','PAT-DEEP-0001','EVT-CHEMO-06','vitals','305bb211-39ef-4070-a204-5b1fb01d0a78','LOINC','29463-7','Body weight',62,NULL,'kg','62','kg',NULL,NULL,'VITALS-2025-0415','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,8,45,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,0,0),CURRENT_TIMESTAMP(),NULL);
+VALUES ('EVT-WEIGHT-01','PAT-DEEP-0001','EVT-CHEMO-06','vitals',s.concept_id,'LOINC','29463-7','Body weight',62,NULL,'kg','62','kg',NULL,NULL,'VITALS-2025-0415','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,8,45,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,0,0),CURRENT_TIMESTAMP(),NULL);
 
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-BILI-01' AS event_id) s ON t.event_id = s.event_id
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-BILI-01' AS event_id,
+              (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'BILIRUBIN') AS concept_id) s
+ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code, display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id, accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)
-VALUES ('EVT-BILI-01','PAT-DEEP-0001','EVT-CHEMO-06','lab','e64db6d4-a019-4cfe-97b0-633220e157f9','LOINC','1975-2','Bilirubin.total [Mass/volume] in Serum or Plasma',0.8,NULL,'mg/dL','0.8','mg/dL',NULL,NULL,'LAB-2025-0415-BILI','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,20,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,35,0),CURRENT_TIMESTAMP(),NULL);
+VALUES ('EVT-BILI-01','PAT-DEEP-0001','EVT-CHEMO-06','lab',s.concept_id,'LOINC','1975-2','Bilirubin.total [Mass/volume] in Serum or Plasma',0.8,NULL,'mg/dL','0.8','mg/dL',NULL,NULL,'LAB-2025-0415-BILI','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,20,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,35,0),CURRENT_TIMESTAMP(),NULL);
 
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-AST-01' AS event_id) s ON t.event_id = s.event_id
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-AST-01' AS event_id,
+              (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'AST') AS concept_id) s
+ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code, display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id, accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)
-VALUES ('EVT-AST-01','PAT-DEEP-0001','EVT-CHEMO-06','lab','7449126c-da4c-4d46-8c81-b067968c9715','LOINC','1920-8','Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma',28,NULL,'U/L','28','U/L',NULL,NULL,'LAB-2025-0415-AST','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,22,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,37,0),CURRENT_TIMESTAMP(),NULL);
+VALUES ('EVT-AST-01','PAT-DEEP-0001','EVT-CHEMO-06','lab',s.concept_id,'LOINC','1920-8','Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma',28,NULL,'U/L','28','U/L',NULL,NULL,'LAB-2025-0415-AST','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,22,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,37,0),CURRENT_TIMESTAMP(),NULL);
 
 -- SURG-CLEAR-001 - 3 assertions extracted from a synthetic surgical note.
 -- Note: ASSERTION rows normally arrive via the extract_assertions task; seeding
@@ -192,3 +226,62 @@ VALUES ('PA-DEEP-0001', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'COV-DEEP-0001', 'PM-JA
 
 
 
+
+-- =============================================================================
+-- STEP 12f - HER2 resolution + treatment plan for the deep-case patient
+-- =============================================================================
+-- No diagnosis event existed for the deep case at all: evaluate_gates.sql's
+-- disease_scope filter (added alongside the FISH fix below) reads
+-- CLINICAL_EVENT for an ICD-10 code starting C50 to decide whether
+-- breast_cancer-scoped rules (DOC-HER2-001, her headline gate) apply to a
+-- patient. Without this row that filter would have silently dropped her own
+-- HER2 gate the same week it was added.
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-DX-01' AS event_id) s ON t.event_id = s.event_id
+WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code, display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id, accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)
+VALUES ('EVT-DX-01', 'PAT-DEEP-0001', NULL, 'diagnosis', NULL, 'ICD-10', 'C50.9', 'Carcinoma breast, unspecified', NULL, 'Invasive ductal carcinoma, left breast', NULL, NULL, NULL, NULL, NULL, 'ACC-EVT-DX-01', 'final', FALSE, TIMESTAMP_NTZ_FROM_PARTS(2025,1,10,9,0,0), TIMESTAMP_NTZ_FROM_PARTS(2025,1,10,11,0,0), CURRENT_TIMESTAMP(), NULL);
+
+-- Meera's surgical specimen (EVT-HER2-SURGICAL, IHC 2+) was equivocal and sat
+-- unresolved through the first build - DOC-HER2-001 correctly returned
+-- not_evaluated. Team decision: her story resolves with FISH confirming
+-- amplification, dated a week after the surgical IHC (realistic FISH
+-- turnaround), so a live question about "is her HER2 confirmed" gets an
+-- answer instead of a permanent not_evaluated. ASCO/CAP 2018 group 1
+-- (ratio>=2.0, copies>=4.0 -> amplified) - see evaluate_gates.sql's
+-- DOC-HER2-001 branch for how this is read.
+--
+-- TREATMENT_PLAN is what SURV-LVEF-001/002's disease_scope='trastuzumab'
+-- applicability check (evaluate_gates.sql) reads: without a plan naming the
+-- drug, those rules are correctly scoped OUT, and the LVEF story disappears
+-- from her strip. A HER2-amplified patient with no plan on file is itself a
+-- realistic documentation gap, but it is not this patient's story.
+
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (
+  SELECT 'EVT-HER2-FISH-01' AS event_id,
+         (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_FISH') AS concept_id
+) s ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
+WHEN NOT MATCHED THEN INSERT (
+  event_id, patient_id, encounter_id, event_type, concept_id,
+  code_system, code, display, value_num, value_text, unit,
+  original_value, original_unit, abnormal_flag, specimen_id, accession_id,
+  status, negation, event_time, source_recorded_at, ingested_at, valid_until
+) VALUES (
+  'EVT-HER2-FISH-01', 'PAT-DEEP-0001', 'EVT-CHEMO-01', 'pathology',
+  s.concept_id,
+  'LOINC', '85319-2', 'HER2 [Interpretation] in Breast cancer specimen by FISH',
+  NULL, 'ratio=3.4 copies=6.2', NULL, 'ratio=3.4 copies=6.2', NULL, NULL,
+  'SPEC-SURGICAL-001', 'ACC-EVT-HER2-FISH-01',
+  'final', FALSE,
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 2, 12, 14, 0, 0),
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 2, 12, 16, 30, 0),
+  CURRENT_TIMESTAMP(), NULL
+);
+
+MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t
+USING (SELECT 'PLAN-DEEP-0001' AS plan_id) s ON t.plan_id = s.plan_id
+WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display,
+  intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum)
+VALUES ('PLAN-DEEP-0001', 'PAT-DEEP-0001', 1, 'TH',
+  'Paclitaxel + trastuzumab, weekly (HER2-amplified, confirmed by FISH 12 Feb 2025)',
+  'curative', 12, TIMESTAMP_NTZ_FROM_PARTS(2025, 2, 14, 10, 0, 0), 'PRAC-01', 'tumour_board');

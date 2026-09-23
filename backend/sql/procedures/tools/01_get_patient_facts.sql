@@ -98,7 +98,14 @@ BEGIN
                             'gender', gender, 'district', district, 'state', state, 'primary_language', primary_language)
                           FROM SAARTHI.CORE.PATIENT WHERE patient_id = :v_patient_id);
         WHEN 'labs' THEN
+            -- value_text alongside value_num: a qualitative result (HER2 IHC
+            -- "grade=III ihc=2+", a FISH ratio/copy pair) has no value_num at
+            -- all, and dropping value_text made every such result invisible
+            -- here even though evaluate_gates.sql reads the same column -
+            -- found live asking about a HER2 FISH result the record actually
+            -- has.
             v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('concept', concept_name, 'value', value_num,
+                            'value_text', value_text,
                             'is_derived', is_derived, 'derivation', derivation, 'event_time', event_time, 'event_id', event_id))
                           FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS
                           WHERE patient_id = :v_patient_id AND ingested_at <= :v_known_as_of);

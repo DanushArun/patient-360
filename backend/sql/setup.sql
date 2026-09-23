@@ -166,6 +166,11 @@ EXECUTE IMMEDIATE FROM './data/transform_structured_events.sql';
 -- cross-patient leak.
 EXECUTE IMMEDIATE FROM './data/load_judge_console_fixtures.sql';
 
+-- Tomorrow's day-care list: 11 synthetic patients, each shaped around one real
+-- blocker. Evidence only - every outcome comes from evaluate_gates (R1).
+-- Dates are relative to CURRENT_DATE() and re-anchored on every deploy.
+EXECUTE IMMEDIATE FROM './data/load_daycare_cohort.sql';
+
 
 -- ---------------------------------------------------------------------------
 -- STEP 13 - Streams.  [2]
@@ -218,7 +223,7 @@ EXECUTE IMMEDIATE FROM './tasks/parse_documents.sql';      -- [2]
 -- EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';         -- [2]  [NOT BUILT]
 EXECUTE IMMEDIATE FROM './tasks/extract_assertions.sql';   -- [1]  R7 two-pass
 -- EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]  [NOT BUILT]
--- EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]  [NOT BUILT]
+EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]  populates READINESS_STATE for the day-care list
 -- EXECUTE IMMEDIATE FROM './tasks/notify.sql';               -- [2]  [NOT BUILT]
 
 
