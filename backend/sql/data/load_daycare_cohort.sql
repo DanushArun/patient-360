@@ -16,7 +16,10 @@
 --   DC-05 ANC 1,150                   DC-11 ready
 --   DC-06 PM-JAY pre-auth pending
 --
--- Regimens are clinically coherent: trastuzumab only where HER2 is 3+.
+-- Regimens are clinically coherent: trastuzumab only where HER2 is 3+. Each
+-- regimen_code is a REGIMEN_REGISTRY row pointing at its governing protocol;
+-- cisplatin with radiation is split by site (CIS-RT-HN / CIS-RT-CX) because
+-- the head-and-neck and cervix protocols set different thresholds.
 --
 -- Dates are relative to CURRENT_DATE() and re-anchored on every deploy
 -- (WHEN MATCHED ... UPDATE), so "tomorrow" is tomorrow whichever day this runs.
@@ -32,10 +35,10 @@ FROM VALUES
   ('02','Lakshmi Narayanan','1979-08-02','female','Madurai',      'Tamil Nadu',   'Tamil',  'C50.4','Carcinoma breast, HER2 positive',   'H-MAINT','Trastuzumab maintenance, 3-weekly',        9, FALSE, 'approved','approved'),
   ('03','Rakesh Kumar Yadav','1968-01-19','male', 'Gaya',         'Bihar',        'Hindi',  'C18.7','Adenocarcinoma sigmoid colon',      'FOLFOX', 'FOLFOX, 2-weekly',                         5, FALSE, 'approved','approved'),
   ('04','Fatima Begum',     '1982-06-25','female','Murshidabad',  'West Bengal',  'Bengali','C50.9','Carcinoma breast, HER2 negative',   'AC',     'Doxorubicin + cyclophosphamide, 3-weekly', 3, TRUE,  'approved','approved'),
-  ('05','Suresh Patil',     '1965-11-04','male',  'Latur',        'Maharashtra',  'Marathi','C10.9','Squamous carcinoma oropharynx',     'CIS-RT', 'Cisplatin weekly with radiotherapy',       4, FALSE, 'approved','approved'),
+  ('05','Suresh Patil',     '1965-11-04','male',  'Latur',        'Maharashtra',  'Marathi','C10.9','Squamous carcinoma oropharynx',     'CIS-RT-HN','Cisplatin 100 mg/m2 3-weekly with radiotherapy', 2, FALSE, 'approved','approved'),
   ('06','Priya Sharma',     '1987-02-14','female','Jaipur',       'Rajasthan',    'Hindi',  'C50.4','Carcinoma breast, HER2 positive',   'TH',     'Paclitaxel + trastuzumab, weekly',          2, TRUE,  'pending', NULL),
   ('07','Gopal Das',        '1960-09-30','male',  'Kolkata',      'West Bengal',  'Bengali','C34.1','Adenocarcinoma lung, upper lobe',   'PEM-CARBO','Pemetrexed + carboplatin, 3-weekly',     3, FALSE, 'pending', 'approved'),
-  ('08','Savitri Bai',      '1971-04-08','female','Nanded',       'Maharashtra',  'Marathi','C53.9','Squamous carcinoma cervix',         'CIS-RT', 'Cisplatin weekly with radiotherapy',       2, FALSE, 'approved','approved'),
+  ('08','Savitri Bai',      '1971-04-08','female','Nanded',       'Maharashtra',  'Marathi','C53.9','Squamous carcinoma cervix',         'CIS-RT-CX','Cisplatin 40 mg/m2 weekly with radiotherapy', 2, FALSE, 'approved','approved'),
   ('09','Abdul Rahman',     '1976-12-21','male',  'Lucknow',      'Uttar Pradesh','Hindi',  'C16.9','Adenocarcinoma stomach',            'CAPOX',  'Capecitabine + oxaliplatin, 3-weekly',     4, TRUE,  'approved','approved'),
   ('10','Radha Krishnan',   '1981-07-17','female','Chennai',      'Tamil Nadu',   'Tamil',  'C50.9','Carcinoma breast, HER2 equivocal',  'AC',     'Doxorubicin + cyclophosphamide, 3-weekly', 2, FALSE, 'approved','approved'),
   ('11','Mohan Lal',        '1963-05-02','male',  'Agra',         'Uttar Pradesh','Hindi',  'C18.2','Adenocarcinoma ascending colon',    'FOLFOX', 'FOLFOX, 2-weekly',                         8, FALSE, 'approved','approved');
@@ -80,7 +83,7 @@ VALUES (s.map_id, s.patient_id, s.source_system, s.source_patient_id, s.link_sta
 MERGE INTO SAARTHI.CORE.ENCOUNTER t
 USING (SELECT 'ENC-DC-' || k AS encounter_id, 'PAT-DC-' || k AS patient_id, cycle FROM SAARTHI.OPERATIONAL._DC_COHORT) s
 ON t.encounter_id = s.encounter_id
-WHEN MATCHED THEN UPDATE SET t.scheduled_time = $dc_anchor, t.status = 'scheduled'
+WHEN MATCHED THEN UPDATE SET t.scheduled_time = $dc_anchor, t.status = 'scheduled', t.cycle_number = s.cycle
 WHEN NOT MATCHED THEN INSERT (encounter_id, patient_id, facility_id, department_id, encounter_type,
   scheduled_time, event_time, cycle_number, status, gap_type)
 VALUES (s.encounter_id, s.patient_id, 'FAC-02', 'DEPT-ONC-02', 'daycare',
@@ -91,6 +94,7 @@ VALUES (s.encounter_id, s.patient_id, 'FAC-02', 'DEPT-ONC-02', 'daycare',
 MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t
 USING (SELECT 'PLAN-DC-' || k AS plan_id, 'PAT-DC-' || k AS patient_id, regimen_code, regimen FROM SAARTHI.OPERATIONAL._DC_COHORT) s
 ON t.plan_id = s.plan_id
+WHEN MATCHED THEN UPDATE SET t.regimen_code = s.regimen_code, t.regimen_display = s.regimen
 WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent,
   planned_cycles, decided_at, decided_by_practitioner_id, decision_forum)
 VALUES (s.plan_id, s.patient_id, 1, s.regimen_code, s.regimen, 'curative',
@@ -254,7 +258,55 @@ FROM VALUES
   ('02','DEXA','imaging','T_SCORE',200,-1.4,NULL,NULL,'LOINC','38263-0','DEXA T-score',NULL),
   ('04','DEXA','imaging','T_SCORE',90, -0.5,NULL,NULL,'LOINC','38263-0','DEXA T-score',NULL),
   ('06','DEXA','imaging','T_SCORE',40, -0.3,NULL,NULL,'LOINC','38263-0','DEXA T-score',NULL),
-  ('10','DEXA','imaging','T_SCORE',60, -1.1,NULL,NULL,'LOINC','38263-0','DEXA T-score',NULL);
+  ('10','DEXA','imaging','T_SCORE',60, -1.1,NULL,NULL,'LOINC','38263-0','DEXA T-score',NULL),
+  -- 24 Sept: evidence for the rules added from evidence/clinical/ (CLIN-PANEL-001,
+  -- SAFE-HBV-001, SAFE-PREG-001). DC-03's labs share its 11-day-old draw; DC-08
+  -- still has no CBC - both remain their designed blockers.
+  ('01','HB','lab','HEMOGLOBIN',0.7,11.8,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('02','HB','lab','HEMOGLOBIN',0.7,12.4,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('03','HB','lab','HEMOGLOBIN',11,11.1,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('04','HB','lab','HEMOGLOBIN',0.7,10.6,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('05','HB','lab','HEMOGLOBIN',0.7,11.9,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('06','HB','lab','HEMOGLOBIN',0.7,12.1,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('07','HB','lab','HEMOGLOBIN',0.7,13.0,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('09','HB','lab','HEMOGLOBIN',0.7,12.6,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('10','HB','lab','HEMOGLOBIN',0.7,11.4,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('11','HB','lab','HEMOGLOBIN',0.7,12.9,NULL,'g/dL','LOINC','718-7','Haemoglobin',NULL),
+  ('01','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('01','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('02','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('02','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('03','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('03','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('04','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('04','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('05','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('05','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('06','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('06','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('07','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('07','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('08','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('08','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('09','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('09','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('10','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('10','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('11','HBSAG','lab','HBSAG',100,NULL,'non-reactive',NULL,'LOINC','5196-1','HBsAg',NULL),
+  ('11','ANTIHBC','lab','ANTI_HBC',100,NULL,'non-reactive',NULL,'LOINC','16933-4','Anti-HBc total',NULL),
+  ('03','ALT','lab','ALT',11,34,NULL,'U/L','LOINC','1742-6','ALT',NULL),
+  ('11','ALT','lab','ALT',0.7,29,NULL,'U/L','LOINC','1742-6','ALT',NULL),
+  ('09','ALT','lab','ALT',0.7,31,NULL,'U/L','LOINC','1742-6','ALT',NULL),
+  ('07','ALT','lab','ALT',0.7,38,NULL,'U/L','LOINC','1742-6','ALT',NULL),
+  ('07','ALP','lab','ALP',0.7,96,NULL,'U/L','LOINC','6768-6','Alkaline phosphatase',NULL),
+  ('07','LDH','lab','LDH',0.7,212,NULL,'U/L','LOINC','2532-0','LDH',NULL),
+  ('05','NA','lab','SODIUM',0.7,137,NULL,'mmol/L','LOINC','2951-2','Sodium',NULL),
+  ('05','K','lab','POTASSIUM',0.7,4.1,NULL,'mmol/L','LOINC','2823-3','Potassium',NULL),
+  ('05','CA','lab','CALCIUM',0.7,9.2,NULL,'mg/dL','LOINC','17861-6','Calcium',NULL),
+  ('05','ALB','lab','ALBUMIN',0.7,3.8,NULL,'g/dL','LOINC','1751-7','Albumin',NULL),
+  ('05','MG','lab','MAGNESIUM',0.7,1.9,NULL,'mg/dL','LOINC','19123-9','Magnesium',NULL),
+  ('02','HCG','lab','BETA_HCG',305,NULL,'negative',NULL,'LOINC','2106-3','Urine pregnancy test',NULL),
+  ('06','HCG','lab','BETA_HCG',36,NULL,'negative',NULL,'LOINC','2106-3','Urine pregnancy test',NULL);
 
 MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
 USING (
@@ -278,3 +330,70 @@ VALUES (s.event_id, s.patient_id, s.encounter_id, s.event_type, s.concept_id, s.
   s.display, s.value_num, s.value_text, s.unit, COALESCE(s.value_num::VARCHAR, s.value_text), s.unit, NULL,
   s.specimen, 'ACC-' || s.event_id, 'final', FALSE, s.event_time, DATEADD(hour, 3, s.event_time),
   CURRENT_TIMESTAMP(), NULL);
+
+-- ---- administrations (DOSE-ANTHRA-001, DOSE-HLOAD-001, SAFE-PEMVIT-001) --------------
+-- value_num is the dose as given; unit says per what. Doxorubicin 60 mg/m2 per
+-- AC cycle (BRAJAC), trastuzumab 3-weekly (BRAJTTW/BRAJTR), B12 every 9 weeks
+-- and daily folic acid for pemetrexed (LUAVPP).
+CREATE OR REPLACE TEMPORARY TABLE SAARTHI.OPERATIONAL._DC_MEDS AS
+SELECT column1 AS k, column2 AS sfx, column3 AS concept, column4::FLOAT AS days_before,
+       column5::FLOAT AS dose, column6 AS unit, column7 AS status, column8 AS code, column9 AS display
+FROM VALUES
+  ('04','DOXO1','DOXORUBICIN',42,60,'mg/m2','administered','3639','Doxorubicin IV push, AC cycle 1'),
+  ('04','DOXO2','DOXORUBICIN',21,60,'mg/m2','administered','3639','Doxorubicin IV push, AC cycle 2'),
+  ('10','DOXO1','DOXORUBICIN',21,60,'mg/m2','administered','3639','Doxorubicin IV push, AC cycle 1'),
+  ('01','HER1','TRASTUZUMAB',21,6,'mg/kg','administered','224905','Trastuzumab IV, maintenance dose'),
+  ('02','HER1','TRASTUZUMAB',21,6,'mg/kg','administered','224905','Trastuzumab IV, maintenance dose'),
+  ('06','HER1','TRASTUZUMAB',7,8,'mg/kg','administered','224905','Trastuzumab IV, loading dose'),
+  ('07','B12','VITAMIN_B12',40,1000,'mcg','administered','11248','Vitamin B12 IM (pemetrexed premedication)'),
+  ('07','FOL','FOLIC_ACID',3,0.4,'mg','dispensed','4511','Folic acid 0.4 mg PO daily');
+
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (
+  SELECT 'EVT-DC-' || m.k || '-' || m.sfx AS event_id, 'PAT-DC-' || m.k AS patient_id,
+         o.concept_id, m.dose, m.unit, m.status, m.code, m.display,
+         DATEADD(minute, -ROUND(m.days_before * 1440), $dc_anchor)::TIMESTAMP_NTZ AS event_time
+    FROM SAARTHI.OPERATIONAL._DC_MEDS m
+    JOIN SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY o ON o.canonical_name = m.concept
+) s ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id, t.event_time = s.event_time,
+  t.source_recorded_at = DATEADD(hour, 1, s.event_time)
+WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code,
+  display, value_num, unit, original_value, original_unit, status, negation, event_time, source_recorded_at, ingested_at)
+VALUES (s.event_id, s.patient_id, NULL, 'medication', s.concept_id, 'RxNorm', s.code,
+  s.display, s.dose, s.unit, s.dose::VARCHAR, s.unit, s.status, FALSE, s.event_time,
+  DATEADD(hour, 1, s.event_time), CURRENT_TIMESTAMP());
+
+-- ---- documents: consent, order, last discharge plan, nursing assessment ----------------
+-- DOC-CONSENT-001 (signed after the plan, day -110), DOC-ORDER-001 (signed the
+-- day before the visit), DOC-DISCH-001 (previous cycle, one cycle interval back),
+-- DOC-ALLERGY-001 (a verified assertion on the nursing assessment). Records
+-- only: these documents carry no parsed pages.
+MERGE INTO SAARTHI.DOCUMENTS.DOCUMENT t
+USING (
+  SELECT 'DOC-DC-' || c.k || '-' || d.kind AS doc_id, 'PAT-DC-' || c.k AS patient_id, d.doc_type,
+         DATEADD(day, -IFF(d.kind = 'DISCH', r.cycle_days, d.days_before), $dc_anchor)::TIMESTAMP_NTZ AS effective_at,
+         d.signed
+    FROM SAARTHI.OPERATIONAL._DC_COHORT c
+    JOIN SAARTHI.OPERATIONAL.REGIMEN_REGISTRY r ON r.regimen_code = c.regimen_code
+    CROSS JOIN (SELECT column1 AS kind, column2 AS doc_type, column3::INT AS days_before, column4::BOOLEAN AS signed
+                  FROM VALUES ('CONSENT','chemo_consent',100,TRUE), ('ORDER','chemo_order',1,TRUE),
+                              ('DISCH','discharge_summary',0,TRUE), ('NURSE','nursing_assessment',1,FALSE)) d
+) s ON t.doc_id = s.doc_id
+WHEN MATCHED THEN UPDATE SET t.effective_at = s.effective_at, t.signed_at = IFF(s.signed, s.effective_at, NULL)
+WHEN NOT MATCHED THEN INSERT (doc_id, patient_id, scope, doc_type, version, revision_type, signed_at,
+  effective_at, ingested_at, source_facility_id, ingestion_method, status)
+VALUES (s.doc_id, s.patient_id, 'patient', s.doc_type, 1, 'original', IFF(s.signed, s.effective_at, NULL),
+  s.effective_at, CURRENT_TIMESTAMP(), 'FAC-02', 'digital_emr', 'active');
+
+MERGE INTO SAARTHI.EVIDENCE.ASSERTION t
+USING (
+  SELECT 'ASS-DC-' || k || '-ALLERGY' AS assertion_id, 'DOC-DC-' || k || '-NURSE' AS doc_id,
+         'PAT-DC-' || k AS subject,
+         IFF(k = '07', 'sulfonamide - rash (2019)', 'no known drug allergy') AS value
+    FROM SAARTHI.OPERATIONAL._DC_COHORT
+) s ON t.assertion_id = s.assertion_id
+WHEN NOT MATCHED THEN INSERT (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit,
+  negation, missingness_state, verification_status, pass1_value, pass2_value, extractor_version, char_start, char_end)
+VALUES (s.assertion_id, s.doc_id, 0, NULL, s.subject, 'allergy_history', s.value, NULL,
+  FALSE, 'present', 'verified', s.value, s.value, 'seed-v1', 0, 0);

@@ -250,9 +250,13 @@ VALUES ('MH-MJPJAY', 'Mahatma Jyotiba Phule Jan Arogya Yojana (Maharashtra)', 's
         ARRAY_CONSTRUCT('PKG-ONCO-CHEMO-01','PKG-ONCO-SURG-01','PKG-ONCO-RT-01'),
         150000, 'Maharashtra');
 
+-- Plan dates sit on the deep case's own timeline (cycle 1 on 29 Jan 2025). They
+-- were CURRENT_TIMESTAMP-relative, which put version 3 fifteen months after the
+-- cycle it governed.
 MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0001' k) s ON t.plan_id = s.k
+WHEN MATCHED THEN UPDATE SET t.decided_at = TIMESTAMP_NTZ_FROM_PARTS(2025, 1, 20, 16, 0, 0)
 WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum)
-VALUES ('TP-DEEP-0001', 'PAT-DEEP-0001', 1, 'AC-TH', 'Adriamycin/Cyclophosphamide -> Paclitaxel + Trastuzumab', 'curative', 6, DATEADD(day, -180, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board');
+VALUES ('TP-DEEP-0001', 'PAT-DEEP-0001', 1, 'AC-TH', 'Adriamycin/Cyclophosphamide -> Paclitaxel + Trastuzumab', 'curative', 6, TIMESTAMP_NTZ_FROM_PARTS(2025, 1, 20, 16, 0, 0), 'PRAC-01', 'tumour_board');
 
 -- =============================================================================
 -- STEP 12h - Treatment plan supersession chain (4 versions per ledger.py)
@@ -263,15 +267,17 @@ VALUES ('TP-DEEP-0001', 'PAT-DEEP-0001', 1, 'AC-TH', 'Adriamycin/Cyclophosphamid
 -- pick the current active row.
 
 MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0002' k) s ON t.plan_id = s.k
+WHEN MATCHED THEN UPDATE SET t.decided_at = TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 10, 16, 0, 0)
 WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum, supersedes_plan_id, reason_for_change)
 VALUES ('TP-DEEP-0002', 'PAT-DEEP-0001', 2, 'AC-TH', 'AC-TH (paclitaxel + trastuzumab) - dose delayed post-appendectomy',
-        'curative', 6, DATEADD(day, -120, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board',
+        'curative', 6, TIMESTAMP_NTZ_FROM_PARTS(2025, 4, 10, 16, 0, 0), 'PRAC-01', 'tumour_board',
         'TP-DEEP-0001', 'post-op recovery from unplanned appendectomy');
 
 MERGE INTO SAARTHI.CORE.TREATMENT_PLAN t USING (SELECT 'TP-DEEP-0003' k) s ON t.plan_id = s.k
+WHEN MATCHED THEN UPDATE SET t.decided_at = TIMESTAMP_NTZ_FROM_PARTS(2025, 5, 20, 16, 0, 0)
 WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regimen_display, intent, planned_cycles, decided_at, decided_by_practitioner_id, decision_forum, supersedes_plan_id, reason_for_change)
 VALUES ('TP-DEEP-0003', 'PAT-DEEP-0001', 3, 'AC-TH-ZOL', 'AC-TH (paclitaxel + trastuzumab) + zoledronic acid (DEXA-confirmed osteopenia)',
-        'curative', 6, DATEADD(day, -60, CURRENT_TIMESTAMP()), 'PRAC-01', 'tumour_board',
+        'curative', 6, TIMESTAMP_NTZ_FROM_PARTS(2025, 5, 20, 16, 0, 0), 'PRAC-01', 'tumour_board',
         'TP-DEEP-0002', 'DEXA T-score -1.6 osteopenia + trastuzumab-associated bone risk');
 
 -- =============================================================================
@@ -296,23 +302,30 @@ VALUES ('EVT-APPENDECTOMY', 'PAT-DEEP-0001', 'FAC-03', 'DEPT-ONC-02', 'inpatient
 -- LVEF surveillance stays relevant (trastuzumab + bone-modifying agent).
 
 MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-ZOLEDRONIC' AS event_id) s ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.event_time = TIMESTAMP_NTZ_FROM_PARTS(2025, 5, 23, 11, 0, 0),
+  t.source_recorded_at = TIMESTAMP_NTZ_FROM_PARTS(2025, 5, 23, 13, 30, 0), t.status = 'administered'
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id,
   code_system, code, display, value_text, unit, status, negation, event_time, source_recorded_at, ingested_at)
 VALUES ('EVT-ZOLEDRONIC', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'medication', NULL,
   'RxNorm', '77655', 'zoledronic acid 4 MG per 100 ML Injection',
-  'zoledronic acid 4 mg IV over 15 min', 'mg', 'final', FALSE,
-  TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 18, 11, 0, 0),
-  TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 18, 13, 30, 0),
+  'zoledronic acid 4 mg IV over 15 min', 'mg', 'administered', FALSE,
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 5, 23, 11, 0, 0),   -- cycle 6 (EVT-CHEMO-06), after plan v3
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 5, 23, 13, 30, 0),
   CURRENT_TIMESTAMP());
 
 -- =============================================================================
--- STEP 12g - Upcoming encounter to exercise TASK_NOTIFY's 3-day window
+-- STEP 12g - Cycle 7, the deep case's next visit
 -- =============================================================================
+-- 21 days after cycle 6 (23 May 2025), on the deep case's own timeline. It was
+-- scheduled CURRENT_TIMESTAMP + 2 days to exercise TASK_NOTIFY's 3-day window,
+-- which judged 2025 labs as 547 days stale; the day-care cohort
+-- (load_daycare_cohort.sql, always tomorrow) now exercises that window.
 MERGE INTO SAARTHI.CORE.ENCOUNTER t USING (SELECT 'EVT-CHEMO-07' k) s ON t.encounter_id = s.k
+WHEN MATCHED THEN UPDATE SET t.scheduled_time = TIMESTAMP_NTZ_FROM_PARTS(2025, 6, 13, 9, 30, 0)
 WHEN NOT MATCHED THEN INSERT (encounter_id, patient_id, facility_id, department_id, encounter_type,
   scheduled_time, event_time, cycle_number, status)
 VALUES ('EVT-CHEMO-07', 'PAT-DEEP-0001', 'FAC-02', 'DEPT-ONC-02', 'daycare',
-  DATEADD(day, 2, CURRENT_TIMESTAMP()), NULL, 7, 'scheduled');
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 6, 13, 9, 30, 0), NULL, 7, 'scheduled');
 
 -- =============================================================================
 -- STEP 12k - Corruption scenario 6: Auth pending in table, approved in letter
@@ -344,12 +357,19 @@ VALUES ('PA-DEEP-0002', 'PAT-DEEP-0001', 'EVT-CHEMO-05', 'COV-DEEP-0001', 'PM-JA
 -- Real narrative: the initial CBC had platelet 260604; a repeat manual count
 -- three days later corrected it to 245100. Both events reference the same
 -- specimen_id but have different event_id + accession_id.
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CBC-01-PLT-ADDENDUM' AS event_id) s ON t.event_id = s.event_id
+-- concept_id resolves through CLINICAL_ONTOLOGY: a literal UUID (as first
+-- written) only exists on the account it was copied from, so the addendum
+-- silently belonged to no concept anywhere else.
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT 'EVT-CBC-01-PLT-ADDENDUM' AS event_id,
+              (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'PLT') AS concept_id) s
+ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id,
   code_system, code, display, value_num, unit, status, negation, specimen_id, accession_id,
   event_time, source_recorded_at, ingested_at)
 VALUES ('EVT-CBC-01-PLT-ADDENDUM', 'PAT-DEEP-0001', 'EVT-CHEMO-03', 'lab',
-  '59ab8f31-38fc-4b0d-ad13-b9b7869a43ab', 'LOINC', '777-3', 'Platelets [#/volume] in Blood',
+  s.concept_id, 'LOINC', '777-3', 'Platelets [#/volume] in Blood',
   245100, '/uL', 'amended', FALSE, 'SPEC-CBC-01', 'LAB-2025-0327-CBC-ADDENDUM',
   TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 27, 6, 0, 0),   -- SAME event_time as EVT-CBC-01-PLT
   TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 30, 14, 20, 0), -- 3 days later source_recorded_at
@@ -434,3 +454,74 @@ WHEN NOT MATCHED THEN INSERT (plan_id, patient_id, version, regimen_code, regime
 VALUES ('PLAN-DEEP-0001', 'PAT-DEEP-0001', 1, 'TH',
   'Paclitaxel + trastuzumab, weekly (HER2-amplified, confirmed by FISH 12 Feb 2025)',
   'curative', 12, TIMESTAMP_NTZ_FROM_PARTS(2025, 2, 14, 10, 0, 0), 'PRAC-01', 'tumour_board');
+
+-- =============================================================================
+-- STEP 12o - Deep-case records read by the 24 Sept rules (cycle 7, 13 Jun 2025)
+-- =============================================================================
+-- Everything on the deep case's own timeline, ingested a few hours after it
+-- was recorded, so a known_as_of replay sees each record appear when it did.
+-- Designed gaps that remain on purpose (the demo narrative):
+--   * the CBC was drawn on 27 Mar 2025 and never repeated  -> ANC/PLT/panel stale
+--   * HER2 IHC 1+ (outside biopsy) vs 2+ (surgical)         -> DOC-DISC-001 conflicting
+--   * chemotherapy consent signed 24 Jan 2025, before the plan changed twice
+--     (post-appendectomy, then zoledronic acid)             -> DOC-CONSENT-001 fail
+-- Everything else a pre-cycle check reads is on record and current.
+CREATE OR REPLACE TEMPORARY TABLE SAARTHI.OPERATIONAL._DEEP_EVENTS AS
+SELECT column1 AS event_id, column2 AS event_type, column3 AS concept, column4::FLOAT AS value_num,
+       column5 AS value_text, column6 AS unit, column7 AS status, column8::TIMESTAMP_NTZ AS event_time,
+       column9 AS code, column10 AS display, column11 AS specimen_id, column12 AS encounter_id
+FROM VALUES
+  ('EVT-DEEP-HCG-01',  'lab',       'BETA_HCG',   NULL, 'negative',     NULL,     'final',        '2025-01-22 08:30:00', '2106-3',  'Urine pregnancy test',        NULL,          'EVT-CHEMO-01'),
+  ('EVT-DEEP-HBSAG-01','lab',       'HBSAG',      NULL, 'non-reactive', NULL,     'final',        '2025-01-22 08:30:00', '5196-1',  'HBsAg',                       NULL,          'EVT-CHEMO-01'),
+  ('EVT-DEEP-HBC-01',  'lab',       'ANTI_HBC',   NULL, 'non-reactive', NULL,     'final',        '2025-01-22 08:30:00', '16933-4', 'Anti-HBc total',              NULL,          'EVT-CHEMO-01'),
+  ('EVT-DEEP-LVEF-00', 'imaging',   'LVEF',       64,   NULL,           '%',      'final',        '2025-01-22 11:00:00', '10230-1', 'LVEF (echo), baseline',       NULL,          'EVT-CHEMO-01'),
+  ('EVT-DEEP-HB-01',   'lab',       'HEMOGLOBIN', 10.9, NULL,           'g/dL',   'final',        '2025-03-27 06:00:00', '718-7',   'Haemoglobin',                 'SPEC-CBC-01', 'EVT-CHEMO-03'),
+  ('EVT-DEEP-DOXO-01', 'medication','DOXORUBICIN',60,   NULL,           'mg/m2',  'administered', '2025-01-29 10:00:00', '3639',    'Doxorubicin IV push, AC 1',   NULL,          'EVT-CHEMO-01'),
+  ('EVT-DEEP-DOXO-02', 'medication','DOXORUBICIN',60,   NULL,           'mg/m2',  'administered', '2025-02-16 10:00:00', '3639',    'Doxorubicin IV push, AC 2',   NULL,          'EVT-CHEMO-02'),
+  ('EVT-DEEP-DOXO-03', 'medication','DOXORUBICIN',60,   NULL,           'mg/m2',  'administered', '2025-03-08 10:00:00', '3639',    'Doxorubicin IV push, AC 3',   NULL,          'EVT-CHEMO-03'),
+  ('EVT-DEEP-DOXO-04', 'medication','DOXORUBICIN',60,   NULL,           'mg/m2',  'administered', '2025-04-08 10:00:00', '3639',    'Doxorubicin IV push, AC 4',   NULL,          'EVT-CHEMO-04'),
+  ('EVT-DEEP-HER-05',  'medication','TRASTUZUMAB',8,    NULL,           'mg/kg',  'administered', '2025-05-01 10:30:00', '224905',  'Trastuzumab IV, loading dose',NULL,          'EVT-CHEMO-05'),
+  ('EVT-DEEP-HER-06',  'medication','TRASTUZUMAB',6,    NULL,           'mg/kg',  'administered', '2025-05-23 10:30:00', '224905',  'Trastuzumab IV',              NULL,          'EVT-CHEMO-06'),
+  ('EVT-DEEP-WT-07',   'vitals',    'WEIGHT',     61,   NULL,           'kg',     'final',        '2025-06-12 09:00:00', '29463-7', 'Body weight',                 NULL,          'EVT-CHEMO-07');
+
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t
+USING (SELECT d.*, o.concept_id FROM SAARTHI.OPERATIONAL._DEEP_EVENTS d
+         JOIN SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY o ON o.canonical_name = d.concept) s
+ON t.event_id = s.event_id
+WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id, t.event_time = s.event_time
+WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code,
+  display, value_num, value_text, unit, original_value, original_unit, specimen_id, status, negation,
+  event_time, source_recorded_at, ingested_at)
+VALUES (s.event_id, 'PAT-DEEP-0001', s.encounter_id, s.event_type, s.concept_id,
+  IFF(s.event_type = 'medication', 'RxNorm', 'LOINC'), s.code, s.display, s.value_num, s.value_text, s.unit,
+  COALESCE(s.value_num::VARCHAR, s.value_text), s.unit, s.specimen_id, s.status, FALSE,
+  s.event_time, DATEADD(hour, 2, s.event_time), DATEADD(hour, 4, s.event_time));
+
+MERGE INTO SAARTHI.DOCUMENTS.DOCUMENT t
+USING (SELECT column1 AS doc_id, column2 AS doc_type, column3::TIMESTAMP_NTZ AS at, column4::BOOLEAN AS signed
+         FROM VALUES ('DOC-DEEP-CONSENT-01', 'chemo_consent',      '2025-01-24 11:00:00', TRUE),
+                     ('DOC-DEEP-DISCH-06',   'discharge_summary',  '2025-05-23 17:00:00', TRUE),
+                     ('DOC-DEEP-ORDER-07',   'chemo_order',        '2025-06-12 16:00:00', TRUE),
+                     ('DOC-DEEP-NURSE-07',   'nursing_assessment', '2025-06-12 09:05:00', FALSE)) s
+ON t.doc_id = s.doc_id
+WHEN MATCHED THEN UPDATE SET t.effective_at = s.at, t.signed_at = IFF(s.signed, s.at, NULL)
+WHEN NOT MATCHED THEN INSERT (doc_id, patient_id, scope, doc_type, version, revision_type, signed_at,
+  effective_at, ingested_at, source_facility_id, ingestion_method, status)
+VALUES (s.doc_id, 'PAT-DEEP-0001', 'patient', s.doc_type, 1, 'original', IFF(s.signed, s.at, NULL),
+  s.at, DATEADD(hour, 1, s.at), 'FAC-02', 'digital_emr', 'active');
+
+MERGE INTO SAARTHI.EVIDENCE.ASSERTION t USING (SELECT 'ASS-DEEP-ALLERGY-07' k) s ON t.assertion_id = s.k
+WHEN NOT MATCHED THEN INSERT (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit,
+  negation, missingness_state, verification_status, pass1_value, pass2_value, extractor_version, char_start, char_end)
+VALUES ('ASS-DEEP-ALLERGY-07', 'DOC-DEEP-NURSE-07', 0, NULL, 'PAT-DEEP-0001', 'allergy_history',
+  'no known drug allergy', NULL, FALSE, 'present', 'verified', 'no known drug allergy', 'no known drug allergy',
+  'seed-v1', 0, 0);
+
+-- Cycle 7 pre-authorisation, approved; valid at the visit.
+MERGE INTO SAARTHI.CORE.AUTHORIZATION t USING (SELECT 'PA-DEEP-0003' k) s ON t.auth_id = s.k
+WHEN NOT MATCHED THEN INSERT (auth_id, patient_id, encounter_id, coverage_id, scheme, package_code,
+  package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by)
+VALUES ('PA-DEEP-0003', 'PAT-DEEP-0001', 'EVT-CHEMO-07', 'COV-DEEP-0001', 'PM-JAY', 'PKG-ONCO-CHEMO-01',
+  'Chemotherapy cycle - Package 01', 'approved', 'approved',
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 6, 6, 10, 0, 0), TIMESTAMP_NTZ_FROM_PARTS(2025, 6, 9, 15, 0, 0),
+  TIMESTAMP_NTZ_FROM_PARTS(2025, 8, 8, 0, 0, 0), 'insurer-reviewer');

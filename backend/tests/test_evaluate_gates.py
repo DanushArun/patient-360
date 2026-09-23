@@ -44,6 +44,7 @@ RULES = _rules()
 
 REGIMENS = {  # mirrors backend/sql/data/regimens.sql
     "AC": (["doxorubicin", "cyclophosphamide"], 21, True, "BRAJAC"),
+    "AC-TH": (["paclitaxel", "trastuzumab"], 21, True, "BRAJACTT"),
     "TH": (["paclitaxel", "trastuzumab"], 7, True, "BRAJTTW"),
     "H-MAINT": (["trastuzumab"], 21, False, "BRAJTR"),
     "FOLFOX": (["oxaliplatin", "fluorouracil", "leucovorin"], 14, True, "GIAJFFOX"),
@@ -352,6 +353,21 @@ def test_her2_discordance_across_specimens_is_conflicting():
     evs = [ev("HER2_IHC", text="ihc=2+", specimen="S1", event_type="pathology", days_before=60),
            ev("HER2_IHC", text="ihc=3+", specimen="S2", event_type="pathology", days_before=20)]
     assert outcome(ctx("TH", evs), "DOC-DISC-001") == "conflicting"
+
+
+def test_addendum_recorded_later_supersedes_the_original_result():
+    orig = ev("PLT", 95000, days_before=1)
+    add = dict(ev("PLT", 85000, days_before=1), STATUS="amended", EVENT_TIME=orig["EVENT_TIME"],
+               SOURCE_RECORDED_AT=orig["EVENT_TIME"] + timedelta(days=3))
+    orig["SOURCE_RECORDED_AT"] = orig["EVENT_TIME"] + timedelta(hours=2)
+    g = gate(ctx("AC", [add, orig]), "CLIN-PLT-001")
+    assert g["outcome"] == "fail" and g["evidence_ids"] == [add["EVENT_ID"]]
+
+
+@pytest.mark.parametrize("anc,plt,expected", [(1600, 95000, "pass"), (1200, 95000, "fail")])
+def test_deep_case_three_weekly_paclitaxel_uses_brajactt(anc, plt, expected):
+    c = ctx("AC-TH", [ev("ANC", anc), ev("PLT", plt)])        # BRAJACTT p3: >= 1.5 and >= 90
+    assert outcome(c, "CLIN-ANC-001") == expected and outcome(c, "CLIN-PLT-001") == "pass"
 
 
 def test_her2_2plus_waits_for_fish():

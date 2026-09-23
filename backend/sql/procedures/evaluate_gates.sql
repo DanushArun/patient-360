@@ -96,7 +96,12 @@ class Ctx:
         self.plan = plan
         self.regimen = regimen
         self.diagnoses = diagnoses
-        self.events = sorted(events, key=lambda e: e["EVENT_TIME"] or scheduled, reverse=True)
+        # Newest first. Two results with the same event_time are the same
+        # measurement reported twice (an amended report, an addendum): the one
+        # recorded later supersedes (R2 source_recorded_at), never the other way.
+        self.events = sorted(events, key=lambda e: (e["EVENT_TIME"] or scheduled,
+                                                    e.get("SOURCE_RECORDED_AT") or e["EVENT_TIME"] or scheduled),
+                             reverse=True)
         self.id_map = id_map
         self.coverage = coverage
         self.authorization = authorization
@@ -802,7 +807,7 @@ def load(session, patient_id, encounter_id, known_as_of_text):
               FROM SAARTHI.OPERATIONAL.REGIMEN_REGISTRY WHERE regimen_code = ?""", [plan["REGIMEN_CODE"]]) or [None])[0]
     events = _rows(session, """
         SELECT event_id, event_type, concept_name, value_num, value_text, status, plausibility_state,
-               event_time, derivation, specimen_id, code
+               event_time, source_recorded_at, derivation, specimen_id, code
           FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS
          WHERE patient_id = ? AND ingested_at <= ?""", [patient_id, kao])
     diagnoses = [e["CODE"] for e in events if e["EVENT_TYPE"] == "diagnosis"]
@@ -813,9 +818,10 @@ def load(session, patient_id, encounter_id, known_as_of_text):
     authorization = (_rows(session, """
         SELECT auth_id, status, letter_status FROM SAARTHI.CORE.AUTHORIZATION
          WHERE patient_id = ? AND (encounter_id = ? OR encounter_id IS NULL)
-           AND (expires_at IS NULL OR expires_at > ?) AND (requested_at IS NULL OR requested_at <= ?)
+           AND (expires_at IS NULL OR expires_at > ?)          -- valid AT THE VISIT
+           AND (requested_at IS NULL OR requested_at <= ?)     -- and known by known_as_of
          ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1""",
-                           [patient_id, encounter_id, kao, kao]) or [None])[0]
+                           [patient_id, encounter_id, scheduled, kao]) or [None])[0]
     documents = _rows(session, """
         SELECT doc_id, doc_type, signed_at, effective_at, status FROM SAARTHI.DOCUMENTS.DOCUMENT
          WHERE patient_id = ? AND scope = 'patient' AND ingested_at <= ?""", [patient_id, kao])

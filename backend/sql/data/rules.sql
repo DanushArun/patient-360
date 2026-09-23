@@ -223,30 +223,30 @@ VALUES ('ID-QUAR-001', 1, 'identity', NULL, NULL, 1,
 MERGE INTO SAARTHI.OPERATIONAL.RULE_CATALOG t
 USING (SELECT 'CLIN-ANC-001' AS rule_id, 2 AS rule_version) s
 ON t.rule_id = s.rule_id AND t.rule_version = s.rule_version
-WHEN MATCHED THEN UPDATE SET t.threshold_json = PARSE_JSON('{"concept":"ANC","operator":">=","value":1500,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":1500,"TH":1000,"FOLFOX":1200,"CAPOX":1200,"CIS-RT-HN":1500,"CIS-RT-CX":800,"PEM-CARBO":1500},"reduced_dose_band":{"AC":[1000,1500],"CIS-RT-HN":[1000,1500]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'), t.guideline_ref = 'BC Cancer BRAJAC p2, BRAJTTW p5, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
+WHEN MATCHED THEN UPDATE SET t.threshold_json = PARSE_JSON('{"concept":"ANC","operator":">=","value":1500,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":1500,"TH":1000,"FOLFOX":1200,"CAPOX":1200,"CIS-RT-HN":1500,"CIS-RT-CX":800,"PEM-CARBO":1500,"AC-TH":1500},"reduced_dose_band":{"AC":[1000,1500],"CIS-RT-HN":[1000,1500],"AC-TH":[1000,1500]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'), t.guideline_ref = 'BC Cancer BRAJAC p2, BRAJTTW p5, BRAJACTT p3, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
   t.provenance_note = 'v2 replaces the flat 1500 of v1, which blocked FOLFOX/CAPOX (1200), weekly paclitaxel (1000) and weekly cervix cisplatin (800) patients the protocols treat. Unknown regimen falls back to 1500. Inside a reduced-dose band the gate fails with the band named: a prescriber dose decision is needed before the chair.', t.severity = 'blocker', t.description = 'Absolute neutrophil count must meet the full-dose threshold of the patient''s regimen protocol, measured within 7 days'
 WHEN NOT MATCHED THEN INSERT (rule_id, rule_version, gate, specialty, disease_scope, specificity,
   display_name, description, threshold_json, guideline_ref, applies_to, severity, provenance_note)
 VALUES ('CLIN-ANC-001', 2, 'clinical', 'medical_oncology', 'oncology', 2,
   'ANC recovery (per regimen)',
   'Absolute neutrophil count must meet the full-dose threshold of the patient''s regimen protocol, measured within 7 days',
-  PARSE_JSON('{"concept":"ANC","operator":">=","value":1500,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":1500,"TH":1000,"FOLFOX":1200,"CAPOX":1200,"CIS-RT-HN":1500,"CIS-RT-CX":800,"PEM-CARBO":1500},"reduced_dose_band":{"AC":[1000,1500],"CIS-RT-HN":[1000,1500]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'),
-  'BC Cancer BRAJAC p2, BRAJTTW p5, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
+  PARSE_JSON('{"concept":"ANC","operator":">=","value":1500,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":1500,"TH":1000,"FOLFOX":1200,"CAPOX":1200,"CIS-RT-HN":1500,"CIS-RT-CX":800,"PEM-CARBO":1500,"AC-TH":1500},"reduced_dose_band":{"AC":[1000,1500],"CIS-RT-HN":[1000,1500],"AC-TH":[1000,1500]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'),
+  'BC Cancer BRAJAC p2, BRAJTTW p5, BRAJACTT p3, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
   'myelosuppressive regimens', 'blocker',
   'v2 replaces the flat 1500 of v1, which blocked FOLFOX/CAPOX (1200), weekly paclitaxel (1000) and weekly cervix cisplatin (800) patients the protocols treat. Unknown regimen falls back to 1500. Inside a reduced-dose band the gate fails with the band named: a prescriber dose decision is needed before the chair.');
 
 MERGE INTO SAARTHI.OPERATIONAL.RULE_CATALOG t
 USING (SELECT 'CLIN-PLT-001' AS rule_id, 2 AS rule_version) s
 ON t.rule_id = s.rule_id AND t.rule_version = s.rule_version
-WHEN MATCHED THEN UPDATE SET t.threshold_json = PARSE_JSON('{"concept":"PLT","operator":">=","value":100000,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":90000,"TH":90000,"FOLFOX":75000,"CAPOX":75000,"CIS-RT-HN":100000,"CIS-RT-CX":80000,"PEM-CARBO":100000},"reduced_dose_band":{"AC":[70000,90000],"CIS-RT-HN":[75000,100000]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'), t.guideline_ref = 'BC Cancer BRAJAC p2, BRAJTTW p5, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
+WHEN MATCHED THEN UPDATE SET t.threshold_json = PARSE_JSON('{"concept":"PLT","operator":">=","value":100000,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":90000,"TH":90000,"FOLFOX":75000,"CAPOX":75000,"CIS-RT-HN":100000,"CIS-RT-CX":80000,"PEM-CARBO":100000,"AC-TH":90000},"reduced_dose_band":{"AC":[70000,90000],"CIS-RT-HN":[75000,100000],"AC-TH":[70000,90000]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'), t.guideline_ref = 'BC Cancer BRAJAC p2, BRAJTTW p5, BRAJACTT p3, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
   t.provenance_note = 'v2 replaces the flat 100000 of v1. Unknown regimen falls back to 100000.', t.severity = 'blocker', t.description = 'Platelets must meet the full-dose threshold of the patient''s regimen protocol, measured within 7 days'
 WHEN NOT MATCHED THEN INSERT (rule_id, rule_version, gate, specialty, disease_scope, specificity,
   display_name, description, threshold_json, guideline_ref, applies_to, severity, provenance_note)
 VALUES ('CLIN-PLT-001', 2, 'clinical', 'medical_oncology', 'oncology', 2,
   'Platelet recovery (per regimen)',
   'Platelets must meet the full-dose threshold of the patient''s regimen protocol, measured within 7 days',
-  PARSE_JSON('{"concept":"PLT","operator":">=","value":100000,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":90000,"TH":90000,"FOLFOX":75000,"CAPOX":75000,"CIS-RT-HN":100000,"CIS-RT-CX":80000,"PEM-CARBO":100000},"reduced_dose_band":{"AC":[70000,90000],"CIS-RT-HN":[75000,100000]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'),
-  'BC Cancer BRAJAC p2, BRAJTTW p5, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
+  PARSE_JSON('{"concept":"PLT","operator":">=","value":100000,"unit":"/uL","max_age_days":7,"per_regimen":{"AC":90000,"TH":90000,"FOLFOX":75000,"CAPOX":75000,"CIS-RT-HN":100000,"CIS-RT-CX":80000,"PEM-CARBO":100000,"AC-TH":90000},"reduced_dose_band":{"AC":[70000,90000],"CIS-RT-HN":[75000,100000],"AC-TH":[70000,90000]},"not_applicable_if":"regimen not myelosuppressive (REGIMEN_REGISTRY)"}'),
+  'BC Cancer BRAJAC p2, BRAJTTW p5, BRAJACTT p3, GIAJFFOX p4, GIGAVCOX p4, HNLAPRT p3, GOCXCRT p2, LUAVPP p2',
   'myelosuppressive regimens', 'blocker',
   'v2 replaces the flat 100000 of v1. Unknown regimen falls back to 100000.');
 
@@ -298,14 +298,14 @@ VALUES ('SURV-LVEF-001', 2, 'safety', 'cardiology', 'trastuzumab', 3,
 MERGE INTO SAARTHI.OPERATIONAL.RULE_CATALOG t
 USING (SELECT 'CLIN-PANEL-001' AS rule_id, 1 AS rule_version) s
 ON t.rule_id = s.rule_id AND t.rule_version = s.rule_version
-WHEN MATCHED THEN UPDATE SET t.threshold_json = PARSE_JSON('{"max_age_days":7,"cbc_if_myelosuppressive":["HEMOGLOBIN","WBC","ANC","PLT"],"per_regimen":{"AC":[],"TH":[],"FOLFOX":["CREATININE","BILIRUBIN","ALT"],"CAPOX":["CREATININE","BILIRUBIN","ALT"],"CIS-RT-HN":["CREATININE","SODIUM","POTASSIUM","CALCIUM","ALBUMIN","MAGNESIUM"],"CIS-RT-CX":["CREATININE"],"PEM-CARBO":["CREATININE","ALP","ALT","BILIRUBIN","LDH"]}}'), t.guideline_ref = 'BC Cancer TESTS sections (BRAJAC p1, BRAJTTW p1, GIAJFFOX p1, GIGAVCOX p1, HNLAPRT p1, GOCXCRT p1, LUAVPP p1); AIIMS Jodhpur checklist item 4',
+WHEN MATCHED THEN UPDATE SET t.threshold_json = PARSE_JSON('{"max_age_days":7,"cbc_if_myelosuppressive":["HEMOGLOBIN","WBC","ANC","PLT"],"per_regimen":{"AC":[],"TH":[],"FOLFOX":["CREATININE","BILIRUBIN","ALT"],"CAPOX":["CREATININE","BILIRUBIN","ALT"],"CIS-RT-HN":["CREATININE","SODIUM","POTASSIUM","CALCIUM","ALBUMIN","MAGNESIUM"],"CIS-RT-CX":["CREATININE"],"PEM-CARBO":["CREATININE","ALP","ALT","BILIRUBIN","LDH"],"AC-TH":[]}}'), t.guideline_ref = 'BC Cancer TESTS sections (BRAJAC p1, BRAJTTW p1, GIAJFFOX p1, GIGAVCOX p1, HNLAPRT p1, GOCXCRT p1, LUAVPP p1); AIIMS Jodhpur checklist item 4',
   t.provenance_note = 'CBC & Diff is read as haemoglobin, WBC, ANC and platelets. Trastuzumab alone (BRAJTR) makes the CBC optional, so the CBC part does not apply to it.', t.severity = 'blocker', t.description = 'Every test the regimen protocol lists ''before each treatment'' has a result within 7 days'
 WHEN NOT MATCHED THEN INSERT (rule_id, rule_version, gate, specialty, disease_scope, specificity,
   display_name, description, threshold_json, guideline_ref, applies_to, severity, provenance_note)
 VALUES ('CLIN-PANEL-001', 1, 'clinical', 'medical_oncology', 'oncology', 2,
   'Pre-cycle blood panel complete',
   'Every test the regimen protocol lists ''before each treatment'' has a result within 7 days',
-  PARSE_JSON('{"max_age_days":7,"cbc_if_myelosuppressive":["HEMOGLOBIN","WBC","ANC","PLT"],"per_regimen":{"AC":[],"TH":[],"FOLFOX":["CREATININE","BILIRUBIN","ALT"],"CAPOX":["CREATININE","BILIRUBIN","ALT"],"CIS-RT-HN":["CREATININE","SODIUM","POTASSIUM","CALCIUM","ALBUMIN","MAGNESIUM"],"CIS-RT-CX":["CREATININE"],"PEM-CARBO":["CREATININE","ALP","ALT","BILIRUBIN","LDH"]}}'),
+  PARSE_JSON('{"max_age_days":7,"cbc_if_myelosuppressive":["HEMOGLOBIN","WBC","ANC","PLT"],"per_regimen":{"AC":[],"TH":[],"FOLFOX":["CREATININE","BILIRUBIN","ALT"],"CAPOX":["CREATININE","BILIRUBIN","ALT"],"CIS-RT-HN":["CREATININE","SODIUM","POTASSIUM","CALCIUM","ALBUMIN","MAGNESIUM"],"CIS-RT-CX":["CREATININE"],"PEM-CARBO":["CREATININE","ALP","ALT","BILIRUBIN","LDH"],"AC-TH":[]}}'),
   'BC Cancer TESTS sections (BRAJAC p1, BRAJTTW p1, GIAJFFOX p1, GIGAVCOX p1, HNLAPRT p1, GOCXCRT p1, LUAVPP p1); AIIMS Jodhpur checklist item 4',
   'all regimens with a pre-treatment test list', 'blocker',
   'CBC & Diff is read as haemoglobin, WBC, ANC and platelets. Trastuzumab alone (BRAJTR) makes the CBC optional, so the CBC part does not apply to it.');

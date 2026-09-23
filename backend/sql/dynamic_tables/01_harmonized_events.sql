@@ -22,6 +22,7 @@ WITH normalized AS (
     SELECT
         ce.event_id, ce.patient_id, ce.encounter_id, ce.event_type, ce.concept_id,
         co.canonical_name AS concept_name,
+        ce.code,
         -- Converted to the canonical unit when UNIT_REGISTRY knows the source
         -- unit; passed through unchanged when it does not (canonical already).
         ce.value_num * COALESCE(ur.conversion_factor, 1.0) AS value_num,
@@ -54,6 +55,7 @@ anc_derived AS (
         wbc.patient_id, wbc.encounter_id, 'lab' AS event_type,
         (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'ANC') AS concept_id,
         'ANC' AS concept_name,
+        NULL AS code,
         wbc.value_num * (neut.value_num) / 100 AS value_num,
         '/uL' AS unit,
         NULL AS source_value_num,
@@ -74,14 +76,14 @@ anc_derived AS (
              WHERE anc.encounter_id = wbc.encounter_id AND anc.concept_name = 'ANC'
           )
 )
-SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
+SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name, code,
        value_num, unit, source_value_num, source_unit, value_text, abnormal_flag, status, plausibility_state,
        FALSE AS is_derived,
        NULL AS derivation,
        event_time, source_recorded_at, ingested_at, valid_until, specimen_id
 FROM normalized
 UNION ALL
-SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
+SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name, code,
        value_num, unit, source_value_num, source_unit, value_text, abnormal_flag, status, plausibility_state,
        TRUE AS is_derived,
        'ANC computed as WBC x neutrophil% / 100' AS derivation,

@@ -23,10 +23,10 @@ USING (
     ('CIS-RT-HN', 'Cisplatin 100 mg/m2 3-weekly with radiation, head and neck', '["cisplatin"]',             21, TRUE,  'CIS-RT-HN', 'HNLAPRT',  'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Head%20and%20Neck/HNLAPRT_Protocol.pdf'),
     ('CIS-RT-CX', 'Cisplatin 40 mg/m2 weekly with radiation, cervix',  '["cisplatin"]',                      7,  TRUE,  'CIS-RT-CX', 'GOCXCRT',  'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Gynecology/GOCXCRT_Protocol.pdf'),
     ('PEM-CARBO', 'Pemetrexed + carboplatin, 3-weekly',                '["pemetrexed","carboplatin"]',       21, TRUE,  'PEM-CARBO', 'LUAVPP',   'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Lung/LUAVPP_Protocol.pdf'),
-    -- Deep case (PAT-DEEP-0001): AC completed, now in the paclitaxel +
-    -- trastuzumab phase, so thresholds come from the TH profile.
-    ('AC-TH',     'AC then paclitaxel + trastuzumab (TH phase)',       '["paclitaxel","trastuzumab"]',       7,  TRUE,  'TH',        'BRAJTTW',  'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJTTW_Protocol.pdf'),
-    ('AC-TH-ZOL', 'AC then paclitaxel + trastuzumab, with zoledronic acid (TH phase)', '["paclitaxel","trastuzumab","zoledronic acid"]', 7, TRUE, 'TH', 'BRAJTTW', 'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJTTW_Protocol.pdf')
+    -- Deep case (PAT-DEEP-0001): AC completed, now in the 3-weekly paclitaxel +
+    -- trastuzumab phase of BRAJACTT, so thresholds come from that protocol.
+    ('AC-TH',     'AC then paclitaxel 175 mg/m2 + trastuzumab, 3-weekly (TH phase)', '["paclitaxel","trastuzumab"]', 21, TRUE, 'AC-TH', 'BRAJACTT', 'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJACTT_Protocol.pdf'),
+    ('AC-TH-ZOL', 'AC then paclitaxel + trastuzumab, 3-weekly, with zoledronic acid (TH phase)', '["paclitaxel","trastuzumab","zoledronic acid"]', 21, TRUE, 'AC-TH', 'BRAJACTT', 'https://www.bccancer.bc.ca/chemotherapy-protocols-site/Documents/Breast/BRAJACTT_Protocol.pdf')
 ) s
 ON t.regimen_code = s.regimen_code
 WHEN MATCHED THEN UPDATE SET
