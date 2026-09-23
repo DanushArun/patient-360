@@ -1,0 +1,308 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Ported verbatim from frontend/core/design.py - the same tokens the
+     Streamlit build uses, not shadcn's defaults. Ratios are computed
+     contrast, not chosen: see design.py's own comments for the source. */
+  --sa-ink: #1a1d21;
+  --sa-ink-secondary: #4a5157;
+  --sa-ink-muted: #656c73;
+  --sa-ink-pass: #1e6b3a;
+  --sa-ink-fail: #a8261c;
+  --sa-ink-conflict: #8a5300;
+  --sa-surface: #ffffff;
+  --sa-surface-sunken: #f6f7f8;
+  --sa-rule: #d8dcdf;
+  --sa-patient-edge: #1a5c8a;
+  --sa-reference-edge: #5b4b8a;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  /* design.py cards use 4-6px, never shadcn's default rounded-xl/2xl - a
+     bigger radius reads as "generic AI dashboard," not Apple HIG. */
+  --radius: 0.375rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+html, body {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 22px;
+  color: #1A1D21;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* Tabular figures wherever digits line up - design.py's .sa-num rule. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+}
+
+.sa-chat-dock-wrap {
+  position: fixed;
+  z-index: 10;
+  right: auto;
+  bottom: 0;
+  left: max(0px, calc(50vw - 505px));
+  width: min(550px, calc(58.333vw - 139px));
+  padding: 18px 0 20px;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0%), #fff 35%);
+}
+
+.sa-chat-dock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 60px;
+  margin: 0 auto;
+  padding: 7px 8px 7px 19px;
+  border: 1px solid #d8dcdf;
+  border-radius: 30px;
+  background: #fff;
+  box-shadow: 0 5px 20px rgb(26 29 33 / 8%);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.sa-chat-dock:focus-within {
+  border-color: #899198;
+  box-shadow: 0 0 0 3px rgb(26 29 33 / 8%), 0 6px 22px rgb(26 29 33 / 9%);
+}
+
+.sa-chat-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--sa-ink);
+  font: inherit;
+}
+
+.sa-chat-input::placeholder {
+  color: var(--sa-ink-muted);
+  opacity: 1;
+}
+
+.sa-chat-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.sa-chat-send {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sa-ink);
+  color: #fff;
+  cursor: pointer;
+  font-size: 19px;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.sa-chat-send:hover:not(:disabled) {
+  background: #343a40;
+}
+
+.sa-chat-send:active:not(:disabled) {
+  transform: scale(.96);
+}
+
+.sa-chat-send:focus-visible {
+  outline: 2px solid var(--sa-ink);
+  outline-offset: 3px;
+}
+
+.sa-chat-send:disabled {
+  cursor: wait;
+  opacity: .5;
+}
+
+.sa-review-actions button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+.sa-review-feedback {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--sa-patient-edge);
+  background: var(--sa-surface-sunken);
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+  line-height: 19px;
+  overflow-wrap: anywhere;
+}
+
+.sa-review-feedback strong {
+  display: block;
+  color: var(--sa-ink);
+  font-weight: 600;
+}
+
+.sa-timeline-event {
+  padding: 14px 0;
+  border-top: 1px solid var(--sa-rule);
+}
+
+.sa-timeline-title {
+  margin-bottom: 4px;
+  color: var(--sa-ink);
+  font-weight: 600;
+}
+
+@media (max-width: 1179px) {
+  .sa-chat-dock-wrap {
+    left: 85px;
+    width: min(550px, calc(58.333vw - 139px));
+  }
+}
+
+@media (max-width: 960px) {
+  .sa-patient-columns {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 28px !important;
+  }
+
+  .sa-chat-dock-wrap {
+    width: calc(100vw - 170px);
+  }
+}
+
+@media (max-width: 640px) {
+  .sa-page {
+    padding: 40px 24px 130px !important;
+  }
+
+  .sa-chat-dock-wrap {
+    left: 24px;
+    width: calc(100vw - 48px);
+    padding: 12px 0 14px;
+  }
+}

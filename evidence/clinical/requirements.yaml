@@ -1,0 +1,775 @@
+# Clinical-completeness ledger: what must be true before a chemotherapy cycle,
+# quoted from the documents that govern it, and whether SAARTHI checks it.
+#
+# Nothing here is the author's opinion of what matters. Every requirement is a
+# verbatim quote from a document in sources.yaml, on a stated page. The
+# verifier (backend/scripts/verify_clinical_proof.py) proves each quote is
+# really there, proves each cited rule exists in backend/sql/data/rules.sql,
+# and computes - not asserts - whether each number matches the rule's number.
+#
+# status:
+#   covered       a SAARTHI rule checks this, and every compared number matches
+#   partial       a rule checks part of it; `finding` says which part is missing
+#   conflict      a rule checks it with a stricter number or wider scope than the
+#                 source - SAARTHI blocks a patient the source says to treat
+#   unsafe        SAARTHI can pass a patient the source says to hold or reduce
+#   missing       no rule checks it
+#   out_of_scope  needs the clinician to examine the patient on the day
+#                 (Class A); excluded from the coverage denominator
+#
+# compare (optional) - the verifier reads `rule`'s threshold_json at `path`:
+#   kind: min      source proceeds at full dose when value >= source_value
+#   kind: max      source proceeds at full dose when value <= source_value
+#   kind: max_age  source requires a result no older than source_value days
+#
+# implementation (optional) - what the evaluator code actually does, when it
+# differs from the rule's own threshold_json. These are read from source code
+# (file:lines); confirm each with the `expect` vector on a live account.
+
+regimens:          # ledger label -> the day-care cohort (backend/sql/data/load_daycare_cohort.sql)
+  AC:        {cohort_code: AC,        patients: [DC-04, DC-10], drugs: "doxorubicin + cyclophosphamide, 3-weekly"}
+  TH:        {cohort_code: TH,        patients: [DC-01, DC-06], drugs: "paclitaxel weekly + trastuzumab"}
+  H-MAINT:   {cohort_code: H-MAINT,   patients: [DC-02],        drugs: "trastuzumab alone, 3-weekly"}
+  FOLFOX:    {cohort_code: FOLFOX,    patients: [DC-03, DC-11], drugs: "oxaliplatin + fluorouracil + leucovorin, 2-weekly"}
+  CAPOX:     {cohort_code: CAPOX,     patients: [DC-09],        drugs: "capecitabine + oxaliplatin, 3-weekly"}
+  CIS-RT-HN: {cohort_code: CIS-RT,    patients: [DC-05],        drugs: "cisplatin with radiation, head and neck (C10)"}
+  CIS-RT-CX: {cohort_code: CIS-RT,    patients: [DC-08],        drugs: "cisplatin weekly with radiation, cervix (C53)"}
+  PEM-CARBO: {cohort_code: PEM-CARBO, patients: [DC-07],        drugs: "pemetrexed + carboplatin, 3-weekly"}
+
+requirements:
+
+  # ======================================================================
+  # REGIMEN LAYER - AC (doxorubicin + cyclophosphamide)
+  # ======================================================================
+  - id: R-AC-01
+    source: BRAJAC
+    page: 1
+    quotes: ["Before each treatment: CBC & Diff"]
+    plain: "A full blood count, including the breakdown of white cells, must be done before every cycle."
+    applies_to: [AC]
+    check: cbc_each_cycle
+    saarthi:
+      status: covered
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "Both rules require a count no older than 7 days before the encounter."
+
+  - id: R-AC-02
+    source: BRAJAC
+    page: 2
+    quotes: ["Greater than or equal to 1.5 Greater than or equal to 90 100%"]
+    plain: "Give the full dose if neutrophils (infection-fighting white cells) are at least 1,500 per microlitre AND platelets (clotting cells) are at least 90,000. Between 70,000 and 89,000 platelets, give 75%."
+    applies_to: [AC]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 1500, unit: "/uL", label: "neutrophils (ANC)"}
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 90000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "One flat platelet cut-off (100,000) for every regimen. The protocol's reduced-dose band (75% dose) is not modelled; SAARTHI can only say pass or fail."
+
+  - id: R-AC-03
+    source: DOXO_MONO
+    page: 9
+    quotes: [">3 x ULN or 20-50 50%", "- >85 do not administer"]
+    plain: "Doxorubicin is cleared by the liver. If bilirubin (a liver blood test) is 20-50 micromol/L (about 1.2-2.9 mg/dL), halve the dose; above 85, do not give it. Full dose only below 20 micromol/L."
+    applies_to: [AC]
+    check: hepatic_per_drug
+    compare:
+      - {rule: CLIN-BILI-001, path: per_agent.doxorubicin.bilirubin_mg_dl_max, kind: max, source_value: 1.17, tolerance: 0.05, unit: "mg/dL", label: "bilirubin for doxorubicin", note: "20 micromol/L / 17.1 = 1.17 mg/dL"}
+    implementation:
+      verdict: unsafe
+      file: backend/sql/procedures/evaluate_gates.sql
+      lines: "403-422"
+      finding: "The rule's own number (1.2 mg/dL) is right, but the evaluator never reads the patient's regimen: it returns pass for any bilirubin up to 1.8 mg/dL. A doxorubicin patient at 1.5 mg/dL (about 26 micromol/L, a 50% dose per the monograph) is shown as ready."
+      expect: {patient: "AC regimen, bilirubin 1.5 mg/dL, measured 3 days ago", outcome: "fail or dose-modification flag, not pass"}
+    saarthi:
+      status: unsafe
+      rules: [CLIN-BILI-001]
+      finding: "No freshness limit either: a bilirubin from months ago counts."
+
+  - id: R-AC-04
+    source: BRAJAC
+    page: 2
+    quotes: ["Cardiac assessment recommended if lifelong dose of 400 mg/m2 to be exceeded"]
+    plain: "Doxorubicin damages the heart in proportion to the total amount ever received. Add up every dose the patient has had (from any hospital); past 400 mg per square metre of body surface, the heart must be checked first."
+    applies_to: [AC]
+    check: cumulative_anthracycline
+    saarthi:
+      status: missing
+      rules: []
+      finding: "No rule sums prior doses. The monograph (DOXO_MONO p.8) gives 550 mg/m2 as the suggested lifetime maximum."
+
+  - id: R-AC-05
+    source: BRAJAC
+    page: 2
+    quotes: ["Renal dysfunction: Dose modification may be required for cyclophosphamide"]
+    plain: "If the kidneys are working poorly, the cyclophosphamide dose may need to be lowered."
+    applies_to: [AC]
+    check: renal_per_drug
+    saarthi:
+      status: missing
+      rules: []
+      finding: "CLIN-CRCL-001 does not list cyclophosphamide."
+
+  # ======================================================================
+  # REGIMEN LAYER - TH (weekly paclitaxel + trastuzumab)
+  # ======================================================================
+  - id: R-TH-01
+    source: BRAJTTW
+    page: 1
+    quotes: ["Before each treatment: CBC & Diff"]
+    plain: "A full blood count must be done before every weekly treatment."
+    applies_to: [TH]
+    check: cbc_each_cycle
+    saarthi:
+      status: covered
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "7-day freshness matches a weekly regimen."
+
+  - id: R-TH-02
+    source: BRAJTTW
+    page: 5
+    quotes: ["Greater than or equal to 90 80 mg/m2 65 mg/m2", "ANC (x109/L) Greater than or equal to 1.0"]
+    plain: "Weekly paclitaxel is given at full dose if neutrophils are at least 1,000 and platelets at least 90,000. Below that, call the doctor and delay."
+    applies_to: [TH]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 1000, unit: "/uL", label: "neutrophils (ANC)"}
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 90000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "CLIN-ANC-001's own provenance_note admits weekly paclitaxel permits >=1000 but it is 'not modelled'."
+
+  - id: R-TH-03
+    source: BRAJTTW
+    page: 5
+    quotes: ["Less than 10 x ULN and Less than or equal to 1.25 x ULN 80"]
+    plain: "Full-dose paclitaxel needs bilirubin no higher than 1.25 times the lab's upper normal limit. Between 1.26 and 2 times, the dose drops from 80 to 60."
+    applies_to: [TH]
+    check: hepatic_per_drug
+    compare:
+      - {rule: CLIN-BILI-001, path: per_agent.paclitaxel.bilirubin_x_uln_max, kind: max, source_value: 1.25, unit: "x ULN", label: "bilirubin for paclitaxel"}
+    saarthi:
+      status: unsafe
+      rules: [CLIN-BILI-001]
+      finding: "The rule allows up to 1.5 x ULN for paclitaxel; the protocol reduces the dose above 1.25 x ULN."
+
+  - id: R-TH-04
+    source: BRAJTTW
+    page: 1
+    quotes: ["LVEF greater than or equal to 50%"]
+    plain: "The heart's pumping strength (LVEF, measured by echo scan) must be at least 50% to be eligible for this regimen."
+    applies_to: [TH]
+    check: lvef_value_eligibility
+    saarthi:
+      status: partial
+      rules: [SURV-LVEF-001, SURV-LVEF-002]
+      finding: "SAARTHI checks the echo is recent and that LVEF has not dropped from baseline; it does not check the value itself is at least 50%."
+
+  - id: R-TH-05
+    source: BRAJTTW
+    page: 4
+    quotes: ["Weight will be measured at each scheduled physician's visit."]
+    plain: "Doses are calculated from body weight, so weight is re-measured at every doctor visit and the dose changed if it has moved."
+    applies_to: [TH]
+    check: weight_each_visit
+    saarthi:
+      status: missing
+      rules: []
+      finding: "No weight-recency or weight-change check. CLIN-CRCL-001 uses the latest weight however old it is."
+
+  - id: R-TH-06
+    source: BRAJTTW
+    page: 4
+    quotes: ["If an interruption in treatment of greater than 6 weeks occurs"]
+    plain: "If more than 6 weeks have passed since the last trastuzumab dose, a larger 'loading' dose is needed again. Checkable from dates alone."
+    applies_to: [TH]
+    check: trastuzumab_reload
+    saarthi:
+      status: missing
+      rules: []
+      finding: "The data to check this (dates of prior doses) is record-state; no rule reads it."
+
+  - id: R-TH-07
+    source: BRAJTTW
+    page: 1
+    quotes: ["HER-2 overexpression defined as either IHC3+, or FISH amplification ratio greater than or equal to 2"]
+    plain: "Trastuzumab only works on HER2-positive cancer: the pathology report must say IHC 3+, or a FISH test must confirm it."
+    applies_to: [TH]
+    check: her2_final
+    saarthi:
+      status: covered
+      rules: [DOC-HER2-001]
+      finding: "IHC 3+ is final; IHC 2+ waits for FISH/ISH."
+
+  - id: R-TH-08
+    source: BRAJTTW
+    page: 1
+    quotes: ["ECOG status 0 to 2"]
+    plain: "ECOG is the doctor's 0-5 score of how well the patient manages daily life; 0-2 is well enough for this treatment."
+    applies_to: [TH]
+    check: performance_status
+    saarthi:
+      status: out_of_scope
+      rules: []
+      finding: "Assessed by the clinician at the visit (Class A)."
+
+  # ======================================================================
+  # REGIMEN LAYER - H-MAINT (trastuzumab alone)
+  # ======================================================================
+  - id: R-HM-01
+    source: BRAJTR
+    page: 2
+    quotes: ["The maximum time between cardiac monitoring should be 4 months"]
+    plain: "While on trastuzumab, the heart must be checked by echo at least every 4 months."
+    applies_to: [H-MAINT]
+    check: lvef_recency
+    compare:
+      - {rule: SURV-LVEF-001, path: max_age_days, kind: max_age, source_value: 120, unit: "days", label: "echo age", note: "4 months ~ 120 days"}
+    saarthi:
+      status: conflict
+      rules: [SURV-LVEF-001]
+      finding: "Two sources disagree: the FDA label (L-H-02) says every 3 months, BC Cancer allows up to 4. SAARTHI follows the label. Decide which governs in India and cite it in the rule."
+
+  - id: R-HM-02
+    source: BRAJTR
+    page: 2
+    quotes: ["CBC & Diff (optional and only if indicated)"]
+    plain: "Trastuzumab alone does not lower blood counts, so a blood count before each dose is optional."
+    applies_to: [H-MAINT]
+    check: cbc_applicability
+    saarthi:
+      status: conflict
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "Both rules apply to every oncology patient, so DC-02 on trastuzumab alone can be blocked for a missing or old blood count the protocol does not require."
+
+  - id: R-HM-03
+    source: BRAJTR
+    page: 1
+    quotes: ["LVEF greater than or equal to 50%* after the AC portion of chemotherapy"]
+    plain: "After doxorubicin-based chemotherapy and before trastuzumab starts, a new echo must show the heart at 50% or better."
+    applies_to: [H-MAINT]
+    check: lvef_after_anthracycline
+    saarthi:
+      status: missing
+      rules: []
+      finding: "No rule ties an echo to the switch from AC to trastuzumab. Cohort DC-10 (HER2 equivocal, on AC) is exactly this patient if FISH comes back positive."
+
+  - id: R-HM-04
+    source: BRAJTR
+    page: 2
+    quotes: ["Weight: at baseline and every scheduled physician's visit."]
+    plain: "Weight is measured at the start and at every doctor visit, because the dose depends on it."
+    applies_to: [H-MAINT]
+    check: weight_each_visit
+    saarthi:
+      status: missing
+      rules: []
+      finding: "Same gap as R-TH-05."
+
+  - id: R-HM-05
+    source: BRAJTR
+    page: 3
+    quotes: ["If an interruption in treatment of greater than 6 weeks occurs"]
+    plain: "More than 6 weeks since the last dose means a loading dose is needed again."
+    applies_to: [H-MAINT]
+    check: trastuzumab_reload
+    saarthi:
+      status: missing
+      rules: []
+      finding: "Same gap as R-TH-06."
+
+  # ======================================================================
+  # REGIMEN LAYER - FOLFOX
+  # ======================================================================
+  - id: R-FF-01
+    source: GIAJFFOX
+    page: 1
+    quotes: ["Prior to each cycle: CBC & Diff, creatinine, total bilirubin, ALT"]
+    plain: "Before every cycle: blood count, creatinine (kidney), bilirubin and ALT (liver)."
+    applies_to: [FOLFOX]
+    check: each_cycle_panel
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001, CLIN-CRCL-001, CLIN-BILI-001]
+      finding: "Blood count is freshness-checked. Creatinine and bilirubin are read with no freshness limit; ALT is never evaluated."
+
+  - id: R-FF-02
+    source: GIAJFFOX
+    page: 4
+    quotes: ["If ANC less than 1.2 on Day 1of cycle, hold treatment."]
+    plain: "Hold FOLFOX only if neutrophils are below 1,200. (The missing space in 'Day 1of' is in the original document.)"
+    applies_to: [FOLFOX]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 1200, unit: "/uL", label: "neutrophils (ANC)"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-ANC-001]
+
+  - id: R-FF-03
+    source: GIAJFFOX
+    page: 4
+    quotes: ["If platelets less than 75 on Day 1 of cycle, hold treatment."]
+    plain: "Hold FOLFOX only if platelets are below 75,000."
+    applies_to: [FOLFOX]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 75000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-PLT-001]
+
+  - id: R-FF-04
+    source: GIAJFFOX
+    page: 1
+    quotes: ["DPYD test (not required if previously tested, or tolerated fluorouracil or capecitabine)"]
+    plain: "A one-time genetic blood test (DPYD) shows whether the body can break down fluorouracil. Without the enzyme, a normal dose can be fatal."
+    applies_to: [FOLFOX]
+    check: dpyd_test
+    saarthi:
+      status: missing
+      rules: []
+
+  - id: R-FF-05
+    source: GIAJFFOX
+    page: 1
+    quotes: ["For patients on warfarin, weekly INR during fluorouracil therapy until stable warfarin dose established, then INR prior to each cycle"]
+    plain: "If the patient takes the blood thinner warfarin, a clotting test (INR) is needed before each cycle, because fluorouracil makes warfarin stronger."
+    applies_to: [FOLFOX]
+    check: inr_if_warfarin
+    saarthi:
+      status: missing
+      rules: []
+
+  # ======================================================================
+  # REGIMEN LAYER - CAPOX
+  # ======================================================================
+  - id: R-CX-01
+    source: GIGAVCOX
+    page: 1
+    quotes: ["Prior to each cycle: CBC & Diff, creatinine, total bilirubin, ALT"]
+    plain: "Before every cycle: blood count, kidney and liver tests."
+    applies_to: [CAPOX]
+    check: each_cycle_panel
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001, CLIN-CRCL-001, CLIN-BILI-001]
+      finding: "Same as R-FF-01."
+
+  - id: R-CX-02
+    source: GIGAVCOX
+    page: 4
+    quotes: ["If ANC less than 1.2 on Day 1 of cycle, hold treatment."]
+    plain: "Hold CAPOX only if neutrophils are below 1,200."
+    applies_to: [CAPOX]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 1200, unit: "/uL", label: "neutrophils (ANC)"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-ANC-001]
+
+  - id: R-CX-03
+    source: GIGAVCOX
+    page: 4
+    quotes: ["If platelets less than 75 on Day 1 of cycle, hold treatment."]
+    plain: "Hold CAPOX only if platelets are below 75,000."
+    applies_to: [CAPOX]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 75000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-PLT-001]
+
+  - id: R-CX-04
+    source: GIGAVCOX
+    page: 6
+    quotes: ["Less than 30 Discontinue therapy"]
+    plain: "Stop capecitabine if kidney function (creatinine clearance) is below 30 mL/min."
+    applies_to: [CAPOX]
+    check: renal_per_drug
+    compare:
+      - {rule: CLIN-CRCL-001, path: per_agent_min_crcl.capecitabine, kind: min, source_value: 30, unit: "mL/min", label: "creatinine clearance for capecitabine"}
+    saarthi:
+      status: partial
+      rules: [CLIN-CRCL-001]
+      finding: "The number matches, and the evaluator's 30 mL/min floor happens to be right for capecitabine. There is no freshness limit on the creatinine."
+
+  - id: R-CX-05
+    source: GIGAVCOX
+    page: 1
+    quotes: ["DPYD test (not required if previously tested, or tolerated fluorouracil or capecitabine)"]
+    plain: "One-time DPYD genetic test before capecitabine; same danger as with fluorouracil."
+    applies_to: [CAPOX]
+    check: dpyd_test
+    saarthi:
+      status: missing
+      rules: []
+
+  # ======================================================================
+  # REGIMEN LAYER - cisplatin + radiation, head and neck
+  # ======================================================================
+  - id: R-HN-01
+    source: HNLAPRT
+    page: 1
+    quotes: ["Before each cycle: CBC & Diff, creatinine, sodium, potassium, calcium, albumin, magnesium."]
+    plain: "Before every cycle: blood count, creatinine, and the body salts (sodium, potassium, calcium, magnesium) that cisplatin drains through the kidneys."
+    applies_to: [CIS-RT-HN]
+    check: each_cycle_panel
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001, CLIN-CRCL-001]
+      finding: "No electrolyte rule; creatinine has no freshness limit."
+
+  - id: R-HN-02
+    source: HNLAPRT
+    page: 3
+    quotes: ["greater than or equal to 1.5 and greater than or equal to 100 100%"]
+    plain: "Full-dose cisplatin needs neutrophils at least 1,500 and platelets at least 100,000. (1,000-1,500 or 75,000-100,000: give 75%.)"
+    applies_to: [CIS-RT-HN]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 1500, unit: "/uL", label: "neutrophils (ANC)"}
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 100000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "Full-dose numbers match. The 75% reduced-dose band is not modelled."
+
+  - id: R-HN-03
+    source: HNLAPRT
+    page: 3
+    quotes: ["Less than 45 Hold CISplatin or delay with additional fluids"]
+    plain: "Cisplatin can damage the kidneys. Full dose at creatinine clearance 60 or more, 80% dose at 45-59, and hold below 45."
+    applies_to: [CIS-RT-HN]
+    check: renal_per_drug
+    compare:
+      - {rule: CLIN-CRCL-001, path: per_agent_min_crcl.cisplatin, kind: min, source_value: 60, unit: "mL/min", label: "creatinine clearance for cisplatin (full dose)"}
+    implementation:
+      verdict: unsafe
+      file: backend/sql/procedures/evaluate_gates.sql
+      lines: "373-402"
+      finding: "The rule's JSON says 60 for cisplatin, but the evaluator ignores the regimen and passes anyone at 30 or above ('meets carboplatin/capecitabine 30 minimum only'). A cisplatin patient at 40 mL/min, whom the protocol says to hold, is shown as ready."
+      expect: {patient: "cisplatin regimen, creatinine clearance 40 mL/min", outcome: "fail, not pass"}
+    saarthi:
+      status: unsafe
+      rules: [CLIN-CRCL-001]
+
+  - id: R-HN-04
+    source: HNLAPRT
+    page: 4
+    quotes: ["All head and neck cancer patients undergoing chemoradiation should be screened for hepatitis B reactivation risk."]
+    plain: "Chemotherapy can wake up a hidden hepatitis B infection and cause liver failure, so patients are blood-tested for hepatitis B before starting."
+    applies_to: [CIS-RT-HN]
+    check: hbv_screening
+    saarthi:
+      status: missing
+      rules: []
+
+  - id: R-HN-05
+    source: HNLAPRT
+    page: 1
+    quotes: ["ECOG performance status 0, 1, 2"]
+    plain: "Patient must be well enough day to day (doctor's 0-5 score of 0, 1 or 2)."
+    applies_to: [CIS-RT-HN]
+    check: performance_status
+    saarthi:
+      status: out_of_scope
+      rules: []
+      finding: "Clinician assessment at the visit (Class A)."
+
+  # ======================================================================
+  # REGIMEN LAYER - cisplatin + radiation, cervix
+  # ======================================================================
+  - id: R-GO-01
+    source: GOCXCRT
+    page: 1
+    quotes: ["Before each treatment: CBC & Diff, creatinine"]
+    plain: "Before every weekly dose: blood count and creatinine."
+    applies_to: [CIS-RT-CX]
+    check: each_cycle_panel
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001, CLIN-CRCL-001]
+      finding: "Creatinine has no freshness limit; a weekly regimen needs this week's value."
+
+  - id: R-GO-02
+    source: GOCXCRT
+    page: 2
+    quotes: ["ANC greater than or equal to 0.8 Proceed with CISplatin", "Platelets greater than or equal to 80 Proceed with treatment"]
+    plain: "Weekly cervix cisplatin proceeds with neutrophils of at least 800 and platelets of at least 80,000."
+    applies_to: [CIS-RT-CX]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 800, unit: "/uL", label: "neutrophils (ANC)"}
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 80000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: conflict
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "Missed cisplatin weeks during radiation reduce its benefit, so a false block has a real clinical cost here."
+
+  - id: R-GO-03
+    source: GOCXCRT
+    page: 2
+    quotes: ["Less than 50 mL/minute Delay chemotherapy, recheck in 1 week"]
+    plain: "Delay cisplatin if creatinine clearance is below 50 mL/min."
+    applies_to: [CIS-RT-CX]
+    check: renal_per_drug
+    compare:
+      - {rule: CLIN-CRCL-001, path: per_agent_min_crcl.cisplatin, kind: min, source_value: 50, unit: "mL/min", label: "creatinine clearance for cisplatin"}
+    implementation:
+      verdict: unsafe
+      file: backend/sql/procedures/evaluate_gates.sql
+      lines: "373-402"
+      finding: "The rule's JSON (60) is stricter than this protocol (50), but the evaluator actually passes anyone at 30 or above. A cervix patient at 40 mL/min is shown as ready."
+      expect: {patient: "cisplatin regimen, creatinine clearance 40 mL/min", outcome: "fail, not pass"}
+    saarthi:
+      status: unsafe
+      rules: [CLIN-CRCL-001]
+
+  # ======================================================================
+  # REGIMEN LAYER - pemetrexed + carboplatin
+  # ======================================================================
+  - id: R-LU-01
+    source: LUAVPP
+    page: 1
+    quotes: ["Before each treatment: CBC & Diff, creatinine, alkaline phosphatase, ALT, total bilirubin, LDH"]
+    plain: "Before every cycle: blood count, kidney test and a full set of liver tests."
+    applies_to: [PEM-CARBO]
+    check: each_cycle_panel
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001, CLIN-CRCL-001, CLIN-BILI-001]
+      finding: "ALT, alkaline phosphatase and LDH are not evaluated; creatinine and bilirubin have no freshness limit."
+
+  - id: R-LU-02
+    source: LUAVPP
+    page: 2
+    quotes: ["greater than or equal to 1.5 and greater than or equal to 100 100%"]
+    plain: "Full dose needs neutrophils at least 1,500 and platelets at least 100,000; otherwise delay."
+    applies_to: [PEM-CARBO]
+    check: blood_count_thresholds
+    compare:
+      - {rule: CLIN-ANC-001, path: value, kind: min, source_value: 1500, unit: "/uL", label: "neutrophils (ANC)"}
+      - {rule: CLIN-PLT-001, path: value, kind: min, source_value: 100000, unit: "/uL", label: "platelets"}
+    saarthi:
+      status: covered
+      rules: [CLIN-ANC-001, CLIN-PLT-001]
+      finding: "Both numbers match and the protocol has no reduced-dose band, so pass/fail is the right shape."
+
+  - id: R-LU-03
+    source: LUAVPP
+    page: 2
+    quotes: ["Less than 45 Hold"]
+    plain: "Hold pemetrexed if creatinine clearance is below 45 mL/min, whichever platinum drug is paired with it."
+    applies_to: [PEM-CARBO]
+    check: renal_per_drug
+    compare:
+      - {rule: CLIN-CRCL-001, path: per_agent_min_crcl.pemetrexed, kind: min, source_value: 45, unit: "mL/min", label: "creatinine clearance for pemetrexed"}
+    implementation:
+      verdict: unsafe
+      file: backend/sql/procedures/evaluate_gates.sql
+      lines: "373-402"
+      finding: "The rule's JSON (45) matches the protocol, but the evaluator passes anyone at 30 or above. DC-07 at 40 mL/min would be shown as ready. The rule's 'carboplatin: 30' entry has no basis in this protocol: carboplatin is dosed from kidney function (AUC formula), not gated by it."
+      expect: {patient: "pemetrexed regimen, creatinine clearance 40 mL/min", outcome: "fail, not pass"}
+    saarthi:
+      status: unsafe
+      rules: [CLIN-CRCL-001]
+
+  - id: R-LU-04
+    source: LUAVPP
+    page: 1
+    quotes: ["Vitamin supplementation mandatory starting at least 7 days prior to the first cycle"]
+    plain: "Pemetrexed is only safe if the patient has been taking folic acid for a week and has had a vitamin B12 injection (repeated every 9 weeks)."
+    applies_to: [PEM-CARBO]
+    check: pemetrexed_vitamins
+    saarthi:
+      status: missing
+      rules: []
+      finding: "Record-state: a B12 injection date within 9 weeks and folic acid on the medication list."
+
+  # ======================================================================
+  # DRUG LAYER - Herceptin (trastuzumab) label
+  # ======================================================================
+  - id: L-H-01
+    source: HERCEPTIN_LABEL
+    page: 3
+    quotes: ["Assess left ventricular ejection fraction (LVEF) prior to initiation of Herceptin and at regular intervals during treatment."]
+    plain: "Check the heart's pumping strength by echo before trastuzumab starts and regularly during it."
+    applies_to: [TH, H-MAINT]
+    check: lvef_recency
+    saarthi:
+      status: covered
+      rules: [SURV-LVEF-001]
+
+  - id: L-H-02
+    source: HERCEPTIN_LABEL
+    page: 6
+    quotes: ["LVEF measurements every 3 months during and upon completion of Herceptin"]
+    plain: "Repeat the echo every 3 months while on trastuzumab."
+    applies_to: [TH, H-MAINT]
+    check: lvef_recency
+    compare:
+      - {rule: SURV-LVEF-001, path: max_age_days, kind: max_age, source_value: 90, unit: "days", label: "echo age", note: "3 months ~ 90 days"}
+    saarthi:
+      status: covered
+      rules: [SURV-LVEF-001]
+
+  - id: L-H-03
+    source: HERCEPTIN_LABEL
+    page: 6
+    quotes: ["Withhold Herceptin for ≥ 16% absolute decrease in LVEF from pre-treatment values"]
+    plain: "Stop trastuzumab if the heart's pumping strength falls 16 points or more from where it started."
+    applies_to: [TH, H-MAINT]
+    check: lvef_decline
+    saarthi:
+      status: covered
+      rules: [SURV-LVEF-002]
+      finding: "The label's second condition uses the lab's own lower normal limit; the rule approximates it as 50%."
+
+  - id: L-H-04
+    source: HERCEPTIN_LABEL
+    page: 3
+    quotes: ["Verify the pregnancy status of females of reproductive potential prior to the initiation of Herceptin"]
+    plain: "Trastuzumab harms an unborn baby (a boxed warning), so a pregnancy test is required before a woman who could be pregnant starts it. This is the same document SAARTHI already uses for its heart rules."
+    applies_to: [TH, H-MAINT]
+    check: pregnancy_status
+    saarthi:
+      status: missing
+      rules: []
+
+  # ======================================================================
+  # ADMINISTRATION LAYER - AIIMS Jodhpur chemotherapy checklist
+  # ======================================================================
+  - id: A-01
+    source: AIIMS_CHECKLIST
+    quotes: ["Confirm the chemotherapy admission form/prescription form."]
+    plain: "There must be a written, signed chemotherapy order for this cycle."
+    applies_to: [ALL]
+    check: valid_order
+    saarthi:
+      status: missing
+      rules: []
+      finding: "TREATMENT_PLAN records the regimen, but no rule checks a signed order exists for this cycle."
+
+  - id: A-02
+    source: AIIMS_CHECKLIST
+    quotes: ["Review the patient's history of any known allergy/fluid restriction/nutritional deficit."]
+    plain: "Known drug allergies and previous infusion reactions must be on record before the drip starts."
+    applies_to: [ALL]
+    check: allergy_history
+    saarthi:
+      status: missing
+      rules: []
+
+  - id: A-03
+    source: AIIMS_CHECKLIST
+    quotes: ["Ensure patient's baseline laboratory reports like Hb, WBC, platelet count, LFT, RFT, etc."]
+    plain: "Blood tests must be on file: haemoglobin, white cells, platelets, liver tests and kidney tests."
+    applies_to: [ALL]
+    check: baseline_lab_panel
+    saarthi:
+      status: partial
+      rules: [CLIN-ANC-001, CLIN-PLT-001, CLIN-CRCL-001, CLIN-BILI-001]
+      finding: "Haemoglobin is not checked at all, though HEMOGLOBIN is already in the ontology."
+
+  - id: A-04
+    source: AIIMS_CHECKLIST
+    quotes: ["Obtain written informed consent from patient/family member."]
+    plain: "A signed consent form for chemotherapy must be on file."
+    applies_to: [ALL]
+    check: chemo_consent
+    saarthi:
+      status: missing
+      rules: []
+      finding: "GOVERNANCE.CONSENT is data-sharing consent, not treatment consent."
+
+  - id: A-05
+    source: AIIMS_CHECKLIST
+    quotes: ["Reconfirm the patient's identity and reassure the patient about the procedure."]
+    plain: "Make sure this is the right patient."
+    applies_to: [ALL]
+    check: identity
+    saarthi:
+      status: covered
+      rules: [ID-LINK-001, ID-QUAR-001]
+      finding: "SAARTHI guarantees every record belongs to one patient. The bedside check itself is physical."
+
+  - id: A-06
+    source: AIIMS_CHECKLIST
+    quotes: ["Ensure the enclosure of discharge summary plan including date of next chemotherapy cycle and laboratory tests required."]
+    plain: "When the patient leaves, the discharge paper must say the next cycle date and which blood tests to get before it."
+    applies_to: [ALL]
+    check: discharge_next_cycle
+    saarthi:
+      status: missing
+      rules: []
+      finding: "If this is missing, the next cycle's blood tests are not done, and the next visit fails."
+
+  # ======================================================================
+  # GUIDELINE LAYER - Indian national guidance
+  # ======================================================================
+  - id: G-NCG-01
+    source: NCG_BREAST_2019
+    page: 5
+    quotes: ["Histo/cyto pathology confirmation is a MUST before initiating cancer directed treatment (surgery/ chemotherapy/ other systemic treatment)."]
+    plain: "India's National Cancer Grid: no cancer treatment starts until a pathology report (tissue or cell sample) confirms the cancer."
+    applies_to: [AC, TH, H-MAINT]
+    check: pathology_final
+    saarthi:
+      status: covered
+      rules: [DOC-PATH-001]
+      finding: "DOC-PATH-001 requires a final, not preliminary, pathology report before the next cycle."
+
+  # ======================================================================
+  # PAYER LAYER - PM-JAY Health Benefit Package 2.2
+  # ======================================================================
+  - id: P-01
+    source: PMJAY_HBP22
+    page: 27
+    quotes: ["Total number of packages: 72 Total number of procedures: 264 Pre-authorization: Mandatory for all packages"]
+    plain: "Under PM-JAY, every medical-oncology package (72 packages, 264 procedures) needs pre-authorisation before treatment."
+    applies_to: [ALL]
+    check: preauth_valid
+    saarthi:
+      status: covered
+      rules: [COV-AUTH-001]
+
+  - id: P-02
+    source: PMJAY_HBP22
+    page: 27
+    quotes: ["There should be pre-authorization at each step for cancer care"]
+    plain: "Each step of cancer treatment (each cycle or phase) needs its own pre-authorisation."
+    applies_to: [ALL]
+    check: preauth_valid
+    saarthi:
+      status: covered
+      rules: [COV-AUTH-001]
+      finding: "COV-AUTH-001 checks a valid authorisation per encounter."
+
+  - id: P-03
+    source: PMJAY_HBP22
+    page: 27
+    quotes: ["would need to be taken by a multidisciplinary tumor board"]
+    plain: "The treatment decision should come from a tumour board (surgeon, radiation oncologist and medical oncologist together), and be on record."
+    applies_to: [ALL]
+    check: tumour_board_plan
+    saarthi:
+      status: missing
+      rules: []
+
+  - id: P-04
+    source: PMJAY_HBP22
+    page: 42
+    quotes: ["Every procedure requires a set of mandatory documents to be uploaded at the time of submission of a pre-auth request."]
+    plain: "Each PM-JAY package has a fixed list of documents that must be uploaded before pre-authorisation can even be submitted."
+    applies_to: [ALL]
+    check: package_documents
+    saarthi:
+      status: missing
+      rules: []
+      finding: "The per-package list is inside the PM-JAY portal, not this manual (see sources.yaml not_yet_verified)."

@@ -47,6 +47,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import streamlit as st
+from streamlit_extras.metric_cards import style_metric_cards
 
 from frontend.core import answer_render as ar
 from frontend.core import census, navigator
@@ -394,15 +395,58 @@ def _render_census() -> set[str]:
         )
         return set()
 
+    # Status -> the same ink each gate chip uses, so a blocked chair's card
+    # border is the identical red as a failed gate's border, not a second
+    # colour system invented for this one screen.
+    _CARD_ACCENT = {"blocked": "#A8261C", "conflict": "#8A5300",
+                     "waiting": "#656C73", "advisory": "#1E6B3A", "ready": "#1E6B3A"}
+
     by_day: dict[str, list] = {}
     for chair in chairs:
         by_day.setdefault((chair.scheduled or "")[:10], []).append(chair)
     for iso_day, day_chairs in sorted(by_day.items()):
-        st.html(ar.census_summary(census.counts(day_chairs), _day_label(iso_day)))
+        st.html(f'<div class="sa-census-day">{_day_label(iso_day)}</div>')
+        tally = census.counts(day_chairs)
+        tiles = st.columns(5, gap="small")
+        # Short labels: "Waiting on evidence" wrapped to two lines and pushed
+        # the number below the fold of the tile at this width - found live.
+        for col, key, label in zip(
+            tiles,
+            ("ready", "advisory", "waiting", "conflict", "blocked"),
+            ("Ready", "Advisory", "Waiting", "Conflict", "Blocked"),
+        ):
+            with col:
+                st.metric(label, tally.get(key, 0))
+        style_metric_cards(
+            background_color="#FFFFFF", border_left_color="#D8DCDF",
+            border_color="#D8DCDF", box_shadow=False,
+        )
+        st.html('<div style="height:8px"></div>')
+
         for chair in day_chairs:
-            text_col, action_col = st.columns([6, 1], vertical_alignment="center")
-            with text_col:
-                st.html(ar.census_row(chair))
+            # The Open button lives OUTSIDE the styled card: stylable_container's
+            # CSS-scoping wrapper narrowed the inner columns enough that the
+            # button label clipped to "Op..." - found live. A plain column next
+            # to the card is simpler and doesn't fight the card's own padding.
+            # [6, 1] measured at 70px wide in the body column - "Open" (4 letters)
+            # visually clipped at that width even with no CSS truncation applied
+            # (Chrome's native button UA-stylesheet clipping, not our CSS) - found
+            # live. [5, 1.5] gives it ~190px, comfortably clear of that edge.
+            card_col, action_col = st.columns([5, 1.5], vertical_alignment="center")
+            with card_col:
+                card_key = f"card_{chair.encounter_id}"
+                # st.container(key=...) instead of streamlit-extras'
+                # stylable_container (deprecated - rendered its own warning
+                # banner in the middle of the census, found live). Streamlit
+                # exposes the container as .st-key-<key> for direct CSS targeting.
+                st.html(
+                    f'<style>.st-key-{card_key} {{'
+                    f'border-left: 3px solid {_CARD_ACCENT[chair.status]};'
+                    'border-radius: 4px; background: #FFFFFF;'
+                    'padding: 14px 16px; margin-bottom: 8px;}}</style>'
+                )
+                with st.container(key=card_key):
+                    st.html(ar.census_row(chair))
             with action_col:
                 if live and st.button("Open", key=f"open_{chair.encounter_id}",
                                       use_container_width=True):
@@ -610,10 +654,15 @@ with margin:
 # Input
 # ---------------------------------------------------------------------------
 
-question = st.chat_input(
-    "Ask about this patient's record…" if binding else "Select a patient first",
-    disabled=not binding,
-)
+question = None
+if binding:
+    # Only rendered once a patient is bound. st.chat_input opts the WHOLE page
+    # into Streamlit's chat-style auto-scroll-to-bottom behaviour - found live:
+    # every fresh load of the unbound home screen landed scrolled ~600px down,
+    # past the masthead, patient picker and readiness summary entirely, because
+    # the (disabled) chat_input was still present in the DOM. The census is not
+    # a conversation; nothing on it should auto-scroll.
+    question = st.chat_input("Ask about this patient's record…")
 question = question or st.session_state.pop("pending", None)
 
 if question and binding:

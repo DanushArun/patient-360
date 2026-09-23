@@ -2,6 +2,14 @@
 
 **Every component, marked honestly. Updated as the build progresses.**
 
+**23 September audit notice:** Most inventory and counts below are a 20 September snapshot.
+They do not describe the current live database or Next.js page. Do not cite their old
+`designed-only` labels as current status. The current observed paths, failures, and untested
+release gates are in [the clinician completeness audit](docs/COMPLETENESS-MAP.md).
+The live audit proved one synthetic-patient load, one Class B answer, one task creation,
+one language switch and browser-session restoration. It did not prove the document-to-answer
+pipeline, six specified workflows, access controls, or hospital readiness.
+
 `AGENTS.md` §4 mandates this file. Judges spend 5–22 October alone with this repository, and Solution Completeness is 30% of the score. **A claim in the README that is not demonstrable here is a defect.**
 
 | Status | Meaning |

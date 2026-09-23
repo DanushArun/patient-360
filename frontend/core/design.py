@@ -221,8 +221,7 @@ span[class*="material-symbols"], span[class*="material-icons"] {{
 /* ---- meta line: rule id, version, provenance --------------------------- */
 .sa-meta {{ font-size: {meta_size}; line-height: {meta_lh}; color: {INK_MUTED}; }}
 .sa-meta code {{ font-family: "JetBrains Mono", ui-monospace, monospace;
-                 font-size: 12px; background: {SURFACE_SUNKEN};
-                 padding: 1px 5px; border-radius: 3px; color: {INK_SECONDARY}; }}
+                 font-size: 12px; color: {INK_MUTED}; }}
 
 /* provenance_note is shown wherever a threshold is practice consensus rather
    than a guideline requirement. Three thresholds here are consensus. */
@@ -359,8 +358,7 @@ span[class*="material-symbols"], span[class*="material-icons"] {{
                      font-size: {TYPE['label'][0]}; color: {INK_SECONDARY}; }}
 .sa-census-count b {{ color: {INK}; font-weight: 600; }}
 .sa-census-row {{ display: grid; grid-template-columns: minmax(180px, 2fr) minmax(0, 3fr);
-                  gap: {SPACE['lg']}; padding: {SPACE['md']} 0;
-                  border-top: 1px solid {RULE}; align-items: start; }}
+                  gap: {SPACE['lg']}; align-items: start; }}
 .sa-census-name {{ font-size: {TYPE['strong'][0]}; font-weight: 600; letter-spacing: -0.01em; }}
 .sa-census-state {{ display: flex; flex-direction: column; gap: {SPACE['xs']};
                     align-items: flex-start; }}
@@ -399,6 +397,16 @@ span[class*="material-symbols"], span[class*="material-icons"] {{
 [data-testid="stChatMessageAvatarAssistant"] {{
     background: {SURFACE_SUNKEN} !important; color: {INK_SECONDARY} !important;
     border: 1px solid {RULE};
+}}
+.sa-chat-avatar {{
+    width: 34px; height: 34px; flex: 0 0 34px;
+    display: grid; place-items: center;
+    border: 1px solid {RULE}; border-radius: 4px;
+    background: {SURFACE_SUNKEN}; color: {INK_SECONDARY};
+    font-family: "Material Symbols Rounded";
+    font-size: 20px; font-weight: 400; line-height: 1;
+    font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
 }}
 
 /* Chat input: match the measure and type scale, replace the default heavy

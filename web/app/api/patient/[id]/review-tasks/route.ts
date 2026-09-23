@@ -1,0 +1,21 @@
+import { loadReviewTasks } from "@/lib/patient";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+): Promise<Response> {
+  const ruleId = new URL(request.url).searchParams.get("ruleId");
+  if (!ruleId || !/^[A-Z0-9-]+$/.test(ruleId)) {
+    return Response.json({ error: "invalid_argument" }, { status: 400 });
+  }
+  try {
+    const { id } = await context.params;
+    return Response.json({ tasks: await loadReviewTasks(id, ruleId) });
+  } catch (error) {
+    const code = error instanceof Error ? error.message : "task_history_unavailable";
+    const status = code.includes("access") || code.includes("bind failed") ? 403 : 502;
+    return Response.json({ error: code }, { status });
+  }
+}

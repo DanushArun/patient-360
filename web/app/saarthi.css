@@ -1,0 +1,315 @@
+/* ---- reset Streamlit's chrome ------------------------------------------- */
+#MainMenu, footer, header [data-testid="stStatusWidget"] { visibility: hidden; }
+/* Top padding must clear the fixed toolbar, or the masthead - the line carrying
+   consent and known_as_of - renders underneath it and is unreadable. */
+.block-container { padding-top: 5rem; max-width: 1180px; }
+
+/* ---- type -------------------------------------------------------------- */
+/* Deliberately NOT [class*="st-"]: that selector also matches Streamlit's icon
+   spans, which overrides the Material Symbols font and renders ligature NAMES as
+   literal text ("keyboard_double_arrow_right" in the sidebar). Target the app
+   container and the text containers, and let inheritance do the rest. */
+html, body, .stApp, .stMarkdown, [data-testid="stMarkdownContainer"],
+[data-testid="stWidgetLabel"], .stRadio, .stButton, .stTextInput {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #1A1D21;
+    -webkit-font-smoothing: antialiased;
+}
+html, body, .stMarkdown, [data-testid="stMarkdownContainer"] {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 400;
+}
+
+/* Icon fonts are never overridden. Restoring these explicitly rather than only
+   avoiding them, so a future broad selector cannot silently break them again. */
+[data-testid="stIconMaterial"], .material-icons, .material-symbols-rounded,
+span[class*="material-symbols"], span[class*="material-icons"] {
+    font-family: "Material Symbols Rounded", "Material Icons" !important;
+}
+
+/* Tabular figures on every number. Two reasons: values align on the digit for
+   comparison, and when known_as_of moves the digits change IN PLACE instead of
+   jittering horizontally. This is why the time-travel demo reads as precise. */
+.sa-num, .sa-value, .sa-ts, .sa-meta {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+}
+
+.sa-measure { max-width: 68ch; }
+
+/* ---- masthead: who is asking, about whom, under what authority, as of when -- */
+.sa-masthead {
+    border-bottom: 1px solid #D8DCDF;
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+    display: flex; flex-wrap: wrap; gap: 24px; align-items: baseline;
+}
+.sa-masthead-patient { font-size: 23px; line-height: 29px;
+                        font-weight: 500; letter-spacing: -0.01em; }
+.sa-field { display: flex; flex-direction: column; gap: 2px; }
+.sa-field-label { font-size: 13px; line-height: 17px; color: #656C73;
+                   text-transform: uppercase; letter-spacing: 0.06em; }
+.sa-field-value { font-size: 15px; line-height: 19px;
+                   color: #4A5157; font-variant-numeric: tabular-nums; }
+
+/* ---- claim: text, not a card. No shadow - shadow implies a button. ------- */
+.sa-claim {
+    border-top: 1px solid #D8DCDF;
+    padding: 24px 0 16px 0;
+}
+.sa-claim:first-of-type { border-top: none; }
+.sa-claim-text { font-size: 17px; line-height: 22px;
+                  max-width: 68ch; margin-bottom: 12px; }
+
+/* ---- status chip: glyph + word + border style --------------------------- */
+.sa-status {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 3px 12px; border-radius: 4px;
+    font-size: 15px; line-height: 19px;
+    white-space: nowrap;
+}
+.sa-status-glyph { font-size: 15px; line-height: 1; }
+
+/* ---- meta line: rule id, version, provenance --------------------------- */
+.sa-meta { font-size: 13px; line-height: 17px; color: #656C73; }
+.sa-meta code { font-family: "JetBrains Mono", ui-monospace, monospace;
+                 font-size: 12px; color: #656C73; }
+
+/* provenance_note is shown wherever a threshold is practice consensus rather
+   than a guideline requirement. Three thresholds here are consensus. */
+.sa-provenance { font-size: 13px; line-height: 17px;
+                  color: #4A5157; font-style: italic; }
+
+/* ---- action: what to do, addressed to someone -------------------------- */
+.sa-action {
+    font-size: 16px; line-height: 20px;
+    border-left: 2px solid #656C73;
+    padding-left: 12px; margin-top: 12px;
+    max-width: 68ch; color: #4A5157;
+}
+
+/* ---- evidence margin: persistent, never a modal ------------------------ */
+/* Provenance verification needs claim and source visible SIMULTANEOUSLY; a modal
+   that covers the claim defeats the purpose (clinical-ux-evidence.md 4.3). */
+.sa-evidence {
+    background: #F6F7F8;
+    padding: 16px;
+    border-radius: 6px;
+    transition: background 120ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* R6: patient evidence and reference evidence must never look alike -
+   "a guideline clause in the same panel style as a pathology page invites
+   reading it as a finding about the patient" (COPILOT-SPEC 2). Three signals:
+   left edge colour, surface tint, and an explicit word. */
+.sa-ev-patient   { border-left: 3px solid #1A5C8A; }
+.sa-ev-reference { border-left: 3px solid #5B4B8A; background: #FAF9FC; }
+.sa-ev-kind {
+    font-size: 13px; line-height: 17px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+.sa-ev-patient .sa-ev-kind   { color: #1A5C8A; }
+.sa-ev-reference .sa-ev-kind { color: #5B4B8A; }
+.sa-ev-id { font-family: "JetBrains Mono", ui-monospace, monospace;
+             font-size: 12px; color: #4A5157; }
+
+/* ---- the three R2 clocks, always all three ----------------------------- */
+.sa-clocks { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.sa-clock-label { font-size: 11px; color: #656C73;
+                   text-transform: uppercase; letter-spacing: 0.06em; }
+.sa-clock-value { font-size: 13px; color: #4A5157;
+                   font-variant-numeric: tabular-nums; }
+
+/* ---- derivation trace: the hero moment (demo beat 2) ------------------- */
+/* A computed value presented as if printed is a quiet form of fabrication, so the
+   arithmetic is shown and the page is explicitly disclaimed. */
+.sa-derivation {
+    background: #FFFFFF; border: 1px solid #D8DCDF; border-radius: 6px;
+    padding: 16px; margin-top: 12px;
+}
+.sa-derivation-lead { font-size: 15px; font-weight: 600;
+                       color: #1A1D21; margin-bottom: 12px; }
+.sa-formula {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 14px; line-height: 24px; color: #1A1D21;
+    font-variant-numeric: tabular-nums;
+    background: #F6F7F8; border-radius: 4px;
+    padding: 12px;
+    /* pre-wrap, not pre: in the evidence margin `pre` clipped the equation
+       mid-expression ("WBC x (neutrophil% +"), truncating the single most
+       important string in the product. It must wrap, never scroll away. */
+    white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.sa-derivation-note { font-size: 13px; color: #4A5157;
+                       margin-top: 12px; }
+
+/* ---- Class A refusal: a formal addressed notice, not a yellow warning --- */
+/* NMC TPG 2020 is a legal boundary. It should read like a referral, because that
+   is what it is: this question belongs to a named registered practitioner. */
+.sa-refusal {
+    border: 1px solid #4A5157; border-top: 3px solid #1A1D21;
+    border-radius: 2px; padding: 24px; max-width: 68ch;
+}
+.sa-refusal-kind { font-size: 13px; text-transform: uppercase;
+                    letter-spacing: 0.08em; color: #656C73;
+                    margin-bottom: 12px; }
+.sa-refusal-message { font-size: 20px;
+                       line-height: 27px; margin-bottom: 16px; }
+.sa-refusal-addressee { border-top: 1px solid #D8DCDF; padding-top: 12px;
+                         font-size: 15px; }
+
+/* ---- limitations: first-class, not a caption --------------------------- */
+/* What the system could NOT establish is the most credible thing on the screen.
+   Burying it in grey 12px would be the dishonest choice. */
+.sa-limitation {
+    border-left: 2px dashed #656C73;
+    padding: 8px 0 8px 12px;
+    font-size: 16px; line-height: 20px;
+    color: #4A5157; max-width: 68ch; margin-bottom: 8px;
+}
+
+/* ---- gate strip (Patient 360) ----------------------------------------- */
+.sa-gate-row {
+    display: flex; align-items: baseline; gap: 16px;
+    padding: 12px 0; border-bottom: 1px solid #D8DCDF;
+}
+.sa-gate-name { font-size: 17px; font-weight: 600;
+                 min-width: 140px; letter-spacing: -0.01em; }
+
+/* ---- source text with the cited span highlighted ---------------------- */
+.sa-page-text {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    /* `pre`, not `pre-wrap`: a lab report is a COLUMNAR document. Wrapping it breaks
+       the alignment between analyte, value, unit and reference range - which is exactly
+       where the Indian-format traps live (GM%, /CUMM, lakh commas). Scroll sideways
+       rather than reflow a clinical document into something it never was. */
+    font-size: 13px; line-height: 21px; white-space: pre; overflow-x: auto;
+    background: #FFFFFF; border: 1px solid #D8DCDF; border-radius: 4px;
+    padding: 16px; max-height: 420px; overflow-y: auto;
+    color: #4A5157;
+}
+/* The cited range. Underline + weight carry it, so the highlight is not
+   colour-dependent - it survives greyscale and print. */
+.sa-page-text mark {
+    background: #FFF3C4; color: #1A1D21; font-weight: 600;
+    border-bottom: 2px solid #8A5300;
+    padding: 1px 0; border-radius: 2px;
+}
+
+/* ---- focus: visible, never removed ------------------------------------ */
+:focus-visible { outline: 2px solid #1A5C8A; outline-offset: 2px; }
+
+/* ---- day-care census: the coordinator's home screen -------------------- */
+/* Urgency is position (sorted blocked-first) and chip shape. Rows are text on
+   hairlines, not cards - eleven boxed cards would be the clutter anti-pattern. */
+.sa-census-head { display: flex; flex-wrap: wrap; align-items: baseline;
+                   gap: 16px; margin-bottom: 12px; }
+.sa-census-day { font-size: 20px; line-height: 27px;
+                  font-weight: 500; letter-spacing: -0.01em; }
+.sa-census-counts { display: flex; flex-wrap: wrap; gap: 16px;
+                     font-size: 15px; color: #4A5157; }
+.sa-census-count b { color: #1A1D21; font-weight: 600; }
+.sa-census-row { display: grid; grid-template-columns: minmax(180px, 2fr) minmax(0, 3fr);
+                  gap: 16px; align-items: start; }
+.sa-census-name { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.sa-census-state { display: flex; flex-direction: column; gap: 4px;
+                    align-items: flex-start; }
+.sa-census-reason { font-size: 16px; line-height: 20px;
+                     color: #4A5157; max-width: 68ch; }
+.sa-census-reason code { font-family: "JetBrains Mono", ui-monospace, monospace;
+                          font-size: 12px; color: #656C73; }
+@media (max-width: 640px) { .sa-census-row { grid-template-columns: 1fr; } }
+
+/* ---- family checklist (Navigator View) --------------------------------- */
+.sa-check-item { display: flex; gap: 12px; padding: 12px 0;
+                  border-top: 1px solid #D8DCDF; }
+.sa-check-n { flex: 0 0 24px; height: 24px; border-radius: 12px; text-align: center;
+               line-height: 24px; font-size: 13px; font-weight: 600;
+               border: 1px solid #4A5157; color: #4A5157; }
+.sa-check-text { font-size: 17px; line-height: 22px; max-width: 68ch; }
+
+/* ---- Streamlit's own chrome, restyled to the same system --------------- *
+ * Everything above styles the sa-* HTML islands this app writes itself.
+ * Without this block those islands sit inside stock Streamlit widgets —
+ * default chat bubbles, default buttons, default sidebar — which is exactly
+ * what makes a deliberately-designed panel look pasted onto a generic app.
+ * Streamlit ships no CSS classes for these, only data-testid hooks, which is
+ * why every rule below is a data-testid selector rather than a sa-* class. */
+
+/* Chat messages: no avatar circle, no bubble fill. A hairline between turns
+   and left/right alignment carry the distinction instead - consistent with
+   "text, not a card. No shadow - shadow implies a button" for claims above. */
+[data-testid="stChatMessage"] {
+    background: transparent; border: none; box-shadow: none;
+    padding: 16px 0; border-bottom: 1px solid #D8DCDF;
+    gap: 12px;
+}
+[data-testid="stChatMessage"]:first-of-type { padding-top: 0; }
+[data-testid="stChatMessageAvatarUser"],
+[data-testid="stChatMessageAvatarAssistant"] {
+    background: #F6F7F8 !important; color: #4A5157 !important;
+    border: 1px solid #D8DCDF;
+}
+.sa-chat-avatar {
+    width: 34px; height: 34px; flex: 0 0 34px;
+    display: grid; place-items: center;
+    border: 1px solid #D8DCDF; border-radius: 4px;
+    background: #F6F7F8; color: #4A5157;
+    font-family: "Material Symbols Rounded";
+    font-size: 20px; font-weight: 400; line-height: 1;
+    font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Chat input: match the measure and type scale, replace the default heavy
+   pill border with the same hairline the rest of the app uses. */
+[data-testid="stChatInput"] {
+    border: 1px solid #D8DCDF; border-radius: 8px; box-shadow: none;
+    font-size: 17px;
+}
+[data-testid="stChatInput"]:focus-within {
+    border-color: #1A5C8A; box-shadow: none;
+}
+
+/* Buttons: one flat, quiet treatment everywhere - suggested-question chips,
+   evidence-card selection, and gate actions all reuse this, so a button never
+   competes visually with the claim or evidence text next to it. */
+.stButton>button {
+    background: #FFFFFF; color: #1A1D21; border: 1px solid #D8DCDF;
+    border-radius: 6px; font-weight: 500; box-shadow: none;
+    transition: border-color 120ms cubic-bezier(0.32, 0.72, 0, 1), background 120ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.stButton>button:hover {
+    border-color: #1A5C8A; background: #F6F7F8; color: #1A1D21;
+}
+.stButton>button:focus-visible { outline: 2px solid #1A5C8A; outline-offset: 2px; }
+/* The single primary action per screen (bind, submit) - filled, everything
+   else stays flat so it doesn't compete with it. */
+.stButton>button[kind="primary"] {
+    background: #1A1D21; color: #FFFFFF; border-color: #1A1D21;
+}
+.stButton>button[kind="primary"]:hover { background: #4A5157; border-color: #4A5157; }
+
+/* Popover (patient picker) and expander ("Assistant's reasoning"): same card
+   language as .sa-evidence - border, radius, no shadow - so they read as the
+   same product instead of a browser form control next to a designed card. */
+[data-testid="stPopoverBody"] {
+    border: 1px solid #D8DCDF; border-radius: 6px; box-shadow: none;
+    padding: 16px;
+}
+[data-testid="stExpander"] {
+    border: 1px solid #D8DCDF; border-radius: 6px; background: #FFFFFF;
+}
+[data-testid="stExpander"] summary {
+    font-size: 15px; font-weight: 500; color: #4A5157;
+}
+
+/* Sidebar: the demo controls (greyscale audit, connection status, clear
+   conversation) get the same type scale and spacing as the main surface. */
+[data-testid="stSidebar"] {
+    background: #F6F7F8; border-right: 1px solid #D8DCDF;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
+    font-size: 13px; color: #4A5157;
+}
