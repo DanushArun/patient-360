@@ -1,0 +1,437 @@
+# CoCo Lifecycle Evidence - Phase 4: TESTING AND VALIDATION
+# Hackathon requirement: "Use CoCo to write tests, validate results, and record
+# what worked, what failed, and what was fixed - not curated to look clean."
+#
+# Verify any session: cortex conversations transcript <id>
+# Verify any query:   SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY WHERE QUERY_ID = '<qid>'
+#                     (up to 180 min lag in ACCOUNT_USAGE per AGENTS.md #4)
+
+phase: testing_validation
+status: in_progress
+window: 2026-09-17 - ongoing
+account: JN89282 (region GCP_ME_CENTRAL2)
+principle: >
+  Every test in this file is either (a) a live query against JN89282 with a
+  QUERY_ID resolvable in ACCOUNT_USAGE, (b) a passing invocation of a script
+  in the repository, or (c) a documented failure with the fix that closed
+  it. Nothing in "verified" was asserted without a run. Failures are not
+  curated out - they are the most credible lifecycle evidence available
+  (AGENTS.md #4).
+
+# =============================================================================
+stages:
+
+  - stage: 1_platform_behaviour_probes
+    date: 2026-09-17
+    what: >
+      Ten platform behaviours empirically probed before any SPEC line was
+      written. Each finding either decided a piece of the architecture or
+      was retained as a live guard. Full query IDs and their exact SQL live
+      in evidence/coco/verification-query-ids.md.
+    principle: >
+      The architecture is defended by what Snowflake actually does on this
+      account, not by what a docs page says. F3 and F5 in particular would
+      have gone undetected without live probes and would have shipped as
+      silent security bypasses.
+    verified_findings:
+      - id: F1
+        finding: "AGENT_RUN(VARCHAR), DATA_AGENT_RUN exist -> container runtime optional"
+        decision: "warehouse runtime is acceptable; no compute pool required for the vertical slice"
+      - id: F2
+        finding: "row access policies filter strictly, including ACCOUNTADMIN with a primary role"
+        decision: "RAP is a real boundary, not a hint - proceed to build patient_scope"
+      - id: F3
+        finding: "CURRENT_USER() survives owner's-rights elevation; CURRENT_ROLE() does not"
+        decision: "architecture-deciding - every RAP MUST key on CURRENT_USER; role-keyed policies bypass silently"
+      - id: F4
+        finding: "Cortex Search cannot be created over a RAP-protected table"
+        decision: "DOC_CHUNK is un-RAP'd (index, returns IDs); DOC_PAGE holds RAP-protected content; chunk_documents is a proc not a DT because search needs an un-RAP'd source"
+      - id: F5
+        finding: "Cortex Search ignores row access policies - returned another patient's text"
+        decision: "architecture-deciding - never rely on RAP to scope search; owner's-rights procedures do the filtering"
+      - id: F6
+        finding: "@eq attribute filter works on Cortex Search"
+        decision: "server-side patient scope in search tools via @eq(patient_id, :bound_patient)"
+      - id: F7
+        finding: "secondary roles defeat a USAGE-based control - a secondary ACCOUNTADMIN satisfies the check"
+        decision: "every app session MUST run USE SECONDARY ROLES NONE, or authenticate as a dedicated service user granted only the app role"
+      - id: F8
+        finding: "AI_FILTER text form takes ONE argument (two-argument form is images only)"
+        decision: "wrap prompts through PROMPT('...{0}', col) or CONCAT('...', col) - documented in AGENTS.md"
+      - id: F9
+        finding: "stages used by AI functions must be ENCRYPTION=(TYPE='SNOWFLAKE_SSE')"
+        decision: "PATIENT_DOCS + REFERENCE_DOCS + SKILLS all declared SNOWFLAKE_SSE in stages DDL"
+      - id: A1
+        finding: >
+          the agent derives patient_id from question text and injects the
+          filter itself when given a raw cortex_search or cortex_analyst tool
+        decision: >
+          architecture-deciding - agents receive ONLY generic tools over
+          owner's-rights procedures; every tool input_schema OMITS patient_id
+          so it is unreachable by construction, not by instruction (R5 layer 2)
+
+# =============================================================================
+
+  - stage: 2_rule_fixture_regression_harness
+    date_range: "2026-09-22 to 2026-09-23"
+    what: >
+      backend/scripts/run_rule_fixtures.py - a 3-stage test harness for the
+      16 gate rules that runs on JN89282 against live SQL, not mocks.
+    stages_inside_harness:
+      - name: structural_validation
+        what: >
+          80 fixtures loaded from data/fixtures/rules/rule_fixtures.yaml.
+          Asserts: 16 rules present, each with the required 5 scenarios
+          (pass / fail / missing / boundary / conflicting), each fixture has
+          the 5 required fields, all fixture IDs unique.
+        result: PASS
+      - name: deep_case_regression
+        what: >
+          All 16 rules evaluated against PAT-DEEP-0001's live DB state.
+          Each rule's observed outcome is asserted against its fixture
+          scenario list - a rule must return an outcome that at least one
+          fixture predicts for the deep case.
+        result: "PASS (16/16)"
+        outcomes_observed:
+          - "CLIN-ANC-001: fail (57-day staleness, R2)"
+          - "CLIN-PLT-001: fail (57-day staleness, R2)"
+          - "CLIN-CRCL-001: pass (Cockcroft-Gault derives 79 mL/min)"
+          - "CLIN-BILI-001: pass (0.9 mg/dL bilirubin < 1.5 threshold)"
+          - "DOC-HER2-001: not_evaluated (IHC 2+ -> FISH reflex pending)"
+          - "DOC-PATH-001: pass (2 pathology events, final status)"
+          - "DOC-DISC-001: conflicting (Grade II vs III across specimens - surface both per SPEC row 712)"
+          - "SURV-LVEF-001: pass (58% freshness within 38 days)"
+          - "SURV-LVEF-002: not_evaluated (only 1 LVEF, delta rule needs 2+)"
+          - "ENDO-HBA1C-001: pass (7.2% within threshold, advisory)"
+          - "ENDO-DEXA-001: pass (T-score -1.6 osteopenia, 12-month interval, last scan 70 days old)"
+          - "SURG-CLEAR-001: pass (3 verified assertions)"
+          - "COV-AUTH-001: conflicting (PA-DEEP-0002 table=pending letter=approved, SPEC row 716 flagship)"
+          - "COV-LIMIT-001: pass (used 180000 of 500000 PM-JAY annual)"
+          - "ID-LINK-001: pass (all 7 ID_MAP rows link_status=verified)"
+          - "ID-QUAR-001: pass (0 quarantined identities)"
+      - name: scratch_patient_harness
+        what: >
+          12 additional scenarios provisioned into scratch patients PAT-FX-nnn
+          for the fail/boundary paths that the deep case does not exercise.
+          Seeds inputs, refreshes DT_HARMONIZED_EVENTS synchronously,
+          calls evaluate_gates, asserts outcome, tears down.
+        result: "PASS (12/12)"
+        scenarios:
+          - "ID-QUAR-fail, ID-LINK-fail, DOC-PATH-fail"
+          - "COV-LIMIT-fail (used 510000 > 500000)"
+          - "COV-AUTH-denied, COV-AUTH-conflicting (letter-vs-table drift)"
+          - "CRCL-fail-low (elderly + high creat + low weight)"
+          - "BILI-fail (2.4 mg/dL for regimen with 1.5 max)"
+          - "SURG-CLEAR-missing"
+          - "SURV-LVEF-001-fail-stale"
+          - "HBA1C-fail-high"
+          - "DEXA-fail-overdue"
+    total_live_tests: 28
+    total_pass: 28
+    total_fail: 0
+    last_run_query_id_batch: "01c74481-* series in QUERY_HISTORY"
+
+# =============================================================================
+
+  - stage: 3_corruption_scenarios_verified_live
+    date_range: "2026-09-22 to 2026-09-23"
+    what: >
+      SPEC.md line 709 table lists 13 corruption scenarios; each was checked
+      for correct behaviour via direct SQL or the rule harness. Ten are
+      seeded + verified as of 23 Sept; three (extraction disagreement,
+      data-cleanup, cross-patient ID) are either handled by design or
+      require R7 two-pass live infrastructure not yet fired.
+    verified:
+      - id: scenario_1
+        title: "Late-arriving addendum"
+        seed: "EVT-CBC-01-PLT-ADDENDUM with revised platelet 245100, event_time unchanged, source_recorded_at 3 days later"
+        correct_behaviour: "R2 - old known_as_of returns old answer; addendum only visible after its source_recorded_at"
+        verified_via: "load_synthetic.sql seed + SELECT for both timestamps"
+      - id: scenario_2
+        title: "Grade discordance across specimens"
+        seed: "EVT-HER2-OUTSIDE grade II vs EVT-HER2-SURGICAL grade III (deep case ledger)"
+        correct_behaviour: "R3/D3 - both shown, DOC-DISC-001 returns conflicting"
+        verified_via: "run_rule_fixtures.py deep-case regression"
+      - id: scenario_3
+        title: "IHC discordance between labs"
+        seed: "EVT-HER2-OUTSIDE ihc=1+ vs EVT-HER2-SURGICAL ihc=2+ (deep case ledger)"
+        correct_behaviour: "both shown; FISH requirement fires from the 2+"
+        verified_via: "DOC-HER2-001 state machine returns not_evaluated (pending FISH)"
+      - id: scenario_4
+        title: "Unit chaos"
+        seed: "EVT-HB-GMPCT (GM% source) + EVT-HB-GDL (g/dL source) + EVT-CREAT-MGPCT (mg% source)"
+        correct_behaviour: "both hb readings normalise to (value_num=11.4, unit='g/dL') with original_unit preserved"
+        verified_via: "SELECT value_num, unit, original_unit - both hb rows show identical (11.4, g/dL)"
+      - id: scenario_5
+        title: "Missing FISH after IHC 2+ (bring-list)"
+        seed: "RI-HER2-FISH-PENDING REVIEW_ISSUE row on EVT-CHEMO-06"
+        correct_behaviour: "DOC-HER2-001 returns not_evaluated; REVIEW_ISSUE row surfaces bring-list text; DT_REVIEW_QUEUE picks it up as blocker"
+        verified_via: "SELECT outcome, severity, reason FROM REVIEW_ISSUE"
+      - id: scenario_6
+        title: "Auth pending in table, approved in letter (SPEC §247 flagship)"
+        seed: "PA-DEEP-0002 status='pending' letter_status='approved'"
+        correct_behaviour: "COV-AUTH-001 returns outcome=conflicting, both retained"
+        verified_via: "run_rule_fixtures.py scratch harness COV-AUTH-conflicting"
+      - id: scenario_7
+        title: "Stale LVEF >90 days"
+        seed: "scratch patient with LVEF 200 days old"
+        correct_behaviour: "SURV-LVEF-001 returns fail with reason mentioning staleness"
+        verified_via: "run_rule_fixtures.py SURV-LVEF-001-fail-stale"
+      - id: scenario_8
+        title: "Quarantined identity"
+        seed: "scratch ID_MAP row with link_status='quarantined'"
+        correct_behaviour: "ID-QUAR-001 returns fail; contributes no evidence"
+        verified_via: "run_rule_fixtures.py ID-QUAR-fail"
+      - id: scenario_9
+        title: "Duplicate upload dedup"
+        seed: "DOC-DUP-ORIG-01 (active) + DOC-DUP-COPY-01 (duplicate) with same file_hash"
+        correct_behaviour: "second upload flagged status='duplicate'; parse_documents_proc skips duplicates"
+        verified_via: "SELECT file_hash, status, COUNT(*) - 1 active + 1 duplicate row"
+      - id: scenario_10
+        title: "Prompt injection inside a document"
+        seed: "CHUNK-INJECT-01 with 'IGNORE ALL PREVIOUS INSTRUCTIONS...' payload"
+        correct_behaviour: >
+          content stored inert; no LLM fired at ingest (R7 - AI only in
+          extract_assertions and answer_gen); classify_question refuses any
+          class-A instruction; SEARCH_PATIENT_DOCUMENTS returns the chunk as
+          content, not as an executed instruction
+        verified_via: "SELECT chunk_id, text FROM DOC_CHUNK - text preserved, nothing else fired"
+      - id: scenario_11
+        title: "Cross-patient ID supplied in the question"
+        design_guarantee: >
+          R5 layer 2 - every agent tool's input_schema OMITS patient_id
+          (unreachable by construction). Agent must derive scope from
+          session-bound patient. Injecting an ID in the question text
+          cannot reach the tools.
+        verified_via: "backend/sql/agent/saarthi_agent.sql review + A1 platform finding"
+      - id: scenario_12
+        title: "Appendectomy mid-treatment"
+        seed: "EVT-APPENDECTOMY at FAC-03 with gap_type='clinical_complication' (deep case ledger)"
+        correct_behaviour: "surfaces as clinical_complication, NOT a documentation gap"
+        verified_via: "SELECT gap_type FROM ENCOUNTER WHERE encounter_id='EVT-APPENDECTOMY'"
+      - id: scenario_13
+        title: "Rotated/low-quality photo with a misread value"
+        seed: "data/generator/corruptions.py resolve_platelet_ambiguity() + render_ambiguous_cbc_report()"
+        correct_behaviour: "R7 - two-pass disagrees -> refuses to assert"
+        verified_via: "backend/tests/generator/test_corruptions.py"
+    remaining_not_yet_live:
+      - "R7 two-pass extraction end-to-end (extract_assertions task deployed, not fired live - queue empty pending patient PDF upload)"
+      - "duplicate dedup as a runtime path through parse_documents_proc (seed proves the state; live parse run pending)"
+
+# =============================================================================
+
+  - stage: 4_mcp_external_round_trip
+    date: 2026-09-23
+    what: >
+      SAARTHI_MCP server invoked from outside Snowflake via
+      backend/scripts/mcp_client.py, authenticated with a
+      Programmatic Access Token bound to SAARTHI_MCP_CLIENT role.
+      Verifies the full external-client -> server -> agent -> tool ->
+      answer path outside the Streamlit environment.
+    verified:
+      - probe: health
+        result: "HTTP 200, protocolVersion 2025-11-25, serverInfo.name=SAARTHI_MCP"
+      - probe: list_tools
+        result: "1 tool: saarthi_agent (CORTEX_AGENT_RUN -> SAARTHI.OPERATIONAL.SAARTHI_AGENT)"
+      - probe: call
+        query: "What is missing before Thursday?"
+        result: >
+          agent (claude-opus-5) invoked GetReadiness with empty args (patient_id
+          unreachable per R5 layer 2), tool returned
+          {"error":"no_patient_bound","known_as_of":"2026-09-23T10:37:50"},
+          agent surfaced verbatim without fabricating - R1 + R3 hold over MCP
+        query_id: "01c74481-0003-92e6-0001-fca600116122"
+      - probe: unauthenticated_reject
+        method: "POST without Authorization header"
+        result: "HTTP 401, correct auth enforcement"
+      - probe: least_privilege_role
+        result: >
+          SAARTHI_MCP_CLIENT has USAGE on DB, schema, warehouse, MCP server,
+          agent, and procedures - and nothing else. No direct table SELECT.
+          Agent tools run EXECUTE AS OWNER so caller only needs the USAGE
+          entry-key; R5 layers 1-3 remain intact.
+
+# =============================================================================
+
+  - stage: 5_failure_and_fix_pairs
+    what: >
+      The most credible lifecycle evidence. Curated failures are worthless;
+      real failures with the fix that closed them are the record. Listed
+      chronologically.
+    principle: "AGENTS.md #4 - Record failures. Failure-and-fix pairs are the most credible lifecycle evidence available."
+    pairs:
+
+      - id: 1
+        date: 2026-09-20
+        title: "llama3.1-70b marked as R7 pass-B model was in the same family as llama3.3-70b"
+        failure: >
+          R7 two-pass extraction depends on TWO DIFFERENT MODEL FAMILIES to
+          preserve cross-family independence. Initial pick was llama3.1-70b
+          for pass B against llama3.3-70b for pass A. Turns out both are
+          Meta Llama - same family, same failure modes. Independence guarantee
+          did not exist.
+        fix: >
+          Moved pass B to claude-haiku-4-5. Fallbacks documented in AGENTS.md
+          as mistral-large3 and qwen3-32b (NEVER a second Llama). Banned
+          orchestration: auto for the same reason (re-selection breaks
+          measured accuracy silently).
+        surfaced_in: "AGENTS.md #8"
+
+      - id: 2
+        date: 2026-09-17
+        title: "row access policy keyed on CURRENT_ROLE silently returned every patient"
+        failure: >
+          First patient_scope RAP was keyed on CURRENT_ROLE(). Inside an
+          EXECUTE AS OWNER procedure, CURRENT_ROLE() becomes the owner's role
+          while CURRENT_USER() stays the caller. Role-keyed policy returned
+          every patient - a total bypass invisible in single-user testing.
+        fix: >
+          Rewrote the policy to key on CURRENT_USER(). F3 promoted to
+          architecture-deciding platform finding and enforced in every RAP
+          across the codebase.
+        surfaced_in: "AGENTS.md #3.1"
+
+      - id: 3
+        date: 2026-09-22
+        title: "parse_documents_proc scanned only PATIENT_DOCS, missed REFERENCE_DOCS entirely"
+        failure: >
+          Deploy of reference corpus Tier 1 landed WHO + NCD PDFs at
+          @REFERENCE_DOCS. parse_documents_proc had one cursor over
+          PATIENT_DOCS only - the reference stage was never scanned, 0 DOC_PAGE
+          rows produced for reference docs, ASK_SAARTHI could not cite a
+          guideline.
+        fix: >
+          Added a second cursor + WHILE loop with scope='reference',
+          patient_id=NULL, doc_type='clinical_guideline'. chunk_documents_proc
+          already read both scopes via d.scope, no change there. Landed 2
+          DOCUMENT + 159 DOC_PAGE + 159 DOC_CHUNK for reference corpus.
+        surfaced_in: "REMAINING-WORK.md §5 gap 9"
+
+      - id: 4
+        date: 2026-09-22
+        title: "patient_scope RAP filtered ALL reference-scope docs invisibly"
+        failure: >
+          Original RAP required d.patient_id = ct.patient_id. Reference docs
+          have patient_id=NULL, so every reference DOC_PAGE row was filtered
+          out. chunk_documents_proc returned 0 chunks; the just-fixed parse
+          from #3 had nothing downstream to work with. R6 was blocked without
+          any error.
+        fix: >
+          Added top OR-branch to RAP that returns TRUE unconditionally for
+          d.scope='reference'. Bottom branch (patient-scope, keyed on
+          CURRENT_USER) unchanged. R5 layer 3 preserved for patient docs;
+          reference corpus now functional per R6.
+        surfaced_in: "REMAINING-WORK.md §5 gap 10"
+
+      - id: 5
+        date: 2026-09-22
+        title: "DEXA rule returned not_evaluated even with a live T-score reading"
+        failure: >
+          ENDO-DEXA-001 had a T-score of -1.6 in the DB but returned
+          not_evaluated because evaluate_gates only implemented simple-threshold
+          shape and had no branch for the DEXA stratified banding required by
+          NCCN v4.2024.
+        fix: >
+          Added stratified-band branch: 24-month interval for normal, 12-month
+          for osteopenia (-2.5<T<-1.0), 6-month for osteoporosis. Also added
+          freshness-only shape for SURV-LVEF-001/002. DEXA now returns pass
+          with substantive reason.
+        surfaced_in: "REMAINING-WORK.md §5 gap 6"
+
+      - id: 6
+        date: 2026-09-23
+        title: "PRE_AUTHORIZATION duplicate table - I built one while Danush's richer AUTHORIZATION already existed"
+        failure: >
+          Third-pass work introduced backend/sql/tables/25_pre_authorization.sql
+          with basic status columns. Cross-check on 23 Sept found Danush's
+          20_core.sql already defined CORE.AUTHORIZATION with the richer
+          schema needed for SPEC §247's flagship demo - denial_is_curable +
+          partial/conflicting statuses. Both my file and Danush's own
+          load_daycare_cohort.sql referenced PRE_AUTHORIZATION.
+        fix: >
+          Consolidated onto AUTHORIZATION per SPEC §239. Merged operational
+          columns (patient_id, scheme, package_display, letter_status,
+          decided_at, expires_at, reviewed_by) into it. Renamed responded_at
+          -> decided_at, valid_until -> expires_at. Dropped 25_pre_authorization.sql.
+          Files touched: 20_core.sql, load_synthetic.sql, load_daycare_cohort.sql,
+          evaluate_gates.sql, run_rule_fixtures.py, setup.sql. Live-verified
+          28/28 fixture tests still PASS.
+        surfaced_in: "REMAINING-WORK.md §5 gap 20"
+
+      - id: 7
+        date: 2026-09-23
+        title: "MCP server DDL rejected: 'spec is invalid: null'"
+        failure: >
+          First saarthi_mcp.sql attempt included security: and execute_as:
+          keys in the YAML spec, taken from analogy with agent DDL. Snowflake
+          parser rejected: 'Cannot create MCP server because spec is invalid:
+          null'.
+        fix: >
+          Correct grammar per docs.snowflake.com/user-guide/snowflake-cortex/
+          cortex-agents-mcp is tools: only, no security or execute_as. Rewrote
+          spec to expose exactly one CORTEX_AGENT_RUN tool. Deployed cleanly.
+          Grants added in 03_grants.sql (USAGE on server AND agent - server
+          USAGE alone does not confer tool access per Snowflake docs).
+        surfaced_in: "REMAINING-WORK.md §5 gap 19"
+
+      - id: 8
+        date: 2026-09-23
+        title: "MCP PAT auth failed with HTTP 401 'Network policy is required'"
+        failure: >
+          First mcp_client.py health call from Daksha's laptop returned
+          HTTP 401 code=390432. Snowflake requires a network policy on the
+          user for PAT authentication - not documented in the MCP quickstart
+          but a hard constraint in the auth path.
+        fix: >
+          Created SAARTHI_MCP_DEMO_POLICY with ALLOWED_IP_LIST=('0.0.0.0/0')
+          - permissive-for-demo so any judge can reproduce. Attached to user
+          DAKSHA via ALTER USER SET NETWORK_POLICY. Documented in
+          docs/MCP-QUICKSTART.md and codified in 04_pat_provisioning.sql so
+          the next operator does not re-hit the 401.
+        surfaced_in: "docs/MCP-QUICKSTART.md step 1"
+
+      - id: 9
+        date: 2026-09-23
+        title: "Agent hit 'Unknown user-defined function' calling its own tool"
+        failure: >
+          MCP call succeeded through the server + agent but the agent's first
+          tool invocation (GetReadiness) returned 'SQL compilation error:
+          Unknown user-defined function SAARTHI.OPERATIONAL.GET_READINESS'.
+          Same for GetPatientFacts. Both procedures existed and were
+          EXECUTE AS OWNER, so this was a visibility error - SAARTHI_MCP_CLIENT
+          could not SEE the procedures despite server + agent USAGE.
+        fix: >
+          Added GRANT USAGE ON ALL PROCEDURES IN SCHEMA SAARTHI.OPERATIONAL
+          TO ROLE SAARTHI_MCP_CLIENT (+ FUTURE PROCEDURES). EXECUTE AS OWNER
+          means procedure bodies still run under ACCOUNTADMIN with full
+          access; caller only needs the USAGE entry-key. Retested end-to-end:
+          agent orchestrated the tool, returned honest no_patient_bound
+          verbatim.
+        surfaced_in: "REMAINING-WORK.md §5 gap 25"
+
+# =============================================================================
+
+  - stage: 6_what_is_not_yet_tested
+    what: >
+      Honest gap list. These are not built OR are built but have not been
+      exercised end-to-end. Named here so the phase status is not overstated.
+    open:
+      - "frontend -> live-backend wiring (4 built screens still read fixtures, not live tool procedures)"
+      - "R7 two-pass extraction fired live (extract_assertions task deployed, queue empty pending real patient PDF upload)"
+      - "multi-patient regression (1 of 100 patients built; ledger.py deep case only)"
+      - "FHIR bundle round-trip through flatten_fhir_proc against a populated RAW_FHIR_BUNDLE (blocked on multi-patient generation)"
+      - "Navigator View + Judge Console UI screens (2 of 6 designed-only, backend probes for Judge Console exist as SQL)"
+      - "PAT auth rotation and revocation runbook exercised (documented in MCP-QUICKSTART.md but not run)"
+
+# =============================================================================
+# What "PASS" means in this file
+# =============================================================================
+# - Every "verified" claim above cites either a query_id, a script + result,
+#   or a file + section reference.
+# - Failures are named alongside their fixes. Nothing is curated out.
+# - The engineering gates verified here are NOT clinical validation. No rule
+#   has been validated against real patient outcomes (AGENTS.md #4 +
+#   IMPLEMENTATION-STATUS.md §10).
+# - AGENTS.md #4 is met: judges spend 5-22 Oct alone with this repo and can
+#   reproduce every stage above from the repository plus one Snowflake trial
+#   account.
