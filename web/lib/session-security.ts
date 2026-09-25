@@ -21,6 +21,49 @@ export function patientScopeDenied(error: unknown): Response | null {
   });
 }
 
+/** Build a patient POST endpoint around an injectable action so HTTP denials
+ * can be exercised without a live Snowflake account. */
+export function createPatientActionPost<T>(
+  action: (patientId: string, body: Record<string, unknown>, login: NonNullable<ReturnType<typeof parseBasicAuthorization>>) => Promise<T | Response>,
+  fallbackError: string,
+) {
+  return async (request: Request): Promise<Response> => {
+    const login = parseBasicAuthorization(request.headers.get("authorization"));
+    if (!login) return unauthorized();
+    try {
+      const body: unknown = await request.json();
+      if (!body || typeof body !== "object") return Response.json({ error: "invalid_argument" }, { status: 400 });
+      const record = body as Record<string, unknown>;
+      if (typeof record.patientId !== "string") return Response.json({ error: "invalid_argument" }, { status: 400 });
+      const result = await action(record.patientId, record, login);
+      return result instanceof Response ? result : Response.json(result);
+    } catch (error) {
+      if (error instanceof Error && error.message === "professional_login_invalid") return unauthorized();
+      const denied = patientScopeDenied(error);
+      if (denied) return denied;
+      return Response.json({ error: fallbackError }, { status: 502, headers: { "Cache-Control": "no-store" } });
+    }
+  };
+}
+
+/** Same POST wrapper for actions that return a structured scope error. */
+export function createPatientResultPost<T extends { error?: string }>(
+  action: (patientId: string, body: Record<string, unknown>, login: NonNullable<ReturnType<typeof parseBasicAuthorization>>) => Promise<T | Response>,
+  fallbackError: string,
+) {
+  const post = createPatientActionPost(async (patientId, body, login) => {
+    const result = await action(patientId, body, login);
+    if (result instanceof Response) return result;
+    if (result.error) {
+      const denied = patientScopeDenied(new Error(result.error));
+      if (denied) return denied;
+      return Response.json({ error: fallbackError }, { status: 409, headers: { "Cache-Control": "no-store" } });
+    }
+    return result;
+  }, fallbackError);
+  return post;
+}
+
 /** Build a patient endpoint around an injectable loader so HTTP denial behavior
  * can be exercised without a live Snowflake account. */
 export function createPatientGet<T>(
