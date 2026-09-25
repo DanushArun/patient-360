@@ -22,10 +22,20 @@ function openConnection(): Promise<snowflake.Connection> {
     username: USER,
     authenticator: "SNOWFLAKE_JWT",
     privateKey,
-    role: "ACCOUNTADMIN",
+    // The web app runs with the same least-privileged role as the Streamlit
+    // app. Secondary roles are disabled immediately after connect below.
+    role: "SAARTHI_APP",
   });
   return new Promise((resolve, reject) => {
-    conn.connect((err, c) => (err ? reject(err) : resolve(c)));
+    conn.connect((err, c) => {
+      if (err) {
+        // A failed connect can still allocate SDK resources. Do not leave them
+        // behind when no caller ever receives the connection.
+        conn.destroy(() => reject(err));
+        return;
+      }
+      resolve(c);
+    });
   });
 }
 
@@ -76,6 +86,7 @@ export async function withPatientSession<T>(
 ): Promise<T> {
   const conn = await openConnection();
   const run = (sql: string, binds: (string | number | null)[] = []) => execOn(conn, sql, binds);
+  let bindingCreated = false;
   try {
     await run("USE SECONDARY ROLES NONE");
     const bindRows = await run("CALL SAARTHI.OPERATIONAL.BIND_PATIENT(?)", [patientId]);
@@ -83,13 +94,16 @@ export async function withPatientSession<T>(
     const bindResult = typeof bindCell === "string" ? JSON.parse(bindCell) : bindCell;
     if (!bindResult || typeof bindResult !== "object") throw new Error("binding_unavailable");
     if (bindResult.error) throw new Error(`bind failed: ${bindResult.error}`);
+    bindingCreated = true;
     return await fn(run);
   } finally {
     try {
-      await run(
-        "UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING SET released_at = CURRENT_TIMESTAMP() " +
-          "WHERE session_id = CURRENT_SESSION() AND released_at IS NULL"
-      );
+      if (bindingCreated) {
+        await run(
+          "UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING SET released_at = CURRENT_TIMESTAMP() " +
+            "WHERE session_id = CURRENT_SESSION() AND released_at IS NULL"
+        );
+      }
     } finally {
       destroyConnection(conn);
     }
