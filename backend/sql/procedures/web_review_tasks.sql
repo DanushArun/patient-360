@@ -19,8 +19,11 @@ BEGIN
   v_practitioner_id := (SELECT practitioner_id FROM SAARTHI.GOVERNANCE.PRACTITIONER
                          WHERE UPPER(snowflake_user) = UPPER(CURRENT_USER()) AND active = TRUE);
   IF (v_patient_id IS NULL OR v_practitioner_id IS NULL) THEN
-    RETURN TABLE(SELECT NULL::VARCHAR, NULL::VARCHAR, NULL::VARCHAR, NULL::VARCHAR,
-                        NULL::VARCHAR, NULL::VARCHAR, NULL::VARCHAR WHERE FALSE);
+    v_result := (SELECT NULL::VARCHAR AS task_id, NULL::VARCHAR AS issue_id,
+                        NULL::VARCHAR AS owner, NULL::VARCHAR AS state,
+                        NULL::VARCHAR AS decision, NULL::VARCHAR AS reason,
+                        NULL::VARCHAR AS created_at WHERE FALSE);
+    RETURN TABLE(v_result);
   END IF;
   v_result := (
     SELECT rt.task_id, rt.issue_id, COALESCE(pr.name, rt.owner_practitioner_id),
