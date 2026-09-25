@@ -16,6 +16,7 @@ The runtime account is supplied through `SNOWFLAKE_ACCOUNT`; no account, user, o
 ## Verification
 
 ```bash
+npm run test:ui
 node --experimental-strip-types --test tests/session-security.test.mjs tests/snowflake-config.test.mjs
 python3 -m pytest -q ../frontend/tests/test_web_session_security.py
 npx tsc --noEmit --incremental false
@@ -26,4 +27,4 @@ The automated isolation checks use synthetic credentials and data. They do not p
 
 ## Remaining release limitations
 
-Patient-specific chat history is held only in the mounted patient view's React state. It is discarded when the patient page unmounts, including navigation to another patient or a reload. A keyboard-only and 640px layout review remains. Synthetic engineering checks are not clinical validation.
+Patient-specific chat history is held only in the mounted patient view's React state. It is discarded when the patient page unmounts, including navigation to another patient or a reload. A manual browser review of the 640px layout and keyboard flow remains; headless Chrome aborted in the current verification runner. Synthetic engineering checks are not clinical validation.

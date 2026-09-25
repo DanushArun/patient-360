@@ -54,7 +54,7 @@ export function GateCitation({ gate, selected, onSelect }: {
   return <div>
     <div className="sa-gate-row">
       <span className="sa-gate-name">{gate.gate}</span>
-      <span style={{ minWidth: 158 }}><StatusChip outcome={gate.outcome as Outcome} /></span>
+      <span className="sa-gate-status"><StatusChip outcome={gate.outcome as Outcome} /></span>
       <span className="sa-meta">
         <code>{gate.rule_id}{gate.rule_version ? ` v${gate.rule_version}` : ""}</code>
         {gate.severity ? ` · ${gate.severity}` : ""}

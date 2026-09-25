@@ -5,10 +5,11 @@ import test from "node:test";
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("patient controls have accessible names and expose their state", async () => {
-  const [client, evidence, css] = await Promise.all([
+  const [client, evidence, css, saarthi] = await Promise.all([
     read("../app/patient/[id]/patient-client.tsx"),
     read("../app/patient/[id]/patient-evidence.tsx"),
     read("../app/globals.css"),
+    read("../app/saarthi.css"),
   ]);
 
   assert.match(client, /aria-label="Ask about this patient's record"/);
@@ -20,6 +21,8 @@ test("patient controls have accessible names and expose their state", async () =
   assert.match(css, /:focus-visible\s*\{\s*outline: 2px solid/);
   assert.match(css, /\.sa-patient-header\s*\{\s*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(client, /grid-cols-2 sm:grid-cols-4/);
+  assert.match(saarthi, /\.sa-gate-row\s*\{\s*display: grid; grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(saarthi, /\.sa-gate-name[^}]*min-width: 0/);
 });
 
 test("readiness preserves the distinct neutral state for missing evidence", async () => {

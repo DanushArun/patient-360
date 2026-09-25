@@ -171,11 +171,13 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 
 /* ---- gate strip (Patient 360) ----------------------------------------- */
 .sa-gate-row {
-    display: flex; align-items: baseline; gap: 16px;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0;
     padding: 12px 0; border-bottom: 1px solid #D8DCDF;
 }
 .sa-gate-name { font-size: 17px; font-weight: 600;
-                 min-width: 140px; letter-spacing: -0.01em; }
+                 min-width: 0; letter-spacing: -0.01em; }
+.sa-gate-status { min-width: 0; }
+.sa-gate-row > * { overflow-wrap: anywhere; }
 
 /* ---- source text with the cited span highlighted ---------------------- */
 .sa-page-text {

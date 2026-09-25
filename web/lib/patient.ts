@@ -66,6 +66,10 @@ export async function loadPatientSnapshot(patientId: string, login: Professional
   return loadPatient(patientId, login);
 }
 
+export async function loadPatientPractitionerName(patientId: string, login: ProfessionalLogin): Promise<string> {
+  return withPatientSessionAndContext(patientId, async (_run, context) => context.practitionerName, login);
+}
+
 export async function loadPatient(patientId: string, login: ProfessionalLogin): Promise<PatientData> {
   return withPatientSessionAndContext(patientId, async (run, context) => {
     const rows = await run("CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL, NULL)");

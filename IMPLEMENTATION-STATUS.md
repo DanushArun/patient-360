@@ -161,9 +161,10 @@ either traced to a source or explicitly marked as a judgment call.
 caller-scoped census, and the patient route loads SQL readiness, timeline, review-task, and
 agent answer procedures through `web/lib/patient.ts`. Patient chat is held in mounted React
 state and the route keys the client by patient ID; no browser storage is used. Responsive
-layout and accessible-control contracts are checked by `web/tests/dashboard-accessibility.test.mjs`.
-These UI and build checks do not demonstrate live Snowflake behavior, a browser keyboard audit,
-clinical validation, or a deployed production service. Class A classification/refusal and
+layout and accessible-control contracts are checked by `web/tests/dashboard-accessibility.test.mjs`
+and rendered keyboard/state interactions by `web/tests/dashboard-behavior.test.tsx`. The
+rendered tests use synthetic patients only. These checks do not demonstrate live Snowflake
+behavior, a browser keyboard audit, clinical validation, or a deployed production service. Class A classification/refusal and
 evidence-packet construction remain backend-owned; the web client displays the returned answer.
 
 **The four built Streamlit screens read fixtures, not Snowflake.** The backend tool procedures exist and

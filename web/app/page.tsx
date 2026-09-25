@@ -1,9 +1,11 @@
 import { fetchCensus, buildCensus } from "@/lib/census";
 import type { ReadinessRow } from "@/lib/census";
+import { loadPatientPractitionerName } from "@/lib/patient";
 import { CensusChip, Chevron, type CensusStatus } from "@/components/sa";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { loginFromAuthorization } from "@/lib/request-auth";
+import { CensusErrorNotice } from "@/components/census-error";
 
 export const dynamic = "force-dynamic"; // always fresh readiness state, never stale
 
@@ -50,13 +52,23 @@ function dayLabel(iso: string) {
 
 export default async function DayCarePage() {
   let rows: ReadinessRow[];
-  let error: string | null = null;
+  let error = false;
+  let practitionerName: string | null = null;
   try {
     const login = loginFromAuthorization((await headers()).get("authorization"));
     if (!login) throw new Error("professional_login_required");
     rows = await fetchCensus(7, login);
+    const firstPatientId = rows[0]?.PATIENT_ID;
+    if (firstPatientId) {
+      try {
+        practitionerName = await loadPatientPractitionerName(firstPatientId, login) || null;
+      } catch (contextError) {
+        console.error("Unable to load caller practitioner context", contextError);
+      }
+    }
   } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
+    console.error("Unable to load caller-scoped day-care census", e);
+    error = true;
     rows = [];
   }
   const chairs = buildCensus(rows);
@@ -98,12 +110,10 @@ export default async function DayCarePage() {
         </div>
         <div className="flex items-start gap-6">
           <PatientPicker patients={patientOptions} />
-          <div className="text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
+          {practitionerName && <div className="text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
             Practitioner
-            <div className="text-sm normal-case" style={{ color: "var(--sa-ink-secondary)" }}>
-              Dr. Test Oncologist
-            </div>
-          </div>
+            <div className="text-sm normal-case" style={{ color: "var(--sa-ink-secondary)" }}>{practitionerName}</div>
+          </div>}
         </div>
       </div>
       <div className="mb-9 border-t" style={{ borderColor: "var(--sa-rule)" }} />
@@ -111,13 +121,7 @@ export default async function DayCarePage() {
       <div className="grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,1fr)_230px]">
         <div>
           {error && (
-            <div
-              className="mb-6 border-l-2 py-2 pl-3 text-sm"
-              role="alert"
-              style={{ borderColor: "var(--sa-ink-fail)", color: "var(--sa-ink-secondary)" }}
-            >
-              Could not reach Snowflake: {error}
-            </div>
+            <CensusErrorNotice />
           )}
 
           {!error && chairs.length === 0 && (
