@@ -1,5 +1,6 @@
 import { askPatient } from "@/lib/patient";
 import { loginFromAuthorization, unauthorized } from "@/lib/request-auth";
+import { patientScopeDenied } from "@/lib/session-security";
 
 export async function POST(request: Request) {
   const login = loginFromAuthorization(request.headers.get("authorization"));
@@ -14,6 +15,8 @@ export async function POST(request: Request) {
     return Response.json(await askPatient(patientId, question.trim(), login));
   } catch (error) {
     if (error instanceof Error && error.message === "professional_login_invalid") return unauthorized();
+    const denied = patientScopeDenied(error);
+    if (denied) return denied;
     return Response.json({ error: "agent_unreachable" }, { status: 502 });
   }
 }
