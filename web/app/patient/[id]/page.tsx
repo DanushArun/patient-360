@@ -2,13 +2,17 @@ import Link from "next/link";
 import { loadPatientSnapshot } from "@/lib/patient";
 import { Page, Rule } from "@/components/sa";
 import PatientClient from "./patient-client";
+import { headers } from "next/headers";
+import { loginFromAuthorization } from "@/lib/request-auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function PatientPage({ params }: PageProps<"/patient/[id]">) {
   const { id } = await params;
   try {
-    const patient = await loadPatientSnapshot(id);
+    const login = loginFromAuthorization((await headers()).get("authorization"));
+    if (!login) throw new Error("professional_login_required");
+    const patient = await loadPatientSnapshot(id, login);
     return <PatientClient key={id} patient={patient} />;
   } catch {
     return <Page>

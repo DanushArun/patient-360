@@ -1,4 +1,5 @@
 import { withPatientSession, withPatientSessionAndContext } from "./snowflake";
+import type { ProfessionalLogin } from "./session-security";
 
 export type Gate = {
   gate: string;
@@ -61,45 +62,11 @@ function parseValue(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? value as Record<string, unknown> : {};
 }
 
-export async function loadPatientSnapshot(patientId: string): Promise<PatientData> {
-  return withPatientSessionAndContext(patientId, async (run, context) => {
-    const rows = await run(
-      `WITH ranked_encounters AS (
-         SELECT e.patient_id, e.encounter_id,
-                ROW_NUMBER() OVER (ORDER BY
-                  IFF(e.scheduled_time >= CURRENT_TIMESTAMP(), 0, 1),
-                  IFF(e.scheduled_time >= CURRENT_TIMESTAMP(),
-                      e.scheduled_time, NULL) ASC NULLS LAST,
-                  IFF(e.scheduled_time < CURRENT_TIMESTAMP(),
-                      e.scheduled_time, NULL) DESC NULLS LAST
-                ) AS visit_rank
-           FROM SAARTHI.CORE.ENCOUNTER e
-          WHERE e.patient_id = ? AND e.encounter_type = 'daycare'
-       )
-       SELECT rs.gate, rs.rule_id, rs.rule_version, rs.outcome, rs.severity, rs.reason,
-              rs.evidence_ids::VARCHAR AS evidence_ids,
-              TO_VARCHAR(rs.known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS') AS known_as_of
-         FROM SAARTHI.OPERATIONAL.READINESS_STATE rs
-         JOIN ranked_encounters e
-           ON e.patient_id = rs.patient_id AND e.encounter_id = rs.encounter_id
-        WHERE e.visit_rank = 1
-        ORDER BY rs.gate, rs.rule_id`,
-      [patientId]
-    );
-    const gates = rows.map(snapshotGate);
-    const knownAsOf = gates[0]?.known_as_of ?? null;
-    if (gates.some((gate) => !gate.known_as_of)) {
-      throw new Error("readiness_snapshot_missing_as_of");
-    }
-    return {
-      ...context,
-      knownAsOf,
-      gates,
-    };
-  });
+export async function loadPatientSnapshot(patientId: string, login: ProfessionalLogin): Promise<PatientData> {
+  return loadPatient(patientId, login);
 }
 
-export async function loadPatient(patientId: string): Promise<PatientData> {
+export async function loadPatient(patientId: string, login: ProfessionalLogin): Promise<PatientData> {
   return withPatientSessionAndContext(patientId, async (run, context) => {
     const rows = await run("CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL, NULL)");
     const result = parseValue(Object.values(rows[0] ?? {})[0]);
@@ -109,10 +76,10 @@ export async function loadPatient(patientId: string): Promise<PatientData> {
       knownAsOf: typeof result.known_as_of === "string" ? result.known_as_of : null,
       gates: Array.isArray(result.gates) ? result.gates as Gate[] : [],
     };
-  });
+  }, login);
 }
 
-export async function loadPatientTimeline(patientId: string): Promise<PatientTimeline> {
+export async function loadPatientTimeline(patientId: string, login: ProfessionalLogin): Promise<PatientTimeline> {
   return withPatientSession(patientId, async (run) => {
     const rows = await run("CALL SAARTHI.OPERATIONAL.GET_TIMELINE(NULL)");
     const result = parseValue(Object.values(rows[0] ?? {})[0]);
@@ -133,37 +100,19 @@ export async function loadPatientTimeline(patientId: string): Promise<PatientTim
       };
     });
     return { timeline, known_as_of: result.known_as_of };
-  });
+  }, login);
 }
 
-export async function loadReviewTasks(patientId: string, ruleId: string): Promise<ReviewTask[]> {
+export async function loadReviewTasks(patientId: string, ruleId: string, login: ProfessionalLogin): Promise<ReviewTask[]> {
   return withPatientSession(patientId, async (run) => {
-    const rows = await run(
-      `SELECT rt.task_id, rt.issue_id, COALESCE(pr.name, rt.owner_practitioner_id) AS owner,
-              rt.state, rt.decision, rt.reason,
-              TO_VARCHAR(rt.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
-         FROM SAARTHI.OPERATIONAL.REVIEW_TASK rt
-         LEFT JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr
-           ON pr.practitioner_id = rt.owner_practitioner_id
-        WHERE rt.issue_id = ?
-          AND EXISTS (
-            SELECT 1 FROM SAARTHI.GOVERNANCE.CARE_TEAM ct
-              JOIN SAARTHI.GOVERNANCE.PRACTITIONER actor
-                ON actor.practitioner_id = ct.practitioner_id
-             WHERE ct.patient_id = ? AND actor.snowflake_user = CURRENT_USER()
-               AND ct.role_type IN ('treating', 'coordinator')
-               AND ct.active_from <= CURRENT_DATE()
-               AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE()))
-        ORDER BY rt.created_at DESC`,
-      [`${patientId}:${ruleId}`, patientId]
-    );
+    const rows = await run("CALL SAARTHI.OPERATIONAL.GET_WEB_REVIEW_TASKS(?)", [ruleId]);
     return rows.map((row) => ({
       taskId: String(row.TASK_ID), issueId: String(row.ISSUE_ID),
       owner: String(row.OWNER ?? "Unassigned"), state: String(row.STATE ?? "unknown"),
       action: String(row.DECISION ?? "unknown"), reason: String(row.REASON ?? ""),
       createdAt: String(row.CREATED_AT ?? ""),
     }));
-  });
+  }, login);
 }
 
 function snapshotGate(row: Record<string, unknown>): Gate {
@@ -247,18 +196,19 @@ export function parseAgentResponse(input: unknown): AgentTurn {
   return turn;
 }
 
-export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
+export async function askPatient(patientId: string, question: string, login: ProfessionalLogin): Promise<AgentTurn> {
   return withPatientSessionAndContext(patientId, async (run) => {
     const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
     if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
     return parseAgentResponse(Object.values(rows[0])[0]);
-  });
+  }, login);
 }
 
 export async function createReviewTask(
   patientId: string,
   ruleId: string,
-  action: "request_document" | "escalate"
+  action: "request_document" | "escalate",
+  login: ProfessionalLogin,
 ): Promise<{ task_id?: string; idempotent_replay?: boolean; error?: string }> {
   return withPatientSessionAndContext(patientId, async (run) => {
     const readiness = await run("CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL, NULL)");
@@ -281,5 +231,5 @@ export async function createReviewTask(
     return parseValue(Object.values(rows[0] ?? {})[0]) as {
       task_id?: string; idempotent_replay?: boolean; error?: string;
     };
-  });
+  }, login);
 }
