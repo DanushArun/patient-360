@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPatientGet, parseBasicAuthorization, patientScopeDenied, unauthorized, withBoundPatientSession } from "../lib/session-security.ts";
+import { createPatientActionPost, createPatientGet, createPatientResultPost, parseBasicAuthorization, patientScopeDenied, unauthorized, withBoundPatientSession } from "../lib/session-security.ts";
 
 test("rejects missing, malformed, or incomplete professional credentials", () => {
   assert.equal(parseBasicAuthorization(null), null);
@@ -132,4 +132,41 @@ test("patient scope denials share a generic no-store response across endpoints",
     assert.deepEqual(await response?.json(), { error: "patient_scope_denied" });
   }
   assert.equal(patientScopeDenied(new Error("database_unavailable")), null);
+});
+
+test("patient POST handlers return generic no-store 403 for scope denials", async () => {
+  const ask = createPatientActionPost(async (patientId, _body, login) => {
+    if (login.username === "wrong-role") throw new Error("no_patient_access");
+    if (patientId === "foreign") throw new Error("no_patient_access");
+    if (patientId === "revoked") throw new Error("consent_not_valid");
+    return { answer: `synthetic answer for ${patientId}` };
+  }, "agent_unreachable");
+  const reviewTask = createPatientResultPost(async (patientId) => (
+    patientId === "revoked" ? { error: "consent_not_valid" } : { taskId: "synthetic-task" }
+  ), "action_unavailable");
+  const makeRequest = (handler, user, patientId) => handler(new Request("http://localhost/api/action", {
+    method: "POST",
+    headers: {
+      authorization: `Basic ${Buffer.from(`${user}:synthetic-password`).toString("base64")}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ patientId, question: "synthetic question", ruleId: "synthetic-rule", action: "escalate" }),
+  }));
+  for (const [handler, user, patientId] of [
+    [ask, "clinician", "foreign"],
+    [ask, "clinician", "revoked"],
+    [ask, "wrong-role", "patient-a"],
+    [reviewTask, "clinician", "revoked"],
+  ]) {
+    const response = await makeRequest(handler, user, patientId);
+    assert.equal(response.status, 403);
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await response.json(), { error: "patient_scope_denied" });
+  }
+  const [answer, task] = await Promise.all([
+    makeRequest(ask, "doctor-a", "patient-a"),
+    makeRequest(reviewTask, "doctor-b", "patient-b"),
+  ]);
+  assert.deepEqual(await answer.json(), { answer: "synthetic answer for patient-a" });
+  assert.deepEqual(await task.json(), { taskId: "synthetic-task" });
 });
