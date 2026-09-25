@@ -7,7 +7,7 @@ CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.get_web_census(p_horizon_days NU
     cycle_number NUMBER, scheduled VARCHAR, gate VARCHAR, rule_id VARCHAR,
     rule_version NUMBER, outcome VARCHAR, severity VARCHAR, reason VARCHAR)
   LANGUAGE SQL
-  COMMENT = 'Care-team and consent scoped web census for CURRENT_USER().' 
+  COMMENT = 'Care-team and consent scoped web census for CURRENT_USER().'
   EXECUTE AS OWNER
 AS
 $$
