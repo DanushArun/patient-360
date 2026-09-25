@@ -10,6 +10,17 @@ export function unauthorized(): Response {
 
 const SCOPE_DENIAL = { error: "patient_scope_denied" } as const;
 
+export function patientScopeDenied(error: unknown): Response | null {
+  const code = error instanceof Error ? error.message : "";
+  if (!["no_patient_access", "consent_not_valid", "patient_scope_denied"].includes(code)) {
+    return null;
+  }
+  return Response.json(SCOPE_DENIAL, {
+    status: 403,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
 /** Build a patient endpoint around an injectable loader so HTTP denial behavior
  * can be exercised without a live Snowflake account. */
 export function createPatientGet<T>(
@@ -25,9 +36,8 @@ export function createPatientGet<T>(
     } catch (error) {
       const code = error instanceof Error ? error.message : fallbackError;
       if (code === "professional_login_invalid") return unauthorized();
-      if (["no_patient_access", "consent_not_valid", "patient_scope_denied"].includes(code)) {
-        return Response.json(SCOPE_DENIAL, { status: 403, headers: { "Cache-Control": "no-store" } });
-      }
+      const denied = patientScopeDenied(error);
+      if (denied) return denied;
       return Response.json({ error: fallbackError }, { status: 502, headers: { "Cache-Control": "no-store" } });
     }
   };

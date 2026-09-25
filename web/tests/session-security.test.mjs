@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPatientGet, parseBasicAuthorization, unauthorized, withBoundPatientSession } from "../lib/session-security.ts";
+import { createPatientGet, parseBasicAuthorization, patientScopeDenied, unauthorized, withBoundPatientSession } from "../lib/session-security.ts";
 
 test("rejects missing, malformed, or incomplete professional credentials", () => {
   assert.equal(parseBasicAuthorization(null), null);
@@ -122,4 +122,14 @@ test("patient HTTP handlers keep authorized data isolated during concurrent A/B 
   assert.deepEqual(bodyB, { patientId: "patient-b", facts: ["fact-for-patient-b"] });
   assert.equal(JSON.stringify(bodyA).includes("patient-b"), false);
   assert.equal(JSON.stringify(bodyB).includes("patient-a"), false);
+});
+
+test("patient scope denials share a generic no-store response across endpoints", async () => {
+  for (const code of ["no_patient_access", "consent_not_valid", "patient_scope_denied"]) {
+    const response = patientScopeDenied(new Error(code));
+    assert.equal(response?.status, 403);
+    assert.equal(response?.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await response?.json(), { error: "patient_scope_denied" });
+  }
+  assert.equal(patientScopeDenied(new Error("database_unavailable")), null);
 });

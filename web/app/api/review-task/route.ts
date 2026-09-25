@@ -1,5 +1,6 @@
 import { createReviewTask } from "@/lib/patient";
 import { loginFromAuthorization, unauthorized } from "@/lib/request-auth";
+import { patientScopeDenied } from "@/lib/session-security";
 
 export async function POST(request: Request) {
   const login = loginFromAuthorization(request.headers.get("authorization"));
@@ -16,12 +17,15 @@ export async function POST(request: Request) {
       patientId, ruleId, action as "request_document" | "escalate", login
     );
     if (result.error) {
-      const status = result.error === "no_patient_access" ? 403 : 409;
-      return Response.json(result, { status });
+      const denied = patientScopeDenied(new Error(result.error));
+      if (denied) return denied;
+      return Response.json({ error: "action_unavailable" }, { status: 409, headers: { "Cache-Control": "no-store" } });
     }
     return Response.json(result);
   } catch (error) {
     if (error instanceof Error && error.message === "professional_login_invalid") return unauthorized();
+    const denied = patientScopeDenied(error);
+    if (denied) return denied;
     return Response.json({ error: "action_unavailable" }, { status: 502 });
   }
 }
