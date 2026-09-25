@@ -66,6 +66,6 @@ export function PatientTimelinePanel({ patientId }: { patientId: string }): Reac
     </div>
     {data?.timeline.length
       ? [...data.timeline].reverse().map((event) => <EventRow key={event.event_id} event={event} />)
-      : <div className="sa-limitation">No timeline events were returned for this patient.</div>}
+      : <div className="sa-limitation" role="status">No timeline events were returned for this patient.</div>}
   </section>;
 }

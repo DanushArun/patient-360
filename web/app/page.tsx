@@ -113,6 +113,7 @@ export default async function DayCarePage() {
           {error && (
             <div
               className="mb-6 border-l-2 py-2 pl-3 text-sm"
+              role="alert"
               style={{ borderColor: "var(--sa-ink-fail)", color: "var(--sa-ink-secondary)" }}
             >
               Could not reach Snowflake: {error}
@@ -120,7 +121,7 @@ export default async function DayCarePage() {
           )}
 
           {!error && chairs.length === 0 && (
-            <p className="text-sm" style={{ color: "var(--sa-ink-muted)" }}>
+            <p className="text-sm" role="status" style={{ color: "var(--sa-ink-muted)" }}>
               No day-care visits in the next 7 days for patients under your care, as of{" "}
               {new Date().toLocaleString("en-IN")}.
             </p>

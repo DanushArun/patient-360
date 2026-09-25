@@ -61,7 +61,7 @@ export function GateCitation({ gate, selected, onSelect }: {
         {gate.reason && <div className="sa-meta">{gate.reason}</div>}
       </span>
     </div>
-    <button style={buttonStyle} onClick={onSelect}>Evidence {selected ? "▾" : "▸"}</button>
+    <button type="button" style={buttonStyle} aria-expanded={selected} aria-controls="readiness-evidence" onClick={onSelect}>Evidence {selected ? "▾" : "▸"}</button>
   </div>;
 }
 
@@ -74,16 +74,16 @@ export function EvidencePanel({ patientId, turn, selected, feedback, actionsAvai
   onAction: (gate: Gate, action: ReviewAction) => Promise<void>;
   onUnpin: () => void;
 }): ReactNode {
-  if (selected) return <PinnedEvidence patientId={patientId} gate={selected} feedback={{
+  if (selected) return <section id="readiness-evidence" aria-label={`Evidence for ${selected.gate}`}><PinnedEvidence patientId={patientId} gate={selected} feedback={{
     request_document: feedback[`${selected.rule_id}:request_document`],
     escalate: feedback[`${selected.rule_id}:escalate`],
   }}
-    actionsAvailable={actionsAvailable} onAction={onAction} onUnpin={onUnpin} />;
-  if (turn) return <AnswerEvidence turn={turn} />;
-  return <div className="sa-meta">
+    actionsAvailable={actionsAvailable} onAction={onAction} onUnpin={onUnpin} /></section>;
+  if (turn) return <section id="readiness-evidence" aria-label="Answer evidence"><AnswerEvidence turn={turn} /></section>;
+  return <section id="readiness-evidence" aria-label="Readiness evidence" className="sa-meta">
     Select a readiness check above to inspect its result, reason, and evidence. Chat answers
     include their supporting tool records here.
-  </div>;
+  </section>;
 }
 
 function GateEvidence({ gate }: { gate: Gate }): ReactNode {
@@ -125,7 +125,7 @@ function PinnedEvidence({ patientId, gate, feedback, actionsAvailable, onAction,
     {reviewable && gate.rule_id && <ReviewHistory patientId={patientId}
       ruleId={gate.rule_id} refreshKey={Object.values(feedback)
         .filter((item) => item?.status === "success").map((item) => item?.taskId).join(":")} />}
-    <button style={{ ...buttonStyle, marginTop: 12 }} onClick={onUnpin}
+    <button type="button" style={{ ...buttonStyle, marginTop: 12 }} onClick={onUnpin}
       disabled={Object.values(feedback).some((item) => item?.status === "pending")}>
       Clear selection
     </button>
@@ -146,11 +146,11 @@ function ActionButtons({ gate, feedback, actionsAvailable, onAction }: {
       Waiting for the current readiness check before filing a task.
     </div>}
     <div className="sa-review-actions grid grid-cols-2" style={{ gap: 8 }}>
-      <button style={buttonStyle} disabled={disabled}
+      <button type="button" style={buttonStyle} disabled={disabled}
         onClick={() => void onAction(gate, "request_document")}>
         Request document
       </button>
-      <button style={buttonStyle} disabled={disabled}
+      <button type="button" style={buttonStyle} disabled={disabled}
         onClick={() => void onAction(gate, "escalate")}>
         Escalate to treating doctor
       </button>

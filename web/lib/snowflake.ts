@@ -1,8 +1,7 @@
 import snowflake from "snowflake-sdk";
 import type { ProfessionalLogin } from "./session-security";
 import { withBoundPatientSession } from "./session-security";
-
-const ACCOUNT = "KLJGZVK-AO10401";
+import { requireSnowflakeAccount } from "./snowflake-config";
 
 // NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
 // tool resolve their subject from PATIENT_BINDING keyed on CURRENT_SESSION() -
@@ -13,7 +12,7 @@ const ACCOUNT = "KLJGZVK-AO10401";
 // The browser login is passed through once and never persisted by this server.
 function openConnection(login: ProfessionalLogin): Promise<snowflake.Connection> {
   const conn = snowflake.createConnection({
-    account: ACCOUNT,
+    account: requireSnowflakeAccount(),
     username: login.username,
     password: login.password,
     authenticator: "SNOWFLAKE",

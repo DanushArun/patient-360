@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Local setup
 
-## Getting Started
-
-First, run the development server:
+Requires Node.js and npm. Install dependencies and configure the Snowflake account identifier:
 
 ```bash
+cd web
+npm ci
+export SNOWFLAKE_ACCOUNT=<your Snowflake organization-account identifier>
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dashboard uses HTTP Basic authentication to prompt each practitioner for their own Snowflake username and password. Credentials are used by the server to open a per-request Snowflake session and are not stored by the application. Snowflake authenticates the practitioner and authorizes the required procedures. Use the `SAARTHI_APP` role with secondary roles disabled. Do not use an administrator role or configure shared practitioner credentials. Serve the application over HTTPS.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The runtime account is supplied through `SNOWFLAKE_ACCOUNT`; no account, user, or password is committed to source. For local development, use synthetic data only and keep credentials out of shell history and logs.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Verification
 
-## Learn More
+```bash
+node --experimental-strip-types --test tests/session-security.test.mjs tests/snowflake-config.test.mjs
+python3 -m pytest -q ../frontend/tests/test_web_session_security.py
+npx tsc --noEmit --incremental false
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+The automated isolation checks use synthetic credentials and data. They do not prove live Snowflake grants, SQL compilation, role/session traces, or clinical validation. Before deployment, verify the `SAARTHI_APP` grants and denied responses in the target Snowflake account. Live account query evidence is not included in this repository.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Remaining release limitations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Patient-specific chat history is held only in the mounted patient view's React state. It is discarded when the patient page unmounts, including navigation to another patient or a reload. A keyboard-only and 640px layout review remains. Synthetic engineering checks are not clinical validation.

@@ -285,6 +285,11 @@ html, body {
 }
 
 @media (max-width: 960px) {
+  .sa-patient-header {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
   .sa-patient-columns {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 28px !important;

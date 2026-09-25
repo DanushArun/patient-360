@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Columns, Field, Page, Rule, Stack, buttonStyle } from "@/components/sa";
 import type { AgentTurn, Gate, PatientData } from "@/lib/patient";
@@ -74,7 +73,7 @@ function messageText(patient: PatientData, visit: Date, items: { key: string; ru
 }
 
 function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
-  return <Columns template="7fr 5fr" gap={68}>
+  return <Columns template="7fr 5fr" gap={68} className="sa-patient-header">
     <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
       <div className="sa-masthead-patient">{patient.patientName}</div>
       <Field label="Patient" value={patient.patientId} /><Field label="Consent" value={patient.consentId ?? "none"} />
@@ -108,7 +107,7 @@ function FamilyChecklist({ patient, gates, language, setLanguage }: {
     }
   }
   return <>
-    <label className="sa-field-label">Family&apos;s language <select value={language} onChange={(event) => {
+    <label className="sa-field-label">Family&apos;s language <select aria-label="Family's language" value={language} onChange={(event) => {
       setCopyStatus("");
       setLanguage(event.target.value);
     }}>
@@ -140,7 +139,7 @@ function Conversation({ turns, selected, onSelect, busy, error, onSend }: {
   return <div role="log" aria-label="Patient conversation" aria-live="polite" aria-busy={busy}>
     {!turns.length && <div className="sa-meta">Ask about this patient&apos;s record — what you have, what is missing, what contradicts what. Clinical decisions are referred to the treating practitioner.</div>}
     {turns.map((turn) => <Message key={turn.id} turn={turn} selected={selected} onSelect={onSelect} />)}
-    {busy && <div className="sa-meta">Consulting the record…</div>}{error && <div className="sa-limitation">{error}</div>}
+    {busy && <div className="sa-meta" role="status">Consulting the record…</div>}{error && <div className="sa-limitation" role="alert">{error}</div>}
     {!!last?.suggested.length && <><div className="sa-field-label" style={{ marginTop: 12 }}>Follow on</div>
       {last.suggested.slice(0, 3).map((suggestion) => <button key={suggestion} style={buttonStyle} onClick={() => onSend(suggestion)}>{suggestion}</button>)}</>}
   </div>;
@@ -155,7 +154,7 @@ function Message({ turn, selected, onSelect }: {
     <div className="flex items-start gap-3"><span className="sa-chat-avatar" aria-hidden="true">{icon}</span>
       <div style={{ flex: 1 }}>{turn.role === "user" ? <div>{formattedText(turn.text)}</div> : turn.error ? <div className="sa-limitation">{TURN_ERRORS[turn.error] ?? turn.error}</div> : <>
         <div>{formattedText(turn.text)}</div>{turn.known_as_of && <div className="sa-meta sa-num" style={{ marginTop: 8 }}>Known as of {turn.known_as_of}</div>}
-        {!!turn.gates.length && <div className="grid grid-cols-4" style={{ gap: 8, marginTop: 12 }}>{turn.gates.map((gate) => {
+        {!!turn.gates.length && <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 8, marginTop: 12 }}>{turn.gates.map((gate) => {
           const ruleId = gate.rule_id ?? gate.gate;
           return <GateCitation key={ruleId} gate={gate} selected={selected?.turnId === turn.id && selected.ruleId === ruleId} onSelect={() => onSelect(turn.id, ruleId)} />;
         })}</div>}
@@ -169,35 +168,24 @@ function ChatInput({ question, setQuestion, busy, onSend }: {
 }): ReactNode {
   return <form onSubmit={(event) => { event.preventDefault(); onSend(); }} className="sa-chat-dock-wrap">
     <div className="sa-chat-dock">
-      <input className="sa-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about this patient's record…" disabled={busy} />
+      <input className="sa-chat-input" aria-label="Ask about this patient's record" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about this patient's record…" disabled={busy} />
       <button className="sa-chat-send" type="submit" aria-label="Send" disabled={busy}>➤</button>
     </div>
   </form>;
 }
 
-function useStoredTurns(storageKey: string): readonly [Turn[], Dispatch<SetStateAction<Turn[]>>] {
-  const [turns, setTurns] = useState<Turn[]>(EMPTY);
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    try { setTurns(JSON.parse(sessionStorage.getItem(storageKey) ?? "[]") as Turn[]); }
-    catch { setTurns([]); }
-    setHydrated(true);
-  }, [storageKey]);
-  useEffect(() => { if (hydrated) sessionStorage.setItem(storageKey, JSON.stringify(turns)); }, [hydrated, storageKey, turns]);
-  return [turns, setTurns] as const;
+function useTurns(): readonly [Turn[], Dispatch<SetStateAction<Turn[]>>] {
+  // Conversation content stays in this mounted patient view's React state.
+  // The patient page is keyed by id, so navigating to another patient remounts
+  // the view without restoring any prior patient's medical content.
+  return useState<Turn[]>(EMPTY);
 }
 
-function appendTurn(storageKey: string, setTurns: Dispatch<SetStateAction<Turn[]>>, turn: Turn): void {
+function appendTurn(setTurns: Dispatch<SetStateAction<Turn[]>>, turn: Turn): void {
   setTurns((current) => [...current, turn]);
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "[]") as Turn[];
-    sessionStorage.setItem(storageKey, JSON.stringify([...saved, turn]));
-  } catch {
-    sessionStorage.setItem(storageKey, JSON.stringify([turn]));
-  }
 }
 
-function useChat(storageKey: string, patientId: string, setTurns: Dispatch<SetStateAction<Turn[]>>): {
+function useChat(patientId: string, setTurns: Dispatch<SetStateAction<Turn[]>>): {
   question: string; setQuestion: Dispatch<SetStateAction<string>>; busy: boolean;
   error: string; send: (text: string) => Promise<void>;
 } {
@@ -207,12 +195,12 @@ function useChat(storageKey: string, patientId: string, setTurns: Dispatch<SetSt
   async function send(text: string): Promise<void> {
     if (!text.trim() || busy) return;
     const user: Turn = { id: crypto.randomUUID(), role: "user", text, thinking: "", tools: [], suggested: [], gates: [], known_as_of: null, error: null };
-    appendTurn(storageKey, setTurns, user); setQuestion(""); setBusy(true); setError("");
+    appendTurn(setTurns, user); setQuestion(""); setBusy(true); setError("");
     try {
       const response = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ patientId, question: text }) });
       const result = await response.json() as AgentTurn & { error?: string };
       if (!response.ok) throw new Error(result.error ?? "agent_unreachable");
-      appendTurn(storageKey, setTurns, { ...result, id: crypto.randomUUID(), role: "assistant" });
+      appendTurn(setTurns, { ...result, id: crypto.randomUUID(), role: "assistant" });
     } catch { setError("agent_unreachable"); }
     finally { setBusy(false); }
   }
@@ -272,10 +260,9 @@ async function fetchCurrentPatient(patientId: string): Promise<PatientData> {
 }
 
 export default function PatientClient({ patient }: { patient: PatientData }): ReactNode {
-  const params = useParams<{ id: string }>();
   const [currentPatient, setCurrentPatient] = useState(patient);
   const [refreshState, setRefreshState] = useState<"refreshing" | "current" | "failed">("refreshing");
-  const [turns, setTurns] = useStoredTurns(`saarthi-turns:${params.id}`);
+  const [turns, setTurns] = useTurns();
   const [selected, setSelected] = useState<{ turnId: string; ruleId: string } | null>(null);
   const [selectedPatientRule, setSelectedPatientRule] = useState<string | null>(null);
   const [mode, setMode] = useState<PatientMode>("Ask the record");
@@ -290,7 +277,7 @@ export default function PatientClient({ patient }: { patient: PatientData }): Re
     }
   }, [patient.patientId]);
   useEffect(() => { void refreshReadiness(); }, [refreshReadiness]);
-  const chat = useChat(`saarthi-turns:${params.id}`, patient.patientId, setTurns);
+  const chat = useChat(patient.patientId, setTurns);
   const reviewTask = useReviewTask(patient.patientId);
   const last = turns.at(-1)?.role === "assistant" ? turns.at(-1)! : null;
   const selectedGate = currentPatient.gates.find((gate) => gate.rule_id === selectedPatientRule)
@@ -300,7 +287,7 @@ export default function PatientClient({ patient }: { patient: PatientData }): Re
 
   return <Page>
     <PatientHeader patient={currentPatient} />
-    {refreshState !== "current" && <div className="sa-meta" role="status" style={{ margin: "8px 0" }}>
+    {refreshState !== "current" && <div className="sa-meta" role={refreshState === "failed" ? "alert" : "status"} aria-live={refreshState === "failed" ? "assertive" : "polite"} style={{ margin: "8px 0" }}>
       {refreshState === "refreshing"
         ? `Checking live readiness. Displaying the stored SQL snapshot${currentPatient.knownAsOf ? ` from ${currentPatient.knownAsOf}` : ""}.`
         : `Live readiness refresh failed. The stored SQL snapshot${currentPatient.knownAsOf ? ` from ${currentPatient.knownAsOf}` : ""} remains visible.`}
@@ -328,13 +315,13 @@ export default function PatientClient({ patient }: { patient: PatientData }): Re
               ? null : { turnId, ruleId });
           }} busy={chat.busy} error={chat.error} onSend={(text) => void chat.send(text)} />}
       </Stack>
-      <div id="readiness-evidence"><EvidencePanel patientId={patient.patientId}
+      <EvidencePanel patientId={patient.patientId}
         turn={last} selected={selectedGate}
         feedback={reviewTask.feedback} actionsAvailable={refreshState === "current"}
         onAction={reviewTask.act} onUnpin={() => {
         setSelected(null);
         setSelectedPatientRule(null);
-      }} /></div>
+      }} />
     </Columns>
     {mode === "Ask the record" && <ChatInput question={chat.question} setQuestion={chat.setQuestion} busy={chat.busy} onSend={() => void chat.send(chat.question)} />}
   </Page>;
@@ -346,7 +333,7 @@ function ModeControl({ mode, onChange }: {
   mode: PatientMode; onChange: (mode: PatientMode) => void;
 }): ReactNode {
   return <div className="flex" style={{ border: "1px solid #D8DCDF", borderRadius: 6, width: "fit-content" }}>
-    {(["Ask the record", "Record timeline", "Family checklist"] as const).map((item) => <button key={item} onClick={() => onChange(item)}
+    {(["Ask the record", "Record timeline", "Family checklist"] as const).map((item) => <button key={item} type="button" aria-pressed={mode === item} onClick={() => onChange(item)}
       style={{ ...buttonStyle, width: "auto", border: 0, borderRadius: 0, background: mode === item ? "#F6F7F8" : "#FFFFFF" }}>{item}</button>)}
   </div>;
 }

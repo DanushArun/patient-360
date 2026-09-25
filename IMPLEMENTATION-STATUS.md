@@ -135,7 +135,7 @@ Specified in `SPEC.md` §2. **All 34 `[B]`-marked tables are live on JN89282** a
 | Answer validator, 6 checks | **built + live** — all 6 checks; Check 4 uses AI_FILTER with return_error_details=TRUE (fail-closed); Check 5 uses 1% relative-numeric tolerance |
 | R7 two-pass extraction | **built** — `extract_assertions.sql` task deployed (has not yet fired live because parse_documents queue is empty) |
 | Typed evidence contract, 3 kinds | **built** — structured / document_span / reference_clause |
-| Conversation model — binding and `known_as_of` persist, history clears on switch | designed-only (frontend concern) |
+| Conversation model — binding and `known_as_of` persist, history clears on switch | **partial** — Next.js client clears on patient switch; persistence across questions and backend answer path are wired, but live Class A/B workflow remains unverified here |
 | 10 Class B question types | **built + live** — deep-case ASK_SAARTHI returns cited answers |
 | 12 named failure behaviours | **built** — `frontend/core/errors.py`, 10 tests, data-driven off `error_shape.json` |
 
@@ -157,7 +157,16 @@ either traced to a source or explicitly marked as a judgment call.
 | Navigator View (4 languages) | designed-only |
 | Judge Console (8 probes) | designed-only |
 
-**All four built screens read fixtures, not Snowflake.** The backend tool procedures exist and
+**Next.js dashboard release path (25 Sept 2026): partial.** `web/app/page.tsx` loads the
+caller-scoped census, and the patient route loads SQL readiness, timeline, review-task, and
+agent answer procedures through `web/lib/patient.ts`. Patient chat is held in mounted React
+state and the route keys the client by patient ID; no browser storage is used. Responsive
+layout and accessible-control contracts are checked by `web/tests/dashboard-accessibility.test.mjs`.
+These UI and build checks do not demonstrate live Snowflake behavior, a browser keyboard audit,
+clinical validation, or a deployed production service. Class A classification/refusal and
+evidence-packet construction remain backend-owned; the web client displays the returned answer.
+
+**The four built Streamlit screens read fixtures, not Snowflake.** The backend tool procedures exist and
 are live (§6), but the frontend is not yet calling them. That wiring is the remaining step, and
 nothing here should be described as end-to-end until it is done.
 
