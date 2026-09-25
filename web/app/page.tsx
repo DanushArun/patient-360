@@ -2,6 +2,8 @@ import { fetchCensus, buildCensus } from "@/lib/census";
 import type { ReadinessRow } from "@/lib/census";
 import { CensusChip, Chevron, type CensusStatus } from "@/components/sa";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { loginFromAuthorization } from "@/lib/request-auth";
 
 export const dynamic = "force-dynamic"; // always fresh readiness state, never stale
 
@@ -50,7 +52,9 @@ export default async function DayCarePage() {
   let rows: ReadinessRow[];
   let error: string | null = null;
   try {
-    rows = await fetchCensus(7);
+    const login = loginFromAuthorization((await headers()).get("authorization"));
+    if (!login) throw new Error("professional_login_required");
+    rows = await fetchCensus(7, login);
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
     rows = [];
@@ -69,17 +73,10 @@ export default async function DayCarePage() {
     return t;
   };
 
-  // The Streamlit build's "Also under your care" panel: everyone else under
-  // this practitioner's care who isn't already on today's/tomorrow's list -
-  // ported as-is, not redesigned. Only the deep-case patient exists outside
-  // the day-care cohort right now.
-  const shownIds = new Set(chairs.map((c) => c.patientId));
-  const alsoUnderCare = shownIds.has("PAT-DEEP-0001") ? [] : [{ id: "PAT-DEEP-0001", name: "Meera Iyer" }];
+  // Build the patient picker only from rows returned by the caller-scoped
+  // census procedure; never add a local fallback patient record.
   const patientOptions = error ? [] : Array.from(
-    new Map([
-      ...chairs.map((chair) => [chair.patientId, { id: chair.patientId, name: chair.name }] as const),
-      ...alsoUnderCare.map((patient) => [patient.id, patient] as const),
-    ]).values(),
+    new Map(chairs.map((chair) => [chair.patientId, { id: chair.patientId, name: chair.name }] as const)).values(),
   ).sort((left, right) => left.name.localeCompare(right.name));
 
   return (
@@ -207,24 +204,11 @@ export default async function DayCarePage() {
           </div>
         </div>
 
-        {/* Right margin: "Also under your care" - present in the Streamlit
-            build even when empty for the current cohort, so the panel never
-            silently disappears once populated. */}
         <div>
           <div className="mb-4 text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
             Also under your care
           </div>
-          {alsoUnderCare.map((p) => (
-            <Link
-              key={p.id}
-              href={`/patient/${p.id}`}
-              prefetch={false}
-              className="block rounded-lg px-1 py-2 text-sm hover:underline"
-              style={{ color: "var(--sa-ink)" }}
-            >
-              {p.name}
-            </Link>
-          ))}
+          <p className="text-sm sa-meta">Additional patients appear here when returned by your scoped census.</p>
         </div>
       </div>
     </main>

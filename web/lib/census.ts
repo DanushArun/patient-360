@@ -1,37 +1,5 @@
 import { query } from "./snowflake";
-
-// Same query as frontend/core/live.py Session.daycare_census() - ported, not
-// reinvented. Scope is server-side: an active CARE_TEAM row + valid CONSENT.
-const CENSUS_SQL = `
-  WITH plan AS (
-      SELECT patient_id, regimen_display
-        FROM SAARTHI.CORE.TREATMENT_PLAN
-      QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id
-                                 ORDER BY version DESC, decided_at DESC NULLS LAST) = 1
-  )
-  SELECT e.encounter_id, p.patient_id, p.name, p.district, p.state, p.primary_language,
-         plan.regimen_display, e.cycle_number,
-         TO_VARCHAR(e.scheduled_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS scheduled,
-         rs.gate, rs.rule_id, rs.rule_version, rs.outcome, rs.severity, rs.reason
-    FROM SAARTHI.CORE.ENCOUNTER e
-    JOIN SAARTHI.CORE.PATIENT p ON p.patient_id = e.patient_id
-    LEFT JOIN plan ON plan.patient_id = e.patient_id
-    LEFT JOIN SAARTHI.OPERATIONAL.READINESS_STATE rs ON rs.encounter_id = e.encounter_id
-   WHERE e.encounter_type = 'daycare'
-     AND e.scheduled_time >= CURRENT_DATE()
-     AND e.scheduled_time <  DATEADD(day, ?, CURRENT_DATE())
-     AND EXISTS (
-         SELECT 1 FROM SAARTHI.GOVERNANCE.CARE_TEAM ct
-           JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = ct.practitioner_id
-          WHERE ct.patient_id = e.patient_id
-            AND UPPER(pr.snowflake_user) = UPPER(CURRENT_USER())
-            AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE()))
-     AND EXISTS (
-         SELECT 1 FROM SAARTHI.GOVERNANCE.CONSENT c
-          WHERE c.patient_id = e.patient_id AND c.status = 'active'
-            AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP()))
-   ORDER BY e.scheduled_time, p.name
-`;
+import type { ProfessionalLogin } from "./session-security";
 
 export interface ReadinessRow {
   ENCOUNTER_ID: string;
@@ -51,8 +19,10 @@ export interface ReadinessRow {
   REASON: string | null;
 }
 
-export async function fetchCensus(horizonDays = 7): Promise<ReadinessRow[]> {
-  return query<ReadinessRow>(CENSUS_SQL, [horizonDays]);
+export async function fetchCensus(horizonDays: number, login: ProfessionalLogin): Promise<ReadinessRow[]> {
+  return query<ReadinessRow>(
+    "CALL SAARTHI.OPERATIONAL.GET_WEB_CENSUS(?)", [horizonDays], login,
+  );
 }
 
 // --- Triage, ported from frontend/core/census.py::classify() ---------------

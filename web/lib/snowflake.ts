@@ -1,11 +1,8 @@
 import snowflake from "snowflake-sdk";
-import { readFileSync } from "fs";
+import type { ProfessionalLogin } from "./session-security";
+import { withBoundPatientSession } from "./session-security";
 
-// Same key-pair credential set up for the Streamlit app (frontend/streamlit_app.py) -
-// one Snowflake user, two frontends, no OAuth browser round-trip either way.
 const ACCOUNT = "KLJGZVK-AO10401";
-const USER = "DANUSH";
-const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
 
 // NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
 // tool resolve their subject from PATIENT_BINDING keyed on CURRENT_SESSION() -
@@ -13,15 +10,13 @@ const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
 // A cached connection shared across every Next.js request means every visitor
 // shares ONE CURRENT_SESSION(), so whoever binds last determines what every
 // other request sees - the identical cross-user leak found and fixed in the
-// Streamlit build. Key-pair (JWT) auth has no browser round-trip, so a fresh
-// connection per request is cheap and safe, unlike OAuth.
-function openConnection(): Promise<snowflake.Connection> {
-  const privateKey = readFileSync(PRIVATE_KEY_PATH, "utf8");
+// The browser login is passed through once and never persisted by this server.
+function openConnection(login: ProfessionalLogin): Promise<snowflake.Connection> {
   const conn = snowflake.createConnection({
     account: ACCOUNT,
-    username: USER,
-    authenticator: "SNOWFLAKE_JWT",
-    privateKey,
+    username: login.username,
+    password: login.password,
+    authenticator: "SNOWFLAKE",
     // The web app runs with the same least-privileged role as the Streamlit
     // app. Secondary roles are disabled immediately after connect below.
     role: "SAARTHI_APP",
@@ -31,7 +26,7 @@ function openConnection(): Promise<snowflake.Connection> {
       if (err) {
         // A failed connect can still allocate SDK resources. Do not leave them
         // behind when no caller ever receives the connection.
-        conn.destroy(() => reject(err));
+        conn.destroy(() => reject(new Error("professional_login_invalid")));
         return;
       }
       resolve(c);
@@ -39,21 +34,24 @@ function openConnection(): Promise<snowflake.Connection> {
   });
 }
 
-function destroyConnection(conn: snowflake.Connection) {
-  conn.destroy(() => {});
+function destroyConnection(conn: snowflake.Connection): Promise<void> {
+  return new Promise((resolve, reject) => {
+    conn.destroy((err) => err ? reject(err) : resolve());
+  });
 }
 
 /** One-off query: opens, runs, closes. Use for stateless reads (census, etc). */
 export async function query<T = Record<string, unknown>>(
   sqlText: string,
-  binds: (string | number | null)[] = []
+  binds: (string | number | null)[] = [],
+  login: ProfessionalLogin,
 ): Promise<T[]> {
-  const conn = await openConnection();
+  const conn = await openConnection(login);
   try {
     await execOn(conn, "USE SECONDARY ROLES NONE");
     return await execOn<T>(conn, sqlText, binds);
   } finally {
-    destroyConnection(conn);
+    await destroyConnection(conn);
   }
 }
 
@@ -82,80 +80,46 @@ function execOn<T = Record<string, unknown>>(
  */
 export async function withPatientSession<T>(
   patientId: string,
-  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>) => Promise<T>
+  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>) => Promise<T>,
+  login: ProfessionalLogin,
 ): Promise<T> {
-  const conn = await openConnection();
+  const conn = await openConnection(login);
   const run = (sql: string, binds: (string | number | null)[] = []) => execOn(conn, sql, binds);
-  let bindingCreated = false;
-  try {
-    await run("USE SECONDARY ROLES NONE");
-    const bindRows = await run("CALL SAARTHI.OPERATIONAL.BIND_PATIENT(?)", [patientId]);
-    const bindCell = Object.values(bindRows[0] ?? {})[0];
-    const bindResult = typeof bindCell === "string" ? JSON.parse(bindCell) : bindCell;
-    if (!bindResult || typeof bindResult !== "object") throw new Error("binding_unavailable");
-    if (bindResult.error) throw new Error(`bind failed: ${bindResult.error}`);
-    bindingCreated = true;
-    return await fn(run);
-  } finally {
-    try {
-      if (bindingCreated) {
-        await run(
-          "UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING SET released_at = CURRENT_TIMESTAMP() " +
-            "WHERE session_id = CURRENT_SESSION() AND released_at IS NULL"
-        );
-      }
-    } finally {
-      destroyConnection(conn);
-    }
-  }
+  return withBoundPatientSession({ execute: run, destroy: () => destroyConnection(conn) }, patientId, fn);
 }
 
 export async function withPatientSessionAndContext<T>(
   patientId: string,
-  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>, context: PatientBinding) => Promise<T>
+  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>, context: PatientBinding) => Promise<T>,
+  login: ProfessionalLogin,
 ): Promise<T> {
   return withPatientSession(patientId, async (run) => {
-    const rows = await run(
-      `WITH next_visit AS (
-         SELECT patient_id, cycle_number,
-                TO_VARCHAR(scheduled_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS scheduled_at
-           FROM SAARTHI.CORE.ENCOUNTER
-          WHERE encounter_type = 'daycare' AND scheduled_time >= CURRENT_DATE()
-          QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY scheduled_time) = 1
-       ), latest_plan AS (
-         SELECT patient_id, regimen_display
-           FROM SAARTHI.CORE.TREATMENT_PLAN
-          QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY patient_id ORDER BY version DESC, decided_at DESC) = 1
-       )
-       SELECT p.name, p.primary_language, nv.scheduled_at, nv.cycle_number,
-              lp.regimen_display,
-              (SELECT b.consent_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING b
-                WHERE b.session_id = CURRENT_SESSION() AND b.released_at IS NULL
-                ORDER BY b.bound_at DESC LIMIT 1) AS consent_id,
-              pr.name AS practitioner_name
-         FROM SAARTHI.CORE.PATIENT p
-         JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr
-           ON UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
-         LEFT JOIN next_visit nv ON nv.patient_id = p.patient_id
-         LEFT JOIN latest_plan lp ON lp.patient_id = p.patient_id
-        WHERE p.patient_id = ?`,
-      [patientId]
-    );
-    if (!rows[0]) throw new Error("patient_context_unavailable");
+    const rows = await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_CONTEXT()");
+    const raw = Object.values(rows[0] ?? {})[0];
+    let context: Record<string, unknown>;
+    try {
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== "object") throw new Error();
+      context = parsed as Record<string, unknown>;
+    } catch {
+      throw new Error("patient_context_unavailable");
+    }
+    if (typeof context.error === "string") {
+      // Procedure denials are deliberately kept generic at the HTTP boundary.
+      throw new Error("no_patient_access");
+    }
     return fn(run, {
       patientId,
-      patientName: String(rows[0].NAME ?? patientId),
-      consentId: typeof rows[0].CONSENT_ID === "string" ? rows[0].CONSENT_ID : null,
-      language: typeof rows[0].PRIMARY_LANGUAGE === "string" ? rows[0].PRIMARY_LANGUAGE : null,
-      nextVisit: typeof rows[0].SCHEDULED_AT === "string"
-        ? rows[0].SCHEDULED_AT.slice(0, 10) : null,
-      scheduledAt: typeof rows[0].SCHEDULED_AT === "string" ? rows[0].SCHEDULED_AT : null,
-      cycleNumber: typeof rows[0].CYCLE_NUMBER === "number" ? rows[0].CYCLE_NUMBER : null,
-      regimen: typeof rows[0].REGIMEN_DISPLAY === "string" ? rows[0].REGIMEN_DISPLAY : null,
-      practitionerName: String(rows[0].PRACTITIONER_NAME ?? ""),
+      patientName: typeof context.NAME === "string" ? context.NAME : (() => { throw new Error("patient_context_unavailable"); })(),
+      consentId: typeof context.CONSENT_ID === "string" ? context.CONSENT_ID : null,
+      language: typeof context.PRIMARY_LANGUAGE === "string" ? context.PRIMARY_LANGUAGE : null,
+      nextVisit: typeof context.SCHEDULED_AT === "string" ? context.SCHEDULED_AT.slice(0, 10) : null,
+      scheduledAt: typeof context.SCHEDULED_AT === "string" ? context.SCHEDULED_AT : null,
+      cycleNumber: typeof context.CYCLE_NUMBER === "number" ? context.CYCLE_NUMBER : null,
+      regimen: typeof context.REGIMEN_DISPLAY === "string" ? context.REGIMEN_DISPLAY : null,
+      practitionerName: String(context.PRACTITIONER_NAME ?? ""),
     });
-  });
+  }, login);
 }
 
 export interface PatientBinding {
