@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseBasicAuthorization, unauthorized, withBoundPatientSession } from "../lib/session-security.ts";
+import { createPatientGet, parseBasicAuthorization, unauthorized, withBoundPatientSession } from "../lib/session-security.ts";
 
 test("rejects missing, malformed, or incomplete professional credentials", () => {
   assert.equal(parseBasicAuthorization(null), null);
@@ -88,4 +88,38 @@ test("releases and closes after a request fails after a successful bind", async 
   }), /synthetic_read_failure/);
   assert.ok(calls.some((sql) => sql.includes("RELEASE_PATIENT_BINDING")));
   assert.equal(calls.at(-1), "destroyed");
+});
+
+test("patient HTTP handlers hide scope details for foreign, revoked, and wrong-role requests", async () => {
+  const handler = createPatientGet(async (patientId, login) => {
+    if (login.username === "wrong-role") throw new Error("no_patient_access");
+    if (patientId === "foreign") throw new Error("no_patient_access");
+    if (patientId === "revoked") throw new Error("consent_not_valid");
+    return { patientId, patientName: "Synthetic Patient", gates: [{ outcome: "pass" }] };
+  }, "patient_unavailable");
+  const request = (user, id) => new Request(`http://localhost/api/patient/${id}`, {
+    headers: { authorization: `Basic ${Buffer.from(`${user}:synthetic-password`).toString("base64")}` },
+  });
+  for (const [user, id] of [["clinician", "foreign"], ["clinician", "revoked"], ["wrong-role", "patient-a"]]) {
+    const response = await handler(request(user, id), { params: Promise.resolve({ id }) });
+    assert.equal(response.status, 403);
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await response.json(), { error: "patient_scope_denied" });
+  }
+});
+
+test("patient HTTP handlers keep authorized data isolated during concurrent A/B requests", async () => {
+  const handler = createPatientGet(async (patientId) => ({ patientId, facts: [`fact-for-${patientId}`] }), "patient_unavailable");
+  const request = (id) => new Request(`http://localhost/api/patient/${id}`, {
+    headers: { authorization: `Basic ${Buffer.from(`clinician-${id}:synthetic-password`).toString("base64")}` },
+  });
+  const [responseA, responseB] = await Promise.all([
+    handler(request("patient-a"), { params: Promise.resolve({ id: "patient-a" }) }),
+    handler(request("patient-b"), { params: Promise.resolve({ id: "patient-b" }) }),
+  ]);
+  const [bodyA, bodyB] = await Promise.all([responseA.json(), responseB.json()]);
+  assert.deepEqual(bodyA, { patientId: "patient-a", facts: ["fact-for-patient-a"] });
+  assert.deepEqual(bodyB, { patientId: "patient-b", facts: ["fact-for-patient-b"] });
+  assert.equal(JSON.stringify(bodyA).includes("patient-b"), false);
+  assert.equal(JSON.stringify(bodyB).includes("patient-a"), false);
 });

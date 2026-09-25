@@ -8,6 +8,31 @@ export function unauthorized(): Response {
   });
 }
 
+const SCOPE_DENIAL = { error: "patient_scope_denied" } as const;
+
+/** Build a patient endpoint around an injectable loader so HTTP denial behavior
+ * can be exercised without a live Snowflake account. */
+export function createPatientGet<T>(
+  load: (patientId: string, login: NonNullable<ReturnType<typeof parseBasicAuthorization>>) => Promise<T>,
+  fallbackError: string,
+) {
+  return async (request: Request, context: { params: Promise<{ id: string }> }): Promise<Response> => {
+    const login = parseBasicAuthorization(request.headers.get("authorization"));
+    if (!login) return unauthorized();
+    try {
+      const { id } = await context.params;
+      return Response.json(await load(id, login));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : fallbackError;
+      if (code === "professional_login_invalid") return unauthorized();
+      if (["no_patient_access", "consent_not_valid", "patient_scope_denied"].includes(code)) {
+        return Response.json(SCOPE_DENIAL, { status: 403, headers: { "Cache-Control": "no-store" } });
+      }
+      return Response.json({ error: fallbackError }, { status: 502, headers: { "Cache-Control": "no-store" } });
+    }
+  };
+}
+
 export function parseBasicAuthorization(value: string | null): ProfessionalLogin | null {
   if (!value) return null;
   const match = /^Basic ([A-Za-z0-9+/]+={0,2})$/i.exec(value.trim());
