@@ -104,14 +104,14 @@ WHEN NOT MATCHED THEN INSERT (coverage_id, patient_id, payer_type, payer_name, p
 VALUES (s.coverage_id, s.patient_id, 'scheme', 'PM-JAY', 'PMJAY-71' || s.k,
   TRUE, DATEADD(day, -365, CURRENT_DATE()), DATEADD(day, 365, CURRENT_DATE()), 500000, 120000, 1, 'cross_state');
 
-MERGE INTO SAARTHI.CORE.PRE_AUTHORIZATION t
-USING (SELECT 'PA-DC-' || k AS pre_auth_id, 'PAT-DC-' || k AS patient_id, 'ENC-DC-' || k AS encounter_id,
+MERGE INTO SAARTHI.CORE.AUTHORIZATION t
+USING (SELECT 'PA-DC-' || k AS auth_id, 'PAT-DC-' || k AS patient_id, 'ENC-DC-' || k AS encounter_id,
               'COV-DC-' || k AS coverage_id, pa_status, pa_letter FROM SAARTHI.OPERATIONAL._DC_COHORT) s
-ON t.pre_auth_id = s.pre_auth_id
+ON t.auth_id = s.auth_id
 WHEN MATCHED THEN UPDATE SET t.expires_at = DATEADD(day, 60, CURRENT_TIMESTAMP())
-WHEN NOT MATCHED THEN INSERT (pre_auth_id, patient_id, encounter_id, coverage_id, scheme, package_code,
+WHEN NOT MATCHED THEN INSERT (auth_id, patient_id, encounter_id, coverage_id, scheme, package_code,
   package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by)
-VALUES (s.pre_auth_id, s.patient_id, s.encounter_id, s.coverage_id, 'PM-JAY', 'MO-CHEMO-DC',
+VALUES (s.auth_id, s.patient_id, s.encounter_id, s.coverage_id, 'PM-JAY', 'MO-CHEMO-DC',
   'Medical oncology - day-care chemotherapy cycle', s.pa_status, s.pa_letter,
   DATEADD(day, -5, CURRENT_TIMESTAMP()),
   IFF(s.pa_status = 'approved', DATEADD(day, -3, CURRENT_TIMESTAMP()), NULL),

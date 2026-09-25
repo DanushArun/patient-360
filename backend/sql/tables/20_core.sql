@@ -9,6 +9,8 @@ DROP TABLE IF EXISTS SAARTHI.CORE.PATIENT;
 DROP TABLE IF EXISTS SAARTHI.CORE.ID_MAP;
 DROP TABLE IF EXISTS SAARTHI.CORE.ENCOUNTER;
 DROP TABLE IF EXISTS SAARTHI.CORE.COVERAGE;
+DROP TABLE IF EXISTS SAARTHI.CORE.AUTHORIZATION;
+DROP TABLE IF EXISTS SAARTHI.CORE.PRE_AUTHORIZATION;                    -- retired 23 Sept: consolidated into AUTHORIZATION
 
 CREATE TABLE IF NOT EXISTS SAARTHI.CORE.PATIENT (
     patient_id       VARCHAR     DEFAULT UUID_STRING() PRIMARY KEY,
@@ -127,18 +129,28 @@ CREATE TABLE IF NOT EXISTS SAARTHI.CORE.COVERAGE (
 );
 
 -- status gains 'partial' and 'conflicting' - the flagship demo scenario
--- (table says pending, letter says approved) needs 'conflicting' to exist.
+-- (table says pending, letter says approved) needs 'conflicting' to exist
+-- (SPEC.md §247). letter_status is the value printed on the physical letter
+-- and MAY drift from status - that drift is the demo. patient_id is
+-- denormalised (also reachable via coverage_id -> COVERAGE.patient_id) so
+-- COV-AUTH-001 can filter without a JOIN. denial_is_curable per RWR: 60-70%
+-- of denials are procedurally curable (missing signature, wrong package).
 CREATE TABLE IF NOT EXISTS SAARTHI.CORE.AUTHORIZATION (
     auth_id           VARCHAR DEFAULT UUID_STRING() PRIMARY KEY,
     coverage_id       VARCHAR NOT NULL,
+    patient_id        VARCHAR NOT NULL,
     encounter_id      VARCHAR,
+    scheme            VARCHAR,                                        -- 'PM-JAY' | 'state' | 'private' (validated via SCHEME_REGISTRY)
     package_code      VARCHAR,
+    package_display   VARCHAR,
     requested_amount  FLOAT,
     approved_amount   FLOAT,
     status            VARCHAR CHECK (status IN ('pending','approved','denied','partial','expired','conflicting')),
+    letter_status     VARCHAR,                                        -- SPEC §247: table-vs-letter drift is the flagship demo
     denial_reason     VARCHAR,
-    denial_is_curable BOOLEAN,                       -- 60-70% of denials are procedurally curable (RWR)
+    denial_is_curable BOOLEAN,                                        -- ~60-70% of denials are procedurally curable (RWR)
     requested_at      TIMESTAMP_NTZ,
-    responded_at      TIMESTAMP_NTZ,
-    valid_until       TIMESTAMP_NTZ
+    decided_at        TIMESTAMP_NTZ,                                  -- when insurer responded (renamed from responded_at)
+    expires_at        TIMESTAMP_NTZ,                                  -- authorisation validity window end (renamed from valid_until)
+    reviewed_by       VARCHAR
 );

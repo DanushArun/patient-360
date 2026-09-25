@@ -349,8 +349,8 @@ BEGIN
                 v_reason  := 'used ' || v_cov_used::VARCHAR || ' meets or exceeds annual limit ' || v_cov_limit::VARCHAR;
             END IF;
         ELSEIF (v_rule_id = 'COV-AUTH-001') THEN
-            LET v_pa_status VARCHAR := (SELECT status FROM SAARTHI.CORE.PRE_AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
-            LET v_pa_letter VARCHAR := (SELECT letter_status FROM SAARTHI.CORE.PRE_AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
+            LET v_pa_status VARCHAR := (SELECT status FROM SAARTHI.CORE.AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
+            LET v_pa_letter VARCHAR := (SELECT letter_status FROM SAARTHI.CORE.AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
             IF (v_pa_status IS NULL) THEN
                 v_outcome := 'not_evaluated';
                 v_reason  := 'no pre-authorisation record for this patient/encounter';
