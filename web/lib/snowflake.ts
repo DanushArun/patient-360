@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 
 // Same key-pair credential set up for the Streamlit app (frontend/streamlit_app.py) -
 // one Snowflake user, two frontends, no OAuth browser round-trip either way.
-const ACCOUNT = "KLJGZVK-AO10401";
+const ACCOUNT = "KGTPGHJ-YJ28449";
 const USER = "DANUSH";
 const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
 
@@ -56,9 +56,11 @@ function execOn<T = Record<string, unknown>>(
     conn.execute({
       sqlText,
       binds,
-      complete: (err, _stmt, rows) => {
+      complete: (err, statement, rows) => {
         if (err) return reject(err);
-        resolve((rows ?? []) as T[]);
+        const result = (rows ?? []) as T[];
+        Object.defineProperty(result, "query_id", { value: statement.getStatementId() });
+        resolve(result);
       },
     });
   });

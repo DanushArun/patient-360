@@ -1,4 +1,7 @@
 import { withPatientSession, withPatientSessionAndContext } from "./snowflake";
+import { askLocalModel, completeWithOllama } from "./local-ai.mjs";
+import { routeQuestion } from "./question-routing.mjs";
+import { answerReadinessQuestion } from "./record-answers.mjs";
 
 export type Gate = {
   gate: string;
@@ -194,6 +197,31 @@ export type AgentTurn = {
   gates: Gate[];
   known_as_of: string | null;
   error: string | null;
+  artifact?: AnswerArtifact;
+  tool_results?: { name: string; result: Record<string, unknown> }[];
+};
+
+export type AnswerArtifact = {
+  classification: "CLASS_A" | "CLASS_B";
+  claims: AnswerClaim[];
+  limitations: string[];
+  overall_status: "supported" | "partial" | "refused";
+  known_as_of: string | null;
+  binding_id?: string | null;
+  rule_versions?: Record<string, number>;
+};
+
+export type AnswerClaim = {
+  text: string;
+  claim_type: "numeric" | "date" | "status" | "textual";
+  asserted_value?: number | string | null;
+  evidence: {
+    kind: "structured" | "document_span";
+    id: string;
+    doc_id?: string;
+    page_index?: number;
+    derived?: string;
+  }[];
 };
 
 export function parseAgentResponse(input: unknown): AgentTurn {
@@ -202,6 +230,10 @@ export function parseAgentResponse(input: unknown): AgentTurn {
     known_as_of: null, error: null,
   };
   const payload = parseValue(input);
+  if (payload.code === "399504") {
+    turn.error = "ai_features_unavailable";
+    return turn;
+  }
   if (!Array.isArray(payload.content)) {
     turn.error = "malformed_agent_json";
     return turn;
@@ -249,9 +281,18 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 
 export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
   return withPatientSessionAndContext(patientId, async (run) => {
-    const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
-    if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
-    return parseAgentResponse(Object.values(rows[0])[0]);
+    if (process.env.SAARTHI_LLM_PROVIDER === "ollama") {
+      return askLocalModel(question, patientId, run, completeWithOllama);
+    }
+    return routeQuestion(question, run, async () => {
+      const readinessAnswer = await answerReadinessQuestion(question, run);
+      if (readinessAnswer) return readinessAnswer;
+      const routedQuestion = "SQL-classified CLASS_B record-state question. Answer from returned " +
+        `record evidence without offering clinical judgment.\nQuestion: ${question}`;
+      const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [routedQuestion]);
+      if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
+      return parseAgentResponse(Object.values(rows[0])[0]);
+    });
   });
 }
 
