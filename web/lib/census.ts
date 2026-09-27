@@ -55,6 +55,31 @@ export async function fetchCensus(horizonDays = 7): Promise<ReadinessRow[]> {
   return query<ReadinessRow>(CENSUS_SQL, [horizonDays]);
 }
 
+const BINDABLE_SQL = `
+  SELECT DISTINCT p.patient_id, p.name
+    FROM SAARTHI.CORE.PATIENT p
+   WHERE EXISTS (
+       SELECT 1 FROM SAARTHI.GOVERNANCE.CARE_TEAM ct
+         JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = ct.practitioner_id
+        WHERE ct.patient_id = p.patient_id
+          AND UPPER(pr.snowflake_user) = UPPER(CURRENT_USER())
+          AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE()))
+     AND EXISTS (
+       SELECT 1 FROM SAARTHI.GOVERNANCE.CONSENT c
+        WHERE c.patient_id = p.patient_id AND c.status = 'active'
+          AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP()))
+   ORDER BY p.name
+`;
+
+export interface BindablePatient {
+  PATIENT_ID: string;
+  NAME: string;
+}
+
+export async function fetchBindablePatients(): Promise<BindablePatient[]> {
+  return query<BindablePatient>(BINDABLE_SQL);
+}
+
 // --- Triage, ported from frontend/core/census.py::classify() ---------------
 // Same 5 states, same precedence, so the two frontends can never disagree.
 

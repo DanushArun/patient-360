@@ -1,4 +1,4 @@
-import { fetchCensus, buildCensus } from "@/lib/census";
+import { fetchCensus, fetchBindablePatients, buildCensus } from "@/lib/census";
 import type { ReadinessRow } from "@/lib/census";
 import { CensusChip, Chevron, type CensusStatus } from "@/components/sa";
 import Link from "next/link";
@@ -49,8 +49,12 @@ function dayLabel(iso: string) {
 export default async function DayCarePage() {
   let rows: ReadinessRow[];
   let error: string | null = null;
+  let allBindable: PatientOption[] = [];
   try {
-    rows = await fetchCensus(7);
+    [rows, allBindable] = await Promise.all([
+      fetchCensus(7),
+      fetchBindablePatients().then((bp) => bp.map((p) => ({ id: p.PATIENT_ID, name: p.NAME }))),
+    ]);
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
     rows = [];
@@ -69,18 +73,9 @@ export default async function DayCarePage() {
     return t;
   };
 
-  // The Streamlit build's "Also under your care" panel: everyone else under
-  // this practitioner's care who isn't already on today's/tomorrow's list -
-  // ported as-is, not redesigned. Only the deep-case patient exists outside
-  // the day-care cohort right now.
   const shownIds = new Set(chairs.map((c) => c.patientId));
-  const alsoUnderCare = shownIds.has("PAT-DEEP-0001") ? [] : [{ id: "PAT-DEEP-0001", name: "Meera Iyer" }];
-  const patientOptions = error ? [] : Array.from(
-    new Map([
-      ...chairs.map((chair) => [chair.patientId, { id: chair.patientId, name: chair.name }] as const),
-      ...alsoUnderCare.map((patient) => [patient.id, patient] as const),
-    ]).values(),
-  ).sort((left, right) => left.name.localeCompare(right.name));
+  const alsoUnderCare = allBindable.filter((p) => !shownIds.has(p.id));
+  const patientOptions = error ? [] : allBindable.sort((left, right) => left.name.localeCompare(right.name));
 
   return (
     <main className="mx-auto max-w-7xl px-8 py-10" style={{ color: "var(--sa-ink)" }}>

@@ -101,6 +101,7 @@ function GateEvidence({ gate }: { gate: Gate }): ReactNode {
     <div className="sa-meta" style={{ marginTop: 8 }}>
       {sourceText}{gate.known_as_of ? ` · Known as of ${gate.known_as_of}` : ""}
     </div>
+    {gate.provenance_note && <div className="sa-provenance" style={{ marginTop: 8 }}>{gate.provenance_note}</div>}
     {gate.derived && <div className="sa-derivation">
       <div className="sa-derivation-lead">Derived, not printed.</div>
       <div className="sa-formula">{gate.derived}</div>

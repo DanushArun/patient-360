@@ -213,8 +213,11 @@ function useChat(storageKey: string, patientId: string, setTurns: Dispatch<SetSt
       const result = await response.json() as AgentTurn & { error?: string };
       if (!response.ok) throw new Error(result.error ?? "agent_unreachable");
       appendTurn(storageKey, setTurns, { ...result, id: crypto.randomUUID(), role: "assistant" });
-    } catch { setError("agent_unreachable"); }
-    finally { setBusy(false); }
+    } catch (e) {
+      const code = e instanceof Error ? e.message : "agent_unreachable";
+      const errTurn: Turn = { id: crypto.randomUUID(), role: "assistant", text: "", thinking: "", tools: [], suggested: [], gates: [], known_as_of: null, error: code };
+      appendTurn(storageKey, setTurns, errTurn);
+    } finally { setBusy(false); }
   }
   return { question, setQuestion, busy, error, send };
 }
