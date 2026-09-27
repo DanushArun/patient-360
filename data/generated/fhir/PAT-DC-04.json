@@ -1,0 +1,280 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:PAT-DC-04",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "PAT-DC-04",
+        "identifier": [
+          {
+            "system": "urn:oid:in.gov.abdm:abha",
+            "value": "ABHA-SYN-04"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-02-mrn",
+            "value": "MRN-710004"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-DEXA",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-DEXA",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "38263-0",
+              "display": "DEXA T-score"
+            }
+          ],
+          "text": "DEXA T-score"
+        },
+        "effectiveDateTime": "2026-06-26T09:30:00",
+        "issued": "2026-06-26T12:30:00",
+        "valueQuantity": {
+          "value": -0.5,
+          "unit": ""
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-HER2",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "EVT-DC-04-HER2",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "18474-7",
+              "display": "HER2 IHC"
+            }
+          ],
+          "text": "HER2 IHC"
+        },
+        "effectiveDateTime": "2026-07-11T09:30:00",
+        "issued": "2026-07-11T12:30:00"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-DX",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "EVT-DC-04-DX",
+        "code": {
+          "coding": [
+            {
+              "system": "ICD-10",
+              "code": "C50.9",
+              "display": "Carcinoma breast"
+            }
+          ],
+          "text": "Carcinoma breast"
+        },
+        "recordedDate": "2026-07-16T09:30:00",
+        "meta": {
+          "lastUpdated": "2026-07-16T12:30:00"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-A1C",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-A1C",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "4548-4",
+              "display": "HbA1c"
+            }
+          ],
+          "text": "HbA1c"
+        },
+        "effectiveDateTime": "2026-08-30T09:30:00",
+        "issued": "2026-08-30T12:30:00",
+        "valueQuantity": {
+          "value": 5.4,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-AST",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-AST",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "1920-8",
+              "display": "AST"
+            }
+          ],
+          "text": "AST"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 29.0,
+          "unit": "U/L"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-BILI",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-BILI",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "1975-2",
+              "display": "Bilirubin total"
+            }
+          ],
+          "text": "Bilirubin total"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 0.6,
+          "unit": "mg/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-CREAT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-CREAT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "2160-0",
+              "display": "Creatinine"
+            }
+          ],
+          "text": "Creatinine"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 0.7,
+          "unit": "mg/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-NEUT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-NEUT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "770-8",
+              "display": "Neutrophils %"
+            }
+          ],
+          "text": "Neutrophils %"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 48.0,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-PLT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-PLT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "777-3",
+              "display": "Platelets"
+            }
+          ],
+          "text": "Platelets"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 82000.0,
+          "unit": "/cumm"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-WBC",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-WBC",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "6690-2",
+              "display": "WBC"
+            }
+          ],
+          "text": "WBC"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 4600.0,
+          "unit": "/cumm"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-04-WT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-04-WT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "29463-7",
+              "display": "Body weight"
+            }
+          ],
+          "text": "Body weight"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 55.0,
+          "unit": "kg"
+        }
+      }
+    }
+  ]
+}

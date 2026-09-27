@@ -17,6 +17,34 @@ This verdict is about demonstrated software, not clinical efficacy. There is no 
 a claim that the system will win a competition or improve patient outcomes. The latter needs
 hospital partner evaluation and clinical validation, beyond synthetic engineering checks.
 
+### Backend readiness — what the Next.js dashboard can depend on
+
+Legend: 🟢 built + live-verified on JN89282 · 🟡 partial · ⚪ designed-only.
+Every 🟢 below is proven by a query ID, a passing test run, or a live procedure return
+that a reader can reproduce from the repository. This section does NOT claim the
+frontend renders any of it — that is what the tables in the rest of this document audit.
+
+| Backend capability | Status | Proof |
+| --- | --- | --- |
+| 35 tables, 4 dynamic tables, 6 tasks, 2 Cortex Search services, 1 semantic view, 1 agent | 🟢 | `check_gate.py --manifest` PASS, 55 active deploy steps |
+| All 16 rule evaluators returning real outcomes | 🟢 | `run_rule_fixtures.py` 28/28 PASS (16 deep-case + 12 scratch harness) |
+| 12 of 100 patients (deep case + 11 daycare cohort, each with distinct blocker) | 🟡 | `SELECT COUNT(*) FROM PATIENT` = 12; DC-04 → `CLIN-PLT-001 fail` verified |
+| 10 of 13 SPEC §14 corruption scenarios | 🟢 | Deep case: 2/3/12 · Scratch: 7/8 · corruptions.py: 13 · load_synthetic: 1/4/5/6/9/10 |
+| MCP server exposed as `CORTEX_AGENT_RUN`, external round trip via PAT | 🟢 | Query ID `01c74481-0003-92e6-0001-fca600116122`; `docs/MCP-QUICKSTART.md` reproduces |
+| Insurance + government schemes (PM-JAY / TN-CMHIS / MH-MJPJAY) with COV-AUTH letter drift | 🟢 | `EVALUATE_GATES` returns `conflicting` on `PA-DEEP-0002` (SPEC §247 flagship) |
+| FHIR R4 bundle per patient → RAW_FHIR_BUNDLE → flatten_fhir_proc live | 🟢 | 149 resources across 12 bundles; flatten returns `events_written: 0, pending_bundles: 12` (idempotent path proven) |
+| Two-corpus Cortex Search (patient docs + reference: WHO + NCD, 159 chunks) | 🟢 | Cited answers via `ASK_SAARTHI` on reference queries |
+| RAP keyed on `CURRENT_USER()` with reference-scope OR-branch | 🟢 | F3 verified; SAARTHI_JUDGE negative test rejected at schema layer |
+| CoCo lifecycle: Planning + Development + Execution + Testing YAMLs | 🟢 | `evidence/coco/*.yaml` — 4 files, 1186 lines total, 9 failure/fix pairs |
+| Navigator View + Judge Console UI screens | ⚪ | Not built; backend Judge probes exist as SQL |
+| Frontend → live-backend wiring (4 built screens still read fixtures) | ⚪ | Streamlit renders fixtures, not the live tool procedures |
+| R7 two-pass extraction fired end-to-end (task deployed, queue empty) | ⚪ | Awaits real patient PDF upload |
+
+**The frontend gaps in the tables below remain honest.** A backend that returns
+`CLIN-PLT-001 fail` correctly does not mean the UI shows it clearly, cites the source
+row, or lets a coordinator escalate to a named owner. This block is provenance for what
+the UI *can* show, not proof that it does.
+
 ### Evidence actually observed
 
 All patients below are synthetic. This is a **small smoke run**, not coverage of every state.

@@ -1,0 +1,482 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:PAT-DEEP-0001",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "PAT-DEEP-0001",
+        "identifier": [
+          {
+            "system": "urn:oid:saarthi:fac-01-lab_accession_id",
+            "value": "LAB_ACCESSION_ID-800001"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-01-mrn",
+            "value": "MRN-800000"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-02-mrn",
+            "value": "MRN-800002"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-02-uhid",
+            "value": "UHID-800003"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-03-mrn",
+            "value": "MRN-800004"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-04-insurance_member_id",
+            "value": "INSURANCE_MEMBER_ID-800006"
+          },
+          {
+            "system": "urn:oid:saarthi:fac-04-mrn",
+            "value": "MRN-800005"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-HER2-OUTSIDE",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "EVT-HER2-OUTSIDE",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": ""
+            }
+          ],
+          "text": ""
+        },
+        "effectiveDateTime": "2024-12-17T00:00:00",
+        "issued": "2024-12-17T03:00:00"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DX-01",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "EVT-DX-01",
+        "code": {
+          "coding": [
+            {
+              "system": "ICD-10",
+              "code": "C50.9",
+              "display": "Carcinoma breast, unspecified"
+            }
+          ],
+          "text": "Carcinoma breast, unspecified"
+        },
+        "recordedDate": "2025-01-10T09:00:00",
+        "meta": {
+          "lastUpdated": "2025-01-10T11:00:00"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-HER2-SURGICAL",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "EVT-HER2-SURGICAL",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": ""
+            }
+          ],
+          "text": ""
+        },
+        "effectiveDateTime": "2025-02-05T00:00:00",
+        "issued": "2025-02-05T07:00:00"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-HER2-FISH-01",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "EVT-HER2-FISH-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "85319-2",
+              "display": "HER2 [Interpretation] in Breast cancer specimen by FISH"
+            }
+          ],
+          "text": "HER2 [Interpretation] in Breast cancer specimen by FISH"
+        },
+        "effectiveDateTime": "2025-02-12T14:00:00",
+        "issued": "2025-02-12T16:30:00"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DEXA",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DEXA",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": ""
+            }
+          ],
+          "text": ""
+        },
+        "effectiveDateTime": "2025-03-14T00:00:00",
+        "issued": "2025-03-14T23:00:00",
+        "valueQuantity": {
+          "value": -1.6,
+          "unit": ""
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-ZOLEDRONIC",
+      "resource": {
+        "resourceType": "MedicationAdministration",
+        "id": "EVT-ZOLEDRONIC",
+        "status": "final",
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "RxNorm",
+              "code": "77655",
+              "display": "zoledronic acid 4 MG per 100 ML Injection"
+            }
+          ],
+          "text": "zoledronic acid 4 MG per 100 ML Injection"
+        },
+        "effectiveDateTime": "2025-03-18T11:00:00",
+        "meta": {
+          "lastUpdated": "2025-03-18T13:30:00"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-CBC-01-NEUT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-CBC-01-NEUT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": ""
+            }
+          ],
+          "text": ""
+        },
+        "effectiveDateTime": "2025-03-27T06:00:00",
+        "issued": "2025-03-28T01:00:00",
+        "valueQuantity": {
+          "value": 35.0,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-CBC-01-PLT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-CBC-01-PLT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": ""
+            }
+          ],
+          "text": ""
+        },
+        "effectiveDateTime": "2025-03-27T06:00:00",
+        "issued": "2025-03-28T01:00:00",
+        "valueQuantity": {
+          "value": 260604.0,
+          "unit": "/uL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-CBC-01-PLT-ADDENDUM",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-CBC-01-PLT-ADDENDUM",
+        "status": "amended",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "777-3",
+              "display": "Platelets [#/volume] in Blood"
+            }
+          ],
+          "text": "Platelets [#/volume] in Blood"
+        },
+        "effectiveDateTime": "2025-03-27T06:00:00",
+        "issued": "2025-03-30T14:20:00",
+        "valueQuantity": {
+          "value": 245100.0,
+          "unit": "/uL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-CBC-01-WBC",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-CBC-01-WBC",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": ""
+            }
+          ],
+          "text": ""
+        },
+        "effectiveDateTime": "2025-03-27T06:00:00",
+        "issued": "2025-03-28T01:00:00",
+        "valueQuantity": {
+          "value": 6000.0,
+          "unit": "/uL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-WEIGHT-01",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-WEIGHT-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "29463-7",
+              "display": "Body weight"
+            }
+          ],
+          "text": "Body weight"
+        },
+        "effectiveDateTime": "2025-04-15T08:45:00",
+        "issued": "2025-04-15T09:00:00",
+        "valueQuantity": {
+          "value": 62.0,
+          "unit": "kg"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-CREAT-01",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-CREAT-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "2160-0",
+              "display": "Creatinine [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Creatinine [Mass/volume] in Serum or Plasma"
+        },
+        "effectiveDateTime": "2025-04-15T09:10:00",
+        "issued": "2025-04-15T11:25:00",
+        "valueQuantity": {
+          "value": 0.9,
+          "unit": "mg/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-HBA1C-01",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-HBA1C-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "4548-4",
+              "display": "Hemoglobin A1c/Hemoglobin.total in Blood"
+            }
+          ],
+          "text": "Hemoglobin A1c/Hemoglobin.total in Blood"
+        },
+        "effectiveDateTime": "2025-04-15T09:15:00",
+        "issued": "2025-04-15T11:30:00",
+        "valueQuantity": {
+          "value": 7.2,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-BILI-01",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-BILI-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "1975-2",
+              "display": "Bilirubin.total [Mass/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Bilirubin.total [Mass/volume] in Serum or Plasma"
+        },
+        "effectiveDateTime": "2025-04-15T09:20:00",
+        "issued": "2025-04-15T11:35:00",
+        "valueQuantity": {
+          "value": 0.8,
+          "unit": "mg/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-AST-01",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-AST-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "1920-8",
+              "display": "Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma"
+            }
+          ],
+          "text": "Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma"
+        },
+        "effectiveDateTime": "2025-04-15T09:22:00",
+        "issued": "2025-04-15T11:37:00",
+        "valueQuantity": {
+          "value": 28.0,
+          "unit": "U/L"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-LVEF-01",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-LVEF-01",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "10230-1",
+              "display": "Left ventricular Ejection fraction"
+            }
+          ],
+          "text": "Left ventricular Ejection fraction"
+        },
+        "effectiveDateTime": "2025-04-15T10:30:00",
+        "issued": "2025-04-15T12:00:00",
+        "valueQuantity": {
+          "value": 58.0,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-HB-GMPCT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-HB-GMPCT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": "Hemoglobin"
+            }
+          ],
+          "text": "Hemoglobin"
+        },
+        "effectiveDateTime": "2026-08-09T11:02:55.607000",
+        "issued": "2026-08-09T11:02:55.607000",
+        "valueQuantity": {
+          "value": 11.4,
+          "unit": "g/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-HB-GDL",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-HB-GDL",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": "Hemoglobin"
+            }
+          ],
+          "text": "Hemoglobin"
+        },
+        "effectiveDateTime": "2026-08-24T11:02:57.441000",
+        "issued": "2026-08-24T11:02:57.441000",
+        "valueQuantity": {
+          "value": 11.4,
+          "unit": "g/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-CREAT-MGPCT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-CREAT-MGPCT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "",
+              "display": "Creatinine"
+            }
+          ],
+          "text": "Creatinine"
+        },
+        "effectiveDateTime": "2026-09-03T11:02:58.751000",
+        "issued": "2026-09-03T11:02:58.751000",
+        "valueQuantity": {
+          "value": 0.9,
+          "unit": "mg/dL"
+        }
+      }
+    }
+  ]
+}
