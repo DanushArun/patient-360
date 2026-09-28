@@ -398,10 +398,10 @@ flowchart TB
 ];
 
 async function main() {
-  // Static fallback: current verified build state as of 27 Sept 2026.
+  // Static fallback: current verified build state as of 28 Sept 2026.
   // When the live DB is available this is overwritten by the snapshot listener.
   const STATIC_COMPONENTS = {
-    APP:    { name:'Care Readiness App',        status:'partial', note:'4 of 6 screens built; live Snowflake via SAARTHI_APP role, provenance_note rendered, error turns persisted, all bindable patients in picker' },
+    APP:    { name:'Care Readiness App',        status:'partial', note:'4 of 6 screens built; SAARTHI_APP role + SELECT grants, practitioner from DB, census search/filter, patient count, refresh indicator, visual polish (hover states, chat tint, gate transitions)' },
     CLS:    { name:'Class A/B Classifier',      status:'live',    note:'classify_question live-tested, keyword→structure→LLM→default A' },
     AGENT:  { name:'SAARTHI Agent',             status:'live',    note:'SAARTHI_AGENT + 8 generic tools + MCP server end-to-end verified' },
     TOOLS:  { name:'Tool Layer (11 procedures)', status:'live',   note:'18 procedures deployed; bind_patient through create_review_task' },
@@ -418,6 +418,7 @@ async function main() {
     FHIR:   { name:'FHIR Bundle Pipeline',     status:'live',    note:'12 bundles → RAW_FHIR_BUNDLE → flatten_fhir_proc, idempotent verified' },
   };
   const STATIC_ACTIVITY = [
+    { ts:'28 Sep 14:10', kind:'done', text:'Next.js: practitioner from DB, census search/filter, patient count, refresh indicator, visual polish + SAARTHI_APP SELECT grants' },
     { ts:'27 Sep 16:55', kind:'done', text:'Next.js: close 4 completeness-map gaps — SAARTHI_APP role (S4), provenance_note (R4), persistent error turns (C9), bindable patient picker (H2)' },
     { ts:'23 Sep 18:38', kind:'done', text:'FHIR bundles: 12 patients → 149 resources → flatten_fhir idempotent' },
     { ts:'23 Sep 17:23', kind:'done', text:'Corruption scenarios 4/5/9/10 seeded + verified (10 of 13 total)' },

@@ -208,43 +208,23 @@ EXECUTE IMMEDIATE FROM './procedures/tools/08_create_review_task.sql';       -- 
 -- DT_HARMONIZED_EVENTS is the load-bearing one: unit normalisation with
 -- plausibility rejection, ANC from a differential, Cockcroft-Gault CrCl.
 EXECUTE IMMEDIATE FROM './dynamic_tables/01_harmonized_events.sql';
-<<<<<<< Updated upstream
-EXECUTE IMMEDIATE FROM './procedures/chunk_documents.sql'; -- see procedures section - DOC_CHUNK is populated synchronously, not by a Dynamic Table (RAP-on-source made background refresh return zero rows, found live)
--- EXECUTE IMMEDIATE FROM './dynamic_tables/03_review_queue.sql';   -- [NOT BUILT]
--- EXECUTE IMMEDIATE FROM './dynamic_tables/04_scheme_eligibility.sql'; -- [NOT BUILT]
--- EXECUTE IMMEDIATE FROM './dynamic_tables/05_treatment_plan.sql'; -- [NOT BUILT]
-=======
--- chunk_documents is a procedure not a DT (RAP-on-source made background refresh return zero rows, found live)
+EXECUTE IMMEDIATE FROM './procedures/chunk_documents.sql'; -- procedure not DT (RAP-on-source made background refresh return zero rows, found live)
 EXECUTE IMMEDIATE FROM './dynamic_tables/03_review_queue.sql';
 EXECUTE IMMEDIATE FROM './dynamic_tables/04_scheme_eligibility.sql';
 EXECUTE IMMEDIATE FROM './dynamic_tables/05_treatment_plan.sql';
->>>>>>> Stashed changes
 
 
 -- ---------------------------------------------------------------------------
 -- STEP 16 - Tasks.  [1] and [2]
 -- ---------------------------------------------------------------------------
 -- The only place AI functions may run.
-<<<<<<< Updated upstream
 EXECUTE IMMEDIATE FROM './tasks/parse_documents.sql';      -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';         -- [2]  [NOT BUILT]
+EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';         -- [2]
 EXECUTE IMMEDIATE FROM './tasks/extract_assertions.sql';   -- [1]  R7 two-pass
--- EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]  [NOT BUILT]
-EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]  populates READINESS_STATE for the day-care list
--- EXECUTE IMMEDIATE FROM './tasks/notify.sql';               -- [2]  [NOT BUILT]
-=======
--- EXECUTE IMMEDIATE FROM './tasks/parse_documents.sql';      -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';         -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/extract_assertions.sql';   -- [1]  R7 two-pass
--- EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]
--- EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]
--- EXECUTE IMMEDIATE FROM './tasks/notify.sql';               -- [2]
-EXECUTE IMMEDIATE FROM './tasks/flatten_fhir.sql';
-EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';
-EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';
-EXECUTE IMMEDIATE FROM './tasks/notify.sql';
+EXECUTE IMMEDIATE FROM './tasks/reconcile_evidence.sql';   -- [1]
+EXECUTE IMMEDIATE FROM './tasks/refresh_readiness.sql';    -- [2]
+EXECUTE IMMEDIATE FROM './tasks/notify.sql';               -- [2]
 EXECUTE IMMEDIATE FROM './tasks/orchestrator.sql';
->>>>>>> Stashed changes
 
 
 -- ---------------------------------------------------------------------------
