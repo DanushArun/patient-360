@@ -1,7 +1,9 @@
 import { withPatientSession, withPatientSessionAndContext } from "./snowflake";
-import { askLocalModel, completeWithOllama } from "./local-ai.mjs";
-import { routeQuestion } from "./question-routing.mjs";
-import { answerReadinessQuestion } from "./record-answers.mjs";
+
+// Classification and question routing happen server-side in CLASSIFY_QUESTION
+// and ASK_SAARTHI. Do not duplicate them client-side — Rule R1 requires every
+// gate outcome to come from SQL, and Rule R5 requires scope to be resolved
+// server-side from the binding, not from the question text.
 
 export type Gate = {
   gate: string;
@@ -281,18 +283,9 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 
 export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
   return withPatientSessionAndContext(patientId, async (run) => {
-    if (process.env.SAARTHI_LLM_PROVIDER === "ollama") {
-      return askLocalModel(question, patientId, run, completeWithOllama);
-    }
-    return routeQuestion(question, run, async () => {
-      const readinessAnswer = await answerReadinessQuestion(question, run);
-      if (readinessAnswer) return readinessAnswer;
-      const routedQuestion = "SQL-classified CLASS_B record-state question. Answer from returned " +
-        `record evidence without offering clinical judgment.\nQuestion: ${question}`;
-      const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [routedQuestion]);
-      if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
-      return parseAgentResponse(Object.values(rows[0])[0]);
-    });
+    const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
+    if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
+    return parseAgentResponse(Object.values(rows[0])[0]);
   });
 }
 
