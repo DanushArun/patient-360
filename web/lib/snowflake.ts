@@ -1,16 +1,19 @@
 import snowflake from "snowflake-sdk";
 import { readFileSync } from "fs";
 
-// Same key-pair credential set up for the Streamlit app (frontend/streamlit_app.py) -
-// one Snowflake user, two frontends, no OAuth browser round-trip either way.
-
-// const ACCOUNT = "IFTDBGM-EA72552";
-// const USER = "DAKSHA";
-// const PRIVATE_KEY_PATH = "/Users/mac/.snowflake/keys/daksha_snow_rsa.p8";
-
-const ACCOUNT = "KGTPGHJ-YJ28449";
-const USER = "DANUSH";
-const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
+// Credentials from environment variables (web/.env.local, gitignored by Next.js).
+// Each developer creates their own .env.local — no more swapping commented lines.
+//
+//   SNOWFLAKE_ACCOUNT=IFTDBGM-EA72552
+//   SNOWFLAKE_USER=DAKSHA
+//   SNOWFLAKE_PRIVATE_KEY_PATH=/Users/mac/.snowflake/keys/daksha_snow_rsa.p8
+//   SNOWFLAKE_WAREHOUSE=SAARTHI_AI_WH
+//
+// Defaults are Danush's (repo owner) so CI and his machine work without .env.local.
+const ACCOUNT = process.env.SNOWFLAKE_ACCOUNT ?? "KGTPGHJ-YJ28449";
+const USER = process.env.SNOWFLAKE_USER ?? "DANUSH";
+const PRIVATE_KEY_PATH = process.env.SNOWFLAKE_PRIVATE_KEY_PATH ?? "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
+const WAREHOUSE = process.env.SNOWFLAKE_WAREHOUSE ?? "SAARTHI_AI_WH";
 
 
 // NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
@@ -29,6 +32,7 @@ function openConnection(): Promise<snowflake.Connection> {
     authenticator: "SNOWFLAKE_JWT",
     privateKey,
     role: "SAARTHI_APP",
+    warehouse: WAREHOUSE,
   });
   return new Promise((resolve, reject) => {
     conn.connect((err, c) => (err ? reject(err) : resolve(c)));
