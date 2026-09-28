@@ -151,7 +151,7 @@ function Message({ turn, selected, onSelect }: {
   onSelect: (turnId: string, ruleId: string) => void;
 }): ReactNode {
   const icon = turn.role === "user" ? "face" : "smart_toy";
-  return <div>
+  return <div className={turn.role === "assistant" ? "sa-turn-assistant" : undefined}>
     <div className="flex items-start gap-3"><span className="sa-chat-avatar" aria-hidden="true">{icon}</span>
       <div style={{ flex: 1 }}>{turn.role === "user" ? <div>{formattedText(turn.text)}</div> : turn.error ? <div className="sa-limitation">{TURN_ERRORS[turn.error] ?? turn.error}</div> : <>
         <div>{formattedText(turn.text)}</div>{turn.known_as_of && <div className="sa-meta sa-num" style={{ marginTop: 8 }}>Known as of {turn.known_as_of}</div>}
@@ -213,8 +213,11 @@ function useChat(storageKey: string, patientId: string, setTurns: Dispatch<SetSt
       const result = await response.json() as AgentTurn & { error?: string };
       if (!response.ok) throw new Error(result.error ?? "agent_unreachable");
       appendTurn(storageKey, setTurns, { ...result, id: crypto.randomUUID(), role: "assistant" });
-    } catch { setError("agent_unreachable"); }
-    finally { setBusy(false); }
+    } catch (e) {
+      const code = e instanceof Error ? e.message : "agent_unreachable";
+      const errTurn: Turn = { id: crypto.randomUUID(), role: "assistant", text: "", thinking: "", tools: [], suggested: [], gates: [], known_as_of: null, error: code };
+      appendTurn(storageKey, setTurns, errTurn);
+    } finally { setBusy(false); }
   }
   return { question, setQuestion, busy, error, send };
 }
@@ -347,6 +350,7 @@ function ModeControl({ mode, onChange }: {
 }): ReactNode {
   return <div className="flex" style={{ border: "1px solid #D8DCDF", borderRadius: 6, width: "fit-content" }}>
     {(["Ask the record", "Record timeline", "Family checklist"] as const).map((item) => <button key={item} onClick={() => onChange(item)}
-      style={{ ...buttonStyle, width: "auto", border: 0, borderRadius: 0, background: mode === item ? "#F6F7F8" : "#FFFFFF" }}>{item}</button>)}
+      className={`sa-mode-btn${mode === item ? " sa-mode-active" : ""}`}
+      style={{ ...buttonStyle, width: "auto", border: 0, borderRadius: 0 }}>{item}</button>)}
   </div>;
 }

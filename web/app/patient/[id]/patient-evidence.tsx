@@ -36,8 +36,8 @@ export function GateStrip({ gates, knownAsOf, selectedRuleId, isSnapshot, onSele
             aria-controls="readiness-evidence"
             aria-label={`${gate.gate}, ${gate.outcome}. Show check details`}
             onClick={() => onSelect(ruleId)}
-            className="rounded-sm text-left transition-colors hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ padding: "8px 6px", borderTop: `1px solid ${selected ? "var(--sa-patient-edge)" : "#D8DCDF"}`, background: selected ? "#f6f9fb" : "transparent" }}>
+            className="sa-gate-tile rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ padding: "8px 6px", borderTop: `1px solid ${selected ? "var(--sa-patient-edge)" : "#D8DCDF"}`, background: selected ? "#f0f5f8" : "transparent" }}>
             <span className="sa-field-label block">{gate.gate}</span>
             <StatusChip outcome={gate.outcome as Outcome} />
             <span className="sa-meta mt-1 block"><code>{gate.rule_id} v{gate.rule_version}</code></span>
@@ -101,6 +101,7 @@ function GateEvidence({ gate }: { gate: Gate }): ReactNode {
     <div className="sa-meta" style={{ marginTop: 8 }}>
       {sourceText}{gate.known_as_of ? ` · Known as of ${gate.known_as_of}` : ""}
     </div>
+    {gate.provenance_note && <div className="sa-provenance" style={{ marginTop: 8 }}>{gate.provenance_note}</div>}
     {gate.derived && <div className="sa-derivation">
       <div className="sa-derivation-lead">Derived, not printed.</div>
       <div className="sa-formula">{gate.derived}</div>

@@ -3,9 +3,15 @@ import { readFileSync } from "fs";
 
 // Same key-pair credential set up for the Streamlit app (frontend/streamlit_app.py) -
 // one Snowflake user, two frontends, no OAuth browser round-trip either way.
+
+// const ACCOUNT = "IFTDBGM-EA72552";
+// const USER = "DAKSHA";
+// const PRIVATE_KEY_PATH = "/Users/mac/.snowflake/keys/daksha_snow_rsa.p8";
+
 const ACCOUNT = "KGTPGHJ-YJ28449";
 const USER = "DANUSH";
 const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
+
 
 // NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
 // tool resolve their subject from PATIENT_BINDING keyed on CURRENT_SESSION() -
@@ -22,7 +28,7 @@ function openConnection(): Promise<snowflake.Connection> {
     username: USER,
     authenticator: "SNOWFLAKE_JWT",
     privateKey,
-    role: "ACCOUNTADMIN",
+    role: "SAARTHI_APP",
   });
   return new Promise((resolve, reject) => {
     conn.connect((err, c) => (err ? reject(err) : resolve(c)));

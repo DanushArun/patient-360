@@ -398,11 +398,57 @@ flowchart TB
 ];
 
 async function main() {
+  // Static fallback: current verified build state as of 27 Sept 2026.
+  // When the live DB is available this is overwritten by the snapshot listener.
+  const STATIC_COMPONENTS = {
+    APP:    { name:'Care Readiness App',        status:'partial', note:'4 of 6 screens built; live Snowflake via SAARTHI_APP role, provenance_note rendered, error turns persisted, all bindable patients in picker' },
+    CLS:    { name:'Class A/B Classifier',      status:'live',    note:'classify_question live-tested, keyword→structure→LLM→default A' },
+    AGENT:  { name:'SAARTHI Agent',             status:'live',    note:'SAARTHI_AGENT + 8 generic tools + MCP server end-to-end verified' },
+    TOOLS:  { name:'Tool Layer (11 procedures)', status:'live',   note:'18 procedures deployed; bind_patient through create_review_task' },
+    ENGINE: { name:'Evidence & Readiness Engine', status:'live',   note:'evaluate_gates 16 rules, DT_HARMONIZED_EVENTS, READINESS_STATE, 28/28 fixtures' },
+    EXTRACT:{ name:'R7 Extraction Pipeline',    status:'partial', note:'parse_documents + extract_assertions deployed; two-pass not fired live (queue empty)' },
+    VALID:  { name:'Answer Validator',          status:'live',    note:'All 6 checks live; AI_FILTER fail-closed; 1% numeric tolerance' },
+    CORE:   { name:'Governed Clinical Store',   status:'live',    note:'35 tables + RAP keyed on CURRENT_USER; 12 patients, 137 events' },
+    PIDX:   { name:'Patient Document Index',    status:'live',    note:'PATIENT_DOC_SEARCH live; 159 chunks' },
+    RIDX:   { name:'Reference Document Index',  status:'live',    note:'REFERENCE_DOC_SEARCH live; WHO + NCD guidelines' },
+    SEM:    { name:'Semantic View',             status:'live',    note:'SAARTHI_SEMANTIC_VIEW deployed' },
+    AUDIT:  { name:'Audit Store',              status:'partial', note:'SECURITY_EVENT table exists; QUERY_HISTORY used for live probes' },
+    OPERATIONAL_LIVE: { name:'Operational Tables', status:'live', note:'RULE_CATALOG 16 rules, SCHEME_REGISTRY 3 schemes, 6 tasks, 4 DTs' },
+    MCP:    { name:'MCP Server',               status:'live',    note:'SAARTHI_MCP → CORTEX_AGENT_RUN, external round trip query 01c74481…' },
+    FHIR:   { name:'FHIR Bundle Pipeline',     status:'live',    note:'12 bundles → RAW_FHIR_BUNDLE → flatten_fhir_proc, idempotent verified' },
+  };
+  const STATIC_ACTIVITY = [
+    { ts:'27 Sep 16:55', kind:'done', text:'Next.js: close 4 completeness-map gaps — SAARTHI_APP role (S4), provenance_note (R4), persistent error turns (C9), bindable patient picker (H2)' },
+    { ts:'23 Sep 18:38', kind:'done', text:'FHIR bundles: 12 patients → 149 resources → flatten_fhir idempotent' },
+    { ts:'23 Sep 17:23', kind:'done', text:'Corruption scenarios 4/5/9/10 seeded + verified (10 of 13 total)' },
+    { ts:'23 Sep 17:20', kind:'done', text:'CoCo testing_validation.yaml: 438 lines, 9 failure/fix pairs' },
+    { ts:'23 Sep 11:22', kind:'done', text:'Daycare cohort: 11 patients deployed, DC-04 PLT fail verified' },
+    { ts:'23 Sep 10:37', kind:'done', text:'MCP external round trip: agent returned no_patient_bound verbatim' },
+    { ts:'23 Sep 10:06', kind:'done', text:'MCP server + PAT provisioning + network policy live' },
+    { ts:'23 Sep 09:30', kind:'done', text:'AUTHORIZATION consolidated; PRE_AUTHORIZATION retired' },
+    { ts:'22 Sep 23:00', kind:'done', text:'28/28 rule fixtures PASS (16 deep-case + 12 scratch harness)' },
+    { ts:'22 Sep 21:00', kind:'done', text:'Reference corpus Tier 1: WHO + NCD, 159 chunks, cited answers' },
+    { ts:'22 Sep 18:00', kind:'done', text:'All 16 rule evaluators real: ANC/PLT/CRCL/BILI/HER2/PATH/DISC/LVEF/DEXA/HBA1C/SURG/COV/ID' },
+  ];
+
+  let components = STATIC_COMPONENTS;
+  let activity = STATIC_ACTIVITY;
+
+  // Render immediately with static data
+  renderAll(components);
+  renderStats(components);
+  renderNow(components);
+  renderTable(components);
+  document.getElementById('feed').innerHTML = activity.map(e => `
+    <div class="feed-row">
+      <span class="t">${e.ts}</span>
+      <span class="pill ${e.kind==='done'?'good':e.kind==='building'?'building':e.kind==='bug'?'bad':'warn'}">${e.kind}</span>
+      <span>${e.text}</span>
+    </div>`).join('');
+
+  // Try live DB — overwrites static if available
   const db = await claude.use('db');
-  if (!db) {
-    document.getElementById('now-text').textContent = 'Database unavailable in this view.';
-    return;
-  }
+  if (!db) { return; }
 
   const compRef = db.doc('state/components');
   const actRef = db.doc('state/activity');
