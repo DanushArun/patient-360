@@ -36,8 +36,8 @@ export function GateStrip({ gates, knownAsOf, selectedRuleId, isSnapshot, onSele
             aria-controls="readiness-evidence"
             aria-label={`${gate.gate}, ${gate.outcome}. Show check details`}
             onClick={() => onSelect(ruleId)}
-            className="rounded-sm text-left transition-colors hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ padding: "8px 6px", borderTop: `1px solid ${selected ? "var(--sa-patient-edge)" : "#D8DCDF"}`, background: selected ? "#f6f9fb" : "transparent" }}>
+            className="sa-gate-tile rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ padding: "8px 6px", borderTop: `1px solid ${selected ? "var(--sa-patient-edge)" : "#D8DCDF"}`, background: selected ? "#f0f5f8" : "transparent" }}>
             <span className="sa-field-label block">{gate.gate}</span>
             <StatusChip outcome={gate.outcome as Outcome} />
             <span className="sa-meta mt-1 block"><code>{gate.rule_id} v{gate.rule_version}</code></span>

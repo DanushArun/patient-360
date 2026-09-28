@@ -80,6 +80,18 @@ export async function fetchBindablePatients(): Promise<BindablePatient[]> {
   return query<BindablePatient>(BINDABLE_SQL);
 }
 
+const PRACTITIONER_SQL = `
+  SELECT name, qualification
+    FROM SAARTHI.GOVERNANCE.PRACTITIONER
+   WHERE UPPER(snowflake_user) = UPPER(CURRENT_USER()) AND active = TRUE
+   LIMIT 1
+`;
+
+export async function fetchPractitionerName(): Promise<string> {
+  const rows = await query<{ NAME: string; QUALIFICATION: string }>(PRACTITIONER_SQL);
+  return rows[0]?.NAME ?? "Practitioner";
+}
+
 // --- Triage, ported from frontend/core/census.py::classify() ---------------
 // Same 5 states, same precedence, so the two frontends can never disagree.
 
