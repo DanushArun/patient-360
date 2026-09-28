@@ -1,0 +1,252 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:PAT-DC-05",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "PAT-DC-05",
+        "identifier": [
+          {
+            "system": "urn:oid:saarthi:fac-02-mrn",
+            "value": "MRN-710005"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-HPE",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "EVT-DC-05-HPE",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "22637-3",
+              "display": "Histopathology report"
+            }
+          ],
+          "text": "Histopathology report"
+        },
+        "effectiveDateTime": "2026-08-10T09:30:00",
+        "issued": "2026-08-10T12:30:00"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-DX",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "EVT-DC-05-DX",
+        "code": {
+          "coding": [
+            {
+              "system": "ICD-10",
+              "code": "C10.9",
+              "display": "Carcinoma oropharynx"
+            }
+          ],
+          "text": "Carcinoma oropharynx"
+        },
+        "recordedDate": "2026-08-15T09:30:00",
+        "meta": {
+          "lastUpdated": "2026-08-15T12:30:00"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-A1C",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-A1C",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "4548-4",
+              "display": "HbA1c"
+            }
+          ],
+          "text": "HbA1c"
+        },
+        "effectiveDateTime": "2026-08-20T09:30:00",
+        "issued": "2026-08-20T12:30:00",
+        "valueQuantity": {
+          "value": 6.4,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-AST",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-AST",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "1920-8",
+              "display": "AST"
+            }
+          ],
+          "text": "AST"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 33.0,
+          "unit": "U/L"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-BILI",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-BILI",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "1975-2",
+              "display": "Bilirubin total"
+            }
+          ],
+          "text": "Bilirubin total"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 0.8,
+          "unit": "mg/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-CREAT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-CREAT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "2160-0",
+              "display": "Creatinine"
+            }
+          ],
+          "text": "Creatinine"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 0.8,
+          "unit": "mg/dL"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-NEUT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-NEUT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "770-8",
+              "display": "Neutrophils %"
+            }
+          ],
+          "text": "Neutrophils %"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 40.0,
+          "unit": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-PLT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-PLT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "777-3",
+              "display": "Platelets"
+            }
+          ],
+          "text": "Platelets"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 156000.0,
+          "unit": "/cumm"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-WBC",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-WBC",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "6690-2",
+              "display": "WBC"
+            }
+          ],
+          "text": "WBC"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 2900.0,
+          "unit": "/cumm"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:EVT-DC-05-WT",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "EVT-DC-05-WT",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "LOINC",
+              "code": "29463-7",
+              "display": "Body weight"
+            }
+          ],
+          "text": "Body weight"
+        },
+        "effectiveDateTime": "2026-09-23T16:42:00",
+        "issued": "2026-09-23T19:42:00",
+        "valueQuantity": {
+          "value": 60.0,
+          "unit": "kg"
+        }
+      }
+    }
+  ]
+}

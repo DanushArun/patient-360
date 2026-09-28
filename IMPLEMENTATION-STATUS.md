@@ -197,23 +197,25 @@ accessibility proof: with all colour removed, all four outcomes remain unambiguo
 
 ## 6. Snowflake objects — inventory vs reality
 
+Legend: 🟢 built + live on JN89282 · 🟡 partial · ⚪ designed-only.
+
 | Type | Designed | Built |
 |---|---|---|
-| Database / schemas | 1 / 7 | **1 / 7 — SAARTHI + 7 schemas live on JN89282** |
-| Tables | 34 | **35 built and populated** — 34 per SPEC + `SCHEME_REGISTRY`, `PRE_AUTHORIZATION` retired 23 Sept (columns merged into `AUTHORIZATION`) |
-| Stages | 3 | **3 built** — `PATIENT_DOCS`, `REFERENCE_DOCS`, `SKILLS` (all `SNOWFLAKE_SSE`) |
-| Roles | 5 | **5 built** — SAARTHI_APP, SAARTHI_COORDINATOR, SAARTHI_ONCOLOGIST, SAARTHI_NAVIGATOR, SAARTHI_JUDGE |
-| Row access policy | 1 | **1 built** — `patient_scope` with reference-scope OR-branch, keyed on `CURRENT_USER()` per F3 |
-| Masking policies | 2 | **2 built** — `mask_direct_identifier`, `mask_dob` |
-| Procedures | 11 | **18 built + live** — bind_patient, evaluate_gates (all 16 rules dispatch), classify_question, validate_answer, chunk_documents, parse_documents_proc, extract_assertions_proc, reconcile_evidence_proc, refresh_readiness_proc, notify_proc, flatten_fhir_proc, orchestrator_proc, 8 tool procs |
-| Tasks | 7 | **6 of 7 built + live** — parse_documents, extract_assertions, reconcile_evidence, notify, refresh_readiness, flatten_fhir, TASK_SAARTHI_ORCHESTRATOR (the headline-bonus "task on top") |
-| Dynamic Tables | 5 | **4 built + live** — DT_HARMONIZED_EVENTS, DT_REVIEW_QUEUE, DT_SCHEME_ELIGIBILITY, DT_TREATMENT_PLAN. Fifth listed as DT_DOC_CHUNK is a procedure not a DT (RAP-on-source forced synchronous population per F4) |
-| Cortex Search services | 2 | **2 built + live** — PATIENT_DOC_SEARCH, REFERENCE_DOC_SEARCH (WHO + NCD guidelines, 159 chunks) |
-| Semantic view + VQRs | 1 + 6 | **1 built** — SAARTHI_SEMANTIC_VIEW live |
-| Agent | 1 | **1 built + live** — SAARTHI_AGENT with 8 tools |
-| MCP server | 1 | **1 built + live, end-to-end verified** — `SAARTHI.OPERATIONAL.SAARTHI_MCP` exposes `SAARTHI_AGENT` as a single `CORTEX_AGENT_RUN` tool. Full path *external MCP client → server → agent (claude-opus-5) → tool procedure → answer* live-verified 23 Sept: `call "What is missing before Thursday?"` orchestrated `GetReadiness`, tool returned `no_patient_bound` (correct — MCP session has no bound patient), agent surfaced it verbatim without fabricating. Deliberate scope: no `SYSTEM_EXECUTE_SQL`, no raw-tool exposure. See `docs/MCP-QUICKSTART.md` for the 7-step reproduction. |
-| Skills | 4 | **4 built** — all 4 SKILL.md files with 60+ line bodies |
-| Eval datasets | 2 | **2 built** — `data/eval/dev.jsonl` (40 rows) + `data/eval/held_out.jsonl` (40 rows) per SPEC §14 (80 total, corrected from earlier "80+80=160") |
+| Database / schemas | 1 / 7 | 🟢 **1 / 7 — SAARTHI + 7 schemas live on JN89282** |
+| Tables | 34 | 🟢 **35 built and populated** — 34 per SPEC + `SCHEME_REGISTRY`, `PRE_AUTHORIZATION` retired 23 Sept (columns merged into `AUTHORIZATION`) |
+| Stages | 3 | 🟢 **3 built** — `PATIENT_DOCS`, `REFERENCE_DOCS`, `SKILLS` (all `SNOWFLAKE_SSE`) |
+| Roles | 5 | 🟢 **5 built** — SAARTHI_APP, SAARTHI_COORDINATOR, SAARTHI_ONCOLOGIST, SAARTHI_NAVIGATOR, SAARTHI_JUDGE (+ SAARTHI_MCP_CLIENT least-priv for external MCP callers) |
+| Row access policy | 1 | 🟢 **1 built** — `patient_scope` with reference-scope OR-branch, keyed on `CURRENT_USER()` per F3 |
+| Masking policies | 2 | 🟢 **2 built** — `mask_direct_identifier`, `mask_dob` |
+| Procedures | 11 | 🟢 **18 built + live** — bind_patient, evaluate_gates (all 16 rules dispatch), classify_question, validate_answer, chunk_documents, parse_documents_proc, extract_assertions_proc, reconcile_evidence_proc, refresh_readiness_proc, notify_proc, flatten_fhir_proc, orchestrator_proc, 8 tool procs |
+| Tasks | 7 | 🟡 **6 of 7 built + live** — parse_documents, extract_assertions, reconcile_evidence, notify, refresh_readiness, flatten_fhir, TASK_SAARTHI_ORCHESTRATOR (the headline-bonus "task on top") |
+| Dynamic Tables | 5 | 🟢 **4 built + live** — DT_HARMONIZED_EVENTS, DT_REVIEW_QUEUE, DT_SCHEME_ELIGIBILITY, DT_TREATMENT_PLAN. Fifth listed as DT_DOC_CHUNK is a procedure not a DT (RAP-on-source forced synchronous population per F4) |
+| Cortex Search services | 2 | 🟢 **2 built + live** — PATIENT_DOC_SEARCH, REFERENCE_DOC_SEARCH (WHO + NCD guidelines, 159 chunks) |
+| Semantic view + VQRs | 1 + 6 | 🟢 **1 built** — SAARTHI_SEMANTIC_VIEW live |
+| Agent | 1 | 🟢 **1 built + live** — SAARTHI_AGENT with 8 tools |
+| MCP server | 1 | 🟢 **1 built + live, end-to-end verified** — `SAARTHI.OPERATIONAL.SAARTHI_MCP` exposes `SAARTHI_AGENT` as a single `CORTEX_AGENT_RUN` tool. Full path *external MCP client → server → agent (claude-opus-5) → tool procedure → answer* live-verified 23 Sept: `call "What is missing before Thursday?"` orchestrated `GetReadiness`, tool returned `no_patient_bound` (correct — MCP session has no bound patient), agent surfaced it verbatim without fabricating. Deliberate scope: no `SYSTEM_EXECUTE_SQL`, no raw-tool exposure. See `docs/MCP-QUICKSTART.md` for the 7-step reproduction. |
+| Skills | 4 | 🟢 **4 built** — all 4 SKILL.md files with 60+ line bodies |
+| Eval datasets | 2 | 🟢 **2 built** — `data/eval/dev.jsonl` (40 rows) + `data/eval/held_out.jsonl` (40 rows) per SPEC §14 (80 total, corrected from earlier "80+80=160") |
 
 **The v2 schema is live.** All 35 tables + 4 DTs + 6 tasks + 8 tool procedures + agent + MCP server + 2 search services deployed on JN89282. Cross-check via `python3 backend/scripts/check_gate.py --manifest` = PASS (55 active deploy steps).
 
@@ -221,31 +223,33 @@ accessibility proof: with all colour removed, all four outcomes remain unambiguo
 
 ## 7. Data and corpus
 
+Legend: 🟢 built + live · 🟡 partial · ⚪ designed-only.
+
 | Artifact | Status |
 |---|---|
-| Seeded fact ledger generator | **built** — `data/generator/ledger.py` (247 lines), deterministic per seed; deep-case audit 23 Sept confirmed 14 named facts land in DB (7 identifiers, 0 ABHA, 4 facilities, 6 chemo cycles, appendectomy at FAC-03, discordant HER2, DEXA osteopenia, zoledronic infusion, 4 treatment-plan versions with supersession chain) |
-| 100 synthetic patients | **12 of 100 built + live** — PAT-DEEP-0001 (Baseerah, full ledger-driven) + 11 daycare cohort patients (PAT-DC-01..11 via `load_daycare_cohort.sql`), each shaped around one distinct blocker: DC-02 LVEF overdue on trastuzumab, DC-03 CBC 11d old, DC-04 platelets 82k, DC-05 ANC 1150, DC-06 PM-JAY pre-auth pending, DC-07 pre-auth table-vs-letter drift, DC-08 no CBC on record, DC-09 HbA1c 9.4 advisory, DC-10 HER2 IHC 2+ FISH pending, DC-01+DC-11 ready. Live-verified: `EVALUATE_GATES` on DC-04 returns `CLIN-PLT-001: fail (PLT is 82000, below threshold 100000)` with 12 other rules passing. Remaining 88 need `ledger.py` parameterisation (§5 gap 11) — row-count-only rows without variance rejected as theatre. |
-| Deep case from the real record | **built + audited** — PAT-DEEP-0001 (Baseerah) live on JN89282. 14 ledger facts present + 7 additional seeded (LVEF, HbA1c, creatinine, weight, bilirubin, AST, PM-JAY coverage + AUTHORIZATION); 28/28 rule-fixture tests pass end-to-end |
-| Insurance and government schemes | **built + live** — `CORE.COVERAGE` (payer_type ∈ {scheme, private_insurance, self_pay}, `annual_limit`, `used_amount`, `is_family_floater`), `CORE.AUTHORIZATION` (scheme + package_code + letter-vs-table drift + `denial_is_curable`), `OPERATIONAL.SCHEME_REGISTRY` (3 schemes seeded: PM-JAY central + TN-CMHIS + MH-MJPJAY), `DT_SCHEME_ELIGIBILITY` cross-joining patients × schemes. Rules `COV-AUTH-001` + `COV-LIMIT-001` live-tested including the conflicting-letter drift (SPEC §247 flagship). Dedicated extraction prompt `pass_a_claim.md`. PM-JAY manual PDF ingested into `REFERENCE_DOC_SEARCH`; 8 eval questions answered from it. Family-floater balances are flagged, never computed (SPEC decision — no HOUSEHOLD table). |
-| 13 corruption scenarios | **10 of 13 built + live-verified** — Deep case covers 2, 3, 12 (HER2 grade+IHC discordance across specimens, appendectomy `clinical_complication`); scratch harness covers 7, 8 (LVEF stale, ID quar); `corruptions.py` covers 13 (rotated CBC photo, R7); `load_synthetic.sql` covers 1, 4, 5, 6, 9, 10 (late addendum, unit chaos GM%/mg%/g%, missing FISH bring-list, auth letter drift flagship, duplicate dedup, prompt injection). Remaining: 11 (cross-patient ID, handled by A1 design guarantee — agent tool schemas omit patient_id) + 2 needing R7 two-pass live-run infra not yet fired. |
-| Synthetic PDF with Indian lab traps | **built** — 1 of ~20. `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
-| Reference corpus Tier 1 | **built + live** — WHO diabetes guideline (72 pages) + NCD treatment guidelines (87 pages) = 159 chunks in `REFERENCE_DOC_SEARCH`; cited answers verified via ASK_SAARTHI |
-| 80 rule fixtures | **built + live-tested** — `data/fixtures/rules/rule_fixtures.yaml`, 16 rules × 5 scenarios; `backend/scripts/run_rule_fixtures.py` runs 3-stage harness (structural + deep-case + scratch-patient), 28/28 PASS on JN89282 |
-| 80 questions (40 dev + 40 held-out) eval | **built** — `data/eval/dev.jsonl` + `data/eval/held_out.jsonl`. Covers Class A refusals, gate outcomes, missing/pending/superseded/unreadable, reference lookups, Hindi/Marathi/Bangla/Tamil, prompt-injection resistance |
-| FHIR R4 bundles | **task built** — `flatten_fhir_proc` deployed; `RAW_FHIR_BUNDLE` empty pending multi-patient generation. Task idles cleanly on empty input |
+| Seeded fact ledger generator | 🟢 **built** — `data/generator/ledger.py` (247 lines), deterministic per seed; deep-case audit 23 Sept confirmed 14 named facts land in DB (7 identifiers, 0 ABHA, 4 facilities, 6 chemo cycles, appendectomy at FAC-03, discordant HER2, DEXA osteopenia, zoledronic infusion, 4 treatment-plan versions with supersession chain) |
+| 100 synthetic patients | 🟡 **12 of 100 built + live** — PAT-DEEP-0001 (Baseerah, full ledger-driven) + 11 daycare cohort patients (PAT-DC-01..11 via `load_daycare_cohort.sql`), each shaped around one distinct blocker: DC-02 LVEF overdue on trastuzumab, DC-03 CBC 11d old, DC-04 platelets 82k, DC-05 ANC 1150, DC-06 PM-JAY pre-auth pending, DC-07 pre-auth table-vs-letter drift, DC-08 no CBC on record, DC-09 HbA1c 9.4 advisory, DC-10 HER2 IHC 2+ FISH pending, DC-01+DC-11 ready. Live-verified: `EVALUATE_GATES` on DC-04 returns `CLIN-PLT-001: fail (PLT is 82000, below threshold 100000)` with 12 other rules passing. Remaining 88 need `ledger.py` parameterisation (§5 gap 11) — row-count-only rows without variance rejected as theatre. |
+| Deep case from the real record | 🟢 **built + audited** — PAT-DEEP-0001 (Baseerah) live on JN89282. 14 ledger facts present + 7 additional seeded (LVEF, HbA1c, creatinine, weight, bilirubin, AST, PM-JAY coverage + AUTHORIZATION); 28/28 rule-fixture tests pass end-to-end |
+| Insurance and government schemes | 🟢 **built + live** — `CORE.COVERAGE` (payer_type ∈ {scheme, private_insurance, self_pay}, `annual_limit`, `used_amount`, `is_family_floater`), `CORE.AUTHORIZATION` (scheme + package_code + letter-vs-table drift + `denial_is_curable`), `OPERATIONAL.SCHEME_REGISTRY` (3 schemes seeded: PM-JAY central + TN-CMHIS + MH-MJPJAY), `DT_SCHEME_ELIGIBILITY` cross-joining patients × schemes. Rules `COV-AUTH-001` + `COV-LIMIT-001` live-tested including the conflicting-letter drift (SPEC §247 flagship). Dedicated extraction prompt `pass_a_claim.md`. PM-JAY manual PDF ingested into `REFERENCE_DOC_SEARCH`; 8 eval questions answered from it. Family-floater balances are flagged, never computed (SPEC decision — no HOUSEHOLD table). |
+| 13 corruption scenarios | 🟢 **10 of 13 built + live-verified** — Deep case covers 2, 3, 12 (HER2 grade+IHC discordance across specimens, appendectomy `clinical_complication`); scratch harness covers 7, 8 (LVEF stale, ID quar); `corruptions.py` covers 13 (rotated CBC photo, R7); `load_synthetic.sql` covers 1, 4, 5, 6, 9, 10 (late addendum, unit chaos GM%/mg%/g%, missing FISH bring-list, auth letter drift flagship, duplicate dedup, prompt injection). Remaining: 11 (cross-patient ID, handled by A1 design guarantee — agent tool schemas omit patient_id) + 2 needing R7 two-pass live-run infra not yet fired. |
+| Synthetic PDF with Indian lab traps | 🟡 **built** — 1 of ~20. `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
+| Reference corpus Tier 1 | 🟢 **built + live** — WHO diabetes guideline (72 pages) + NCD treatment guidelines (87 pages) = 159 chunks in `REFERENCE_DOC_SEARCH`; cited answers verified via ASK_SAARTHI |
+| 80 rule fixtures | 🟢 **built + live-tested** — `data/fixtures/rules/rule_fixtures.yaml`, 16 rules × 5 scenarios; `backend/scripts/run_rule_fixtures.py` runs 3-stage harness (structural + deep-case + scratch-patient), 28/28 PASS on JN89282 |
+| 80 questions (40 dev + 40 held-out) eval | 🟢 **built** — `data/eval/dev.jsonl` + `data/eval/held_out.jsonl`. Covers Class A refusals, gate outcomes, missing/pending/superseded/unreadable, reference lookups, Hindi/Marathi/Bangla/Tamil, prompt-injection resistance |
+| FHIR R4 bundles | 🟢 **built + live-verified 23 Sept** — `data/generator/fhir_from_db.py` reads DB rows and emits FHIR R4 Bundle dicts; `backend/scripts/generate_fhir_bundles.py` runs it for all 12 patients (149 total resources), loads into `RAW_FHIR_BUNDLE` and calls `flatten_fhir_proc`. Result: `{"events_written": 0, "pending_bundles": 12}` — expected idempotent outcome (all events already in `CLINICAL_EVENT`, `NOT EXISTS` filter fires). Full RAW_FHIR_BUNDLE → LATERAL FLATTEN → CLINICAL_EVENT pipeline live for the first time. Ledger-shaped `fhir_bundles.py` retained for deep case source-of-truth. |
 
 ---
 
 ## 8. CoCo lifecycle evidence
 
-The brief requires evidence at **every** phase.
+The brief requires evidence at **every** phase. Legend: 🟢 complete · 🟡 partial.
 
 | Phase | Status |
 |---|---|
-| **Planning** | **complete** — 52 sessions, 26 single-question research sessions, banked in `evidence/coco/planning.yaml` (382 lines) |
-| **Development** | **complete** — `evidence/coco/development.yaml` (145 lines), 3 stages spanning Danush's Days 1–5 scaffolding + Daksha's JN89282 deploy and extensions; every file_change carries a `verified_on: JN89282` entry |
-| **Execution** | **complete** — `evidence/coco/execution.yaml` (222 lines), 5 stages covering the full vertical-slice deploy; 6 recorded failure-and-fix pairs including AUTHORIZATION consolidation (23 Sept) |
-| **Testing and validation** | **built** — `evidence/coco/testing_validation.yaml` (438 lines), 6 stages: 10 platform behaviour probes with query IDs, 28-live-test rule fixture harness, all 13 corruption scenarios accounted for (10 seeded + 3 by-design), MCP external round trip, **9 failure-and-fix pairs** including the daycare cohort load discovery, prompt-injection inert-content proof, and the "Unknown UDF" grant fix from the MCP session. Named open gaps kept honest (multi-patient generation past 12, R7 live-run, frontend→live-backend wiring). |
+| **Planning** | 🟢 **complete** — 52 sessions, 26 single-question research sessions, banked in `evidence/coco/planning.yaml` (382 lines) |
+| **Development** | 🟢 **complete** — `evidence/coco/development.yaml` (145 lines), 3 stages spanning Danush's Days 1–5 scaffolding + Daksha's JN89282 deploy and extensions; every file_change carries a `verified_on: JN89282` entry |
+| **Execution** | 🟢 **complete** — `evidence/coco/execution.yaml` (222 lines), 5 stages covering the full vertical-slice deploy; 6 recorded failure-and-fix pairs including AUTHORIZATION consolidation (23 Sept) |
+| **Testing and validation** | 🟢 **built** — `evidence/coco/testing_validation.yaml` (438 lines), 6 stages: 10 platform behaviour probes with query IDs, 28-live-test rule fixture harness, all 13 corruption scenarios accounted for (10 seeded + 3 by-design), MCP external round trip, **9 failure-and-fix pairs** including the daycare cohort load discovery, prompt-injection inert-content proof, and the "Unknown UDF" grant fix from the MCP session. Named open gaps kept honest (multi-patient generation past 12, R7 live-run, frontend→live-backend wiring). |
 
 **Failure-and-fix pairs are retained deliberately.** They are the most credible lifecycle evidence available and are not curated out.
 
