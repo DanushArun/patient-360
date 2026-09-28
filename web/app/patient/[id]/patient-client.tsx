@@ -79,9 +79,12 @@ function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
       <div className="sa-masthead-patient">{patient.patientName}</div>
       <Field label="Patient" value={patient.patientId} /><Field label="Consent" value={patient.consentId ?? "none"} />
     </div>
-    <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 17, paddingTop: 4 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr 2fr", gap: 17, paddingTop: 4 }}>
       <Link href="/" className="sa-btn" style={buttonStyle} aria-label={`Select another patient; currently ${patient.patientName}`}>
         {patient.patientName}<span aria-hidden="true">⌄</span>
+      </Link>
+      <Link href={`/navigator/${patient.patientId}`} className="sa-btn" style={{ ...buttonStyle, fontSize: 14 }}>
+        Navigator View
       </Link>
       <Field label="Practitioner" value={patient.practitionerName} />
     </div>
