@@ -103,6 +103,10 @@ export default async function DayCarePage() {
           </div>
         </div>
         <div className="flex items-start gap-6">
+          <Link href="/judge" className="flex cursor-pointer items-center rounded px-3 py-2 text-sm sa-picker-item"
+            style={{ border: "1px solid var(--sa-rule)", color: "var(--sa-ink)" }}>
+            Judge Console
+          </Link>
           <PatientPicker patients={patientOptions} />
           <div className="text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
             Practitioner
