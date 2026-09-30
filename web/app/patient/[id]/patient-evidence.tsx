@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { StatusChip, buttonStyle, type Outcome } from "@/components/sa";
 import type { AgentTurn, Gate } from "@/lib/patient";
 import { ReviewHistory } from "./patient-review-history";
+import { PatientAnswerArtifact } from "./patient-answer-artifact";
 
 export type Turn = AgentTurn & { role: "user" | "assistant"; id: string };
 export type ReviewAction = "request_document" | "escalate";
@@ -51,18 +52,20 @@ export function GateStrip({ gates, knownAsOf, selectedRuleId, isSnapshot, onSele
 export function GateCitation({ gate, selected, onSelect }: {
   gate: Gate; selected: boolean; onSelect: () => void;
 }): ReactNode {
-  return <div>
-    <div className="sa-gate-row">
+  return <article className="sa-chat-gate">
+    <div className="sa-chat-gate-heading">
       <span className="sa-gate-name">{gate.gate}</span>
-      <span style={{ minWidth: 158 }}><StatusChip outcome={gate.outcome as Outcome} /></span>
-      <span className="sa-meta">
-        <code>{gate.rule_id}{gate.rule_version ? ` v${gate.rule_version}` : ""}</code>
-        {gate.severity ? ` · ${gate.severity}` : ""}
-        {gate.reason && <div className="sa-meta">{gate.reason}</div>}
-      </span>
+      <StatusChip outcome={gate.outcome as Outcome} />
     </div>
-    <button style={buttonStyle} onClick={onSelect}>Evidence {selected ? "▾" : "▸"}</button>
-  </div>;
+    <div className="sa-meta sa-chat-gate-id">
+      <code>{gate.rule_id}{gate.rule_version ? ` v${gate.rule_version}` : ""}</code>
+      {gate.severity ? ` · ${gate.severity}` : ""}
+    </div>
+    {gate.reason && <div className="sa-meta sa-chat-gate-reason">{gate.reason}</div>}
+    <button className="sa-chat-gate-evidence" style={buttonStyle} onClick={onSelect}>
+      Evidence {selected ? "▾" : "▸"}
+    </button>
+  </article>;
 }
 
 export function EvidencePanel({ patientId, turn, selected, feedback, actionsAvailable, onAction, onUnpin }: {
@@ -182,6 +185,7 @@ function AnswerEvidence({ turn }: { turn: Turn }): ReactNode {
     <div className="sa-field-label">How this was answered</div>
     {turn.tools.map((tool, index) => <ToolEvidence key={`${tool.name}-${index}`} tool={tool} />)}
     {gates.map((gate) => <GateEvidence key={gate.rule_id} gate={gate} />)}
+    <PatientAnswerArtifact turn={turn} />
     <div className="sa-meta" style={{ marginTop: 8 }}>
       Click &quot;Evidence&quot; on any claim above to pin just that one here.
     </div>

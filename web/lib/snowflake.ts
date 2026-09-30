@@ -1,17 +1,6 @@
 import snowflake from "snowflake-sdk";
 import { readFileSync } from "fs";
-
-// Same key-pair credential set up for the Streamlit app (frontend/streamlit_app.py) -
-// one Snowflake user, two frontends, no OAuth browser round-trip either way.
-
-// const ACCOUNT = "IFTDBGM-EA72552";
-// const USER = "DAKSHA";
-// const PRIVATE_KEY_PATH = "/Users/mac/.snowflake/keys/daksha_snow_rsa.p8";
-
-const ACCOUNT = "KGTPGHJ-YJ28449";
-const USER = "DANUSH";
-const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
-
+import { snowflakeConfig } from "./snowflake-config.mjs";
 
 // NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
 // tool resolve their subject from PATIENT_BINDING keyed on CURRENT_SESSION() -
@@ -22,16 +11,21 @@ const PRIVATE_KEY_PATH = "/Users/danusharun/.snowflake/keys/saarthi_rsa_key.p8";
 // Streamlit build. Key-pair (JWT) auth has no browser round-trip, so a fresh
 // connection per request is cheap and safe, unlike OAuth.
 function openConnection(): Promise<snowflake.Connection> {
-  const privateKey = readFileSync(PRIVATE_KEY_PATH, "utf8");
+  const config = snowflakeConfig();
+  const privateKey = readFileSync(config.privateKeyPath, "utf8");
   const conn = snowflake.createConnection({
-    account: ACCOUNT,
-    username: USER,
+    account: config.account,
+    username: config.username,
     authenticator: "SNOWFLAKE_JWT",
     privateKey,
-    role: "SAARTHI_APP",
+    role: config.role,
+    warehouse: config.warehouse,
   });
   return new Promise((resolve, reject) => {
-    conn.connect((err, c) => (err ? reject(err) : resolve(c)));
+    conn.connect((err, c) => {
+      if (err) conn.destroy(() => reject(err));
+      else resolve(c);
+    });
   });
 }
 
@@ -94,10 +88,7 @@ export async function withPatientSession<T>(
     return await fn(run);
   } finally {
     try {
-      await run(
-        "UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING SET released_at = CURRENT_TIMESTAMP() " +
-          "WHERE session_id = CURRENT_SESSION() AND released_at IS NULL"
-      );
+      await run("CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()");
     } finally {
       destroyConnection(conn);
     }

@@ -19,7 +19,14 @@ import { PatientTimelinePanel } from "./patient-timeline";
 type ChecklistKey = keyof typeof data.text;
 const EMPTY: Turn[] = [];
 const TURN_ERRORS: Record<string, string> = {
+  tool_unavailable: "The record could not be read just now. Please try again.",
+  malformed_tool_result: "The record returned a response this app could not read. Please try again.",
+  classification_unavailable:
+    "I couldn't safely route that question. Ask what is documented, missing, or conflicting in the record.",
   malformed_agent_json: "The assistant returned a response this app could not read. Nothing is asserted from it.",
+  ai_features_unavailable:
+    "Snowflake AI access is disabled for this trial account. " +
+    "Readiness checks remain SQL-derived; no answer was generated.",
   agent_unreachable: "The assistant could not be reached. No answer is shown rather than a stale one.",
   nothing_found: "Nothing found for that question.",
 };
@@ -74,7 +81,7 @@ function messageText(patient: PatientData, visit: Date, items: { key: string; ru
 }
 
 function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
-  return <Columns template="7fr 5fr" gap={68}>
+  return <><Columns template="7fr 5fr" gap={68}>
     <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
       <div className="sa-masthead-patient">{patient.patientName}</div>
       <Field label="Patient" value={patient.patientId} /><Field label="Consent" value={patient.consentId ?? "none"} />
@@ -88,7 +95,13 @@ function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
       </Link>
       <Field label="Practitioner" value={patient.practitionerName} />
     </div>
-  </Columns>;
+  </Columns>
+    <div className="sa-visit-context">
+      <Field label="Next day-care visit" value={patient.scheduledAt ?? "Not scheduled"} />
+      <Field label="Regimen" value={patient.regimen ?? "Not recorded"} />
+      <Field label="Cycle" value={patient.cycleNumber?.toString() ?? "Not recorded"} />
+    </div>
+  </>;
 }
 
 function FamilyChecklist({ patient, gates, language, setLanguage }: {
@@ -158,7 +171,7 @@ function Message({ turn, selected, onSelect }: {
     <div className="flex items-start gap-3"><span className="sa-chat-avatar" aria-hidden="true">{icon}</span>
       <div style={{ flex: 1 }}>{turn.role === "user" ? <div>{formattedText(turn.text)}</div> : turn.error ? <div className="sa-limitation">{TURN_ERRORS[turn.error] ?? turn.error}</div> : <>
         <div>{formattedText(turn.text)}</div>{turn.known_as_of && <div className="sa-meta sa-num" style={{ marginTop: 8 }}>Known as of {turn.known_as_of}</div>}
-        {!!turn.gates.length && <div className="grid grid-cols-4" style={{ gap: 8, marginTop: 12 }}>{turn.gates.map((gate) => {
+        {!!turn.gates.length && <div className="sa-chat-gates" style={{ marginTop: 12 }}>{turn.gates.map((gate) => {
           const ruleId = gate.rule_id ?? gate.gate;
           return <GateCitation key={ruleId} gate={gate} selected={selected?.turnId === turn.id && selected.ruleId === ruleId} onSelect={() => onSelect(turn.id, ruleId)} />;
         })}</div>}
@@ -334,7 +347,7 @@ export default function PatientClient({ patient }: { patient: PatientData }): Re
               ? null : { turnId, ruleId });
           }} busy={chat.busy} error={chat.error} onSend={(text) => void chat.send(text)} />}
       </Stack>
-      <div id="readiness-evidence"><EvidencePanel patientId={patient.patientId}
+      <div id="readiness-evidence" className="sa-patient-evidence-sticky"><EvidencePanel patientId={patient.patientId}
         turn={last} selected={selectedGate}
         feedback={reviewTask.feedback} actionsAvailable={refreshState === "current"}
         onAction={reviewTask.act} onUnpin={() => {

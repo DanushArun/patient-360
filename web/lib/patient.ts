@@ -1,9 +1,10 @@
 import { withPatientSession, withPatientSessionAndContext } from "./snowflake";
+import { askLocalModel, completeWithOllama } from "./local-ai.mjs";
+import { routeQuestion } from "./question-routing.mjs";
 
-// Classification and question routing happen server-side in CLASSIFY_QUESTION
-// and ASK_SAARTHI. Do not duplicate them client-side — Rule R1 requires every
-// gate outcome to come from SQL, and Rule R5 requires scope to be resolved
-// server-side from the binding, not from the question text.
+// Both providers ask Snowflake to classify before inference. Patient scope
+// comes from the bound request session, never from model-produced selectors.
+// ASK_SAARTHI is currently a thin entry point; its unmerged guard is deferred.
 
 export type Gate = {
   gate: string;
@@ -283,9 +284,14 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 
 export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
   return withPatientSessionAndContext(patientId, async (run) => {
-    const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
-    if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
-    return parseAgentResponse(Object.values(rows[0])[0]);
+    if (process.env.SAARTHI_LLM_PROVIDER === "ollama") {
+      return askLocalModel(question, patientId, run, completeWithOllama);
+    }
+    return routeQuestion(question, run, async () => {
+      const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
+      if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
+      return parseAgentResponse(Object.values(rows[0])[0]);
+    });
   });
 }
 

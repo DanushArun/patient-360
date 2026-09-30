@@ -1,4 +1,5 @@
 import { query } from "@/lib/snowflake";
+import { evaluateProbe } from "@/lib/judge-probes.mjs";
 
 const PROBES: Record<number, { title: string; description: string; sql: string; expect: string }> = {
   1: {
@@ -95,13 +96,7 @@ export async function POST(request: Request) {
     const probe = PROBES[probeId];
     const rows = await query(probe.sql);
     const rowCount = rows.length;
-    // Simple pass logic: probes 1-5 have specific expectations
-    let passed: boolean;
-    if (probeId === 1) passed = rowCount === 16;
-    else if ([2, 3, 4, 5].includes(probeId)) passed = rowCount === 0;
-    else if (probeId === 7) passed = rowCount === 4;
-    else if (probeId === 8) passed = rowCount >= 1;
-    else passed = true; // probe 6: informational
+    const passed = evaluateProbe(probeId, rows);
     return Response.json({
       probe: probeId,
       title: probe.title,
@@ -111,6 +106,7 @@ export async function POST(request: Request) {
       passed,
       rowCount,
       rows: rows.slice(0, 50),
+      query_id: (rows as typeof rows & { query_id?: string }).query_id ?? null,
     });
   } catch (e) {
     return Response.json({ error: e instanceof Error ? e.message : "probe_failed" }, { status: 502 });

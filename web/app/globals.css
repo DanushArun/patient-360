@@ -352,6 +352,21 @@ html, body {
   font-weight: 600;
 }
 
+.sa-patient-columns {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr) !important;
+}
+
+.sa-patient-columns > * { min-width: 0; }
+
+.sa-patient-evidence-sticky {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 @media (max-width: 1179px) {
   .sa-chat-dock-wrap {
     left: 85px;
@@ -363,6 +378,12 @@ html, body {
   .sa-patient-columns {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 28px !important;
+  }
+
+  .sa-patient-evidence-sticky {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 
   .sa-chat-dock-wrap {
@@ -381,3 +402,5 @@ html, body {
     padding: 12px 0 14px;
   }
 }
+
+.sa-visit-context { display: flex; flex-wrap: wrap; gap: 16px 32px; padding: 10px 0 14px; border-bottom: 1px solid var(--sa-rule); }

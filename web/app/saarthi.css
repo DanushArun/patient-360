@@ -177,6 +177,31 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 .sa-gate-name { font-size: 17px; font-weight: 600;
                  min-width: 140px; letter-spacing: -0.01em; }
 
+.sa-chat-gates {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    min-width: 0;
+}
+.sa-chat-gate {
+    min-width: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--sa-rule);
+    overflow-wrap: anywhere;
+}
+.sa-chat-gate-heading {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.sa-chat-gate-heading .sa-gate-name { min-width: 0; }
+.sa-chat-gate-id { margin-top: 4px; }
+.sa-chat-gate-reason { margin-top: 6px; }
+.sa-chat-gate-evidence { width: auto !important; margin-top: 8px; }
+
 /* ---- source text with the cited span highlighted ---------------------- */
 .sa-page-text {
     font-family: "JetBrains Mono", ui-monospace, monospace;

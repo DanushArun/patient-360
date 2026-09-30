@@ -9,7 +9,8 @@ type ProbeResult = {
   description: string;
   sql: string;
   expect: string;
-  passed: boolean;
+  passed: boolean | null;
+  query_id: string | null;
   rowCount: number;
   rows: Record<string, unknown>[];
 };
@@ -52,7 +53,8 @@ export default function JudgeClient(): ReactNode {
 
   const completed = Object.values(results).filter((r) => typeof r === "object" && r !== null) as ProbeResult[];
   const passing = completed.filter((r) => r.passed).length;
-  const total = completed.length;
+  const total = completed.filter((r) => r.passed !== null).length;
+  const resultColor = (passed: boolean | null) => passed === null ? "#656C73" : passed ? "#1E6B3A" : "#A8261C";
 
   return <>
     <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
@@ -83,8 +85,8 @@ export default function JudgeClient(): ReactNode {
             className="sa-gate-tile rounded text-left"
             style={{
               padding: "12px 14px",
-              border: `1px solid ${isDone ? (result.passed ? "#1E6B3A" : "#A8261C") : "#D8DCDF"}`,
-              background: isDone ? (result.passed ? "#f0f7f2" : "#fdf2f1") : "#fff",
+              border: `1px solid ${isDone ? resultColor(result.passed) : "#D8DCDF"}`,
+              background: isDone ? (result.passed === null ? "#F6F7F8" : result.passed ? "#f0f7f2" : "#fdf2f1") : "#fff",
               cursor: isLoading ? "wait" : "pointer",
             }}
           >
@@ -94,7 +96,7 @@ export default function JudgeClient(): ReactNode {
             </div>
             <div className="sa-meta">
               {isLoading ? "Running..." : isError ? "Failed — click to retry" : isDone
-                ? (result.passed ? `✓ ${result.rowCount} row${result.rowCount !== 1 ? "s" : ""}` : `✕ ${result.expect}`)
+                ? (result.passed === null ? `Information · ${result.rowCount} rows` : result.passed ? `✓ ${result.rowCount} row${result.rowCount !== 1 ? "s" : ""}` : `✕ ${result.expect}`)
                 : PROBE_LABELS[id].short}
             </div>
           </button>
@@ -117,10 +119,10 @@ function ProbeDetail({ result }: { result: ProbeResult }): ReactNode {
         <span style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: "2px 10px", borderRadius: 4, fontSize: 13, fontWeight: 600,
-          color: result.passed ? "#1E6B3A" : "#A8261C",
-          border: `1px solid ${result.passed ? "#1E6B3A" : "#A8261C"}`,
+          color: result.passed === null ? "#656C73" : result.passed ? "#1E6B3A" : "#A8261C",
+          border: `1px solid ${result.passed === null ? "#656C73" : result.passed ? "#1E6B3A" : "#A8261C"}`,
         }}>
-          {result.passed ? "✓ PASS" : "✕ FAIL"} · Probe {result.probe}
+          {result.passed === null ? "INFORMATION" : result.passed ? "✓ PASS" : "✕ FAIL"} · Probe {result.probe}
         </span>
         <span style={{ fontSize: 15, fontWeight: 600 }}>{result.title}</span>
       </div>
@@ -128,6 +130,7 @@ function ProbeDetail({ result }: { result: ProbeResult }): ReactNode {
       <div className="sa-meta" style={{ marginBottom: 8 }}>
         Expected: {result.expect} · Got: {result.rowCount} row{result.rowCount !== 1 ? "s" : ""}
       </div>
+      {result.query_id && <div className="sa-meta" style={{ marginBottom: 8 }}>Query: {result.query_id}</div>}
       <button type="button" style={{ ...buttonStyle, width: "auto", fontSize: 13, minHeight: 32, padding: "4px 12px" }}
         onClick={() => setShowSql(!showSql)}>
         {showSql ? "Hide SQL" : "Show SQL"}
