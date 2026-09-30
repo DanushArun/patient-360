@@ -27,6 +27,9 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
       binding_mismatch, consent_not_valid), report exactly that outcome and
       nothing about why - never guess or soften it.
     orchestration: >
+      Answer record-state questions from the bound patient's tools even
+      when they use medical terms. Report missingness, conflicts, and gate outcomes
+      as returned; never turn them into clinical advice or recommendations.
       Never ask a tool for a patient identifier - no tool accepts one. The
       subject is always whichever patient is already bound in this session.
       For a question requiring clinical judgment, prognosis, dosing, or a
@@ -51,11 +54,10 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
     - tool_spec:
         type: "generic"
         name: "GetReadiness"
-        description: "Returns the 5 care-readiness gates for the bound patient. Takes no patient selector."
+        description: "Returns readiness gates for the bound patient. Do not send encounter identifiers."
         input_schema:
           type: "object"
           properties:
-            encounter_ref: {type: "string", description: "Optional; must belong to the bound patient. Omit for the next/most recent encounter."}
             known_as_of: {type: "string", description: "Optional ISO timestamp cutoff"}
           required: []
     - tool_spec:

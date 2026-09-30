@@ -27,7 +27,12 @@ BEGIN
     v_q := LOWER(:QUESTION);
 
     -- 1. Keyword scan. Any one of these makes it Class A, no exceptions.
-    IF (v_q RLIKE '.*\\b(should|recommend|right|correct|safe|dangerous|prognosis|survival|survive|mortality|die|best treatment|change dose|switch regimen|advise)\\b.*') THEN
+    IF (
+        v_q RLIKE '.*\\b(should|recommend|right|correct|safe|safest|dangerous|dose|dosing|prescribe)\\b.*'
+        OR v_q RLIKE '.*\\b(prognosis|survival|survive)\\b.*'
+        OR v_q RLIKE '.*\\b(mortality|die|best treatment|change dose|switch regimen|advise)\\b.*'
+        OR v_q RLIKE '.*\\bwhat( is|''s)? wrong with (this |the )?(patient|her|him)[ ?.!,]*'
+    ) THEN
         v_class := 'CLASS_A';
         v_method := 'keyword';
     -- 2. Structure scan. Distinctively record-state language only - NOT
@@ -36,14 +41,25 @@ BEGIN
     -- t42_ambiguous_defaults_to_a - must default to Class A) is exactly the
     -- case a broader pattern here would misclassify - caught live by
     -- testing against that named case, not assumed correct.
-    ELSEIF (v_q RLIKE '.*\\b(what is missing|how many|list|show me|status of|contradict|conflict|changed since|expired|remaining|received|final|pending|documented|on file)\\b.*') THEN
+    ELSEIF (
+        v_q RLIKE '.*\\b(what is missing|what does the record show|what is in the record)\\b.*'
+        OR v_q RLIKE '.*\\b(what is documented|what findings are recorded)\\b.*'
+        OR v_q RLIKE '.*\\bwhat( is|''s)? wrong (in|with) (this |the )?(patient''s )?record\\b.*'
+        OR v_q RLIKE '.*\\b(how many|list|show me|status of|changed since)\\b.*'
+        OR v_q RLIKE '.*\\b(contradict(ions?)?|conflicts?|disagreements?)\\b.*'
+        OR v_q RLIKE '.*\\b(expired|remaining|received|final|pending|documented|on file)\\b.*'
+    ) THEN
         v_class := 'CLASS_B';
         v_method := 'structure';
     ELSE
         -- 3. LLM fallback only for the residue neither scan caught.
-        v_raw := (SELECT AI_CLASSIFY(:QUESTION,
-            ['CLASS_A: a clinical judgment, treatment recommendation, prognosis, dosing, or emergency advice question',
-             'CLASS_B: a record-state, documentation, coverage, timeline, or gate-outcome question']):labels[0]::VARCHAR);
+        v_raw := (
+            SELECT AI_CLASSIFY(
+                :QUESTION,
+                ['CLASS_A: clinical judgment, treatment, prognosis, dosing, emergencies',
+                 'CLASS_B: record-state, documentation, coverage, timeline, gate outcome']
+            ):labels[0]::VARCHAR
+        );
         IF (v_raw ILIKE '%CLASS_A%') THEN
             v_class := 'CLASS_A';
         ELSEIF (v_raw ILIKE '%CLASS_B%') THEN

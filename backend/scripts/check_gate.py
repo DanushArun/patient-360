@@ -238,7 +238,28 @@ def check_preamble() -> None:
         record(SKIP, "preamble", f"{len(tools)} of 8 tool procedures written")
 
     for t in tools:
-        got = _extract_preamble(t.read_text())
+        source = t.read_text()
+        # Reference-only search and an unbound cohort query have deliberately
+        # different subjects. Check those documented boundaries explicitly;
+        # never exempt a patient-data tool from the shared consent block.
+        if t.name == '04_search_reference_documents.sql':
+            valid = ("snowflake_user = CURRENT_USER()" in source and
+                     "active = TRUE" in source and
+                     "REFERENCE_DOC_SEARCH" in source and
+                     "PATIENT_DOC_SEARCH" not in source)
+            record(PASS if valid else FAIL, f"preamble/{t.name}",
+                   "authenticated reference-only exception" if valid else "reference boundary missing")
+            continue
+        if t.name == '05_cohort_query.sql':
+            valid = ("IF (v_binding_id IS NOT NULL)" in source and
+                     "'binding_mismatch'" in source and
+                     "snowflake_user = CURRENT_USER()" in source and
+                     "active = TRUE" in source and
+                     "FROM SEMANTIC_VIEW(" in source)
+            record(PASS if valid else FAIL, f"preamble/{t.name}",
+                   "authenticated unbound-cohort exception" if valid else "cohort boundary missing")
+            continue
+        got = _extract_preamble(source)
         if got is None:
             record(FAIL, f"preamble/{t.name}",
                    "no preamble markers - this procedure may be skipping the consent check")
@@ -296,6 +317,10 @@ def manifest_targets() -> list[str]:
 
 
 def check_manifest() -> None:
+    setup = ROOT / 'backend/sql/setup.sql'
+    if setup.exists() and re.search(r'^(<<<<<<<|=======|>>>>>>>)', setup.read_text(), re.MULTILINE):
+        record(FAIL, 'manifest', 'setup.sql contains unresolved merge-conflict markers')
+        return
     targets = manifest_targets()
     if not targets:
         record(SKIP, "manifest",

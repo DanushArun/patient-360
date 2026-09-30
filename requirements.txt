@@ -1,6 +1,7 @@
 python-dotenv
 jsonschema
 pytest
+PyYAML
 fpdf2
 pypdf
 streamlit

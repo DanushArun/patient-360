@@ -187,6 +187,7 @@ EXECUTE IMMEDIATE FROM './streams/01_streams.sql';
 -- Every tool opens with the block in ./procedures/tools/_preamble.sql, and the
 -- eight copies are diffed against it at the Day-5 gate.
 EXECUTE IMMEDIATE FROM './procedures/bind_patient.sql';                      -- [2]
+EXECUTE IMMEDIATE FROM './procedures/release_patient_binding.sql';
 EXECUTE IMMEDIATE FROM './procedures/evaluate_gates.sql';                    -- [2]
 EXECUTE IMMEDIATE FROM './procedures/classify_question.sql';                 -- [1]
 EXECUTE IMMEDIATE FROM './procedures/validate_answer.sql';                   -- [1]

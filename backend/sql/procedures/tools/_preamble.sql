@@ -15,9 +15,10 @@
 --   scripts/check_gate.py --preamble enforces it, so drift is a build failure
 --   rather than a discovery.
 --
--- STATUS: NOT YET EXECUTED. No GOVERNANCE tables exist at the time of writing.
---   Compile-check this the day tables/10_governance.sql lands, before pasting
---   it eight times. Record the query ID.
+-- Six bound-patient tools use this block; reference search and the unbound
+-- cohort query have explicit boundary checks in scripts/check_gate.py.
+-- Updated 30 September: changes and review-task tools now recheck consent.
+-- These source changes require compilation and access tests on the account.
 --
 -- ORDER MATTERS, AND THE ORDER IS NOT OBVIOUS
 --   0. known_as_of is resolved FIRST, before any check can fail, because the

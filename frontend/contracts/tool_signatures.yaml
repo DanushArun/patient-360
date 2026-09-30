@@ -94,16 +94,9 @@ tools:
       identity) for the BOUND patient, each with outcome (pass|fail|not_evaluated|
       conflicting), the rule id and version that produced it, the reason, and the
       evidence_ids behind it. This is the authoritative source for gaps and blockers.
-      Never compute readiness yourself. Takes no patient selector. encounter_ref is
-      optional and must belong to the bound patient; omit it for the next scheduled encounter.
+      Never compute readiness yourself. Takes no patient or encounter selector. The
+      agent-facing wrapper always resolves the bound patient's active readiness scope.
     parameters:
-      encounter_ref:
-        type: string
-        required: false
-        description: >
-          Must resolve to an encounter belonging to the bound patient. An encounter from
-          another patient fails on binding_mismatch, not on authorisation - a cleaner and
-          earlier rejection.
       known_as_of:
         type: string
         required: false

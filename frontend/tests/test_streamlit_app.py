@@ -38,9 +38,11 @@ def test_app_runs_offline_without_exception():
     assert at.session_state["selected_evidence"] is None
 
 
-def test_chat_input_disabled_until_a_patient_is_bound():
+def test_chat_input_absent_until_a_patient_is_bound():
     at = _run_app()
-    assert at.chat_input[0].disabled is True
+    # A disabled chat input still triggers Streamlit's page auto-scroll.
+    # Keep the census free of chat until a patient is selected.
+    assert not at.chat_input
 
 
 def test_binding_the_demo_patient_enables_input_and_resets_state():

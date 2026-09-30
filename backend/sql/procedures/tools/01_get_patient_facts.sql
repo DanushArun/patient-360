@@ -26,9 +26,11 @@ DECLARE
     v_result         VARIANT;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
+    -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
     v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF), CURRENT_TIMESTAMP());
     v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
 
+    -- 1 -- SELECTION. The subject comes from a human click, never from question text.
     v_binding_id := (SELECT binding_id
                        FROM SAARTHI.GOVERNANCE.PATIENT_BINDING
                       WHERE session_id = CURRENT_SESSION()
@@ -36,17 +38,22 @@ BEGIN
                       ORDER BY bound_at DESC
                       LIMIT 1);
     IF (v_binding_id IS NULL) THEN
-        RETURN OBJECT_CONSTRUCT('error', 'no_patient_bound', 'known_as_of', :v_known_as_of_s);
+        RETURN OBJECT_CONSTRUCT('error', 'no_patient_bound',
+                                'known_as_of', :v_known_as_of_s);
     END IF;
 
-    v_patient_id := (SELECT patient_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING WHERE binding_id = :v_binding_id);
+    v_patient_id := (SELECT patient_id
+                       FROM SAARTHI.GOVERNANCE.PATIENT_BINDING
+                      WHERE binding_id = :v_binding_id);
 
+    -- 2 -- AUTHORISATION. CURRENT_USER() survives owner's-rights elevation; CURRENT_ROLE() does not (F3).
     v_practitioner := (SELECT practitioner_id
                          FROM SAARTHI.GOVERNANCE.PRACTITIONER
                         WHERE snowflake_user = CURRENT_USER()
                           AND active = TRUE);
     IF (v_practitioner IS NULL) THEN
-        RETURN OBJECT_CONSTRUCT('error', 'no_patient_access', 'known_as_of', :v_known_as_of_s);
+        RETURN OBJECT_CONSTRUCT('error', 'no_patient_access',
+                                'known_as_of', :v_known_as_of_s);
     END IF;
 
     v_care_team_id := (SELECT care_team_id
@@ -58,9 +65,12 @@ BEGIN
                         ORDER BY active_from DESC
                         LIMIT 1);
     IF (v_care_team_id IS NULL) THEN
-        RETURN OBJECT_CONSTRUCT('error', 'no_patient_access', 'known_as_of', :v_known_as_of_s);
+        -- Reveals nothing about whether the patient exists. Do not add a reason.
+        RETURN OBJECT_CONSTRUCT('error', 'no_patient_access',
+                                'known_as_of', :v_known_as_of_s);
     END IF;
 
+    -- 3 -- CONSENT, at query time. Never at ingest, never cached in the binding.
     v_consent_id := (SELECT c.consent_id
                        FROM SAARTHI.GOVERNANCE.CONSENT c
                        JOIN SAARTHI.GOVERNANCE.PRACTITIONER p
@@ -77,10 +87,15 @@ BEGIN
                       ORDER BY c.valid_from DESC
                       LIMIT 1);
     IF (v_consent_id IS NULL) THEN
+        -- Release the binding: the context is cleared, not merely hidden.
         UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING
            SET released_at = CURRENT_TIMESTAMP()
-         WHERE binding_id = :v_binding_id AND released_at IS NULL;
-        RETURN OBJECT_CONSTRUCT('error', 'access_withdrawn', 'known_as_of', :v_known_as_of_s);
+         WHERE binding_id = :v_binding_id
+           AND released_at IS NULL;
+        -- This code DOES reveal that a record exists. That is deliberate: it only
+        -- reaches a user who previously had legitimate access to it.
+        RETURN OBJECT_CONSTRUCT('error', 'access_withdrawn',
+                                'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
 
@@ -106,7 +121,9 @@ BEGIN
             -- has.
             v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('concept', concept_name, 'value', value_num,
                             'value_text', value_text,
-                            'is_derived', is_derived, 'derivation', derivation, 'event_time', event_time, 'event_id', event_id))
+                            'is_derived', is_derived, 'derivation', derivation,
+                            'event_time', event_time, 'source_recorded_at', source_recorded_at,
+                            'ingested_at', ingested_at, 'event_id', event_id))
                           FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS
                           WHERE patient_id = :v_patient_id AND ingested_at <= :v_known_as_of);
         WHEN 'coverage' THEN
