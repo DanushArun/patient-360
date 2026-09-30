@@ -16,8 +16,8 @@ WHAT it does (per patient)
     3. Write the bundle JSON to data/generated/fhir/<patient_id>.json for
        inspection.
     4. Upsert the bundle into RAW_FHIR_BUNDLE keyed on source_id, so a
-       re-run replaces the payload but leaves any downstream flatten_fhir
-       processing marker intact.
+       re-run replaces the payload and clears downstream processing markers
+       so flatten_fhir processes the refreshed bundle again.
 
 WHY idempotent via source_id (not bundle_id)
     bundle_id is UUID-generated per row. Using MERGE on it would insert a
@@ -93,8 +93,13 @@ def query_rows(connection: str, sql: str) -> list[dict]:
     return []
 
 
+def sql_literal(value: str) -> str:
+    """Escape a string for Snowflake SQL files, including backslash escapes."""
+    return "'" + value.replace("\\", "\\\\").replace("'", "''") + "'"
+
+
 def fetch_patients(connection: str, restrict: str | None) -> list[str]:
-    filter_clause = f"WHERE patient_id = '{restrict}'" if restrict else ""
+    filter_clause = f"WHERE patient_id = {sql_literal(restrict)}" if restrict else ""
     rows = query_rows(connection, f"SELECT patient_id FROM SAARTHI.CORE.PATIENT {filter_clause} ORDER BY patient_id")
     return [r["PATIENT_ID"] for r in rows]
 
@@ -104,7 +109,7 @@ def fetch_identifiers(connection: str, patient_id: str) -> list[dict]:
         connection,
         f"SELECT source_system AS SYSTEM, source_patient_id AS VALUE "
         f"FROM SAARTHI.CORE.ID_MAP "
-        f"WHERE patient_id = '{patient_id}' ORDER BY source_system, source_patient_id",
+        f"WHERE patient_id = {sql_literal(patient_id)} ORDER BY source_system, source_patient_id",
     )
 
 
@@ -125,7 +130,7 @@ def fetch_events(connection: str, patient_id: str) -> list[dict]:
                source_recorded_at AS SOURCE_RECORDED_AT,
                status AS STATUS
           FROM SAARTHI.CORE.CLINICAL_EVENT
-         WHERE patient_id = '{patient_id}'
+         WHERE patient_id = {sql_literal(patient_id)}
          ORDER BY event_time
         """,
     )
@@ -134,20 +139,18 @@ def fetch_events(connection: str, patient_id: str) -> list[dict]:
 def load_bundle_into_db(connection: str, patient_id: str, bundle: dict) -> None:
     """Upsert one bundle into RAW_FHIR_BUNDLE, keyed on source_id.
 
-    Uses PARSE_JSON on a bind-friendly VARCHAR because Snowflake's VARIANT
+    Uses PARSE_JSON on an escaped VARCHAR because Snowflake's VARIANT
     literal syntax does not accept a raw JSON string in an INSERT VALUES.
-    The `payload_json` VARCHAR is passed through a temp SELECT so quoting
-    is handled by the JSON serializer rather than manual escaping in the
-    SQL string.
+    Both the JSON and source identifier are escaped as SQL string literals;
+    JSON serialization alone is not SQL escaping.
     """
     payload_json = json.dumps(bundle, separators=(",", ":"))
-    payload_escaped = payload_json.replace("'", "''")  # single-quote SQL escape
     source_id = f"SAARTHI-FHIR-EXPORT/{patient_id}"
     run_snow(connection, f"""
         MERGE INTO SAARTHI.DOCUMENTS.RAW_FHIR_BUNDLE t
         USING (SELECT
-                 '{source_id}'                     AS source_id,
-                 PARSE_JSON('{payload_escaped}')   AS payload,
+                 {sql_literal(source_id)}          AS source_id,
+                 PARSE_JSON({sql_literal(payload_json)}) AS payload,
                  'collection'                      AS bundle_type
               ) s
            ON t.source_id = s.source_id
