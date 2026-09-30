@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./fonts.css";
 import "./globals.css";
 import "./saarthi.css";
+import "./workspace.css";
 
 export const metadata: Metadata = {
   title: "SAARTHI — Care Readiness & Evidence",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ background: "#FFFFFF" }}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

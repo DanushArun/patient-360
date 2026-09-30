@@ -4,7 +4,7 @@
 // app, not chosen.
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
-import { ClipboardList, LayoutDashboard } from "lucide-react";
+import { ClipboardList, LayoutDashboard, ShieldCheck, PanelLeft } from "lucide-react";
 
 export const INK = "#1A1D21";
 export const INK_SECONDARY = "#4A5157";
@@ -78,13 +78,15 @@ export function WorkspaceNav({ current }: { current?: "census" | "queue" | "hist
   ];
   return <nav className="sa-workspace-nav" aria-label="SAARTHI workspace">
     <Link href="/" className="sa-brand" aria-label="SAARTHI home"><span className="sa-brand-mark">S</span><span><strong>SAARTHI</strong><small>Care readiness</small></span></Link>
+    <div className="sa-sidebar-heading">Care workspace</div>
     <div className="sa-workspace-links">{items.map((item) => {
       const Icon = item.icon;
-      return <Link key={item.key} href={item.href} className={`sa-workspace-link${current === item.key ? " sa-workspace-link-active" : ""}`}>
+      return <Link key={item.key} href={item.href} aria-current={current === item.key ? "page" : undefined} className={`sa-workspace-link${current === item.key ? " sa-workspace-link-active" : ""}`}>
         <Icon size={16} strokeWidth={1.8} aria-hidden="true" />{item.label}
       </Link>;
     })}</div>
-    <span className="sa-workspace-context">Clinical operations</span>
+    <div className="sa-sidebar-evidence"><ShieldCheck size={22} strokeWidth={1.5} aria-hidden="true" /><strong>Care readiness & evidence</strong><p>Readiness checks, supporting records, and review history.</p></div>
+    <span className="sa-workspace-context"><PanelLeft size={15} aria-hidden="true" />Clinical operations</span>
   </nav>;
 }
 
@@ -108,7 +110,7 @@ export const Chevron = () => (
 // 5rem 5rem 10rem at the 17px root (85px 85px 170px, measured).
 export function Page({ children }: { children: ReactNode }) {
   return (
-    <main className="sa-page" style={{ maxWidth: 1180, margin: "0 auto", padding: "85px 85px 170px", color: INK }}>
+    <main className="sa-page">
       {children}
     </main>
   );

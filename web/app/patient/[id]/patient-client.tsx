@@ -82,14 +82,14 @@ function messageText(patient: PatientData, visit: Date, items: { key: string; ru
 
 function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
   return <><WorkspaceNav />
-  <Columns template="7fr 5fr" gap={68}>
+  <div className="sa-patient-header">
     <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
       <div className="sa-masthead-patient">{patient.patientName}</div>
       <Field label="Patient" value={patient.patientId} /><Field label="Consent" value={patient.consentId ?? "none"} />
     </div>
-    <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr 2fr 2fr", gap: 17, paddingTop: 4 }}>
+    <div className="sa-patient-header-actions">
       <Link href="/" className="sa-btn" style={buttonStyle} aria-label={`Select another patient; currently ${patient.patientName}`}>
-        {patient.patientName}<span aria-hidden="true">⌄</span>
+        Change patient
       </Link>
       <Link href={`/navigator/${patient.patientId}`} className="sa-btn" style={{ ...buttonStyle, fontSize: 14 }}>
         Navigator View
@@ -99,7 +99,7 @@ function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
       </Link>
       <Field label="Practitioner" value={patient.practitionerName} />
     </div>
-  </Columns>
+  </div>
     <div className="sa-visit-context">
       <Field label="Next day-care visit" value={patient.scheduledAt ?? "Not scheduled"} />
       <Field label="Regimen" value={patient.regimen ?? "Not recorded"} />

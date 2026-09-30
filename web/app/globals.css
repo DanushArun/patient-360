@@ -555,25 +555,3 @@ main.mx-auto.max-w-7xl .sa-census-card:hover { border-color: #d7e1e7; background
 .sa-gate-tile:nth-child(4n) { border-right: 0; }.sa-gate-tile:nth-last-child(-n+4) { border-bottom: 0; }
 .sa-gate-tile:hover { background: #f6fafb !important; }.sa-gate-tile-selected { box-shadow: inset 0 3px 0 #17698b; background: #edf6f8 !important; }
 .sa-gate-tile .sa-status { margin-top: 10px; }
-
-/* Spacious priority-board composition for the coordinator queue. */
-.sa-queue-list { overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-.sa-queue-board { display: grid; gap: 30px; }
-.sa-queue-group { padding: 26px; border: 1px solid #d7e1e7; border-radius: 12px; background: #fff; box-shadow: 0 4px 18px rgb(26 55 72 / 5%); }
-.sa-queue-group > header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid #e3eaee; }
-.sa-queue-group h2 { margin: 4px 0 0; color: #183c50; font-size: 21px; line-height: 28px; font-weight: 600; letter-spacing: -.02em; }
-.sa-group-count { display: grid; min-width: 34px; height: 34px; padding: 0 10px; place-items: center; border-radius: 17px; background: #e8f2f5; color: #17698b; font-size: 14px; font-weight: 700; }
-.sa-queue-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding-top: 20px; }
-.sa-queue-row { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 22px; border: 1px solid #d7e1e7; border-radius: 9px; background: #fff; box-shadow: none; }
-.sa-queue-row:hover { border-color: #9fc0cd; background: #fbfdfe; box-shadow: 0 5px 18px rgb(26 55 72 / 7%); }
-.sa-queue-unowned { border-left: 4px solid #6c7c85; padding-left: 19px; background: #f9fbfc; }
-.sa-queue-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.sa-queue-patient { font-size: 18px; line-height: 24px; }.sa-queue-rule { display: flex; align-items: center; gap: 8px; color: #40525c; }.sa-queue-rule code { padding: 4px 7px; border-radius: 4px; background: #eef4f6; font-size: 12px; }.sa-queue-rule span { color: #75848d; font-size: 12px; }
-.sa-queue-detail { display: flex; justify-content: space-between; margin: 0; padding: 9px 10px; border-radius: 5px; background: #f3f7f8; color: #4a5a63; font-size: 13px; }.sa-queue-detail strong { color: #243840; }
-.sa-queue-owner { padding: 0; border: 0; }.sa-queue-actions { justify-content: flex-start; padding: 0; margin-top: auto; }.sa-queue-actions .sa-btn { flex: 1; }.sa-queue-column-head { display: none; }
-
-@media (max-width: 800px) {
-  .sa-workspace-nav { gap: 8px; }.sa-brand { min-width: auto; }.sa-workspace-context { display: none; }
-  .sa-queue-filters { grid-template-columns: 1fr; }.sa-queue-summary { width: 100%; }.sa-queue-row, .sa-queue-column-head { grid-template-columns: 1fr; }.sa-queue-column-head { display: none; }.sa-queue-cards { grid-template-columns: 1fr; }
-  .sa-readiness-heading { display: grid; }.sa-readiness-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.sa-gate-tile:nth-child(4n) { border-right: 1px solid #e3eaee; }.sa-gate-tile:nth-child(2n) { border-right: 0; }.sa-gate-tile:nth-last-child(-n+4) { border-bottom: 1px solid #e3eaee; }.sa-gate-tile:nth-last-child(-n+2) { border-bottom: 0; }
-}

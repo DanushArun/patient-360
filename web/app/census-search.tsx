@@ -57,7 +57,9 @@ export function CensusSearch({ censusData, error, alsoUnderCare }: {
             className="mb-6 border-l-2 py-2 pl-3 text-sm"
             style={{ borderColor: "var(--sa-ink-fail)", color: "var(--sa-ink-secondary)" }}
           >
-            Could not reach Snowflake: {error}
+            <strong>Patient list unavailable</strong>
+            <p>The record service could not be reached. Patient and visit information cannot be confirmed.</p>
+            <a href="/" className="underline">Try again</a>
           </div>
         )}
 
@@ -184,7 +186,7 @@ export function CensusSearch({ censusData, error, alsoUnderCare }: {
           </Link>
         )) : (
           <div className="text-sm" style={{ color: "var(--sa-ink-muted)" }}>
-            All accessible patients have upcoming visits.
+            {error ? "Patient information is unavailable." : "All accessible patients have upcoming visits."}
           </div>
         )}
       </div>

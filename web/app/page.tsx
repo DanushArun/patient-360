@@ -67,9 +67,9 @@ export default async function DayCarePage() {
       <WorkspaceNav current="census" />
       <div className="mb-5 flex items-start justify-between gap-6">
         <div>
-          <div className="text-[26px] font-medium tracking-[-0.035em]">SAARTHI</div>
+          <p className="sa-eyebrow">Care readiness</p>
+          <h1 className="sa-census-title">Day-care list</h1>
           <div className="mt-1 text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
-            Care readiness
             <div className="text-sm normal-case" style={{ color: "var(--sa-ink-secondary)" }}>
               no patient selected
             </div>
