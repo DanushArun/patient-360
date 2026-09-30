@@ -1,14 +1,21 @@
 # SAARTHI — Care Readiness & Evidence Copilot
 
-**This is a nationwide clinical product.** Not a single-hospital tool or a pilot demo — SAARTHI is built to work across facilities, states, and languages, for any patient anywhere in the country, on top of federated, ABHA-anchored identity.
+SAARTHI is a synthetic-data development prototype designed around federated,
+ABHA-anchored identity and cited record-state answers. Nationwide clinical deployment
+has not been established.
 
 **Goal:** Answer, with cited evidence and never an opaque prediction, whether a cancer patient is ready for their next step of care — clinically, documentationally, and financially — and exactly what is missing, so families don't take a 1,000+ km trip for nothing.
 
 Built for the Snowflake CoCo CLI Hackathon 2026 (GCC Edition) — Problem Statement 04: Patient and Member 360 and Clinical or Regulatory Document Copilot. **Synthetic data only. No real patient information.**
 
-**Status: architecture complete and validated (v2); build in progress.** See `IMPLEMENTATION-STATUS.md` for the honest, per-component `built | partial | designed-only` ledger, and `AGENTS.md` for the rules binding anyone working in this repo.
+**30 September baseline:** the dashboard source is reconciled and locally tested.
+Live data views remain blocked under the configured `SAARTHI_APP` role; cleanup does
+not constitute SQL deployment or clinical validation. Start with
+[the baseline and limitations](docs/WORKSPACE-BASELINE-2026-09-30.md) and
+[dashboard setup](web/README.md). `IMPLEMENTATION-STATUS.md` retains dated account
+observations; `AGENTS.md` sets the repository rules.
 
-## The seven rules everything obeys
+## The seven architecture rules
 
 
 |        |                                                                                                                                 |
@@ -76,10 +83,11 @@ Regenerate the `.drawio` file with `python3 -m tools.drawio.generate` after edit
 - `backend/scripts/` — `check_gate.py` (build-gate checks), `deploy.sh` (manifest-driven deploy)
 - `backend/eval/` — question sets, ground truth, adversarial probes, harness, results
 - `backend/tests/` — SQL and contract tests, kept separate from `frontend/` so it can't read its own answer key
-- `frontend/` — Streamlit-in-Snowflake app: `contracts/` (frozen answer/error/tool schemas), `core/`, `components/`, `pages/`, `fixtures/`
+- `frontend/` — Streamlit-in-Snowflake app: frozen `contracts/`, `core/`, `components/`, `fixtures/` and current entry point
+- `web/` — current Next.js development dashboard and optional local copilot provider
+- `local-ai/` — Ollama development profile and setup; governed data remains in Snowflake
 - `evidence/coco/` — CoCo session notes, verification query IDs, proof of how this was built
 - `planning/` — architecture docs, diagrams, research, and superseded v1 planning kept as evidence
 - `tools/drawio/` — generator for the `.drawio` architecture document
 - `IMPLEMENTATION-STATUS.md` — the honest per-component build ledger
 - `AGENTS.md` — binding rules for anyone (or anything) working in this repo
-

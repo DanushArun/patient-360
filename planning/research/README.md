@@ -60,6 +60,13 @@ Every PS-04 competitor profiled. Rule ledger showing where each one fails.
 |---|---|
 | `ps04-competitive-landscape.md` | 4 serious competitors (Verity, ATLAS, SynapseCortex, CareCompass). None implements R2 or R5+R6. Verity is strongest. |
 
+## 📁 Product workflow study
+
+| File | What it answers |
+|---|---|
+| `health-system-workflow-landscape-2026-09-24.md` | Comparative workflow and chart-pattern study across Indian hospital/clinic products, global EHRs, diagnostic systems and national exchange programmes. Includes evidence limits and SAARTHI-specific implications. |
+| `open-source-hospital-workflow-code-review-2026-09-24.md` | Source-level review of selected patient, encounter, chart, queue and hospital workflow paths in OpenMRS, Bahmni, OpenEMR, Open Hospital, LibreHealth and HospitalRun; includes archive/evidence limits. |
+
 ---
 
 ## 📁 implementation/ — How to build it (4 files)

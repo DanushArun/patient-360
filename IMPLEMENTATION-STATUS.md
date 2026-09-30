@@ -1,5 +1,11 @@
 # SAARTHI — Implementation Status
 
+**30 September source reconciliation:** the current tested development baseline
+and account-access blockers are in [WORKSPACE-BASELINE](docs/WORKSPACE-BASELINE-2026-09-30.md).
+The dated deployment counts below are retained as historical observations, not
+current clean-account proof. Five of five read probes failed with `002003` under
+the configured `SAARTHI_APP` role. New source consent/release corrections are not deployed.
+
 **Every component, marked honestly. Updated as the build progresses.**
 
 **23 September audit notice:** Most inventory and counts below are a 20 September snapshot.
