@@ -88,7 +88,10 @@ export async function withPatientSession<T>(
     return await fn(run);
   } finally {
     try {
-      await run("CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()");
+      await run(
+        "UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING SET released_at = CURRENT_TIMESTAMP() " +
+          "WHERE session_id = CURRENT_SESSION() AND released_at IS NULL"
+      );
     } finally {
       destroyConnection(conn);
     }

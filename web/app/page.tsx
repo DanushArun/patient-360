@@ -1,41 +1,13 @@
 import { fetchCensus, fetchBindablePatients, fetchPractitionerName, buildCensus } from "@/lib/census";
 import type { ReadinessRow, Chair } from "@/lib/census";
-import { CensusChip, Chevron, WorkspaceNav, type CensusStatus } from "@/components/sa";
+import { CensusChip, WorkspaceNav, type CensusStatus } from "@/components/sa";
 import Link from "next/link";
 import { CensusSearch } from "./census-search";
+import { PatientPicker } from "./patient-picker";
 
 export const dynamic = "force-dynamic"; // always fresh readiness state, never stale
 
 type PatientOption = { id: string; name: string };
-
-function PatientPicker({ patients }: { patients: PatientOption[] }) {
-  return (
-    <details className="relative">
-      <summary
-        className="sa-picker-trigger flex cursor-pointer list-none items-center justify-center gap-1 rounded px-4 py-2 text-sm [&::-webkit-details-marker]:hidden"
-        style={{ border: "1px solid var(--sa-rule)", color: "var(--sa-ink)" }}
-      >
-        Select patient <Chevron />
-      </summary>
-      <div
-        className="absolute right-0 z-20 mt-2 max-h-80 min-w-64 overflow-y-auto rounded bg-white py-1"
-        style={{ border: "1px solid var(--sa-rule)", boxShadow: "0 4px 16px rgb(26 29 33 / 8%)" }}
-      >
-        {patients.length ? patients.map((patient) => (
-          <Link
-            key={patient.id}
-            href={`/patient/${patient.id}`}
-            prefetch={false}
-            className="sa-picker-item block px-4 py-2"
-          >
-            <span className="block">{patient.name}</span>
-            <span className="sa-meta">{patient.id}</span>
-          </Link>
-        )) : <span className="block px-4 py-3 text-sm sa-meta">No accessible patients are listed.</span>}
-      </div>
-    </details>
-  );
-}
 
 function dayLabel(iso: string) {
   const day = new Date(iso + "T00:00:00");
