@@ -11,8 +11,8 @@ npm run dev
 
 Open http://localhost:3000. The home page lists accessible patients and day-care
 visits; patient pages contain readiness, chat, timeline and review history.
-`/navigator/[id]` provides a separate family checklist and scheme view; `/judge`
-contains SQL probes. Screen existence does not establish complete clinical workflows.
+`/navigator/[id]` provides a separate family checklist and scheme view; `/review-queue`
+is the coordinator's operational worklist. Screen existence does not establish complete clinical workflows.
 
 Each request connects using the locally configured key-pair identity with primary
 `SAARTHI_APP` and secondary roles disabled. This is a single-operator development
@@ -41,11 +41,6 @@ worker could not bind its internal port in the current environment. `npm run dev
 retains Next.js's default development bundler; use `npm run dev -- --webpack` if
 the same worker restriction occurs. `npm start` serves an existing production build.
 
-Optional browser smoke: install Python Playwright and its Chromium browser, serve
-the production build on port 3100, then run `../.venv/bin/python tests/judge_smoke.py`.
-`SAARTHI_TEST_URL` can override the server URL; `PLAYWRIGHT_CHROMIUM_EXECUTABLE`
-can select an existing Chromium binary. Responses are synthetic intercepted fixtures.
-
 ## Account prerequisites and remaining limits
 
 Deploy the updated SQL manifest before relying on the new consent checks or binding
@@ -56,11 +51,9 @@ the preserved owner-procedure read integration; do not solve this with ACCOUNTAD
 The configured development account can authenticate as `SAARTHI_APP`; this is not proof
 that all required objects are accessible or that a clean deployment is reproducible.
 
-Judge count probes inspect their numeric results. The consent inventory is
-informational; it does not prove binding refusal. Scheme checks use SQL coverage/state
-proxies, not verified scheme authorisation. Navigator timing/checklist mapping and
-persistent Class A evidence packets remain incomplete. Synthetic engineering tests
-are not clinical validation.
+Scheme checks use SQL coverage/state proxies, not verified scheme authorisation.
+Navigator timing/checklist mapping and persistent Class A evidence packets remain
+incomplete. Synthetic engineering tests are not clinical validation.
 
 See `../docs/WORKSPACE-RECONCILIATION-2026-09-30.md` and
 `../docs/WORKSPACE-BASELINE-2026-09-30.md` for preservation decisions and verification.

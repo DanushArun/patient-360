@@ -1,6 +1,6 @@
 import { fetchCensus, fetchBindablePatients, fetchPractitionerName, buildCensus } from "@/lib/census";
 import type { ReadinessRow, Chair } from "@/lib/census";
-import { CensusChip, Chevron, type CensusStatus } from "@/components/sa";
+import { CensusChip, Chevron, WorkspaceNav, type CensusStatus } from "@/components/sa";
 import Link from "next/link";
 import { CensusSearch } from "./census-search";
 
@@ -92,6 +92,7 @@ export default async function DayCarePage() {
 
   return (
     <main className="mx-auto max-w-7xl px-8 py-10" style={{ color: "var(--sa-ink)" }}>
+      <WorkspaceNav current="census" />
       <div className="mb-5 flex items-start justify-between gap-6">
         <div>
           <div className="text-[26px] font-medium tracking-[-0.035em]">SAARTHI</div>
@@ -103,10 +104,6 @@ export default async function DayCarePage() {
           </div>
         </div>
         <div className="flex items-start gap-6">
-          <Link href="/judge" className="flex cursor-pointer items-center rounded px-3 py-2 text-sm sa-picker-item"
-            style={{ border: "1px solid var(--sa-rule)", color: "var(--sa-ink)" }}>
-            Judge Console
-          </Link>
           <PatientPicker patients={patientOptions} />
           <div className="text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
             Practitioner

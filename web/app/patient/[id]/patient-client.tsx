@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Columns, Field, Page, Rule, Stack, buttonStyle } from "@/components/sa";
+import { Columns, Field, Page, Rule, Stack, WorkspaceNav, buttonStyle } from "@/components/sa";
 import type { AgentTurn, Gate, PatientData } from "@/lib/patient";
 import data from "@/lib/navigator-data.json";
 import {
@@ -81,17 +81,21 @@ function messageText(patient: PatientData, visit: Date, items: { key: string; ru
 }
 
 function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
-  return <><Columns template="7fr 5fr" gap={68}>
+  return <><WorkspaceNav />
+  <Columns template="7fr 5fr" gap={68}>
     <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
       <div className="sa-masthead-patient">{patient.patientName}</div>
       <Field label="Patient" value={patient.patientId} /><Field label="Consent" value={patient.consentId ?? "none"} />
     </div>
-    <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr 2fr", gap: 17, paddingTop: 4 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr 2fr 2fr", gap: 17, paddingTop: 4 }}>
       <Link href="/" className="sa-btn" style={buttonStyle} aria-label={`Select another patient; currently ${patient.patientName}`}>
         {patient.patientName}<span aria-hidden="true">⌄</span>
       </Link>
       <Link href={`/navigator/${patient.patientId}`} className="sa-btn" style={{ ...buttonStyle, fontSize: 14 }}>
         Navigator View
+      </Link>
+      <Link href={`/history/${patient.patientId}`} className="sa-btn" style={{ ...buttonStyle, fontSize: 14 }}>
+        Review history
       </Link>
       <Field label="Practitioner" value={patient.practitionerName} />
     </div>

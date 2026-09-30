@@ -4,6 +4,7 @@
 // app, not chosen.
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
+import { ClipboardList, LayoutDashboard } from "lucide-react";
 
 export const INK = "#1A1D21";
 export const INK_SECONDARY = "#4A5157";
@@ -63,6 +64,28 @@ export function SaButton({ href, children, weight = 500 }: { href: string; child
       {children}
     </Link>
   );
+}
+
+/**
+ * The global navigation is deliberately small.  SAARTHI is a work surface,
+ * not a destination dashboard: the four links correspond to the documented
+ * coordinator/navigator workflows and no evaluator-only area is exposed.
+ */
+export function WorkspaceNav({ current }: { current?: "census" | "queue" | "history" | "navigator" } = {}) {
+  const items: { href: string; label: string; key: NonNullable<typeof current>; icon: typeof LayoutDashboard }[] = [
+    { href: "/", label: "Day-care list", key: "census", icon: LayoutDashboard },
+    { href: "/review-queue", label: "Review queue", key: "queue", icon: ClipboardList },
+  ];
+  return <nav className="sa-workspace-nav" aria-label="SAARTHI workspace">
+    <Link href="/" className="sa-brand" aria-label="SAARTHI home"><span className="sa-brand-mark">S</span><span><strong>SAARTHI</strong><small>Care readiness</small></span></Link>
+    <div className="sa-workspace-links">{items.map((item) => {
+      const Icon = item.icon;
+      return <Link key={item.key} href={item.href} className={`sa-workspace-link${current === item.key ? " sa-workspace-link-active" : ""}`}>
+        <Icon size={16} strokeWidth={1.8} aria-hidden="true" />{item.label}
+      </Link>;
+    })}</div>
+    <span className="sa-workspace-context">Clinical operations</span>
+  </nav>;
 }
 
 export function Field({ label, value, style }: { label: string; value: string; style?: CSSProperties }) {

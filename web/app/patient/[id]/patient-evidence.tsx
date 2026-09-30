@@ -23,30 +23,35 @@ export function GateStrip({ gates, knownAsOf, selectedRuleId, isSnapshot, onSele
   isSnapshot: boolean;
   onSelect: (ruleId: string) => void;
 }): ReactNode {
-  return <>
-    <div className="sa-field-label" style={{ margin: "12px 0 4px" }}>
-      Readiness checks{isSnapshot ? " · stored snapshot" : ""} · select any check for details
-      {knownAsOf && <> · <span className="sa-num">as of {knownAsOf}</span></>}
+  const counts = gates.reduce<Record<Outcome, number>>((all, gate) => {
+    all[gate.outcome as Outcome] += 1; return all;
+  }, { pass: 0, fail: 0, not_evaluated: 0, conflicting: 0 });
+  return <section className="sa-readiness-panel" aria-label="Readiness checks">
+    <div className="sa-readiness-heading">
+      <div><p className="sa-eyebrow">Current readiness{isSnapshot ? " · stored snapshot" : ""}</p><h2>Check the record, then act on the gap.</h2>
+        <p>Select any check to keep its evidence visible alongside the record.</p></div>
+      <div className="sa-readiness-counts" aria-label="Readiness summary">
+        <span><b className="sa-num">{counts.fail}</b> fail</span><span><b className="sa-num">{counts.conflicting}</b> conflict</span>
+        <span><b className="sa-num">{counts.not_evaluated}</b> unknown</span><span><b className="sa-num">{counts.pass}</b> pass</span>
+      </div>
     </div>
-    {Array.from({ length: Math.ceil(gates.length / 4) }, (_, row) => (
-      <div key={row} className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 17 }}>
-        {gates.slice(row * 4, row * 4 + 4).map((gate) => {
+    <div className="sa-readiness-asof">Select any check for details{knownAsOf && <> · Snapshot as of <span className="sa-num">{knownAsOf}</span></>}</div>
+    <div className="sa-readiness-grid">
+      {gates.map((gate) => {
           const ruleId = gate.rule_id ?? gate.gate;
           const selected = selectedRuleId === ruleId;
           return <button key={ruleId} type="button" aria-expanded={selected}
             aria-controls="readiness-evidence"
             aria-label={`${gate.gate}, ${gate.outcome}. Show check details`}
             onClick={() => onSelect(ruleId)}
-            className="sa-gate-tile rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ padding: "8px 6px", borderTop: `1px solid ${selected ? "var(--sa-patient-edge)" : "#D8DCDF"}`, background: selected ? "#f0f5f8" : "transparent" }}>
+            className={`sa-gate-tile text-left focus-visible:outline-2 focus-visible:outline-offset-2${selected ? " sa-gate-tile-selected" : ""}`}>
             <span className="sa-field-label block">{gate.gate}</span>
             <StatusChip outcome={gate.outcome as Outcome} />
             <span className="sa-meta mt-1 block"><code>{gate.rule_id} v{gate.rule_version}</code></span>
           </button>;
-        })}
-      </div>
-    ))}
-  </>;
+      })}
+    </div>
+  </section>;
 }
 
 export function GateCitation({ gate, selected, onSelect }: {

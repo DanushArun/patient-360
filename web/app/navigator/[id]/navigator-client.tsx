@@ -49,6 +49,7 @@ function langCode(language: string | null): string {
 export default function NavigatorClient({ patient }: { patient: PatientData }): ReactNode {
   const [language, setLanguage] = useState(langCode(patient.language));
   const [copyStatus, setCopyStatus] = useState<"copied" | "failed" | "">("");
+  const [reviewed, setReviewed] = useState<Set<string>>(() => new Set());
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [schemesLoading, setSchemesLoading] = useState(true);
   const fetched = useRef(false);
@@ -83,9 +84,6 @@ export default function NavigatorClient({ patient }: { patient: PatientData }): 
     </div>
     <div className="mb-2 flex items-center gap-4">
       <div className="text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>Navigator View</div>
-      <Link href={`/patient/${patient.patientId}`} style={{ ...buttonStyle, width: "auto", fontSize: 13, minHeight: 32, padding: "2px 12px" }}>
-        Full patient view
-      </Link>
       <Link href="/" style={{ ...buttonStyle, width: "auto", fontSize: 13, minHeight: 32, padding: "2px 12px" }}>
         Census
       </Link>
@@ -105,6 +103,10 @@ export default function NavigatorClient({ patient }: { patient: PatientData }): 
         <div>
           <div className="sa-check-text">{data.text[key as ChecklistKey][lang].replace("{earliest}", earliest)}</div>
           <div className="sa-meta">from {rules.map((rule) => <code key={rule}>{rule} </code>)}</div>
+          <div className="sa-navigator-review">
+            <span className={reviewed.has(key) ? "sa-review-state sa-review-state-done" : "sa-review-state"}>{reviewed.has(key) ? "✓ Reviewed by navigator" : "– Draft for navigator review"}</span>
+            {!reviewed.has(key) && <button type="button" className="sa-quiet-button" onClick={() => setReviewed((previous) => new Set(previous).add(key))}>Mark reviewed</button>}
+          </div>
         </div>
       </div>) : <div className="sa-meta">{data.text.all_clear[lang]}</div>}
 
@@ -120,7 +122,7 @@ export default function NavigatorClient({ patient }: { patient: PatientData }): 
       </div>
       <div className="sa-meta" style={{ marginTop: 8 }}>
         SAARTHI does not send messages. Copy this into WhatsApp or read it to the family.
-        Translations are drafted for review: have a native-speaking navigator check them before first use.
+        Translations are drafted for review: have a native-speaking navigator check them before first use. Review marks are local until the navigator workflow is connected to the task service.
       </div>
     </>}
 
