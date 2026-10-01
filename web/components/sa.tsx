@@ -83,7 +83,7 @@ export function WorkspaceNav({ current, patients, patientId, practitioner, previ
     <div className="ct-workspace"><ShieldCheck size={21} strokeWidth={1.5} aria-hidden="true" /><div>Care readiness<small>Patient 360</small></div></div>
     <div className="sa-workspace-links">{items.map((item) => {
       const Icon = item.icon;
-      return <Link key={item.key} href={item.href} aria-current={current === item.key ? "page" : undefined} className={`sa-workspace-link${current === item.key ? " sa-workspace-link-active" : ""}`}>
+      return <Link key={item.key} href={item.href} prefetch={false} aria-current={current === item.key ? "page" : undefined} className={`sa-workspace-link${current === item.key ? " sa-workspace-link-active" : ""}`}>
         <Icon size={16} strokeWidth={1.8} aria-hidden="true" />{item.label}
       </Link>;
     })}</div>

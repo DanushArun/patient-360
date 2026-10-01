@@ -131,12 +131,16 @@ BEGIN
         -- elevation (F3), so the RAP still filters by the real caller.
         LET v_text VARCHAR := NULL;
         SELECT dp.text INTO :v_text
-          FROM SAARTHI.DOCUMENTS.DOC_PAGE dp WHERE dp.doc_id = :v_doc_id AND dp.page_index = :v_page_index;
+          FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
+         WHERE dp.doc_id=:v_doc_id AND dp.page_index=:v_page_index
+           AND d.patient_id=:v_patient_id AND d.scope='patient' AND d.status='active'
+           AND d.ingested_at<=:v_known_as_of;
 
         IF (v_text IS NOT NULL) THEN
             v_out := ARRAY_APPEND(v_out, OBJECT_CONSTRUCT(
                 'kind', 'document_span', 'chunk_id', v_chunk_id, 'doc_id', v_doc_id,
-                'page_index', v_page_index, 'text', v_text));
+                'page_index', v_page_index, 'char_start', 0, 'char_end', LENGTH(v_text), 'text', v_text));
         END IF;
         v_i := v_i + 1;
     END WHILE;

@@ -4,17 +4,21 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Field, Page, WorkspaceNav, buttonStyle } from "@/components/sa";
 import type { Gate, PatientData, ReviewTask } from "@/lib/patient";
+import { TaskActions } from "@/components/task-actions";
+import { EvidenceHistory } from "@/components/evidence-history";
 
 type State = "loading" | "ready" | "error";
 const displayState = (state: string) => state.replaceAll("_", " ");
 
-function TaskLifecycle({ task }: { task: ReviewTask }): ReactNode {
+function TaskLifecycle({ task, patientId, owners, onSaved }: { task: ReviewTask; patientId: string; owners: {id: string; name: string}[]; onSaved: () => void }): ReactNode {
   return <article className="sa-history-item">
-    <div className="sa-history-line"><span className="sa-history-dot" aria-hidden="true" /><span>Filed</span><span className="sa-history-rail" aria-hidden="true" /><span className={task.state === "acknowledged" || task.state === "resolved" ? "" : "sa-history-muted"}>Acknowledged</span><span className="sa-history-rail" aria-hidden="true" /><span className={task.state === "resolved" ? "" : "sa-history-muted"}>Resolved</span></div>
+    <div className="sa-history-line"><span className="sa-history-dot" aria-hidden="true" /><span>{task.isEvent ? "Recorded action" : "Review task"} · {displayState(task.state)}</span></div>
     <strong>{task.action.replaceAll("_", " ")}</strong>
     <p>{task.reason || "No reason was returned with this task."}</p>
     <div className="sa-meta">Owner {task.owner} · created <span className="sa-num">{task.createdAt}</span> · current state {displayState(task.state)}</div>
     <div className="sa-meta">Task <code>{task.taskId}</code></div>
+    {task.isEvent && <div className="sa-meta">Action by {task.actor}</div>}
+    <TaskActions patientId={patientId} task={task} owners={owners} onSaved={onSaved} />
   </article>;
 }
 
@@ -22,16 +26,18 @@ export default function HistoryClient({ patient }: { patient: PatientData }): Re
   const initial = patient.gates.find((gate) => gate.outcome !== "pass")?.rule_id ?? patient.gates[0]?.rule_id ?? "";
   const [rule, setRule] = useState(initial);
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
+  const [owners, setOwners] = useState<{id: string; name: string}[]>([]);
+  const [revision, setRevision] = useState(0);
   const [state, setState] = useState<State>("loading");
   useEffect(() => {
     if (!rule) { setTasks([]); setState("ready"); return; }
     let live = true; setState("loading");
     fetch(`/api/patient/${encodeURIComponent(patient.patientId)}/review-tasks?ruleId=${encodeURIComponent(rule)}`, { cache: "no-store" })
-      .then(async (res) => ({ res, body: await res.json() as { tasks?: ReviewTask[] } }))
-      .then(({ res, body }) => { if (!res.ok || !body.tasks) throw new Error(); if (live) { setTasks(body.tasks); setState("ready"); } })
+      .then(async (res) => ({ res, body: await res.json() as { tasks?: ReviewTask[]; owners?: {id: string; name: string}[] } }))
+      .then(({ res, body }) => { if (!res.ok || !body.tasks) throw new Error(); if (live) { setTasks(body.tasks); setOwners(body.owners ?? []); setState("ready"); } })
       .catch(() => { if (live) setState("error"); });
     return () => { live = false; };
-  }, [patient.patientId, rule]);
+  }, [patient.patientId, rule, revision]);
   const selectedGate: Gate | undefined = patient.gates.find((gate) => gate.rule_id === rule);
   return <Page>
     <WorkspaceNav current="history" />
@@ -46,11 +52,11 @@ export default function HistoryClient({ patient }: { patient: PatientData }): Re
         {selectedGate && <div className="sa-history-rule"><div><strong>{selectedGate.rule_id} v{selectedGate.rule_version}</strong><p>{selectedGate.reason ?? "No reason is available for this check."}</p></div><span className="sa-status-history">{selectedGate.outcome.replace("_", " ")}</span></div>}
         <div className="sa-history-section-head"><h2>Task lifecycle</h2><Link href={`/patient/${patient.patientId}`} style={{ ...buttonStyle, width: "auto", minHeight: 36, fontSize: 14 }}>Open patient record</Link></div>
         {state === "loading" && <div className="sa-loading-lines" role="status"><span /><span /><span /></div>}
-        {state === "error" && <div className="sa-limitation">Task history could not be loaded. The readiness result is still shown above; retry from the patient record if needed.</div>}
+        {state === "error" && <div className="sa-limitation">Task history could not be loaded. <button type="button" onClick={() => setRevision(n => n+1)}>Retry</button></div>}
         {state === "ready" && !tasks.length && <div className="sa-empty-state"><strong>No task has been filed for this check.</strong><span>Any future document request or escalation will appear here with its owner and state.</span></div>}
-        {state === "ready" && tasks.map((task) => <TaskLifecycle key={task.taskId} task={task} />)}
+        {state === "ready" && tasks.map((task) => <TaskLifecycle key={task.taskId} task={task} patientId={patient.patientId} owners={owners} onSaved={() => setRevision(n => n+1)} />)}
       </section>
-      <aside className="sa-history-aside"><h2>Audit scope</h2><p>The connected record can show filed task history for this rule. Version-chain and answer-history entries need their documented data services before they can be represented as facts.</p><p className="sa-meta">This avoids fabricating an audit trail from absent data.</p></aside>
+      <aside className="sa-history-aside"><EvidenceHistory patientId={patient.patientId} /></aside>
     </div>
   </Page>;
 }

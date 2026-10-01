@@ -1,5 +1,22 @@
 # SAARTHI — Implementation Status
 
+**1 October 2026 update — OS69400, partial E2E:** the dashboard and review queue
+now use access-checked owner procedures with `SAARTHI_APP`; the local admin override
+is off. One approved task passed acknowledgement, same-owner reassignment,
+resolution and retry/read-back checks without changing its 12 clinical results.
+One existing one-page PDF passed parsing, independent two-family extraction,
+patient Search, exact source-text retrieval and cross-patient denial. Both Search
+services were suspended after testing. These are bounded engineering checks,
+not a completed document-to-rule-to-validated-answer workflow or clinical validation.
+Answer history, prepared practitioner packets and one-patient readiness saving
+are implemented but still need complete UI runtime verification. Reference data,
+different-owner reassignment, permission/session/language regressions, clean-account
+patch deployment and the answer guard remain open. Hosting/per-user login are
+deferred; Judge Console is excluded from this frontend scope. **49 web tests,
+TypeScript and the production build passed.** See the latest checkpoint in
+[the test and cost log](docs/PROTOTYPE-COST-CONTROLS.md) and [web setup](web/README.md).
+The dated observations below describe earlier checkpoints, not the current account.
+
 **30 September source reconciliation:** the current tested development baseline
 and account-access blockers are in [WORKSPACE-BASELINE](docs/WORKSPACE-BASELINE-2026-09-30.md).
 The dated deployment counts below are retained as historical observations, not

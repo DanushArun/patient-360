@@ -38,6 +38,9 @@ BEGIN
             'columns', ARRAY_CONSTRUCT('chunk_id', 'doc_id', 'page_index', 'jurisdiction', 'effective_date'),
             'limit', 5
         )));
+    IF (:JURISDICTION IS NOT NULL) THEN
+        v_payload := TO_JSON(OBJECT_INSERT(PARSE_JSON(v_payload),'filter',v_filter_obj));
+    END IF;
     v_search_json := (SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
         'SAARTHI.DOCUMENTS.REFERENCE_DOC_SEARCH', :v_payload));
     v_hits := GET_PATH(PARSE_JSON(:v_search_json), 'results');
@@ -52,13 +55,19 @@ BEGIN
         -- the chunk text itself is authoritative here - unlike the patient
         -- path, there is no governed table to re-fetch through.
         LET v_text VARCHAR := NULL;
-        SELECT text INTO :v_text FROM SAARTHI.DOCUMENTS.DOC_CHUNK
-         WHERE doc_id = :v_doc_id AND page_index = :v_page_index AND doc_scope = 'reference';
+        SELECT dp.text INTO :v_text FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
+         WHERE dp.doc_id=:v_doc_id AND dp.page_index=:v_page_index AND d.scope='reference'
+           AND d.patient_id IS NULL AND d.status='active'
+           AND (:JURISDICTION IS NULL OR d.jurisdiction=:JURISDICTION)
+           AND (:EFFECTIVE_DATE IS NULL OR d.effective_date<=TRY_TO_DATE(:EFFECTIVE_DATE));
 
+        IF (v_text IS NOT NULL) THEN
         v_out := ARRAY_APPEND(v_out, OBJECT_CONSTRUCT(
             'kind', 'reference_clause', 'doc_id', v_doc_id, 'page_index', v_page_index,
             'jurisdiction', GET_PATH(:v_hit, 'jurisdiction'), 'effective_date', GET_PATH(:v_hit, 'effective_date'),
             'text', v_text));
+        END IF;
         v_i := v_i + 1;
     END WHILE;
 

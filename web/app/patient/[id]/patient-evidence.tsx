@@ -87,7 +87,7 @@ export function EvidencePanel({ patientId, turn, selected, feedback, actionsAvai
     escalate: feedback[`${selected.rule_id}:escalate`],
   }}
     actionsAvailable={actionsAvailable} onAction={onAction} onUnpin={onUnpin} />;
-  if (turn) return <AnswerEvidence turn={turn} />;
+  if (turn) return <AnswerEvidence turn={turn} patientId={patientId} />;
   return <div className="sa-meta">
     Select a readiness check above to inspect its result, reason, and evidence. Chat answers
     include their supporting tool records here.
@@ -184,13 +184,13 @@ function ActionButtons({ gate, feedback, actionsAvailable, onAction }: {
   </>;
 }
 
-function AnswerEvidence({ turn }: { turn: Turn }): ReactNode {
+function AnswerEvidence({ turn, patientId }: { turn: Turn; patientId: string }): ReactNode {
   const gates = turn.gates.filter((gate) => gate.evidence_ids?.length);
   return <>
     <div className="sa-field-label">How this was answered</div>
     {turn.tools.map((tool, index) => <ToolEvidence key={`${tool.name}-${index}`} tool={tool} />)}
     {gates.map((gate) => <GateEvidence key={gate.rule_id} gate={gate} />)}
-    <PatientAnswerArtifact turn={turn} />
+    <PatientAnswerArtifact turn={turn} patientId={patientId} />
     <div className="sa-meta" style={{ marginTop: 8 }}>
       Click &quot;Evidence&quot; on any claim above to pin just that one here.
     </div>

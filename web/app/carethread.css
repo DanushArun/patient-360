@@ -44,11 +44,18 @@ html, body { font-size: 14px; line-height: 1.55; }
 .ct-snapshot { text-align: right; }
 .ct-snapshot span { display: block; font-size: 8px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--sa-ink-muted); }
 .ct-snapshot strong { display: block; font-size: 11px; font-weight: 500; margin-top: 5px; }
+.ct-snapshot.ct-readiness-control { display: block; }
+.ct-readiness-control button { margin-top: 8px; }
+@media (max-width: 700px) {
+  .ct-page-heading:has(.ct-readiness-control) { flex-wrap: wrap; gap: 16px; }
+  .ct-snapshot.ct-readiness-control { text-align: left; }
+}
 .sa-patient-header { padding: 23px 25px; border-radius: 13px; background: #f4f6ef; }
 .sa-patient-header .sa-masthead { align-items: center; gap: 17px; flex-wrap: wrap; }
 .sa-masthead-patient { font-size: 24px; font-weight: 600; letter-spacing: -.7px; }
 .sa-patient-header-actions { gap: 9px; }
-.ct-patient-identity { flex: 1; min-width: 0; }
+.sa-patient-header { flex-wrap: wrap; }
+.ct-patient-identity { flex: 1 1 260px; min-width: 0; }
 .ct-patient-identity h2 { display: inline; font-size: 24px; font-weight: 600; letter-spacing: -.7px; margin-right: 8px; }
 .ct-patient-id { font-size: 10px; font-family: "JetBrains Mono",monospace; color: #657950; }
 .ct-patient-identity p { font-size: 11px; color: #65725d; margin: 5px 0 0; }
@@ -107,3 +114,8 @@ main.mx-auto.max-w-7xl > .mb-5 { margin-top: 31px; }
 @media(max-width:1250px) { :root { --sa-sidebar-width:215px; }.sa-page,main.mx-auto.max-w-7xl { padding-left:23px !important; padding-right:23px !important; }.sa-workspace-nav { padding-left:12px;padding-right:12px; }.ct-content-layout { grid-template-columns:minmax(0,1fr) 305px;gap:18px; }.ct-page-heading h1 { font-size:26px; }.ct-snapshot { display:none; }.ct-review-card > p,.ct-review-card-bottom,.ct-review-card details { margin-left:0; }.ct-stats { gap:8px; }.ct-stats > div { padding:12px; } }
 @media(max-width:1050px) { .ct-content-layout { grid-template-columns:1fr; }.ct-copilot { position:static; }.ct-conversation { max-height:none; } }
 @media(max-width:700px) { .sa-page,main.mx-auto.max-w-7xl { padding:0 16px 36px !important; }.sa-workspace-nav { padding:16px; }.ct-workspace,.sa-sidebar-heading,.sa-sidebar-evidence,.sa-workspace-context,.ct-roster-heading { display:none; }.sa-brand { margin:0 0 12px; }.ct-roster { margin-top:12px; }.ct-search { margin:0 0 8px; }.ct-patient-list { display:flex;gap:7px;overflow-x:auto;max-height:none; }.ct-patient-option { flex-shrink:0;padding:9px; }.ct-topbar { min-height:54px;font-size:10px; }.ct-topbar > span:last-child { display:none; }.ct-page-heading { margin:24px 0 20px; }.ct-page-heading h1 { font-size:25px; }.sa-patient-header { padding:17px; }.ct-content-layout { margin-top:20px; }.ct-stats span { font-size:9px; }.ct-stats small { font-size:9px; }.ct-review-card-title { flex-wrap:wrap; }.ct-copilot { margin-top:8px; } }
+.sa-task-actions { margin-top: 16px; }
+.sa-task-actions summary { cursor: pointer; font-weight: 600; }
+.sa-task-form { display: grid; gap: 12px; margin-top: 12px; max-width: 560px; }
+.sa-task-form textarea { min-height: 80px; width: 100%; resize: vertical; }
+.sa-task-form button { justify-self: start; }

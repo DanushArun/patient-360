@@ -52,15 +52,16 @@ export default function NavigatorClient({ patient }: { patient: PatientData }): 
   const [reviewed, setReviewed] = useState<Set<string>>(() => new Set());
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [schemesLoading, setSchemesLoading] = useState(true);
+  const [schemesError, setSchemesError] = useState(false);
   const fetched = useRef(false);
 
   useEffect(() => {
     if (fetched.current) return;
     fetched.current = true;
     fetch(`/api/patient/${encodeURIComponent(patient.patientId)}/schemes`)
-      .then((r) => r.ok ? r.json() as Promise<Scheme[]> : Promise.resolve([]))
+      .then((r) => { if (!r.ok) throw new Error("schemes_unavailable"); return r.json() as Promise<Scheme[]>; })
       .then(setSchemes)
-      .catch(() => setSchemes([]))
+      .catch(() => setSchemesError(true))
       .finally(() => setSchemesLoading(false));
   }, [patient.patientId]);
 
@@ -127,8 +128,9 @@ export default function NavigatorClient({ patient }: { patient: PatientData }): 
     </>}
 
     <Rule />
-    <div className="sa-field-label" style={{ margin: "12px 0 4px" }}>Eligible government schemes</div>
-    {schemesLoading ? <div className="sa-meta">Loading scheme eligibility...</div> : schemes.length === 0 ? <div className="sa-meta">No eligible schemes found for this patient.</div> : (
+    <div className="sa-field-label" style={{ margin: "12px 0 4px" }}>Scheme records</div>
+    <p className="sa-meta">Recorded eligibility checks are not confirmation of enrolment, available cover or authorisation. The help desk must verify these.</p>
+    {schemesLoading ? <div className="sa-meta">Loading scheme records…</div> : schemesError ? <div className="sa-limitation" role="alert">Scheme records could not be loaded. No eligibility conclusion is available. Reload to retry.</div> : schemes.length === 0 ? <div className="sa-meta">No scheme records returned for this patient.</div> : (
       <div style={{ display: "grid", gap: 12 }}>
         {schemes.map((s) => (
           <div key={s.schemeId} className="sa-evidence sa-ev-patient">

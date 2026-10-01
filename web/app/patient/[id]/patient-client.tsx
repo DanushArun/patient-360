@@ -17,6 +17,7 @@ import {
   type Turn,
 } from "./patient-evidence";
 import { PatientTimelinePanel } from "./patient-timeline";
+import { PreparePacket } from "@/components/evidence-history";
 
 type ChecklistKey = keyof typeof data.text;
 const EMPTY: Turn[] = [];
@@ -90,6 +91,7 @@ function PatientHeader({ patient, preview = false }: { patient: PatientData; pre
       <p>{patient.regimen ?? "Regimen not recorded"}{patient.cycleNumber !== null ? ` · cycle ${patient.cycleNumber}` : ""}{patient.language ? ` · ${patient.language}` : ""}</p>
       <div className="ct-patient-tags"><span>Consent · {patient.consentId ?? (preview ? "Not included in fixture" : "none")}</span><span>Visit · {patient.scheduledAt ?? "Not scheduled"}</span></div>
     </div>
+    {preview && <span className="sa-meta">Design preview</span>}
     {!preview && <div className="sa-patient-header-actions">
       <Link href={`/navigator/${patient.patientId}`} className="sa-quiet-button">Navigator View</Link>
       <Link href={`/history/${patient.patientId}`} className="sa-primary-action">Review history</Link>
@@ -141,7 +143,8 @@ function FamilyChecklist({ patient, gates, language, setLanguage }: {
   </>;
 }
 
-function Conversation({ turns, selected, onSelect, busy, error, onSend }: {
+function Conversation({ turns, selected, onSelect, busy, error, onSend, patientId }: {
+  patientId: string;
   turns: Turn[]; selected: { turnId: string; ruleId: string } | null;
   onSelect: (turnId: string, ruleId: string) => void; busy: boolean; error: string;
   onSend: (text: string) => void;
@@ -149,7 +152,10 @@ function Conversation({ turns, selected, onSelect, busy, error, onSend }: {
   const last = turns.at(-1)?.role === "assistant" ? turns.at(-1)! : null;
   return <div role="log" aria-label="Patient conversation" aria-live="polite" aria-busy={busy}>
     {!turns.length && <div className="sa-meta">Ask about this patient&apos;s record — what you have, what is missing, what contradicts what. Clinical decisions are referred to the treating practitioner.</div>}
-    {turns.map((turn) => <Message key={turn.id} turn={turn} selected={selected} onSelect={onSelect} />)}
+    {turns.map((turn, index) => <div key={turn.id}><Message turn={turn} selected={selected} onSelect={onSelect} />
+      {turn.role === "assistant" && turn.artifact?.classification === "CLASS_A" && turns[index-1]?.role === "user"
+        && <PreparePacket patientId={patientId} question={turns[index-1].text} />}
+    </div>)}
     {busy && <div className="sa-meta">Consulting the record…</div>}{error && <div className="sa-limitation">{error}</div>}
     {!!last?.suggested.length && <><div className="sa-field-label" style={{ marginTop: 12 }}>Follow on</div>
       {last.suggested.slice(0, 3).map((suggestion) => <button key={suggestion} style={buttonStyle} onClick={() => onSend(suggestion)}>{suggestion}</button>)}</>}
@@ -165,6 +171,7 @@ function Message({ turn, selected, onSelect }: {
     <div className="flex items-start gap-3"><span className="sa-chat-avatar" aria-hidden="true">{icon}</span>
       <div style={{ flex: 1 }}>{turn.role === "user" ? <div>{formattedText(turn.text)}</div> : turn.error ? <div className="sa-limitation">{TURN_ERRORS[turn.error] ?? turn.error}</div> : <>
         <div>{formattedText(turn.text)}</div>{turn.known_as_of && <div className="sa-meta sa-num" style={{ marginTop: 8 }}>Known as of {turn.known_as_of}</div>}
+        {turn.history_saved === false && <p className="sa-meta" role="status">Answer history could not be saved.</p>}
         {!!turn.gates.length && <div className="sa-chat-gates" style={{ marginTop: 12 }}>{turn.gates.map((gate) => {
           const ruleId = gate.rule_id ?? gate.gate;
           return <GateCitation key={ruleId} gate={gate} selected={selected?.turnId === turn.id && selected.ruleId === ruleId} onSelect={() => onSelect(turn.id, ruleId)} />;
@@ -278,8 +285,8 @@ function useReviewTask(patientId: string): {
   return { feedback, act };
 }
 
-async function fetchCurrentPatient(patientId: string): Promise<PatientData> {
-  const response = await fetch(`/api/patient/${encodeURIComponent(patientId)}`, { cache: "no-store" });
+async function fetchCurrentPatient(patientId: string, persist = false): Promise<PatientData> {
+  const response = await fetch(`/api/patient/${encodeURIComponent(patientId)}`, { cache: "no-store", method: persist ? "POST" : "GET" });
   if (!response.ok) throw new Error("readiness_refresh_failed");
   return response.json() as Promise<PatientData>;
 }
@@ -293,10 +300,10 @@ export default function PatientClient({ patient, patients = [], preview = false 
   const [selectedPatientRule, setSelectedPatientRule] = useState<string | null>(null);
   const [mode, setMode] = useState<PatientMode>("Overview");
   const [language, setLanguage] = useState(langCode(patient.language));
-  const refreshReadiness = useCallback(async (): Promise<void> => {
+  const refreshReadiness = useCallback(async (persist = false): Promise<void> => {
     setRefreshState("refreshing");
     try {
-      setCurrentPatient(await fetchCurrentPatient(patient.patientId));
+      setCurrentPatient(await fetchCurrentPatient(patient.patientId, persist));
       setRefreshState("current");
     } catch {
       setRefreshState("failed");
@@ -313,13 +320,14 @@ export default function PatientClient({ patient, patients = [], preview = false 
 
   const attention = currentPatient.gates.filter(gate => gate.outcome !== "pass");
   return <Page>
-    <WorkspaceNav patients={patients} patientId={patient.patientId} practitioner={preview ? "Recorded fixture preview" : patient.practitionerName} preview={preview} />
+    <WorkspaceNav patients={patients} patientId={patient.patientId} practitioner={preview ? "Design preview" : patient.practitionerName} preview={preview} />
     <div className="ct-topbar"><span>Workspace <span>/</span> <strong>Patient 360</strong></span><span>Care readiness & evidence</span></div>
     <header className="ct-page-heading"><div><p className="sa-eyebrow">A connected view of care</p><h1>Less searching. More clarity.</h1><p>The history, the gaps, and the evidence behind the next conversation.</p></div>
-      <div className="ct-snapshot"><span>Known as of</span><strong>{currentPatient.knownAsOf ?? "Not available"}</strong></div>
+      <div className="ct-snapshot ct-readiness-control"><span>Known as of</span><strong>{currentPatient.knownAsOf ?? "Not available"}</strong>
+        {!preview && <button type="button" className="sa-quiet-button" disabled={refreshState === "refreshing"} onClick={() => void refreshReadiness(true)}>Recompute &amp; save readiness</button>}
+      </div>
     </header>
     <PatientHeader patient={currentPatient} preview={preview} />
-    {preview && <p className="ct-preview-note">Recorded fixture preview · {currentPatient.knownAsOf} · Not live. Clinical actions and AI requests are disabled.</p>}
     {!preview && refreshState !== "current" && <div className="sa-meta" role="status" style={{ margin: "8px 0" }}>
       {refreshState === "refreshing"
         ? `Checking live readiness. Displaying the stored SQL snapshot${currentPatient.knownAsOf ? ` from ${currentPatient.knownAsOf}` : ""}.`
@@ -364,7 +372,7 @@ export default function PatientClient({ patient, patients = [], preview = false 
         <div className="ct-copilot-intro"><h3>A clearer answer starts<br />with the right source.</h3><p>Ask about this patient’s records, missing documents, or recorded next steps.</p></div>
         <div className="ct-suggestions">{["What is missing from this patient's record?", "What contradicts what in this record?", "What evidence supports the readiness checks?"].map(question => <button type="button" key={question} disabled={preview || chat.busy} onClick={() => chat.setQuestion(question)}>{question}<ArrowUpRight size={12} /></button>)}</div>
         {preview && selectedGate && <div className="ct-preview-note"><strong>{selectedGate.rule_id}</strong><p>{selectedGate.reason}</p><p>Source pages are not included in this fixture.</p></div>}
-        <div className="ct-conversation"><Conversation turns={preview ? [] : turns} selected={selected} onSelect={(turnId, ruleId) => {
+        <div className="ct-conversation"><Conversation patientId={patient.patientId} turns={preview ? [] : turns} selected={selected} onSelect={(turnId, ruleId) => {
           setSelectedPatientRule(null); setSelected({ turnId, ruleId });
         }} busy={chat.busy} error={chat.error} onSend={text => void chat.send(text)} /></div>
         <ChatInput question={chat.question} setQuestion={chat.setQuestion} busy={chat.busy || preview} onSend={() => { if (!preview) void chat.send(chat.question); }} />

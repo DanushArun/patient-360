@@ -25,6 +25,8 @@ function routingFailure() {
 
 function clinicalRefusal() {
   return {
+    artifact: { classification: "CLASS_A", claims: [], limitations: [],
+      overall_status: "refused", known_as_of: null },
     text: "This question requires the treating practitioner's judgment. I can list documented " +
       "findings, missing records, or conflicting sources if you ask about the record.",
     thinking: "",

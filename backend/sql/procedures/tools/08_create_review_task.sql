@@ -146,6 +146,11 @@ BEGIN
     END IF;
 
     v_task_id := UUID_STRING();
+    -- These transitions require a task identity, expected issue version and
+    -- (for reassignment) an authorized new owner. Never file a misleading open task.
+    IF (:ACTION IN ('close', 'reassign')) THEN
+        RETURN OBJECT_CONSTRUCT('error', 'task_transition_requires_review');
+    END IF;
     INSERT INTO SAARTHI.OPERATIONAL.REVIEW_TASK
         (task_id, issue_id, owner_practitioner_id, state, decision, reason, actor_practitioner_id, idempotency_key)
     VALUES
