@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Columns, Field, Page, Rule, Stack, WorkspaceNav, buttonStyle } from "@/components/sa";
+import { Field, Page, StatusChip, WorkspaceNav, buttonStyle } from "@/components/sa";
+import { Sparkles, ArrowUp, ArrowUpRight, CircleAlert } from "lucide-react";
+import type { RosterPatient } from "@/components/patient-roster";
 import type { AgentTurn, Gate, PatientData } from "@/lib/patient";
 import data from "@/lib/navigator-data.json";
 import {
@@ -80,32 +82,20 @@ function messageText(patient: PatientData, visit: Date, items: { key: string; ru
   return [heading, "", ...(lines.length ? lines : [data.text.all_clear[lang]]), "", data.text.always_bring[lang]].join("\n");
 }
 
-function PatientHeader({ patient }: { patient: PatientData }): ReactNode {
-  return <><WorkspaceNav />
-  <div className="sa-patient-header">
-    <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
-      <div className="sa-masthead-patient">{patient.patientName}</div>
-      <Field label="Patient" value={patient.patientId} /><Field label="Consent" value={patient.consentId ?? "none"} />
+function PatientHeader({ patient, preview = false }: { patient: PatientData; preview?: boolean }): ReactNode {
+  return <section className="sa-patient-header" aria-label="Selected patient">
+    <span className="ct-avatar large" aria-hidden="true">{patient.patientName.split(/\s+/).slice(0,2).map(s => s[0]).join("")}</span>
+    <div className="ct-patient-identity">
+      <div><h2>{patient.patientName}</h2><span className="ct-patient-id">{patient.patientId}</span></div>
+      <p>{patient.regimen ?? "Regimen not recorded"}{patient.cycleNumber !== null ? ` · cycle ${patient.cycleNumber}` : ""}{patient.language ? ` · ${patient.language}` : ""}</p>
+      <div className="ct-patient-tags"><span>Consent · {patient.consentId ?? (preview ? "Not included in fixture" : "none")}</span><span>Visit · {patient.scheduledAt ?? "Not scheduled"}</span></div>
     </div>
-    <div className="sa-patient-header-actions">
-      <Link href="/" className="sa-btn" style={buttonStyle} aria-label={`Select another patient; currently ${patient.patientName}`}>
-        Change patient
-      </Link>
-      <Link href={`/navigator/${patient.patientId}`} className="sa-btn" style={{ ...buttonStyle, fontSize: 14 }}>
-        Navigator View
-      </Link>
-      <Link href={`/history/${patient.patientId}`} className="sa-btn" style={{ ...buttonStyle, fontSize: 14 }}>
-        Review history
-      </Link>
+    {!preview && <div className="sa-patient-header-actions">
+      <Link href={`/navigator/${patient.patientId}`} className="sa-quiet-button">Navigator View</Link>
+      <Link href={`/history/${patient.patientId}`} className="sa-primary-action">Review history</Link>
       <Field label="Practitioner" value={patient.practitionerName} />
-    </div>
-  </div>
-    <div className="sa-visit-context">
-      <Field label="Next day-care visit" value={patient.scheduledAt ?? "Not scheduled"} />
-      <Field label="Regimen" value={patient.regimen ?? "Not recorded"} />
-      <Field label="Cycle" value={patient.cycleNumber?.toString() ?? "Not recorded"} />
-    </div>
-  </>;
+    </div>}
+  </section>;
 }
 
 function FamilyChecklist({ patient, gates, language, setLanguage }: {
@@ -189,8 +179,8 @@ function ChatInput({ question, setQuestion, busy, onSend }: {
 }): ReactNode {
   return <form onSubmit={(event) => { event.preventDefault(); onSend(); }} className="sa-chat-dock-wrap">
     <div className="sa-chat-dock">
-      <input className="sa-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about this patient's record…" disabled={busy} />
-      <button className="sa-chat-send" type="submit" aria-label="Send" disabled={busy}>➤</button>
+      <textarea aria-label="Question about the selected patient" rows={3} className="sa-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about this patient's record…" disabled={busy} />
+      <button className="sa-chat-send" type="submit" aria-label="Send" disabled={busy}><ArrowUp size={18} /></button>
     </div>
   </form>;
 }
@@ -294,14 +284,14 @@ async function fetchCurrentPatient(patientId: string): Promise<PatientData> {
   return response.json() as Promise<PatientData>;
 }
 
-export default function PatientClient({ patient }: { patient: PatientData }): ReactNode {
+export default function PatientClient({ patient, patients = [], preview = false }: { patient: PatientData; patients?: RosterPatient[]; preview?: boolean }): ReactNode {
   const params = useParams<{ id: string }>();
   const [currentPatient, setCurrentPatient] = useState(patient);
   const [refreshState, setRefreshState] = useState<"refreshing" | "current" | "failed">("refreshing");
   const [turns, setTurns] = useStoredTurns(`saarthi-turns:${params.id}`);
   const [selected, setSelected] = useState<{ turnId: string; ruleId: string } | null>(null);
   const [selectedPatientRule, setSelectedPatientRule] = useState<string | null>(null);
-  const [mode, setMode] = useState<PatientMode>("Ask the record");
+  const [mode, setMode] = useState<PatientMode>("Overview");
   const [language, setLanguage] = useState(langCode(patient.language));
   const refreshReadiness = useCallback(async (): Promise<void> => {
     setRefreshState("refreshing");
@@ -312,7 +302,7 @@ export default function PatientClient({ patient }: { patient: PatientData }): Re
       setRefreshState("failed");
     }
   }, [patient.patientId]);
-  useEffect(() => { void refreshReadiness(); }, [refreshReadiness]);
+  useEffect(() => { if (!preview) void refreshReadiness(); }, [refreshReadiness, preview]);
   const chat = useChat(`saarthi-turns:${params.id}`, patient.patientId, setTurns);
   const reviewTask = useReviewTask(patient.patientId);
   const last = turns.at(-1)?.role === "assistant" ? turns.at(-1)! : null;
@@ -321,56 +311,76 @@ export default function PatientClient({ patient }: { patient: PatientData }): Re
       (gate) => (gate.rule_id ?? gate.gate) === selected.ruleId
     ) ?? null : null);
 
+  const attention = currentPatient.gates.filter(gate => gate.outcome !== "pass");
   return <Page>
-    <PatientHeader patient={currentPatient} />
-    {refreshState !== "current" && <div className="sa-meta" role="status" style={{ margin: "8px 0" }}>
+    <WorkspaceNav patients={patients} patientId={patient.patientId} practitioner={preview ? "Recorded fixture preview" : patient.practitionerName} preview={preview} />
+    <div className="ct-topbar"><span>Workspace <span>/</span> <strong>Patient 360</strong></span><span>Care readiness & evidence</span></div>
+    <header className="ct-page-heading"><div><p className="sa-eyebrow">A connected view of care</p><h1>Less searching. More clarity.</h1><p>The history, the gaps, and the evidence behind the next conversation.</p></div>
+      <div className="ct-snapshot"><span>Known as of</span><strong>{currentPatient.knownAsOf ?? "Not available"}</strong></div>
+    </header>
+    <PatientHeader patient={currentPatient} preview={preview} />
+    {preview && <p className="ct-preview-note">Recorded fixture preview · {currentPatient.knownAsOf} · Not live. Clinical actions and AI requests are disabled.</p>}
+    {!preview && refreshState !== "current" && <div className="sa-meta" role="status" style={{ margin: "8px 0" }}>
       {refreshState === "refreshing"
         ? `Checking live readiness. Displaying the stored SQL snapshot${currentPatient.knownAsOf ? ` from ${currentPatient.knownAsOf}` : ""}.`
         : `Live readiness refresh failed. The stored SQL snapshot${currentPatient.knownAsOf ? ` from ${currentPatient.knownAsOf}` : ""} remains visible.`}
-      {refreshState === "failed" && <button type="button" className="ml-2 underline"
-        onClick={() => void refreshReadiness()}>Retry current check</button>}
+      {refreshState === "failed" && <button type="button" className="ml-2 underline" onClick={() => void refreshReadiness()}>Retry current check</button>}
     </div>}
-    {currentPatient.gates.length ? <GateStrip gates={currentPatient.gates} knownAsOf={currentPatient.knownAsOf}
-      isSnapshot={refreshState !== "current"}
-      selectedRuleId={selectedPatientRule} onSelect={(ruleId) => {
-        setSelected(null);
-        setSelectedPatientRule((current) => current === ruleId ? null : ruleId);
-      }} /> : <div className="sa-limitation" role="status">
-      No readiness snapshot is available for the next day-care visit yet. Do not infer a check result from missing data.
-    </div>}
-    <Rule />
-    <Columns template="7fr 5fr" gap={68} className="sa-patient-columns">
-      <Stack style={{ paddingBottom: 100 }}>
+    <div className="ct-content-layout">
+      <section className="ct-main-column">
         <ModeControl mode={mode} onChange={setMode} />
-        {mode === "Family checklist"
-          ? <FamilyChecklist patient={currentPatient} gates={currentPatient.gates} language={language} setLanguage={setLanguage} />
-          : mode === "Record timeline" ? <PatientTimelinePanel patientId={patient.patientId} />
-          : <Conversation turns={turns} selected={selected} onSelect={(turnId, ruleId) => {
-            setSelectedPatientRule(null);
-            setSelected((value) => value?.turnId === turnId && value.ruleId === ruleId
-              ? null : { turnId, ruleId });
-          }} busy={chat.busy} error={chat.error} onSend={(text) => void chat.send(text)} />}
-      </Stack>
-      <div id="readiness-evidence" className="sa-patient-evidence-sticky"><EvidencePanel patientId={patient.patientId}
-        turn={last} selected={selectedGate}
-        feedback={reviewTask.feedback} actionsAvailable={refreshState === "current"}
-        onAction={reviewTask.act} onUnpin={() => {
-        setSelected(null);
-        setSelectedPatientRule(null);
-      }} /></div>
-    </Columns>
-    {mode === "Ask the record" && <ChatInput question={chat.question} setQuestion={chat.setQuestion} busy={chat.busy} onSend={() => void chat.send(chat.question)} />}
+        {mode === "Overview" && <>
+          <div className="ct-stats">
+            <div><span>Readiness checks</span><strong>{currentPatient.gates.length}</strong><small>Versioned rule results</small></div>
+            <div><span>Checks passed</span><strong>{currentPatient.gates.filter(g => g.outcome === "pass").length}</strong><small>From the current snapshot</small></div>
+            <div className="attention"><span>Needs attention</span><strong>{attention.length}</strong><small>Failed, conflicting or not evaluated</small></div>
+          </div>
+          <div className="ct-section-heading"><h2>What needs attention</h2><Link href="/review-queue">View queue <ArrowUpRight size={12} /></Link></div>
+          <div className="ct-review-cards">
+            {attention.map(gate => {
+              const id = gate.rule_id ?? gate.gate;
+              return <article className="ct-review-card" key={id}>
+                <div className="ct-review-card-title"><span className="ct-review-icon"><CircleAlert size={15} /></span><h3>{gate.rule_id ?? gate.gate}</h3><StatusChip outcome={gate.outcome} /></div>
+                <p>{gate.reason ?? "Select this check to inspect the available evidence."}</p>
+                <div className="ct-review-card-bottom"><span className="ct-source-chip">{gate.gate} · {gate.rule_id ?? gate.gate}{gate.rule_version ? ` · v${gate.rule_version}` : ""}</span>
+                  <button className="sa-quiet-button" aria-expanded={selectedPatientRule === id} aria-controls="readiness-evidence" onClick={() => { setSelected(null); setSelectedPatientRule(id); }}>Review</button></div>
+                {gate.provenance_note && <details><summary>Why this was flagged</summary><p>{gate.provenance_note}</p></details>}
+              </article>;
+            })}
+            {!attention.length && <div className="sa-empty-state">{currentPatient.gates.length ? "No failed, conflicting or unevaluated checks in this snapshot." : "No readiness snapshot is available. Missing data does not establish a passing result."}</div>}
+          </div>
+          <details className="ct-all-checks"><summary>All readiness checks <span>{currentPatient.gates.length}</span></summary>
+            <GateStrip gates={currentPatient.gates} knownAsOf={currentPatient.knownAsOf} isSnapshot={refreshState !== "current"} selectedRuleId={selectedPatientRule} onSelect={id => { setSelected(null); setSelectedPatientRule(id); }} />
+          </details>
+        </>}
+        {mode === "Record timeline" && (preview ? <div className="sa-empty-state">Timeline events are not included in this recorded fixture.</div> : <PatientTimelinePanel patientId={patient.patientId} />)}
+        {mode === "Family checklist" && <FamilyChecklist patient={currentPatient} gates={currentPatient.gates} language={language} setLanguage={setLanguage} />}
+        <div id="readiness-evidence" className="ct-evidence-detail"><EvidencePanel patientId={patient.patientId}
+          turn={preview ? null : last} selected={preview ? null : selectedGate} feedback={reviewTask.feedback} actionsAvailable={!preview && refreshState === "current"}
+          onAction={reviewTask.act} onUnpin={() => { setSelected(null); setSelectedPatientRule(null); }} /></div>
+      </section>
+      <aside className="ct-copilot" aria-label="Evidence copilot">
+        <div className="ct-copilot-title"><Sparkles size={24} strokeWidth={1.5} /><div><h2>Ask the evidence</h2><span>Patient-scoped. Source-linked.</span></div></div>
+        <div className="ct-copilot-intro"><h3>A clearer answer starts<br />with the right source.</h3><p>Ask about this patient’s records, missing documents, or recorded next steps.</p></div>
+        <div className="ct-suggestions">{["What is missing from this patient's record?", "What contradicts what in this record?", "What evidence supports the readiness checks?"].map(question => <button type="button" key={question} disabled={preview || chat.busy} onClick={() => chat.setQuestion(question)}>{question}<ArrowUpRight size={12} /></button>)}</div>
+        {preview && selectedGate && <div className="ct-preview-note"><strong>{selectedGate.rule_id}</strong><p>{selectedGate.reason}</p><p>Source pages are not included in this fixture.</p></div>}
+        <div className="ct-conversation"><Conversation turns={preview ? [] : turns} selected={selected} onSelect={(turnId, ruleId) => {
+          setSelectedPatientRule(null); setSelected({ turnId, ruleId });
+        }} busy={chat.busy} error={chat.error} onSend={text => void chat.send(text)} /></div>
+        <ChatInput question={chat.question} setQuestion={chat.setQuestion} busy={chat.busy || preview} onSend={() => { if (!preview) void chat.send(chat.question); }} />
+        <p className="ct-copilot-disclaimer">Evidence retrieval, not medical advice.<br />Clinical decisions belong to the treating practitioner.</p>
+      </aside>
+    </div>
   </Page>;
 }
 
-type PatientMode = "Ask the record" | "Record timeline" | "Family checklist";
+type PatientMode = "Overview" | "Record timeline" | "Family checklist";
 
 function ModeControl({ mode, onChange }: {
   mode: PatientMode; onChange: (mode: PatientMode) => void;
 }): ReactNode {
-  return <div className="flex" style={{ border: "1px solid #D8DCDF", borderRadius: 6, width: "fit-content" }}>
-    {(["Ask the record", "Record timeline", "Family checklist"] as const).map((item) => <button key={item} onClick={() => onChange(item)}
-      className={`sa-mode-btn${mode === item ? " sa-mode-active" : ""}`}
-      style={{ ...buttonStyle, width: "auto", border: 0, borderRadius: 0 }}>{item}</button>)}
+  return <div className="ct-tabs" aria-label="Patient workspace views">
+    {(["Overview", "Record timeline", "Family checklist"] as const).map((item) => <button key={item} onClick={() => onChange(item)}
+      aria-pressed={mode === item} className={mode === item ? "active" : ""}>{item}</button>)}
   </div>;
 }

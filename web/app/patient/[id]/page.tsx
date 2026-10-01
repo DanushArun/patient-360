@@ -2,6 +2,7 @@ import Link from "next/link";
 import { loadPatientSnapshot } from "@/lib/patient";
 import { Page, Rule } from "@/components/sa";
 import PatientClient from "./patient-client";
+import { fetchBindablePatients } from "@/lib/census";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,8 @@ export default async function PatientPage({ params }: PageProps<"/patient/[id]">
   const { id } = await params;
   try {
     const patient = await loadPatientSnapshot(id);
-    return <PatientClient key={id} patient={patient} />;
+    const patients = await fetchBindablePatients().then(rows => rows.map(p => ({ id: p.PATIENT_ID, name: p.NAME }))).catch(() => [{ id: patient.patientId, name: patient.patientName }]);
+    return <PatientClient key={id} patient={patient} patients={patients} />;
   } catch {
     return <Page>
       <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>

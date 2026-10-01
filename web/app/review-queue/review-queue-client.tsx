@@ -54,7 +54,8 @@ export default function ReviewQueueClient({ initialIssues }: { initialIssues: Is
     setFeedback(`Issue ${state} in this preview. This change has not been saved to the record.`);
   };
   return <Page>
-    <WorkspaceNav current="queue" />
+    <WorkspaceNav current="queue" patients={Array.from(new Map(initialIssues.map(issue => [issue.patient_id, { id: issue.patient_id, name: issue.patient_name }])).values())} />
+    <div className="ct-topbar"><span>Workspace <span>/</span> <strong>Review queue</strong></span><span>Care readiness & evidence</span></div>
     <header className="sa-screen-header">
       <div><p className="sa-eyebrow">Coordinator workspace</p><h1>Review queue</h1>
         <p>Open record gaps are ordered by visit urgency. Ownership and state remain visible in the row.</p></div>

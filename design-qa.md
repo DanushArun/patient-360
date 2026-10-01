@@ -1,45 +1,50 @@
-# Reference-based workspace review — 1 October 2026
+# CareThread reference implementation — 1 October 2026
 
-Source: /Users/aaa/Documents/sitar/artifacts/browser/carethread-desktop.png (1440 × 1000).
-Implementation: http://localhost:3000/review-queue and the day-care error state.
+## Source and implementation
+- Visual source: /Users/aaa/Documents/sitar/output/CareThread.html
+- Reference capture: /Users/aaa/Documents/sitar/artifacts/browser/carethread-desktop.png (1440 × 1000).
+- Implementation: http://localhost:3000/design-preview/PAT-DC-09
+- Live component: web/app/patient/[id]/patient-client.tsx
+- Both reference and rendered desktop implementation were emitted together for comparison in the browser-tool output.
+- Implementation captures are inline conversation evidence; no standalone screenshot file was saved.
+- Desktop CSS viewport: 1440 × 1000. Mobile: 390 × 844.
 
-## Evidence
-Browser-rendered captures were inspected inline in Codex at 1440 × 1000 and
-390 × 844 CSS pixels. No separate screenshot file or normalized combined comparison
-was saved. Mobile full-page capture had inconsistent scaling; viewport screenshots
-and DOM geometry were used instead. Document width matched the 390px viewport.
+## Fidelity
+Reused the exact supplied SVG logo mark with SAARTHI branding. Implemented the
+248px roster sidebar, 74px breadcrumb bar, heading placement, identity card,
+three summary cards, tab underline, attention cards, 338px evidence assistant,
+serif assistant heading, suggestion controls, and composer.
+Source colors, spacing and type sizes are recorded in web/app/carethread.css.
+Existing clinical status words, glyphs and border patterns remain unchanged.
 
-## Findings and fixes
-- Removed obsolete priority-card overrides and fixed-width inline queue layout.
-- Applied sage navigation, forest accents, warm surfaces, thin borders, compact type,
-  and aligned responsive rows, drawing only visual patterns from the reference.
-- Preserved SAARTHI branding, existing fixture data, status words/glyphs/borders,
-  and distinct patient/reference evidence labels.
-- Made visit labels continuous text; separated owner and readiness columns.
-- Added explicit unsaved-preview feedback to local queue actions.
-- Reworked patient header identity/actions to wrap.
-- Corrected the census error state so it does not claim all patients have visits.
+## Intentional differences
+All clinical values come from patient-360. Reference demo patients, documents,
+counts, upload/export features and invented activity were not imported.
+The preview uses only frontend/fixtures/daycare_census_recorded.json, labels its
+recorded timestamp, and disables AI/service requests and clinical actions.
+Missing consent and source pages are labelled unavailable. No live route silently
+falls back to fixture data. Live record and task APIs are unchanged.
+The original supported timeline and family checklist remain available; unsupported
+reference tabs were not introduced.
 
-## Fidelity surfaces
-Typography: existing Inter retained, with clearer title/body/metadata hierarchy.
-Layout: 220px sidebar, four-column desktop rows, two-column mobile rows.
-Color: sage/forest neutral workspace; existing semantic status/evidence colors.
-Assets: existing branding and icon library; no reference avatars or new images.
-Content: no reference patient data or new clinical facts imported.
+## Checks and iterations
+- Production build and TypeScript passed.
+- Desktop patient selection updated both identity and patient-specific gates.
+- Timeline fixture absence displayed an explicit empty state.
+- Browser error log returned no errors.
+- First mobile pass found horizontal navigation overflow (1289px document in a
+  390px viewport). Fixed inherited flex wrapping and constrained sidebar children.
+- Post-fix mobile capture and DOM geometry showed document width 390px.
+- Desktop full-view comparison showed matching major-region alignment, logo,
+  typography hierarchy, card rhythm and assistant placement. Content length and
+  fixture disclosure deliberately change some vertical positions.
 
-## Checks
-Production build passed before final header/copy refinements.
-Final TypeScript check passed.
-Browser verified empty search, unowned filter (one issue), acknowledgement feedback,
-navigation, and census service-error state.
-Queue browser error log was empty. Mobile had no horizontal overflow.
-
-## Remaining checks
-The local preview reports snowflake_configuration_missing. Populated day-care,
-patient, navigator, and history views remain unverified with connected records.
-Source and implementation were inspected separately, not in a saved combined image.
+## Remaining validation
+Connected live patient records, AI answers, source retrieval, and task persistence
+cannot be verified until Snowflake is configured. Standalone normalized screenshot
+files have not been saved. The populated design preview is available for review.
 
 final result: blocked
 
-Full-app visual QA is blocked by unavailable connected records and incomplete
-normalized comparison evidence. The queue is available for review locally.
+The visual preview is implemented and browser checked. Full connected-workflow QA
+remains blocked by missing Snowflake configuration.

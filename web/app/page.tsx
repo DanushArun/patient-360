@@ -64,7 +64,7 @@ export default async function DayCarePage() {
 
   return (
     <main className="mx-auto max-w-7xl px-8 py-10" style={{ color: "var(--sa-ink)" }}>
-      <WorkspaceNav current="census" />
+      <WorkspaceNav current="census" patients={patientOptions} practitioner={practitionerName} />
       <div className="mb-5 flex items-start justify-between gap-6">
         <div>
           <p className="sa-eyebrow">Care readiness</p>

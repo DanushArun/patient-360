@@ -3,6 +3,7 @@ import "./fonts.css";
 import "./globals.css";
 import "./saarthi.css";
 import "./workspace.css";
+import "./carethread.css";
 
 export const metadata: Metadata = {
   title: "SAARTHI — Care Readiness & Evidence",

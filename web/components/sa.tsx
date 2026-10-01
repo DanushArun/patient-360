@@ -5,6 +5,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { ClipboardList, LayoutDashboard, ShieldCheck, PanelLeft } from "lucide-react";
+import { PatientRoster, type RosterPatient } from "./patient-roster";
 
 export const INK = "#1A1D21";
 export const INK_SECONDARY = "#4A5157";
@@ -71,22 +72,24 @@ export function SaButton({ href, children, weight = 500 }: { href: string; child
  * not a destination dashboard: the four links correspond to the documented
  * coordinator/navigator workflows and no evaluator-only area is exposed.
  */
-export function WorkspaceNav({ current }: { current?: "census" | "queue" | "history" | "navigator" } = {}) {
+export function WorkspaceNav({ current, patients, patientId, practitioner, preview = false }: { current?: "census" | "queue" | "history" | "navigator"; patients?: RosterPatient[]; patientId?: string; practitioner?: string; preview?: boolean } = {}) {
   const items: { href: string; label: string; key: NonNullable<typeof current>; icon: typeof LayoutDashboard }[] = [
     { href: "/", label: "Day-care list", key: "census", icon: LayoutDashboard },
     { href: "/review-queue", label: "Review queue", key: "queue", icon: ClipboardList },
   ];
   return <nav className="sa-workspace-nav" aria-label="SAARTHI workspace">
-    <Link href="/" className="sa-brand" aria-label="SAARTHI home"><span className="sa-brand-mark">S</span><span><strong>SAARTHI</strong><small>Care readiness</small></span></Link>
-    <div className="sa-sidebar-heading">Care workspace</div>
+    <Link href="/" className="sa-brand" aria-label="SAARTHI home"><img src="/carethread-mark.svg" width="37" height="37" alt="" /><span><strong>SAARTHI</strong><small>Care readiness</small></span></Link>
+    <div className="sa-sidebar-heading">Care intelligence workspace</div>
+    <div className="ct-workspace"><ShieldCheck size={21} strokeWidth={1.5} aria-hidden="true" /><div>Care readiness<small>Patient 360</small></div></div>
     <div className="sa-workspace-links">{items.map((item) => {
       const Icon = item.icon;
       return <Link key={item.key} href={item.href} aria-current={current === item.key ? "page" : undefined} className={`sa-workspace-link${current === item.key ? " sa-workspace-link-active" : ""}`}>
         <Icon size={16} strokeWidth={1.8} aria-hidden="true" />{item.label}
       </Link>;
     })}</div>
-    <div className="sa-sidebar-evidence"><ShieldCheck size={22} strokeWidth={1.5} aria-hidden="true" /><strong>Care readiness & evidence</strong><p>Readiness checks, supporting records, and review history.</p></div>
-    <span className="sa-workspace-context"><PanelLeft size={15} aria-hidden="true" />Clinical operations</span>
+    {patients && <PatientRoster patients={patients} selectedId={patientId} preview={preview} />}
+    <div className="sa-sidebar-evidence"><ShieldCheck size={22} strokeWidth={1.5} aria-hidden="true" /><strong>Built around evidence.</strong><p>Every record has a source.<br />Every unknown stays visible.</p></div>
+    <span className="sa-workspace-context"><PanelLeft size={15} aria-hidden="true" />{practitioner ?? "Clinical operations"}</span>
   </nav>;
 }
 
