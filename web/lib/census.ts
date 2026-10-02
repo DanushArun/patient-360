@@ -1,4 +1,5 @@
 import { query, procedureRows } from "./snowflake";
+import { classifyGates, describeGates, orderIssues, type ChairStatus } from "./census-display.mjs";
 
 // Scope is rechecked by the owner procedure on every request.
 export interface ReadinessRow {
@@ -20,7 +21,8 @@ export interface ReadinessRow {
 }
 
 export async function fetchCensus(horizonDays = 7): Promise<ReadinessRow[]> {
-  return procedureRows<ReadinessRow>(await query("CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('census',?)", [horizonDays]));
+  const sql = "CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('census',?)";
+  return procedureRows<ReadinessRow>(await query(sql, [horizonDays]));
 }
 
 export interface BindablePatient {
@@ -29,19 +31,21 @@ export interface BindablePatient {
 }
 
 export async function fetchBindablePatients(): Promise<BindablePatient[]> {
-  return procedureRows<BindablePatient>(await query("CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('patients',7)"))
+  const sql = "CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('patients',7)";
+  return procedureRows<BindablePatient>(await query(sql))
     .sort((a, b) => a.NAME.localeCompare(b.NAME) || a.PATIENT_ID.localeCompare(b.PATIENT_ID));
 }
 
 export async function fetchPractitionerName(): Promise<string> {
-  const rows = procedureRows<{ NAME: string; QUALIFICATION: string }>(await query("CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('practitioner',7)"));
+  const sql = "CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('practitioner',7)";
+  const rows = procedureRows<{ NAME: string; QUALIFICATION: string }>(await query(sql));
   return rows[0]?.NAME ?? "Practitioner";
 }
 
 // --- Triage, ported from frontend/core/census.py::classify() ---------------
 // Same 5 states, same precedence, so the two frontends can never disagree.
 
-export type ChairStatus = "blocked" | "conflict" | "waiting" | "advisory" | "ready";
+export type { ChairStatus } from "./census-display.mjs";
 
 export interface Chair {
   encounterId: string;
@@ -58,65 +62,40 @@ export interface Chair {
   otherIssues: number;
 }
 
-const ISSUE_RANK: Record<string, number> = {
-  "fail:blocker": 0,
-  "conflicting:blocker": 1,
-  "conflicting:advisory": 1,
-  "not_evaluated:blocker": 2,
-  "fail:advisory": 3,
-};
-
-function classify(gates: ReadinessRow[]): ChairStatus {
-  const has = (outcome: string, severity?: string) =>
-    gates.some((g) => g.OUTCOME === outcome && (!severity || g.SEVERITY === severity));
-  if (has("fail", "blocker")) return "blocked";
-  if (has("conflicting")) return "conflict";
-  if (has("not_evaluated", "blocker")) return "waiting";
-  if (has("fail", "advisory")) return "advisory";
-  return "ready";
+function projectChair(encounterId: string, group: ReadinessRow[]): Chair {
+  const meta = group[0];
+  const gates = group.filter((gate) => gate.RULE_ID);
+  const status: ChairStatus = gates.length ? classifyGates(gates) : "waiting";
+  const issues = orderIssues(gates);
+  const head = issues[0];
+  return {
+    encounterId,
+    patientId: meta.PATIENT_ID,
+    name: meta.NAME,
+    place: [meta.DISTRICT, meta.STATE].filter(Boolean).join(", "),
+    language: meta.PRIMARY_LANGUAGE,
+    regimen: meta.REGIMEN_DISPLAY,
+    cycle: meta.CYCLE_NUMBER,
+    scheduled: meta.SCHEDULED,
+    status,
+    headlineRule: head?.RULE_ID ?? null,
+    headline: gates.length ? describeGates(gates, head) : describeGates([], undefined),
+    otherIssues: Math.max(issues.length - 1, 0),
+  };
 }
 
 export function buildCensus(rows: ReadinessRow[]): Chair[] {
   const byEncounter = new Map<string, ReadinessRow[]>();
-  for (const r of rows) {
-    if (!byEncounter.has(r.ENCOUNTER_ID)) byEncounter.set(r.ENCOUNTER_ID, []);
-    byEncounter.get(r.ENCOUNTER_ID)!.push(r);
+  for (const row of rows) {
+    const group = byEncounter.get(row.ENCOUNTER_ID) ?? [];
+    group.push(row);
+    byEncounter.set(row.ENCOUNTER_ID, group);
   }
-
-  const chairs: Chair[] = [];
-  for (const [encounterId, group] of byEncounter) {
-    const meta = group[0];
-    const gates = group.filter((g) => g.RULE_ID);
-    const status = gates.length ? classify(gates) : "waiting";
-
-    const issues = gates
-      .filter((g) => ISSUE_RANK[`${g.OUTCOME}:${g.SEVERITY}`] !== undefined)
-      .sort(
-        (a, b) =>
-          ISSUE_RANK[`${a.OUTCOME}:${a.SEVERITY}`] - ISSUE_RANK[`${b.OUTCOME}:${b.SEVERITY}`] ||
-          (a.RULE_ID ?? "").localeCompare(b.RULE_ID ?? "")
-      );
-    const head = issues[0];
-
-    chairs.push({
-      encounterId,
-      patientId: meta.PATIENT_ID,
-      name: meta.NAME,
-      place: [meta.DISTRICT, meta.STATE].filter(Boolean).join(", "),
-      language: meta.PRIMARY_LANGUAGE,
-      regimen: meta.REGIMEN_DISPLAY,
-      cycle: meta.CYCLE_NUMBER,
-      scheduled: meta.SCHEDULED,
-      status,
-      headlineRule: head?.RULE_ID ?? null,
-      headline: head?.REASON ?? (gates.length ? "Every applicable rule passes." : null),
-      otherIssues: Math.max(issues.length - 1, 0),
-    });
-  }
-
+  const chairs = [...byEncounter].map(([id, group]) => projectChair(id, group));
   const order: ChairStatus[] = ["blocked", "conflict", "waiting", "advisory", "ready"];
   chairs.sort(
-    (a, b) => order.indexOf(a.status) - order.indexOf(b.status) || a.scheduled.localeCompare(b.scheduled)
+    (a, b) => order.indexOf(a.status) - order.indexOf(b.status) ||
+      a.scheduled.localeCompare(b.scheduled)
   );
   return chairs;
 }

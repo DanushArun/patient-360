@@ -70,6 +70,12 @@ def classify(gates: list[dict[str, Any]]) -> str:
         return "conflict"
     if has("not_evaluated", "blocker"):
         return "waiting"
+    if any(
+        g.get("outcome") not in {"pass", "fail", "not_evaluated", "conflicting"}
+        or (g.get("outcome") != "pass" and g.get("severity") not in {"blocker", "advisory"})
+        for g in gates
+    ):
+        return "waiting"
     if has("fail", "advisory"):
         return "advisory"
     return "ready"
@@ -81,53 +87,68 @@ _ISSUE_RANK = {
     ("conflicting", "advisory"): 1,
     ("not_evaluated", "blocker"): 2,
     ("fail", "advisory"): 3,
+    ("not_evaluated", "advisory"): 4,
 }
 
 
 def _issues(gates: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Gates that need attention, most consequential first."""
     ranked = [g for g in gates if (g.get("outcome"), g.get("severity")) in _ISSUE_RANK]
-    return sorted(ranked, key=lambda g: (_ISSUE_RANK[(g["outcome"], g["severity"])], g.get("rule_id", "")))
+    return sorted(
+        ranked,
+        key=lambda g: (_ISSUE_RANK[(g["outcome"], g["severity"])], g.get("rule_id", "")),
+    )
+
+
+def _chair_from_encounter(encounter_id: str, enc: dict[str, Any]) -> ChairRow:
+    meta, gates = enc["meta"], enc["gates"]
+    if not gates:
+        return ChairRow(
+            encounter_id=encounter_id, patient_id=meta["patient_id"], name=meta["name"],
+            place=", ".join(p for p in (meta.get("district"), meta.get("state")) if p),
+            language=meta.get("language"), regimen=meta.get("regimen"),
+            cycle=meta.get("cycle"), scheduled=meta.get("scheduled"), status="waiting",
+            headline_rule=None,
+            headline="Readiness has not been computed for this visit yet.",
+            other_issues=0, gates=gates,
+        )
+
+    issues = _issues(gates)
+    head = issues[0] if issues else None
+    headline = head.get("reason") if head else None
+    if not headline and head:
+        headline = "An applicable rule needs review."
+    if not headline and all(g.get("outcome") == "pass" for g in gates):
+        headline = "Every applicable rule passes."
+    if not headline:
+        headline = "Some applicable rules could not be evaluated."
+    place = ", ".join(p for p in (meta.get("district"), meta.get("state")) if p)
+    return ChairRow(
+        encounter_id=encounter_id, patient_id=meta["patient_id"], name=meta["name"],
+        place=place, language=meta.get("language"), regimen=meta.get("regimen"),
+        cycle=meta.get("cycle"), scheduled=meta.get("scheduled"),
+        status=classify(gates), headline_rule=head.get("rule_id") if head else None,
+        headline=headline, other_issues=max(len(issues) - 1, 0), gates=gates,
+    )
 
 
 def build_census(rows: list[dict[str, Any]]) -> list[ChairRow]:
-    """One row per encounter. `rows` is one record per (encounter, rule).
-
-    An encounter with no readiness rows yet is still listed - as waiting, with
-    the reason stated - rather than silently dropped or shown as ready.
-    """
+    """Build a sorted row per encounter, retaining encounters without gate rows."""
     by_encounter: dict[str, dict[str, Any]] = {}
-    for r in rows:
-        enc = by_encounter.setdefault(r["encounter_id"], {"meta": r, "gates": []})
-        if r.get("rule_id"):
+    for row in rows:
+        enc = by_encounter.setdefault(row["encounter_id"], {"meta": row, "gates": []})
+        if row.get("rule_id"):
             enc["gates"].append({
-                "gate": r.get("gate"), "rule_id": r["rule_id"],
-                "rule_version": r.get("rule_version"), "outcome": r.get("outcome"),
-                "severity": r.get("severity"), "reason": r.get("reason"),
+                "gate": row.get("gate"), "rule_id": row["rule_id"],
+                "rule_version": row.get("rule_version"), "outcome": row.get("outcome"),
+                "severity": row.get("severity"), "reason": row.get("reason"),
             })
-
-    census: list[ChairRow] = []
-    for encounter_id, enc in by_encounter.items():
-        meta, gates = enc["meta"], enc["gates"]
-        if gates:
-            status = classify(gates)
-            issues = _issues(gates)
-            head = issues[0] if issues else None
-            headline_rule = head.get("rule_id") if head else None
-            headline = head.get("reason") if head else None
-            others = max(len(issues) - 1, 0)
-        else:
-            status, headline_rule, others = "waiting", None, 0
-            headline = "Readiness has not been computed for this visit yet."
-        place = ", ".join(p for p in (meta.get("district"), meta.get("state")) if p)
-        census.append(ChairRow(
-            encounter_id=encounter_id, patient_id=meta["patient_id"], name=meta["name"],
-            place=place, language=meta.get("language"), regimen=meta.get("regimen"),
-            cycle=meta.get("cycle"), scheduled=meta.get("scheduled"), status=status,
-            headline_rule=headline_rule, headline=headline, other_issues=others, gates=gates,
-        ))
-
-    census.sort(key=lambda c: (STATUS_ORDER.index(c.status), c.scheduled or "", c.name))
+    census = [_chair_from_encounter(key, enc) for key, enc in by_encounter.items()]
+    census.sort(
+        key=lambda chair: (
+            STATUS_ORDER.index(chair.status), chair.scheduled or "", chair.name
+        )
+    )
     return census
 
 
