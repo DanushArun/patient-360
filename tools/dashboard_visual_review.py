@@ -75,7 +75,7 @@ def build_gallery(output: Path) -> None:
       <header><h1>SAARTHI · All 22 screen comparisons</h1>
       <p>Captured from the implemented frontend. Synthetic API responses demonstrate UI behavior;
       these captures do not prove live database integration or model access.</p>
-      <p>237 unit/render tests and 40 browser checks passed. Data-dependent differences are
+      <p>245 unit/render tests and 40 browser checks passed. Data-dependent differences are
       listed with each screen. Click either image to inspect it at full size.</p>
       <nav aria-label="Screen comparisons">{links}</nav></header>{screens}</body></html>"""
     (output / "index.html").write_text(document)

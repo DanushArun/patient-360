@@ -56,13 +56,11 @@ export const CensusChip = ({ status }: { status: CensusStatus }): ReactNode => (
   <Chip outcome={CENSUS_OUTCOME[status]} word={CENSUS_LABEL[status]} />
 );
 
-// Streamlit's st.button as restyled by design.py (.stButton>button), measured:
-// 17px/27.2px, weight 500, padding 4.25px 12.75px, min-height 43px, 1px RULE, radius 6px.
 export const buttonStyle: CSSProperties = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
-  minHeight: 43, padding: "4.25px 12.75px", fontSize: 17, lineHeight: "27.2px",
+  minHeight: 44, padding: "8px 12px", fontSize: 14, lineHeight: "20px",
   fontWeight: 500, color: INK, background: "#FFFFFF",
-  border: `1px solid ${RULE}`, borderRadius: 6, width: "100%",
+  border: "1px solid #E8E7E4", borderRadius: 4, width: "100%",
 };
 
 export function SaButton({ href, children, weight = 500 }: {

@@ -13,7 +13,7 @@ Parent reviewed references and captures; live integration remains unverified.
 | 05 | Inspect structured facts and provenance | web/components/workspace-patient-facts.tsx | Source links and expanded provenance consume returned facts; normalized values are not invented. | Source links and expanded provenance consume returned facts; normalized values are not invented. |
 | 06 | Read the record chronology | web/app/patient/[id]/patient-timeline.tsx | Three-clock sorting is implemented; historical rule reconstruction requires backend snapshots. | Three-clock sorting is implemented; historical rule reconstruction requires backend snapshots. |
 | 07 | Inspect received and expected documents | web/components/workspace-patient-data.tsx | Received files and expected records remain separate; preliminary is not automatically superseded. | Received files and expected records remain separate; preliminary is not automatically superseded. |
-| 08 | Trace the platelet check to its source | web/app/patient/[id]/patient-evidence.tsx | Selected SQL rule and evidence IDs are displayed. Exact CBC coordinates require backend mapping; the full source-page viewer is implemented separately. | Selected SQL rule and evidence IDs are displayed. Exact CBC coordinates require backend mapping; the full source-page viewer is implemented separately. |
+| 08 | Trace the platelet check to its source | web/app/patient/[id]/patient-evidence.tsx | Exact excerpt and clocks render from verified matching source_spans. Backend propagation remains required. | Selected SQL rule and evidence IDs are displayed. Exact CBC coordinates require backend mapping; the full source-page viewer is implemented separately. |
 | 09 | Read coverage without hiding disagreement | web/components/workspace-patient-coverage.tsx | Benefit amounts and reconciled dates are not invented when missing from the response. | Benefit amounts and reconciled dates are not invented when missing from the response. |
 | 10 | Compare the disagreeing authorization sources | web/components/workspace-authorization-comparison.tsx | Structured and source values remain side by side, with supplied span coordinates and clocks. | Structured and source values remain side by side, with supplied span coordinates and clocks. |
 | 11 | Prepare the bounded follow-up | web/components/review-task-draft.tsx | Task draft is unsaved until submitted; cancel performs no write. | Task draft is unsaved until submitted; cancel performs no write. |
@@ -50,7 +50,7 @@ Parent reviewed references and captures; live integration remains unverified.
 - No generated metrics, confidence percentages, clinical clearance or raw model prose.
 - Missing fields remain unavailable, not replaced with mockup claims.
 
-Logs: evidence/frontend-unit-render-237.txt, evidence/frontend-browser-40.txt,
+Logs: evidence/frontend-unit-render-245.txt, evidence/frontend-browser-40.txt,
 evidence/frontend-history-layout-browser.txt, evidence/frontend-reviewed-build.txt.
 
 Full-system gates remain pending in acceptance.json. See frontend-handoff.md.

@@ -1,7 +1,7 @@
 
 Running 40 tests using 1 worker
 
-(node:77156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:82481) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
 
 
@@ -45,4 +45,4 @@ Running 40 tests using 1 worker
 [38/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:216:5 › test_task_retry_when_receipt_is_uncertain_reuses_request_id_and_history_shows_readback_state
 [39/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:244:5 › test_task_retry_when_session_storage_is_denied_explains_reload_limit
 [40/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:268:5 › test_review_task_draft_when_cancelled_returns_focus_without_writing
-  40 passed (22.9s)
+  40 passed (22.7s)

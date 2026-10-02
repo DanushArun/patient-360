@@ -367,3 +367,8 @@
   border: 1px solid #e8e7e4; text-align: left; overflow-wrap: anywhere; vertical-align: top; }
 .sa-record-change-history thead { background: #f7f7f5; }
 @media (max-width: 600px) { .sa-record-change-columns { grid-template-columns: 1fr; } }
+.sa-gate-source-excerpt { border-top: 1px solid #e8e7e4; margin: 16px 0; padding-top: 12px; }
+.sa-gate-source-excerpt h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.sa-gate-source-excerpt pre { font: inherit; font-size: 13px; line-height: 1.6; }
+.sa-gate-source-excerpt dl { font-size: 12px; margin: 12px 0; overflow-wrap: anywhere; }
+.sa-gate-source-excerpt dd { margin: 2px 0 8px; }

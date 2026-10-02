@@ -64,6 +64,8 @@ async function capturePatientRecord(page: Page): Promise<void> {
   await section(page, "Overview");
   await page.getByRole("button", { name: "View check", exact: true }).first().click();
   await expect(page.getByRole("heading", { name: "Selected evidence" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Exact check sources" }).locator("mark"))
+    .toHaveText("82,000");
   await capture(page, "08-evidence");
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await section(page, "Coverage");

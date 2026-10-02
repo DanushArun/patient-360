@@ -13,7 +13,7 @@ Returned data controls facts, timestamps, status and write receipts.
 
 ## Verified frontend results
 
-- 237/237 unit/render tests pass on the exact reviewed snapshot.
+- 245/245 unit/render tests pass on the exact reviewed snapshot.
 - 40/40 browser tests pass, including all 22 designer steps and recovery branches.
 - Production compilation and TypeScript checks pass.
 - The final history-table repair passed another 6/6 screen/accessibility checks.
@@ -28,7 +28,7 @@ responsive reading and recovery are implemented.
 
 ## Performance measurements
 
-Final untraced preview benchmark: 20 samples per scenario on local Chromium.
+Untraced preview benchmark before the final source-excerpt refinement: 20 samples per scenario on local Chromium.
 Warm document navigation p95: 76 ms; roster switch p95: 70 ms; section interaction p95: 38 ms.
 Cold preview LCP p95: 44 ms. End-to-end cold navigation remained 412 ms against its existing
 300 ms ceiling; that target has not passed. Traced cold timing was 485 ms.

@@ -90,7 +90,7 @@
       "frontend_verification": "passed_controlled_browser",
       "parent_reviewed": true,
       "visual_review": "adapted_to_returned_data",
-      "note": "Selected SQL rule and evidence IDs are displayed. Exact CBC coordinates require backend mapping; the full source-page viewer is implemented separately."
+      "note": "Exact highlighted excerpt, three clocks and full cited page link are implemented. The backend must provide verified source_spans matching patient, assertion IDs and gate cutoff."
     },
     {
       "screen": "09",

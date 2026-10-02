@@ -105,7 +105,7 @@
         "planning/dashboard-release/evidence/screens/08-evidence.png",
         "planning/dashboard-release/evidence/frontend-browser-40.txt"
       ],
-      "integration_note": "Selected SQL rule and evidence IDs are displayed. Exact CBC coordinates require backend mapping; the full source-page viewer is implemented separately."
+      "integration_note": "Propagate verified source_spans to populate the implemented exact excerpt."
     },
     {
       "screen": "09",

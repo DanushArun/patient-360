@@ -10,7 +10,14 @@ const gate = (rule: string, outcome: string, reason: string): Record<string, unk
   outcome, reason, severity: "blocker", known_as_of: cutoff,
   evidence_ids: rule.startsWith("DOC") ? [] : ["ASSERT-SYN-1"],
 });
-export const gates = [gate("CLIN-PLT-001", "fail", "Platelets 82,000 /µL, below rule threshold."),
+export const gates = [{
+  ...gate("CLIN-PLT-001", "fail", "Platelets 82,000 /µL, below rule threshold."),
+  source_spans: [{ patient_id: patientId, scope: "patient", assertion_id: "ASSERT-SYN-1",
+    doc_id: "DOC-CBC-1", version: 1,
+    page_index: 0, char_start: 11, char_end: 17, excerpt_start: 0,
+    excerpt: "Platelets: 82,000 /µL. CBC report from City Labs (synthetic).",
+    verification_status: "verified", known_as_of: cutoff, ...clocks }],
+},
   gate("DOC-PATH-001", "not_evaluated", "Final pathology report not received."),
   gate("COV-AUTH-001", "conflicting", "Authorization dates disagree.")];
 export const patient = { patientId, patientName: "Fatima Begum", consentId: "CONSENT-SYN-1",

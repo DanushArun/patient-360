@@ -63,8 +63,13 @@ This example is synthetic. Both snapshots must come from existing versioned SQL 
 
 ## Integration items requiring backend data
 
-1. Gate evidence IDs need exact document/page/span provenance for the inline CBC design.
-   The source-page viewer and citation links already consume explicit coordinates.
+1. The selected-evidence panel now renders exact excerpts from optional gate `source_spans`.
+   Each span requires `patient_id`, `scope: "patient"`, `assertion_id` present in `evidence_ids`,
+   `doc_id`, positive `version`, zero-based `page_index`, `char_start`, `char_end`, `excerpt_start`,
+   `excerpt`, `verification_status: "verified"`, and the gate's identical `known_as_of`.
+   It can also display `event_time`, `source_recorded_at` and `ingested_at`.
+   Propagate these existing source fields through the snapshot adapter. Invalid, unverified,
+   cross-patient, reference-scope or mismatched-cutoff spans are hidden.
 2. Packet preview reads returned facts and sources at the answer cutoff. The server must record
    and read back final packet contents; the frontend preview is explicitly an unsaved draft.
 3. Historical rule changes, reference-source viewing, ABHA/consent labels, and reviewed
@@ -74,7 +79,7 @@ This example is synthetic. Both snapshots must come from existing versioned SQL 
 
 ## Verification and reproduction
 
-The reviewed frontend commit passes **237 unit/render tests and 40 browser tests**.
+The reviewed frontend commit passes **245 unit/render tests and 40 browser tests**.
 All 22 storyboard steps have screenshots in `evidence/screens/`.
 Browser API responses are synthetic fixtures; these results do not prove live persistence.
 

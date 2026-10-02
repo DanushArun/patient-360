@@ -6,6 +6,7 @@ import type { ReviewAction, ReviewFeedback } from "@/components/review-task-feed
 import { StatusChip, buttonStyle, type Outcome } from "@/components/sa";
 import type { AgentTurn, Gate } from "@/lib/patient";
 import { ReviewHistory } from "./patient-review-history";
+import { GateSourceExcerpt } from "@/components/gate-source-excerpt";
 
 export type { ReviewAction, ReviewFeedback } from "@/components/review-task-feedback";
 
@@ -92,6 +93,7 @@ function PinnedEvidence({ patientId, patientName, recipientName, gate, feedback,
   return <>
     <div className="sa-field-label">Evidence · {gate.gate}</div>
     <GateEvidence gate={gate} />
+    <GateSourceExcerpt gate={gate} patientId={patientId} />
     {reviewable && <ActionButtons patientId={patientId} patientName={patientName}
       recipientName={recipientName} gate={gate} feedback={feedback}
       actionsAvailable={actionsAvailable} onAction={onAction} />}

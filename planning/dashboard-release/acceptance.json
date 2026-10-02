@@ -342,7 +342,7 @@
   "frontend_scope": {
     "owner": "/root",
     "status": "controlled_frontend_verified",
-    "unit_render_tests": 237,
+    "unit_render_tests": 245,
     "browser_tests": 40,
     "screens_captured": 22,
     "evidence": "planning/dashboard-release/screen-comparison.json",
