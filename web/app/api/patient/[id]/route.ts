@@ -1,24 +1,33 @@
-import { loadPatient, refreshPatient } from "@/lib/patient";
+import { loadPatientSnapshot, refreshPatient } from "@/lib/patient";
+import { apiError, apiErrorStatus, isSameOrigin } from "@/lib/api-contracts.mjs";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: Request, context: RouteContext<"/api/patient/[id]">) {
+export async function GET(
+  _request: Request,
+  context: RouteContext<"/api/patient/[id]">,
+): Promise<Response> {
   try {
     const { id } = await context.params;
-    return Response.json(await loadPatient(id));
+    return Response.json(await loadPatientSnapshot(id));
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "patient_unavailable" }, { status: 403 });
+    const failure = apiError(error);
+    return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
 }
 
-export async function POST(request: Request, context: RouteContext<"/api/patient/[id]">) {
-  if (request.headers.get("origin") && request.headers.get("origin") !== new URL(request.url).origin) {
-    return Response.json({ error: "invalid_origin" }, { status: 403 });
+export async function POST(
+  request: Request,
+  context: RouteContext<"/api/patient/[id]">,
+): Promise<Response> {
+  if (!isSameOrigin(request)) {
+    return Response.json(apiError("invalid_origin"), { status: 403 });
   }
   try {
     const { id } = await context.params;
     return Response.json(await refreshPatient(id));
-  } catch {
-    return Response.json({ error: "readiness_refresh_unavailable" }, { status: 502 });
+  } catch (error) {
+    const failure = apiError(error, "readiness_refresh_unavailable");
+    return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
 }

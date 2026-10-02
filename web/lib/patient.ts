@@ -89,19 +89,6 @@ export async function loadPatientSnapshot(patientId: string): Promise<PatientDat
   });
 }
 
-export async function loadPatient(patientId: string): Promise<PatientData> {
-  return withPatientSessionAndContext(patientId, async (run, context) => {
-    const rows = await run("CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL, NULL)");
-    const result = parseValue(Object.values(rows[0] ?? {})[0]);
-    if (result.error) throw new Error(String(result.error));
-    return {
-      ...context,
-      knownAsOf: typeof result.known_as_of === "string" ? result.known_as_of : null,
-      gates: Array.isArray(result.gates) ? result.gates as Gate[] : [],
-    };
-  });
-}
-
 export async function refreshPatient(patientId: string): Promise<PatientData> {
   return withPatientSessionAndContext(patientId, async (run, context) => {
     const result = procedureValue(await run("CALL SAARTHI.OPERATIONAL.REFRESH_BOUND_READINESS()"));
