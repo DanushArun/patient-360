@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { CensusSearch } from './census-search';
 import { PatientSearch } from '@/components/patient-search';
+import { withUiReadDeadline } from '@/lib/ui-read-deadline.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,13 +19,13 @@ type DayCareData = {
 
 async function readDayCare(): Promise<DayCareData> {
   try {
-    const [rows, patients, practitioner] = await Promise.all([
+    const [rows, patients, practitioner] = await withUiReadDeadline(Promise.all([
       fetchCensus(7),
       fetchBindablePatients().then((values) => values.map((patient) => ({
         id: patient.PATIENT_ID, name: patient.NAME,
       }))),
       fetchPractitionerName(),
-    ]);
+    ]));
     patients.sort((left, right) => left.name.localeCompare(right.name));
     return { rows, patients, practitioner, error: null };
   } catch (error) {

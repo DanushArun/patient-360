@@ -6,6 +6,7 @@ import type { DocumentQuery } from "@/lib/document-source.mjs";
 import { apiError } from "@/lib/api-contracts.mjs";
 import { DocumentSourceView } from "@/components/document-source-view";
 import { Page, WorkspaceNav } from "@/components/sa";
+import { withUiReadDeadline } from "@/lib/ui-read-deadline.mjs";
 
 export const dynamic = "force-dynamic";
 type RouteProps = {
@@ -19,8 +20,9 @@ export default async function DocumentPage(props: RouteProps): Promise<ReactNode
   const returnHref = documentReturn(id, query.return);
   try {
     const request = documentRequest(doc, query);
-    const result = await withPatientSession(id, async (run) => procedureValue(await run(
-      "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('document',?)", [request.argument])));
+    const result = await withUiReadDeadline(withPatientSession(id, async (run) =>
+      procedureValue(await run(
+        "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('document',?)", [request.argument]))));
     if (!Array.isArray(result.rows) || typeof result.known_as_of !== "string") {
       throw new Error("source_unavailable");
     }
