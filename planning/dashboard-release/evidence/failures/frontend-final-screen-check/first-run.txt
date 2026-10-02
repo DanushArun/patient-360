@@ -1,0 +1,129 @@
+
+Running 40 tests using 1 worker
+
+(node:76174) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/40] [chromium] › tests/e2e/authorized-patient-search.spec.ts:3:5 › test_authorized_patient_search_when_query_matches_opens_selected_patient
+[2/40] [chromium] › tests/e2e/authorized-patient-search.spec.ts:19:5 › test_authorized_patient_search_when_arrow_down_selects_next_patient
+[3/40] [chromium] › tests/e2e/authorized-patient-search.spec.ts:30:5 › test_authorized_patient_search_when_empty_shows_no_match_and_cancel_restores_focus
+[4/40] [chromium] › tests/e2e/authorized-patient-search.spec.ts:51:5 › test_authorized_patient_search_when_roster_unavailable_disables_opening
+[5/40] [chromium] › tests/e2e/storyboard-visual.spec.ts:20:5 › test_every_storyboard_screen_when_bound_contracts_return_captures_actual_frontend
+[6/40] [chromium] › tests/e2e/visit-table.spec.ts:5:5 › test_visits_when_sorted_keeps_eight_sql_statuses_and_patient_links
+[7/40] [chromium] › tests/e2e/visit-table.spec.ts:34:5 › test_visits_on_mobile_exposes_a_focusable_horizontal_table
+[8/40] [chromium] › tests/e2e/visit-table.spec.ts:50:5 › test_worklist_when_reloaded_restores_date_search_and_view
+[9/40] [chromium] › tests/e2e/worklist-recovery.spec.ts:3:5 › test_worklist_when_service_unavailable_does_not_claim_zero_counts
+[10/40] [chromium] › tests/e2e/worklist-recovery.spec.ts:10:5 › test_worklist_when_service_unavailable_does_not_claim_successful_refresh
+[11/40] [chromium] › tests/e2e/worklist-recovery.spec.ts:16:5 › test_worklist_when_service_unavailable_disables_patient_selection
+[12/40] [chromium] › tests/e2e/workspace-accessibility.spec.ts:81:5 › test_mobile_evidence_panel_when_closed_returns_focus_to_the_selected_check
+[13/40] [chromium] › tests/e2e/workspace-accessibility.spec.ts:92:5 › test_mobile_evidence_dialog_when_open_contains_focus_and_escape_restores_trigger
+[14/40] [chromium] › tests/e2e/workspace-accessibility.spec.ts:117:5 › test_mobile_patient_section_targets_when_visible_are_at_least_44_pixels_tall
+[15/40] [chromium] › tests/e2e/workspace-accessibility.spec.ts:131:5 › test_zoom_200_equivalent_when_document_open_reflows_source_without_horizontal_clipping
+[16/40] [chromium] › tests/e2e/workspace-accessibility.spec.ts:150:5 › test_mobile_source_when_long_text_is_open_wraps_and_remains_readable
+[17/40] [chromium] › tests/e2e/workspace-documents.spec.ts:83:5 › test_documents_when_authorized_metadata_returns_show_clocks_assertions_and_expected_rule
+[18/40] [chromium] › tests/e2e/workspace-documents.spec.ts:107:5 › test_documents_when_view_filters_change_then_expected_rows_and_types_stay_scoped
+[19/40] [chromium] › tests/e2e/workspace-documents.spec.ts:122:5 › test_documents_when_phone_viewport_then_rows_fit_and_controls_are_touch_sized
+[20/40] [chromium] › tests/e2e/workspace-entry.spec.ts:3:5 › test_workspace_when_897px_wide_keeps_patient_context_visible
+[21/40] [chromium] › tests/e2e/workspace-entry.spec.ts:12:5 › test_worklist_when_live_unavailable_offers_explicit_recorded_preview
+[22/40] [chromium] › tests/e2e/workspace-facts.spec.ts:64:5 › test_facts_when_sql_labs_return_then_render_state_clocks_sources
+[23/40] [chromium] › tests/e2e/workspace-facts.spec.ts:83:5 › test_facts_when_viewport_is_389_pixels_then_rows_stay_readable
+[24/40] [chromium] › tests/e2e/workspace-facts.spec.ts:98:5 › test_facts_when_mutable_domain_reads_then_show_query_time_basis
+[25/40] [chromium] › tests/e2e/workspace-family.spec.ts:5:5 › test_family_when_language_changes_copies_current_record_without_sending
+[26/40] [chromium] › tests/e2e/workspace-family.spec.ts:25:5 › test_family_when_clipboard_is_denied_keeps_selectable_message
+[27/40] [chromium] › tests/e2e/workspace-family.spec.ts:39:7 › test_patient_at_390_pixels_keeps_context_and_sections_readable
+[28/40] [chromium] › tests/e2e/workspace-family.spec.ts:39:7 › test_patient_at_768_pixels_keeps_context_and_sections_readable
+[29/40] [chromium] › tests/e2e/workspace-family.spec.ts:39:7 › test_patient_at_1024_pixels_keeps_context_and_sections_readable
+[30/40] [chromium] › tests/e2e/workspace-family.spec.ts:39:7 › test_patient_at_1440_pixels_keeps_context_and_sections_readable
+[31/40] [chromium] › tests/e2e/workspace-flow.spec.ts:59:5 › test_coverage_when_comparison_opens_preserves_sources_and_followup_draft
+[32/40] [chromium] › tests/e2e/workspace-flow.spec.ts:90:5 › test_answers_when_scope_changes_and_clinical_question_is_refused_keeps_boundaries
+[33/40] [chromium] › tests/e2e/workspace-flow.spec.ts:122:5 › test_task_update_when_receipt_is_uncertain_locks_draft_and_retries_same_request
+[34/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:151:5 › test_facts_retry_when_first_read_fails_shows_returned_clock_semantics
+  1) [chromium] › tests/e2e/workspace-recovery.spec.ts:151:5 › test_facts_retry_when_first_read_fails_shows_returned_clock_semantics 
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 3
+    Received length: 4
+    Received array:  [{"body": {}, "method": "GET", "path": "/api/patient/PAT-DC-04/workspace"}, {"body": {}, "method": "GET", "path": "/api/patient/PAT-DC-04/workspace"}, {"body": {}, "method": "GET", "path": "/api/patient/PAT-DC-04/workspace"}, {"body": {}, "method": "GET", "path": "/api/patient/PAT-DC-04/workspace"}]
+
+      162 |   tracker.assertNoUnexpected();
+      163 |   expect(tracker.requests.filter((request) => request.path.endsWith("/workspace")))
+    > 164 |     .toHaveLength(3);
+          |      ^
+      165 | });
+      166 |
+      167 | test("test_recompute_when_POST_succeeds_reads_updated_snapshot_and_keeps_section", async ({ page }) => {
+        at /private/var/folders/qk/m5ddr8y53h96m8d7ltydhvdc0000gn/T/saarthi-ui-final-epi6pa3c/web/tests/e2e/workspace-recovery.spec.ts:164:6
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/workspace-recovery-test-fa-903ef-ws-returned-clock-semantics-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/workspace-recovery-test-fa-903ef-ws-returned-clock-semantics-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/workspace-recovery-test-fa-903ef-ws-returned-clock-semantics-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/workspace-recovery-test-fa-903ef-ws-returned-clock-semantics-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:76377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[35/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:167:5 › test_recompute_when_POST_succeeds_reads_updated_snapshot_and_keeps_section
+[36/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:181:5 › test_recompute_when_POST_fails_keeps_last_snapshot_and_disables_actions
+  2) [chromium] › tests/e2e/workspace-recovery.spec.ts:181:5 › test_recompute_when_POST_fails_keeps_last_snapshot_and_disables_actions 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('status').filter({ hasText: 'Live readiness refresh failed' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('status').filter({ hasText: 'Live readiness refresh failed' }) with timeout 5000ms
+      - waiting for getByRole('status').filter({ hasText: 'Live readiness refresh failed' })
+
+
+      187 |   await expect(page.getByRole("status").filter({
+      188 |     hasText: "Live readiness refresh failed",
+    > 189 |   })).toBeVisible();
+          |       ^
+      190 |   await expect(page.locator(".sa-utility-bar")
+      191 |     .locator(`time[datetime="${knownAsOf}"]`)).toBeVisible();
+      192 |   await expect(page.getByRole("button", { name: "Request document" })).toBeDisabled();
+        at /private/var/folders/qk/m5ddr8y53h96m8d7ltydhvdc0000gn/T/saarthi-ui-final-epi6pa3c/web/tests/e2e/workspace-recovery.spec.ts:189:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/workspace-recovery-test-re-4b265-apshot-and-disables-actions-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/workspace-recovery-test-re-4b265-apshot-and-disables-actions-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/workspace-recovery-test-re-4b265-apshot-and-disables-actions-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/workspace-recovery-test-re-4b265-apshot-and-disables-actions-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:76411) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[37/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:198:5 › test_timeline_when_sql_returns_derived_and_pending_events_shows_provenance_and_bounds
+[38/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:213:5 › test_task_retry_when_receipt_is_uncertain_reuses_request_id_and_history_shows_readback_state
+[39/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:241:5 › test_task_retry_when_session_storage_is_denied_explains_reload_limit
+[40/40] [chromium] › tests/e2e/workspace-recovery.spec.ts:265:5 › test_review_task_draft_when_cancelled_returns_focus_without_writing
+  2 failed
+    [chromium] › tests/e2e/workspace-recovery.spec.ts:151:5 › test_facts_retry_when_first_read_fails_shows_returned_clock_semantics 
+    [chromium] › tests/e2e/workspace-recovery.spec.ts:181:5 › test_recompute_when_POST_fails_keeps_last_snapshot_and_disables_actions 
+  38 passed (30.1s)

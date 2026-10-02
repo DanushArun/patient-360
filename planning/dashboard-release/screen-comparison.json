@@ -1,0 +1,250 @@
+{
+  "checked_on": "2026-10-02",
+  "scope": "frontend",
+  "live_backend_verified": false,
+  "test": "web/tests/e2e/storyboard-visual.spec.ts",
+  "screens": [
+    {
+      "screen": "01",
+      "title": "Doctor opens Day care",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/01-doctor-opens-dashboard.png",
+      "capture": "planning/dashboard-release/evidence/screens/01-daycare.png",
+      "implementation": "web/app/census-search.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Counts and readiness labels follow returned SQL; no treatment clearance is inferred."
+    },
+    {
+      "screen": "02",
+      "title": "Compare visits in a table",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/02-visit-worklist-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/02-visits.png",
+      "implementation": "web/app/visit-table.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "v2 is the latest available image. The journey names v3, but no v3 image was supplied."
+    },
+    {
+      "screen": "03",
+      "title": "Search authorized patients",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/03-authorized-patient-search.png",
+      "capture": "planning/dashboard-release/evidence/screens/03-search.png",
+      "implementation": "web/components/patient-search.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Authorized display selection uses returned patient IDs; name is not an identity join."
+    },
+    {
+      "screen": "04",
+      "title": "Establish the patient context",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/04-patient-overview.png",
+      "capture": "planning/dashboard-release/evidence/screens/04-overview.png",
+      "implementation": "web/components/workspace-patient-overview.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "ABHA and active-consent status are not inferred from absent fields. Source dates retain their supplied zone."
+    },
+    {
+      "screen": "05",
+      "title": "Inspect structured facts and provenance",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/05-structured-facts-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/05-facts.png",
+      "implementation": "web/components/workspace-patient-facts.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Source links and expanded provenance consume returned facts; normalized values are not invented."
+    },
+    {
+      "screen": "06",
+      "title": "Read the record chronology",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/06-record-timeline-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/06-timeline.png",
+      "implementation": "web/app/patient/[id]/patient-timeline.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Three-clock sorting is implemented; historical rule reconstruction requires backend snapshots."
+    },
+    {
+      "screen": "07",
+      "title": "Inspect received and expected documents",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/07-document-library.png",
+      "capture": "planning/dashboard-release/evidence/screens/07-documents.png",
+      "implementation": "web/components/workspace-patient-data.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Received files and expected records remain separate; preliminary is not automatically superseded."
+    },
+    {
+      "screen": "08",
+      "title": "Trace the platelet check to its source",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/08-platelet-evidence-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/08-evidence.png",
+      "implementation": "web/app/patient/[id]/patient-evidence.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Selected SQL rule and evidence IDs are displayed. Exact CBC coordinates require backend mapping; the full source-page viewer is implemented separately."
+    },
+    {
+      "screen": "09",
+      "title": "Read coverage without hiding disagreement",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/09-coverage-overview-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/09-coverage.png",
+      "implementation": "web/components/workspace-patient-coverage.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Benefit amounts and reconciled dates are not invented when missing from the response."
+    },
+    {
+      "screen": "10",
+      "title": "Compare the disagreeing authorization sources",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/10-authorization-comparison.png",
+      "capture": "planning/dashboard-release/evidence/screens/10-comparison.png",
+      "implementation": "web/components/workspace-authorization-comparison.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Structured and source values remain side by side, with supplied span coordinates and clocks."
+    },
+    {
+      "screen": "11",
+      "title": "Prepare the bounded follow-up",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/11-review-task-draft-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/11-draft.png",
+      "implementation": "web/components/review-task-draft.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Task draft is unsaved until submitted; cancel performs no write."
+    },
+    {
+      "screen": "12",
+      "title": "Confirm the recorded follow-up",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/12-review-task-result.png",
+      "capture": "planning/dashboard-release/evidence/screens/12-receipt.png",
+      "implementation": "web/components/review-task-feedback.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Success is shown only for confirmed receipt/read-back. Task save does not change readiness."
+    },
+    {
+      "screen": "13",
+      "title": "See follow-up work and its evidence state",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/13-review-queue-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/13-queue.png",
+      "implementation": "web/app/review-queue/review-queue-view.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Board groups actual task states; unresolved SQL checks remain after a task closes."
+    },
+    {
+      "screen": "14",
+      "title": "Follow the next-day evidence update",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/14-review-history.png",
+      "capture": "planning/dashboard-release/evidence/screens/14-history.png",
+      "implementation": "web/app/history/[id]/history-client.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Before/after rule comparison consumes optional validated changes; absent history is stated explicitly."
+    },
+    {
+      "screen": "15",
+      "title": "Open the copilot in patient context",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/15-ask-record-start-v2.png",
+      "capture": "planning/dashboard-release/evidence/screens/15-ask.png",
+      "implementation": "web/components/workspace-patient-copilot.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Patient/reference scopes remain separate; reference browsing needs a supplied viewer endpoint."
+    },
+    {
+      "screen": "16",
+      "title": "Verify the copilot's answer",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/16-cited-record-answer.png",
+      "capture": "planning/dashboard-release/evidence/screens/16-answer.png",
+      "implementation": "web/app/patient/[id]/patient-answer-artifact.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Only a validated typed artifact is exposed. Raw model prose stays hidden."
+    },
+    {
+      "screen": "17",
+      "title": "Handle a clinical-judgment question",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/17-clinical-referral-packet.png",
+      "capture": "planning/dashboard-release/evidence/screens/17-referral.png",
+      "implementation": "web/components/evidence-packet-preview.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "The packet preview is explicitly a draft at the answer cutoff. Final persisted contents belong to the server."
+    },
+    {
+      "screen": "18",
+      "title": "Prepare a family bring-list",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/images/18-family-preparation.png",
+      "capture": "planning/dashboard-release/evidence/screens/18-family.png",
+      "implementation": "web/components/workspace-patient-family.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Bring-list uses returned expected records. Only headings have reviewed translations; this limitation is visible."
+    },
+    {
+      "screen": "19",
+      "title": "Read the updated patient snapshot",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/prompts/19-updated-patient-overview.txt",
+      "capture": "planning/dashboard-release/evidence/screens/19-updated-overview.png",
+      "implementation": "web/components/use-patient-record.ts",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "No image was supplied. Checked against the prompt and journey: new cutoff, superseded letter, unchanged platelet issue."
+    },
+    {
+      "screen": "20",
+      "title": "Continue with the next patient",
+      "reference": "dashboard-design/patient-360-notion-design-2026-10-01/prompts/20-return-to-worklist.txt",
+      "capture": "planning/dashboard-release/evidence/screens/20-restored-worklist.png",
+      "implementation": "web/app/census-search.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "No image was supplied. Prior Visits view/filter restoration is verified; no fake completion banner is added."
+    },
+    {
+      "screen": "21",
+      "title": "Recover safely when data or access changes",
+      "reference": "dashboard-design/design/patient-360-notion-2026-10-01/images/13-failure-states.png",
+      "capture": "planning/dashboard-release/evidence/screens/21-failed-refresh.png",
+      "implementation": "web/components/route-loading.tsx",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Fallback reference is the prior failure sheet. Actual recovery is shown in the appropriate context, not as simultaneous demo panels."
+    },
+    {
+      "screen": "22",
+      "title": "Review on tablet and phone",
+      "reference": "dashboard-design/design/patient-360-notion-2026-10-01/images/14-responsive-layout.png",
+      "capture": "planning/dashboard-release/evidence/screens/22-phone.png",
+      "implementation": "web/app/workspace-responsive.css",
+      "frontend_verification": "passed_controlled_browser",
+      "parent_reviewed": true,
+      "visual_review": "adapted_to_returned_data",
+      "note": "Fallback reference is the prior responsive sheet. Phone source reading is additionally captured and tested."
+    }
+  ]
+}
