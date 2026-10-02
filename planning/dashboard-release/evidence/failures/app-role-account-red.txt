@@ -1,0 +1,82 @@
+✔ live access is opt-in even when complete credentials exist (0.942459ms)
+✔ connection configuration requires explicit local identity (0.102334ms)
+✔ empty credentials are rejected and warehouse can be configured (0.073458ms)
+✔ every identity field is mandatory after enabling live access (0.117042ms)
+✔ an environment role cannot elevate the application (0.058459ms)
+✖ test_configuration_when_legacy_admin_flag_set_keeps_app_role (0.786875ms)
+✖ test_configuration_when_account_is_historical_rejects_before_connecting (0.0905ms)
+✖ test_configuration_when_account_has_case_and_whitespace_normalizes (0.091666ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 5
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.280583
+
+✖ failing tests:
+
+test at web/lib/snowflake-config.test.mjs:51:1
+✖ test_configuration_when_legacy_admin_flag_set_keeps_app_role (0.786875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'ACCOUNTADMIN'
+  - 'SAARTHI_APP'
+
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/snowflake-config.test.mjs:53:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ACCOUNTADMIN',
+    expected: 'SAARTHI_APP',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at web/lib/snowflake-config.test.mjs:58:1
+✖ test_configuration_when_account_is_historical_rejects_before_connecting (0.0905ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/snowflake-config.test.mjs:60:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /snowflake_account_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at web/lib/snowflake-config.test.mjs:65:1
+✖ test_configuration_when_account_has_case_and_whitespace_normalizes (0.091666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'kgtpghj-yj28449'
+  - 'KGTPGHJ-YJ28449'
+
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/snowflake-config.test.mjs:66:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'kgtpghj-yj28449',
+    expected: 'KGTPGHJ-YJ28449',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

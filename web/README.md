@@ -40,7 +40,7 @@ still a thin agent wrapper: the more extensive answer guard is deferred pending 
 ### Current local setup — 1 October 2026
 
 The dashboard now reads through access-checked Snowflake procedures. Keep
-`SAARTHI_LOCAL_RECORDING_ADMIN=false`. Set `SAARTHI_SNOWFLAKE_ENABLED=true`
+the `SAARTHI_APP` role. Set `SAARTHI_SNOWFLAKE_ENABLED=true`
 only for planned live testing, then run:
 
 ```sh

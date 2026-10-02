@@ -38,7 +38,7 @@ const ERROR_CATEGORIES = {
   write_readback_unconfirmed: "uncertain",
   snowflake_access_disabled: "configuration",
   snowflake_configuration_missing: "configuration",
-  snowflake_recording_admin_requires_development: "configuration",
+  snowflake_account_mismatch: "configuration",
 };
 
 /**
