@@ -126,7 +126,8 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
   echo "dry run - nothing executed"
 else
   echo "deploy complete."
-  echo "Idempotency is a requirement, not a nicety: run this again now and it must"
-  echo "succeed unchanged. Then teardown.sql, then a third run. All three pass or"
-  echo "the clean-account rehearsal on Day 15 will fail instead."
+  echo "Do not redeploy for routine frontend startup or UI changes."
+  echo "Idempotency/teardown rehearsals are separate, explicitly scheduled tests"
+  echo "on a disposable account with an agreed budget, not normal startup steps."
+  echo "Review docs/PROTOTYPE-COST-CONTROLS.md before enabling live access."
 fi

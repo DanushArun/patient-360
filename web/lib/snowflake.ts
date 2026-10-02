@@ -10,7 +10,7 @@ import { snowflakeConfig } from "./snowflake-config.mjs";
 // other request sees - the identical cross-user leak found and fixed in the
 // Streamlit build. Key-pair (JWT) auth has no browser round-trip, so a fresh
 // connection per request is cheap and safe, unlike OAuth.
-function openConnection(): Promise<snowflake.Connection> {
+async function openConnection(): Promise<snowflake.Connection> {
   const config = snowflakeConfig();
   const privateKey = readFileSync(config.privateKeyPath, "utf8");
   const conn = snowflake.createConnection({
@@ -21,12 +21,25 @@ function openConnection(): Promise<snowflake.Connection> {
     role: config.role,
     warehouse: config.warehouse,
   });
-  return new Promise((resolve, reject) => {
-    conn.connect((err, c) => {
+  await new Promise<void>((resolve, reject) => {
+    conn.connect((err) => {
       if (err) conn.destroy(() => reject(err));
-      else resolve(c);
+      else resolve();
     });
   });
+  try {
+    await execOn(conn, "USE SECONDARY ROLES NONE");
+    // Per-statement protection, not an account dollar cap. Preserve fresh
+    // patient-bound sessions; never share connections to reduce cost.
+    await execOn(conn,
+      "ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = 120, " +
+      "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30, QUERY_TAG = 'saarthi_web_prototype'"
+    );
+    return conn;
+  } catch (error) {
+    destroyConnection(conn);
+    throw error;
+  }
 }
 
 function destroyConnection(conn: snowflake.Connection) {
@@ -40,7 +53,6 @@ export async function query<T = Record<string, unknown>>(
 ): Promise<T[]> {
   const conn = await openConnection();
   try {
-    await execOn(conn, "USE SECONDARY ROLES NONE");
     return await execOn<T>(conn, sqlText, binds);
   } finally {
     destroyConnection(conn);
@@ -66,6 +78,18 @@ function execOn<T = Record<string, unknown>>(
   });
 }
 
+/** Bounded stateless reads share one connection, never a patient binding. */
+export async function withReadSession<T>(
+  fn: (run: (sql: string) => Promise<Record<string, unknown>[]>) => Promise<T>
+): Promise<T> {
+  const conn = await openConnection();
+  try {
+    return await fn((sql) => execOn(conn, sql));
+  } finally {
+    destroyConnection(conn);
+  }
+}
+
 /**
  * A session for one request that needs binding: BIND_PATIENT then one or more
  * agent calls that must resolve to that same binding server-side. Always
@@ -79,7 +103,6 @@ export async function withPatientSession<T>(
   const conn = await openConnection();
   const run = (sql: string, binds: (string | number | null)[] = []) => execOn(conn, sql, binds);
   try {
-    await run("USE SECONDARY ROLES NONE");
     const bindRows = await run("CALL SAARTHI.OPERATIONAL.BIND_PATIENT(?)", [patientId]);
     const bindCell = Object.values(bindRows[0] ?? {})[0];
     const bindResult = typeof bindCell === "string" ? JSON.parse(bindCell) : bindCell;
@@ -88,7 +111,9 @@ export async function withPatientSession<T>(
     return await fn(run);
   } finally {
     try {
-      await run("CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()");
+      await run(
+        "CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()"
+      );
     } finally {
       destroyConnection(conn);
     }
@@ -100,33 +125,10 @@ export async function withPatientSessionAndContext<T>(
   fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>, context: PatientBinding) => Promise<T>
 ): Promise<T> {
   return withPatientSession(patientId, async (run) => {
-    const rows = await run(
-      `WITH next_visit AS (
-         SELECT patient_id, cycle_number,
-                TO_VARCHAR(scheduled_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS scheduled_at
-           FROM SAARTHI.CORE.ENCOUNTER
-          WHERE encounter_type = 'daycare' AND scheduled_time >= CURRENT_DATE()
-          QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY scheduled_time) = 1
-       ), latest_plan AS (
-         SELECT patient_id, regimen_display
-           FROM SAARTHI.CORE.TREATMENT_PLAN
-          QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY patient_id ORDER BY version DESC, decided_at DESC) = 1
-       )
-       SELECT p.name, p.primary_language, nv.scheduled_at, nv.cycle_number,
-              lp.regimen_display,
-              (SELECT b.consent_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING b
-                WHERE b.session_id = CURRENT_SESSION() AND b.released_at IS NULL
-                ORDER BY b.bound_at DESC LIMIT 1) AS consent_id,
-              pr.name AS practitioner_name
-         FROM SAARTHI.CORE.PATIENT p
-         JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr
-           ON UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
-         LEFT JOIN next_visit nv ON nv.patient_id = p.patient_id
-         LEFT JOIN latest_plan lp ON lp.patient_id = p.patient_id
-        WHERE p.patient_id = ?`,
-      [patientId]
+    const rawRows = await run(
+      "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('context',NULL)"
     );
+    const rows = procedureRows(rawRows);
     if (!rows[0]) throw new Error("patient_context_unavailable");
     return fn(run, {
       patientId,
@@ -153,4 +155,18 @@ export interface PatientBinding {
   cycleNumber: number | null;
   regimen: string | null;
   practitionerName: string;
+}
+
+/** Typed envelope from the fixed-view owner procedures; never silently return [] on failure. */
+export function procedureValue(rows: Record<string, unknown>[]): Record<string, unknown> {
+  const cell = Object.values(rows[0] ?? {})[0];
+  const value = typeof cell === "string" ? JSON.parse(cell) : cell;
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("procedure_unavailable");
+  if (value.error) throw new Error(String(value.error));
+  return value;
+}
+export function procedureRows<T = Record<string, unknown>>(rows: Record<string, unknown>[]): T[] {
+  const result = procedureValue(rows);
+  if (!Array.isArray(result.rows)) throw new Error("procedure_rows_unavailable");
+  return result.rows as T[];
 }

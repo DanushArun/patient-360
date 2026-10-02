@@ -1,17 +1,10 @@
-import { withPatientSession } from "@/lib/snowflake";
+import { withPatientSession, procedureRows } from "@/lib/snowflake";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const schemes = await withPatientSession(id, async (run) => {
-      const rows = await run(
-        `SELECT scheme_id, scheme_name, scheme_type, annual_limit, eligibility_status, covered_packages
-           FROM SAARTHI.OPERATIONAL.DT_SCHEME_ELIGIBILITY
-          WHERE patient_id = (
-            SELECT patient_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING
-             WHERE session_id = CURRENT_SESSION() AND released_at IS NULL
-             LIMIT 1)`
-      );
+      const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('schemes',NULL)"));
       return rows.map((r) => ({
         schemeId: r.SCHEME_ID,
         schemeName: r.SCHEME_NAME,

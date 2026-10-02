@@ -23,30 +23,35 @@ export function GateStrip({ gates, knownAsOf, selectedRuleId, isSnapshot, onSele
   isSnapshot: boolean;
   onSelect: (ruleId: string) => void;
 }): ReactNode {
-  return <>
-    <div className="sa-field-label" style={{ margin: "12px 0 4px" }}>
-      Readiness checks{isSnapshot ? " · stored snapshot" : ""} · select any check for details
-      {knownAsOf && <> · <span className="sa-num">as of {knownAsOf}</span></>}
+  const counts = gates.reduce<Record<Outcome, number>>((all, gate) => {
+    all[gate.outcome as Outcome] += 1; return all;
+  }, { pass: 0, fail: 0, not_evaluated: 0, conflicting: 0 });
+  return <section className="sa-readiness-panel" aria-label="Readiness checks">
+    <div className="sa-readiness-heading">
+      <div><p className="sa-eyebrow">Current readiness{isSnapshot ? " · stored snapshot" : ""}</p><h2>Check the record, then act on the gap.</h2>
+        <p>Select any check to keep its evidence visible alongside the record.</p></div>
+      <div className="sa-readiness-counts" aria-label="Readiness summary">
+        <span><b className="sa-num">{counts.fail}</b> fail</span><span><b className="sa-num">{counts.conflicting}</b> conflict</span>
+        <span><b className="sa-num">{counts.not_evaluated}</b> unknown</span><span><b className="sa-num">{counts.pass}</b> pass</span>
+      </div>
     </div>
-    {Array.from({ length: Math.ceil(gates.length / 4) }, (_, row) => (
-      <div key={row} className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 17 }}>
-        {gates.slice(row * 4, row * 4 + 4).map((gate) => {
+    <div className="sa-readiness-asof">Select any check for details{knownAsOf && <> · Snapshot as of <span className="sa-num">{knownAsOf}</span></>}</div>
+    <div className="sa-readiness-grid">
+      {gates.map((gate) => {
           const ruleId = gate.rule_id ?? gate.gate;
           const selected = selectedRuleId === ruleId;
           return <button key={ruleId} type="button" aria-expanded={selected}
             aria-controls="readiness-evidence"
             aria-label={`${gate.gate}, ${gate.outcome}. Show check details`}
             onClick={() => onSelect(ruleId)}
-            className="sa-gate-tile rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ padding: "8px 6px", borderTop: `1px solid ${selected ? "var(--sa-patient-edge)" : "#D8DCDF"}`, background: selected ? "#f0f5f8" : "transparent" }}>
+            className={`sa-gate-tile text-left focus-visible:outline-2 focus-visible:outline-offset-2${selected ? " sa-gate-tile-selected" : ""}`}>
             <span className="sa-field-label block">{gate.gate}</span>
             <StatusChip outcome={gate.outcome as Outcome} />
             <span className="sa-meta mt-1 block"><code>{gate.rule_id} v{gate.rule_version}</code></span>
           </button>;
-        })}
-      </div>
-    ))}
-  </>;
+      })}
+    </div>
+  </section>;
 }
 
 export function GateCitation({ gate, selected, onSelect }: {
@@ -82,7 +87,7 @@ export function EvidencePanel({ patientId, turn, selected, feedback, actionsAvai
     escalate: feedback[`${selected.rule_id}:escalate`],
   }}
     actionsAvailable={actionsAvailable} onAction={onAction} onUnpin={onUnpin} />;
-  if (turn) return <AnswerEvidence turn={turn} />;
+  if (turn) return <AnswerEvidence turn={turn} patientId={patientId} />;
   return <div className="sa-meta">
     Select a readiness check above to inspect its result, reason, and evidence. Chat answers
     include their supporting tool records here.
@@ -179,13 +184,13 @@ function ActionButtons({ gate, feedback, actionsAvailable, onAction }: {
   </>;
 }
 
-function AnswerEvidence({ turn }: { turn: Turn }): ReactNode {
+function AnswerEvidence({ turn, patientId }: { turn: Turn; patientId: string }): ReactNode {
   const gates = turn.gates.filter((gate) => gate.evidence_ids?.length);
   return <>
     <div className="sa-field-label">How this was answered</div>
     {turn.tools.map((tool, index) => <ToolEvidence key={`${tool.name}-${index}`} tool={tool} />)}
     {gates.map((gate) => <GateEvidence key={gate.rule_id} gate={gate} />)}
-    <PatientAnswerArtifact turn={turn} />
+    <PatientAnswerArtifact turn={turn} patientId={patientId} />
     <div className="sa-meta" style={{ marginTop: 8 }}>
       Click &quot;Evidence&quot; on any claim above to pin just that one here.
     </div>
