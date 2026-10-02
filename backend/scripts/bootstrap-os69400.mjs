@@ -2,13 +2,14 @@
 // Bounded, account-pinned bootstrap. No AI, DML, warehouse resume, or data upload.
 // Uses the existing local key; browser authentication is only for the installer.
 import { createRequire } from 'node:module';
+import { snowflakeDriverConfig } from '../../web/lib/snowflake-driver-config.mjs';
 import { readFileSync } from 'node:fs';
 import { createHash, createPublicKey } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(new URL('../../web/package.json', import.meta.url));
 const snowflake = require('snowflake-sdk');
-snowflake.configure({ logLevel: 'ERROR' });
+snowflake.configure(snowflakeDriverConfig);
 const keyPath = '/Users/aaa/.snowflake/keys/sitar_snow_rsa.p8';
 const pubPath = '/Users/aaa/.snowflake/keys/sitar_snow_rsa.pub';
 const publicDer = createPublicKey(readFileSync(pubPath)).export({ type: 'spki', format: 'der' });

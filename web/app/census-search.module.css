@@ -1,0 +1,72 @@
+.boardControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 18px 0;
+}
+
+.dateControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateControls label {
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+}
+
+.dateSelect,
+.rangeButton,
+.clearButton {
+  min-height: 44px;
+  border: 1px solid var(--sa-rule);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--sa-ink);
+  font: inherit;
+}
+
+.dateSelect { padding: 0 10px; }
+.rangeButton { padding: 0 11px; cursor: pointer; }
+.rangeButton[aria-pressed="true"] { background: #f1f0ed; font-weight: 600; }
+.rangeButton:disabled { cursor: not-allowed; color: var(--sa-ink-muted); }
+
+.dateSelect:focus-visible,
+.rangeButton:focus-visible,
+.clearButton:focus-visible {
+  outline: 2px solid var(--sa-patient-edge);
+  outline-offset: 2px;
+}
+
+.resultCount {
+  margin: 0;
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.searchControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.searchInput { min-height: 44px !important; }
+.boardControls :global(.sa-view-switch button) { min-height: 44px; }
+.clearButton { padding: 0 11px; cursor: pointer; }
+.clearButton:hover, .rangeButton:hover:not(:disabled) { background: #f7f7f5; }
+
+.emptyState { margin: 14px 0; color: var(--sa-ink-secondary); font-size: 14px; }
+
+@media (max-width: 640px) {
+  .boardControls { align-items: stretch; flex-direction: column; }
+  .dateControls { align-items: stretch; }
+  .dateSelect, .rangeButton { flex: 1; }
+  .dateControls label { flex: 0 0 100%; }
+  .searchControls { margin-left: 0; }
+  .searchInput { max-width: none; }
+}

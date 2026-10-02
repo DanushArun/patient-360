@@ -1,0 +1,14 @@
+
+Running 6 tests using 1 worker
+
+(node:78839) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/6] [chromium] › tests/e2e/storyboard-visual.spec.ts:20:5 › test_every_storyboard_screen_when_bound_contracts_return_captures_actual_frontend
+[2/6] [chromium] › tests/e2e/workspace-accessibility.spec.ts:81:5 › test_mobile_evidence_panel_when_closed_returns_focus_to_the_selected_check
+[3/6] [chromium] › tests/e2e/workspace-accessibility.spec.ts:92:5 › test_mobile_evidence_dialog_when_open_contains_focus_and_escape_restores_trigger
+[4/6] [chromium] › tests/e2e/workspace-accessibility.spec.ts:117:5 › test_mobile_patient_section_targets_when_visible_are_at_least_44_pixels_tall
+[5/6] [chromium] › tests/e2e/workspace-accessibility.spec.ts:131:5 › test_zoom_200_equivalent_when_document_open_reflows_source_without_horizontal_clipping
+[6/6] [chromium] › tests/e2e/workspace-accessibility.spec.ts:150:5 › test_mobile_source_when_long_text_is_open_wraps_and_remains_readable
+  6 passed (6.5s)

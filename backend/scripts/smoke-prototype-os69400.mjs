@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Bounded deterministic verification; no Cortex model or Search calls.
 import { createRequire } from 'node:module';
+import { snowflakeDriverConfig } from '../../web/lib/snowflake-driver-config.mjs';
 import { readFileSync } from 'node:fs';
 const require = createRequire(new URL('../../web/package.json', import.meta.url));
 const snowflake = require('snowflake-sdk');
-snowflake.configure({ logLevel: 'ERROR' });
+snowflake.configure(snowflakeDriverConfig);
 const conn = snowflake.createConnection({ account: 'OHCXVXM-OS69400', username: 'SITAR',
   role: 'ACCOUNTADMIN', authenticator: 'SNOWFLAKE_JWT',
   privateKey: readFileSync('/Users/aaa/.snowflake/keys/sitar_snow_rsa.p8', 'utf8'), loginTimeout: 30,

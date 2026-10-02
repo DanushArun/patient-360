@@ -1,0 +1,28 @@
+.columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 28px; margin: 24px 0; }
+.section { min-width: 0; margin-top: 20px; }
+.columns .section { margin: 0; }
+.section h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+.tableWrap { width: 100%; overflow-x: auto; }
+.tableWrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tableWrap th { background: #f7f7f5; color: var(--sa-ink-secondary); text-align: left;
+  font-weight: 500; }
+.tableWrap th, .tableWrap td { padding: 8px 10px; border: 1px solid var(--sa-rule);
+  vertical-align: top; overflow-wrap: anywhere; }
+.tableWrap a { color: var(--sa-accent); text-decoration: underline; text-underline-offset: 3px; }
+.note { margin-top: 10px; color: var(--sa-ink-muted); font-size: 12px; line-height: 1.5; }
+.note button { margin-left: 6px; min-height: 44px; text-decoration: underline; }
+.state { display: inline-block; padding: 2px 8px; border-radius: 999px;
+  color: #4a5157; background: #f2f2f1; white-space: nowrap; }
+.state[data-state="present"] { color: #1e6b3a; background: #e7f3ec; }
+.state[data-state="conflicting"] { color: #8a5300; background: #fff0d5; }
+@media (max-width: 760px) {
+  .columns { grid-template-columns: 1fr; gap: 22px; }
+  .tableWrap table, .tableWrap tbody { display: block; }
+  .tableWrap thead { position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip-path: inset(50%); }
+  .tableWrap tr { display: block; padding: 8px 0; border-top: 1px solid var(--sa-rule); }
+  .tableWrap td { display: grid; grid-template-columns: 90px minmax(0, 1fr);
+    gap: 8px; padding: 5px 0; border: 0; }
+  .tableWrap td::before { content: attr(data-label); font-size: 11px; color: var(--sa-ink-muted); }
+}

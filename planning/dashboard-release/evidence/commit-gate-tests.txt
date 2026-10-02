@@ -1,0 +1,23 @@
+test_absolute_evidence_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_absolute_evidence_when_checked_blocks_acceptance) ... ok
+test_author_approval_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_author_approval_when_checked_blocks_acceptance) ... ok
+test_complete_record_when_repo_evidence_exists_passes (tools.test_release_gate.AcceptanceGateTests.test_complete_record_when_repo_evidence_exists_passes) ... ok
+test_duplicate_acceptance_when_parsed_rejects_ambiguous_record (tools.test_release_gate.AcceptanceGateTests.test_duplicate_acceptance_when_parsed_rejects_ambiguous_record) ... ok
+test_duplicate_requirement_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_duplicate_requirement_when_checked_blocks_acceptance) ... ok
+test_duplicate_status_when_parsed_rejects_hidden_pending_requirement (tools.test_release_gate.AcceptanceGateTests.test_duplicate_status_when_parsed_rejects_hidden_pending_requirement) ... ok
+test_empty_requirements_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_empty_requirements_when_checked_blocks_acceptance) ... ok
+test_incomplete_parent_acceptance_when_checks_pass_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_incomplete_parent_acceptance_when_checks_pass_blocks_acceptance) ... ok
+test_malformed_requirement_when_checked_reports_failure (tools.test_release_gate.AcceptanceGateTests.test_malformed_requirement_when_checked_reports_failure) ... ok
+test_missing_parent_acceptance_when_checks_pass_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_missing_parent_acceptance_when_checks_pass_blocks_acceptance) ... ok
+test_non_list_requirements_when_checked_reports_failure (tools.test_release_gate.AcceptanceGateTests.test_non_list_requirements_when_checked_reports_failure) ... ok
+test_non_object_packet_when_checked_reports_failure (tools.test_release_gate.AcceptanceGateTests.test_non_object_packet_when_checked_reports_failure) ... ok
+test_pass_without_evidence_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_pass_without_evidence_when_checked_blocks_acceptance) ... ok
+test_pending_requirement_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_pending_requirement_when_checked_blocks_acceptance) ... ok
+test_string_evidence_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_string_evidence_when_checked_blocks_acceptance) ... ok
+test_symlink_outside_repo_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_symlink_outside_repo_when_checked_blocks_acceptance) ... ok
+test_traversal_evidence_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_traversal_evidence_when_checked_blocks_acceptance) ... ok
+test_wrong_account_when_checked_blocks_acceptance (tools.test_release_gate.AcceptanceGateTests.test_wrong_account_when_checked_blocks_acceptance) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.009s
+
+OK

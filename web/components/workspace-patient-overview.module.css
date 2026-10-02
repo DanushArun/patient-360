@@ -1,0 +1,212 @@
+.overview {
+  min-width: 0;
+  color: var(--sa-ink);
+}
+
+.statusLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 6px 0 14px;
+  border-bottom: 1px solid var(--sa-rule);
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+}
+
+.statusLine strong {
+  color: var(--sa-ink);
+  font-weight: 600;
+}
+
+.unavailable,
+.emptyIssues {
+  margin: 8px 0 14px;
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+}
+
+.issueSection {
+  margin-top: 14px;
+}
+
+.issueSection h2,
+.summarySection h2 {
+  margin: 0 0 7px;
+  color: var(--sa-ink);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tableWrap th {
+  padding: 7px 9px;
+  border: 1px solid var(--sa-rule);
+  background: #f7f7f5;
+  color: var(--sa-ink-secondary);
+  font-weight: 600;
+  text-align: left;
+}
+
+.tableWrap td {
+  padding: 8px 9px;
+  border: 1px solid var(--sa-rule);
+  color: var(--sa-ink-secondary);
+  vertical-align: top;
+}
+
+.tableWrap td:first-child {
+  min-width: 220px;
+  color: var(--sa-ink);
+}
+
+.tableWrap td strong,
+.tableWrap td small {
+  display: block;
+}
+
+.tableWrap td strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tableWrap td small,
+.sourceCell code,
+.actionCell small {
+  margin-top: 3px;
+  color: var(--sa-ink-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.sourceCell,
+.actionCell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 3px 6px;
+}
+
+.sourceCell code {
+  overflow-wrap: anywhere;
+}
+
+.actionCell {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+}
+
+.actionCell button,
+.summarySection button {
+  min-height: 44px;
+}
+
+.actionCell button:disabled,
+.summarySection button:disabled {
+  cursor: not-allowed;
+  color: var(--sa-ink-muted);
+  background: #f7f7f5;
+}
+
+.summarySection {
+  min-width: 0;
+}
+
+.summarySection dl {
+  margin: 0;
+}
+
+.summarySection dl > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+  padding: 7px 8px;
+  border-top: 1px solid var(--sa-rule);
+  font-size: 13px;
+}
+
+.summarySection dt {
+  color: var(--sa-ink-secondary);
+}
+
+.summarySection dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--sa-ink);
+  overflow-wrap: anywhere;
+}
+
+.previewLimit,
+.actionHelp {
+  margin: 10px 0 0;
+  color: var(--sa-ink-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.previewLimit {
+  padding-top: 8px;
+  border-top: 1px solid var(--sa-rule);
+}
+
+@media (max-width: 680px) {
+  .tableWrap {
+    overflow: visible;
+  }
+
+  .tableWrap table,
+  .tableWrap tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .tableWrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .tableWrap tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(95px, 0.6fr);
+    border-top: 1px solid var(--sa-rule);
+  }
+
+  .tableWrap td {
+    min-width: 0;
+    border: 0;
+    border-bottom: 1px solid var(--sa-rule);
+  }
+
+  .tableWrap td:first-child,
+  .tableWrap td[data-label="Evidence IDs"] {
+    grid-column: 1 / -1;
+  }
+
+  .tableWrap td[data-label="Record check"]::before,
+  .tableWrap td[data-label="Action"]::before,
+  .tableWrap td[data-label="Evidence IDs"]::before,
+  .tableWrap td[data-label="Issue"]::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--sa-ink-muted);
+    content: attr(data-label);
+    font-size: 11px;
+  }
+
+
+}

@@ -1,0 +1,65 @@
+.draft {
+  margin-top: 16px;
+}
+
+.draft h3 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.draft dl {
+  display: grid;
+  gap: 0;
+}
+
+.draft dt {
+  color: var(--sa-ink-muted);
+  font-size: 12px;
+}
+
+.draft dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.actions button,
+.actionButton {
+  min-height: 44px;
+}
+
+.actionRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.actionRow button {
+  min-height: 44px;
+  white-space: normal;
+}
+
+@media (max-width: 30rem) {
+  .actionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
+
+.draft dl > div { display: grid; grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px; padding: 10px 0; border-top: 1px solid #e8e7e4; font-size: 13px; }
+.draft dd { margin: 0; }

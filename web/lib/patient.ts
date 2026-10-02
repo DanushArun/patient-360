@@ -26,6 +26,7 @@ export type PatientData = {
   patientName: string;
   consentId: string | null;
   practitionerName: string;
+  treatingPractitionerName?: string | null;
   language: string | null;
   nextVisit: string | null;
   scheduledAt: string | null;
@@ -39,13 +40,30 @@ export type TimelineEvent = {
   concept: string;
   value: number | null;
   is_derived: boolean;
+  value_state?: string;
+  value_text?: string | null;
+  unit?: string | null;
+  derivation?: string | null;
+  abnormal_flag?: string | null;
+  valid_until?: string | null;
+  source_event_ids?: string[];
+  source_assertion_ids?: string[];
+  source_document_ids?: string[];
+  source_links_observed_at?: string | null;
   event_time: string;
   source_recorded_at: string;
   ingested_at: string;
   event_id: string;
 };
 
-export type PatientTimeline = { timeline: TimelineEvent[]; known_as_of: string };
+export type PatientTimeline = {
+  timeline: TimelineEvent[];
+  known_as_of: string;
+  provenance_observed_at?: string;
+  total_events?: number;
+  timeline_limit?: number;
+  truncated?: boolean;
+};
 
 export type ReviewTask = {
   taskId: string;
@@ -85,19 +103,6 @@ export async function loadPatientSnapshot(patientId: string): Promise<PatientDat
       ...context,
       knownAsOf,
       gates,
-    };
-  });
-}
-
-export async function loadPatient(patientId: string): Promise<PatientData> {
-  return withPatientSessionAndContext(patientId, async (run, context) => {
-    const rows = await run("CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL, NULL)");
-    const result = parseValue(Object.values(rows[0] ?? {})[0]);
-    if (result.error) throw new Error(String(result.error));
-    return {
-      ...context,
-      knownAsOf: typeof result.known_as_of === "string" ? result.known_as_of : null,
-      gates: Array.isArray(result.gates) ? result.gates as Gate[] : [],
     };
   });
 }
@@ -204,6 +209,14 @@ export type AnswerArtifact = {
   overall_status: "supported" | "partial" | "refused";
   known_as_of: string | null;
   binding_id?: string | null;
+  consent_id?: string | null;
+  refusal?: {
+    reason_code: "class_a_clinical_judgment";
+    message: string;
+    practitioner: { practitioner_id: string; name: string; nmc_registration_no: string };
+    evidence_packet_offered?: boolean;
+    evidence_packet_id?: string | null;
+  };
   rule_versions?: Record<string, number>;
 };
 

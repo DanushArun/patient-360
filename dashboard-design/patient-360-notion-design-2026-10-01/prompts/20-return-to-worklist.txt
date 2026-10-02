@@ -1,0 +1,42 @@
+Use case: ui-mockup.
+Asset type: high fidelity Patient 360 desktop screen, part of an ordered doctor journey.
+Input image: edit target. Transform its MAIN CONTENT into the requested journey screen.
+Preserve the navigation shell, type system, palette, dimensions and interface geometry.
+Render edge-to-edge flat desktop interface, same 1600x1000 aspect and scale as reference.
+Exact invariant shell: 216px warm #F7F7F5 sidebar, SAARTHI with Care workspace subtitle,
+four small Home/chat/calendar/search outline icons, Workspace links Day care / Review queue /
+Patients / References, Recent patients Fatima Begum / Gopal Das, bottom Ask the record,
+MI initials and Dr Meera Iyer. Retain their positions, spacing and icon size.
+White main canvas, 44px top utility bar, 32px title, Inter 14-16px body, 12-13px metadata.
+Black names, neutral secondary text, fine #E8E7E4 rules, warm gray active view pills.
+Blue #2463A6 only for the primary action and necessary evidence links. Soft status labels.
+No thick blue tab underlines, KPI tiles, glossy surfaces, decorative circles, charts,
+illustrations, invented agents, stock photos, treatment buttons or confidence percentages.
+Unboxed sections with compact aligned rows and property lists. Only actual board records
+use compact bordered cards. ONE right panel only when the task requires it.
+Patient screens ALWAYS display Fatima Begum, PAT-DC-04 · Synthetic patient,
+ABHA linked · Consent active, Visit 3 Oct 2026 · Cycle 3, Dr Meera Iyer.
+Initial cutoff Known as of 1 Oct 2026, 09:42 IST. Seven compact patient views:
+Overview, Facts, Timeline, Documents, Coverage, Review, Family.
+Fixture invariants: platelet source value 82,000 /µL, CBC 30 Sep 2026,
+platelet check CLIN-PLT-001 v1 = Fail, final pathology = Not received and its check
+DOC-PATH-001 v1 = Not evaluated. Preliminary pathology is Present, never Superseded
+while final pathology remains Not received. Authorization COV-AUTH-001 v1 = Conflicting:
+structured valid-through 5 Oct 2026, original letter valid-through 30 Sep 2026.
+No single valid-through date is asserted. Letter issued 28 Sep, received 29 Sep.
+Source facilities exactly City Labs (synthetic), Metro Pathology (synthetic),
+and HealthSure TPA (synthetic), matching patient master. Source facilities are labelled synthetic. No clinical recommendations or fabricated clearance.
+Task state and SQL rule outcome are separate. Unsupported persistent write controls disabled
+with a readable short integration-required explanation. Footer Design proposal · Synthetic data.
+All text carefully typeset and spelled. No external presentation frame or screen-number caption.
+SCREEN 20-return-to-worklist:
+Workspace Day care selected, no patient header. Same opening board composition,
+date3Oct and practitionerDrMeeraIyer. Known as of2Oct10:14IST.
+Quiet inline Returned to Day care · Previous view and filters restored.
+Same8 cards and four group counts4/2/1/1. Fatima remains in Needs review,
+Blocked, platelet check below rule threshold, CBC30Sep, secondary +1 record issue.
+Coverage reconciled muted metadata 2Oct; no green treatment clearance.
+Gopal selected lightly as the doctor's next record, conflict unchanged.
+MeeraJoshi Checksmet, Leela advisory, Anjali/Ravi not evaluated, Imran authorization expired.
+Primary Open Gopal Das as discreet contextual action. The doctor can continue the worklist.
+No celebratory state or overall completed treatment claim.

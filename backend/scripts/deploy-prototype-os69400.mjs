@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Account-pinned SQL-only deployment. Search and AI invocation are deferred.
 import { createRequire } from 'node:module';
+import { snowflakeDriverConfig } from '../../web/lib/snowflake-driver-config.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -8,7 +9,7 @@ import { resolve } from 'node:path';
 
 const require = createRequire(new URL('../../web/package.json', import.meta.url));
 const snowflake = require('snowflake-sdk');
-snowflake.configure({ logLevel: 'ERROR' });
+snowflake.configure(snowflakeDriverConfig);
 const root = fileURLToPath(new URL('../sql/', import.meta.url));
 const repo = resolve(root, '../..');
 

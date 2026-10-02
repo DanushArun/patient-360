@@ -1,6 +1,9 @@
 import snowflake from "snowflake-sdk";
+import { snowflakeDriverConfig } from "./snowflake-driver-config.mjs";
 import { readFileSync } from "fs";
 import { snowflakeConfig } from "./snowflake-config.mjs";
+
+snowflake.configure(snowflakeDriverConfig);
 
 // NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
 // tool resolve their subject from PATIENT_BINDING keyed on CURRENT_SESSION() -

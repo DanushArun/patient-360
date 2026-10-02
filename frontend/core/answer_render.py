@@ -508,7 +508,10 @@ def census_summary(tally: dict[str, int], day_label: str) -> str:
     for key, word in (("blocked", "blocked"), ("conflict", "conflicting"),
                       ("waiting", "waiting on evidence")):
         if tally.get(key):
-            parts.append(f'<span class="sa-census-count"><b class="sa-num">{tally[key]}</b> {word}</span>')
+            parts.append(
+                f'<span class="sa-census-count"><b class="sa-num">{tally[key]}</b> '
+                f'{word}</span>'
+            )
     return (
         '<div class="sa-census-head">'
         f'<div class="sa-census-day">{_esc(day_label)}</div>'
@@ -529,7 +532,7 @@ def census_row(row: Any) -> str:
                 if row.other_issues else "")
         reason = f'<div class="sa-census-reason">{cite}{_esc(row.headline)}{more}</div>'
     else:
-        reason = '<div class="sa-census-reason sa-meta">Every applicable rule passes.</div>'
+        reason = '<div class="sa-census-reason sa-meta">Readiness details are unavailable.</div>'
     return (
         f'<div class="sa-census-row sa-census-{_esc(row.status)}">'
         '<div class="sa-census-who">'

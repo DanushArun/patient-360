@@ -1,0 +1,295 @@
+{
+  "concurrency": 1,
+  "model": "parent",
+  "acceptance_owner": "/root",
+  "screens": [
+    {
+      "screen": "01",
+      "asset": "01-doctor-opens-dashboard",
+      "title": "Doctor opens Day care",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/01-daycare.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Counts and readiness labels follow returned SQL; no treatment clearance is inferred."
+    },
+    {
+      "screen": "02",
+      "asset": "02-visit-worklist-v3",
+      "title": "Compare visits in a table",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/02-visits.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "v2 is the latest available image. The journey names v3, but no v3 image was supplied."
+    },
+    {
+      "screen": "03",
+      "asset": "03-authorized-patient-search",
+      "title": "Search authorized patients",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/03-search.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Authorized display selection uses returned patient IDs; name is not an identity join."
+    },
+    {
+      "screen": "04",
+      "asset": "04-patient-overview",
+      "title": "Establish the patient context",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/04-overview.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "ABHA and consent badges appear only when governed data supports them. Source dates retain their zone."
+    },
+    {
+      "screen": "05",
+      "asset": "05-structured-facts-v2",
+      "title": "Inspect structured facts and provenance",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/05-facts.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Source links and expanded provenance consume returned facts; normalized values are not invented."
+    },
+    {
+      "screen": "06",
+      "asset": "06-record-timeline-v2",
+      "title": "Read the record chronology",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/06-timeline.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Three-clock sorting is implemented; historical rule reconstruction requires backend snapshots."
+    },
+    {
+      "screen": "07",
+      "asset": "07-document-library",
+      "title": "Inspect received and expected documents",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/07-documents.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Received files and expected records remain separate; preliminary is not automatically superseded."
+    },
+    {
+      "screen": "08",
+      "asset": "08-platelet-evidence-v2",
+      "title": "Trace the platelet check to its source",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/08-evidence.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Propagate verified source_spans to populate the implemented exact excerpt."
+    },
+    {
+      "screen": "09",
+      "asset": "09-coverage-overview-v2",
+      "title": "Read coverage without hiding disagreement",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/09-coverage.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Benefit amounts and reconciled dates are not invented when missing from the response."
+    },
+    {
+      "screen": "10",
+      "asset": "10-authorization-comparison",
+      "title": "Compare the disagreeing authorization sources",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/10-comparison.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Structured and source values remain side by side, with supplied span coordinates and clocks."
+    },
+    {
+      "screen": "11",
+      "asset": "11-review-task-draft-v2",
+      "title": "Prepare the bounded follow-up",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/11-draft.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Task draft is unsaved until submitted; cancel performs no write."
+    },
+    {
+      "screen": "12",
+      "asset": "12-review-task-result",
+      "title": "Confirm the recorded follow-up",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/12-receipt.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Success is shown only for confirmed receipt/read-back. Task save does not change readiness."
+    },
+    {
+      "screen": "13",
+      "asset": "13-review-queue-v2",
+      "title": "See follow-up work and its evidence state",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/13-queue.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Board groups actual task states; unresolved SQL checks remain after a task closes."
+    },
+    {
+      "screen": "14",
+      "asset": "14-review-history",
+      "title": "Follow the next-day evidence update",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/14-history.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Before/after rule comparison consumes optional validated changes; absent history is stated explicitly."
+    },
+    {
+      "screen": "15",
+      "asset": "15-ask-record-start-v2",
+      "title": "Open the copilot in patient context",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/15-ask.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Patient/reference scopes remain separate; reference browsing needs a supplied viewer endpoint."
+    },
+    {
+      "screen": "16",
+      "asset": "16-cited-record-answer",
+      "title": "Verify the copilot's answer",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/16-answer.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Only a validated typed artifact is exposed. Raw model prose stays hidden."
+    },
+    {
+      "screen": "17",
+      "asset": "17-clinical-referral-packet",
+      "title": "Handle a clinical-judgment question",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/17-referral.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "The packet preview is explicitly a draft at the answer cutoff. Final persisted contents belong to the server."
+    },
+    {
+      "screen": "18",
+      "asset": "18-family-preparation",
+      "title": "Prepare a family bring-list",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/18-family.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Bring-list uses returned expected records. Only headings have reviewed translations; this limitation is visible."
+    },
+    {
+      "screen": "19",
+      "asset": "19-updated-patient-overview",
+      "title": "Read the updated patient snapshot",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/19-updated-overview.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "No image was supplied. Checked against the prompt and journey: new cutoff, superseded letter, unchanged platelet issue."
+    },
+    {
+      "screen": "20",
+      "asset": "20-return-to-worklist",
+      "title": "Continue with the next patient",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/20-restored-worklist.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "No image was supplied. Prior Visits view/filter restoration is verified; no fake completion banner is added."
+    },
+    {
+      "screen": "21",
+      "asset": "21-loading-empty-error-access",
+      "title": "Recover safely when data or access changes",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/21-failed-refresh.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Fallback reference is the prior failure sheet. Actual recovery is shown in the appropriate context, not as simultaneous demo panels."
+    },
+    {
+      "screen": "22",
+      "asset": "22-responsive-workspace",
+      "title": "Review on tablet and phone",
+      "owner": "/root",
+      "status": "frontend_verified",
+      "parent_acceptance": "frontend_only",
+      "evidence": [
+        "planning/dashboard-release/evidence/screens/22-phone.png",
+        "planning/dashboard-release/evidence/frontend-browser-40.txt"
+      ],
+      "integration_note": "Fallback reference is the prior responsive sheet. Phone source reading is additionally captured and tested."
+    }
+  ],
+  "implementation_owner": "/root",
+  "scope": "frontend; backend integration owned by user team"
+}

@@ -1,39 +1,111 @@
 import type { ReactNode } from "react";
-import type { AgentTurn } from "@/lib/patient";
+import type { AgentTurn, AnswerClaim } from "@/lib/patient";
 import Link from "next/link";
 
-function SourceValue({ value, patientId }: { value: unknown; patientId: string }): ReactNode {
-  if (value === null || value === undefined) return <span>Not supplied</span>;
-  if (typeof value !== "object") return <span>{String(value)}</span>;
-  if (Array.isArray(value)) return <div className="space-y-3">
-    {value.map((item, index) => <SourceValue key={index} value={item} patientId={patientId} />)}
-  </div>;
-  const source = value as Record<string, unknown>;
-  return <><dl className="space-y-1">
-    {Object.entries(value).map(([key, item]) => <div key={key}>
-      <dt className="sa-meta">{key.replaceAll("_", " ")}</dt>
-      <dd className="whitespace-pre-wrap break-words"><SourceValue value={item} patientId={patientId} /></dd>
-    </div>)}
-  </dl>{typeof source.doc_id === "string" && Number.isInteger(source.page_index) &&
-    <Link className="sa-quiet-button" prefetch={false} href={`/patient/${encodeURIComponent(patientId)}/documents/${encodeURIComponent(source.doc_id)}?page=${source.page_index}&start=${source.char_start ?? ""}&end=${source.char_end ?? ""}`}>Open cited source page</Link>}</>;
+type Evidence = AnswerClaim["evidence"][number] & {
+  page_index?: number;
+  char_start?: number;
+  char_end?: number;
+};
+
+function sourceHref(patientId: string, knownAsOf: string, source: Evidence): string | null {
+  if (source.kind !== "document_span" || !source.doc_id || !Number.isInteger(source.page_index)
+      || !Number.isInteger(source.char_start) || !Number.isInteger(source.char_end)
+      || Number(source.page_index) < 0 || Number(source.char_start) < 0
+      || Number(source.char_end) <= Number(source.char_start)) return null;
+  const query = new URLSearchParams({ page: String(source.page_index),
+    known_as_of: knownAsOf, return: "ask", start: String(source.char_start),
+    end: String(source.char_end) });
+  return `/patient/${encodeURIComponent(patientId)}/documents/`
+    + `${encodeURIComponent(source.doc_id)}?${query}`;
 }
 
-export function PatientAnswerArtifact({ turn, patientId }: { turn: AgentTurn; patientId: string }): ReactNode {
-  if (!turn.artifact && !turn.tool_results?.length) return null;
+function Citation({ source, index, patientId, knownAsOf, sourceScope }: {
+  source: Evidence; index: number; patientId: string; knownAsOf: string | null;
+  sourceScope?: "patient" | "reference";
+}): ReactNode {
+  const href = knownAsOf && sourceScope !== "reference"
+    ? sourceHref(patientId, knownAsOf, source) : null;
+  const documentType = sourceScope === "reference" ? "Reference document" : "Patient document";
+  const type = source.kind === "document_span" ? documentType : "Structured record";
+  return <li className="space-y-1">
+    <div><strong>[{index + 1}]</strong> {type} · {source.id}</div>
+    {source.kind === "document_span" && Number.isInteger(source.page_index)
+      && <div className="sa-meta">Page {Number(source.page_index) + 1}</div>}
+    {source.kind === "document_span" && Number.isInteger(source.char_start)
+      && Number.isInteger(source.char_end)
+      && <div className="sa-meta">Text span {source.char_start}–{source.char_end}</div>}
+    {href && <Link className="sa-quiet-button" prefetch={false} href={href}>
+      Open cited source
+    </Link>}
+    {!href && source.kind === "document_span"
+      && <div className="sa-meta">{sourceScope === "reference"
+        ? "Reference source viewer is unavailable."
+        : "Exact page or text location is unavailable."}</div>}
+  </li>;
+}
+
+function Claim({ claim, citationOffset }: {
+  claim: AnswerClaim; citationOffset: number;
+}): ReactNode {
+  return <li className="space-y-2">
+    <p>{claim.text}</p>
+    <div className="sa-meta">Claim type: {claim.claim_type}</div>
+    {claim.asserted_value !== undefined && claim.asserted_value !== null
+      && <div className="sa-meta">Recorded value: {String(claim.asserted_value)}</div>}
+    <div className="sa-meta">{claim.evidence.length
+      ? "Citations " + claim.evidence.map((_, index) => `[${citationOffset + index + 1}]`).join(" ")
+      : "No citation supplied for this claim."}</div>
+  </li>;
+}
+
+function statusLabel(status: string): string {
+  return status === "supported" ? "Supported" : status === "partial" ? "Partial" : "Refused";
+}
+
+export function PatientAnswerArtifact({ turn, patientId, sourceScope }: {
+  turn: AgentTurn; patientId: string; sourceScope?: "patient" | "reference";
+}): ReactNode {
+  const artifact = turn.error ? undefined : turn.artifact;
+  if (!artifact && !turn.error) return null;
   return <section className="mt-4 space-y-3" aria-label="Answer evidence artifact">
     <div className="sa-field-label">Answer evidence</div>
-    {turn.artifact && <div className="sa-meta">Evidence state: {turn.artifact.overall_status}</div>}
-    {turn.artifact?.claims.map((claim, index) => <details key={index}>
-      <summary>{claim.text}</summary>
-      <SourceValue value={claim.evidence} patientId={patientId} />
-    </details>)}
-    {turn.artifact?.limitations.map((limitation, index) =>
-      <div key={index} className="sa-limitation">{limitation}</div>)}
-    {turn.tool_results?.map(({ name, result }, index) => <details key={`${name}-${index}`}>
-      <summary>{name === "SearchReferenceDocuments" ? "Reference corpus"
-        : name === "SearchPatientDocuments" ? "Patient document corpus" : name}</summary>
-      <div className="sa-meta">SQL-returned source data; not an additional validated claim.</div>
-      <SourceValue value={result} patientId={patientId} />
-    </details>)}
+    {artifact && <>
+      <div className="sa-meta">Answer status: {statusLabel(artifact.overall_status)}</div>
+      <div className="sa-meta">Question class: {artifact.classification}</div>
+      <div className="sa-meta">Known as of: {artifact.known_as_of ?? "Unavailable"}</div>
+      {artifact.refusal && <div className="sa-limitation">
+        {artifact.refusal.message}<br />
+        Evidence packet addressed to {artifact.refusal.practitioner.name}
+        {artifact.refusal.evidence_packet_offered ? " is offered." : "."}
+      </div>}
+      <ol className="space-y-3">{(artifact.classification === "CLASS_A"
+        ? [] : artifact.claims).map((claim, index) =>
+        <Claim key={`${claim.claim_type}-${index}`} claim={claim}
+          citationOffset={artifact.claims.slice(0, index).reduce((count, item) =>
+            count + item.evidence.length, 0)}
+          />)}</ol>
+      {artifact.classification !== "CLASS_A" && <CitationIndex claims={artifact.claims}
+        patientId={patientId} knownAsOf={artifact.known_as_of} sourceScope={sourceScope} />}
+      {artifact.limitations.map((limitation, index) =>
+        <div key={index} className="sa-limitation">{limitation}</div>)}
+    </>}
+    {turn.error && <div role="alert" className="sa-limitation">
+      Answer unavailable: {turn.error}
+    </div>}
+  </section>;
+}
+
+function CitationIndex({ claims, patientId, knownAsOf, sourceScope }: {
+  claims: AnswerClaim[]; patientId: string; knownAsOf: string | null;
+  sourceScope?: "patient" | "reference";
+}): ReactNode {
+  const sources = claims.flatMap((claim) => claim.evidence);
+  if (!sources.length) return null;
+  return <section className="sa-citation-index" aria-label="Citation index">
+    <h3>Citation index</h3>
+    <ol>{sources.map((source, index) => <Citation key={`${source.id}-${index}`}
+      source={source as Evidence} index={index} patientId={patientId}
+      knownAsOf={knownAsOf} sourceScope={sourceScope} />)}</ol>
   </section>;
 }

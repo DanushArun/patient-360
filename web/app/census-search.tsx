@@ -1,195 +1,167 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import Link from "next/link";
-import { CensusChip, type CensusStatus } from "@/components/sa";
+import { CensusChip } from "@/components/sa";
+import { useWorklistState } from "@/components/use-worklist-state";
 import type { Chair } from "@/lib/census";
+import { filterDayCareVisits, getAvailableVisitDates } from "@/lib/daycare-board.mjs";
+import { groupWorklistByState } from "@/lib/workspace-state.mjs";
+import { formatVisitDate } from "@/lib/worklist-display.mjs";
+import { VisitTable } from "./visit-table";
+import styles from "./census-search.module.css";
 
-type DayGroup = {
-  day: string;
-  label: string;
-  tally: Record<CensusStatus, number>;
-  chairs: Chair[];
-};
+type DayGroup = { day: string; chairs: Chair[] };
 
-type PatientOption = { id: string; name: string };
-
-function matchesSearch(chair: Chair, query: string): boolean {
-  const q = query.toLowerCase();
-  return (
-    chair.name.toLowerCase().includes(q) ||
-    chair.patientId.toLowerCase().includes(q) ||
-    (chair.place?.toLowerCase().includes(q) ?? false) ||
-    (chair.regimen?.toLowerCase().includes(q) ?? false) ||
-    (chair.headlineRule?.toLowerCase().includes(q) ?? false) ||
-    chair.status.includes(q)
-  );
-}
-
-export function CensusSearch({ censusData, error, alsoUnderCare }: {
+export function CensusSearch({ censusData, error }: {
   censusData: DayGroup[];
   error: string | null;
-  alsoUnderCare: PatientOption[];
 }): ReactNode {
-  const [search, setSearch] = useState("");
-
-  const filtered = search.trim()
-    ? censusData.map((group) => ({
-        ...group,
-        chairs: group.chairs.filter((c) => matchesSearch(c, search.trim())),
-      })).filter((g) => g.chairs.length > 0)
-    : censusData;
-
-  const tally = (list: Chair[]) => {
-    const t: Record<CensusStatus, number> = { blocked: 0, conflict: 0, waiting: 0, advisory: 0, ready: 0 };
-    for (const c of list) t[c.status]++;
-    return t;
-  };
-
-  const totalShown = filtered.reduce((sum, g) => sum + g.chairs.length, 0);
-  const totalAll = censusData.reduce((sum, g) => sum + g.chairs.length, 0);
-
-  return (
-    <div className="grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,1fr)_230px]">
-      <div>
-        {error && (
-          <div
-            className="mb-6 border-l-2 py-2 pl-3 text-sm"
-            style={{ borderColor: "var(--sa-ink-fail)", color: "var(--sa-ink-secondary)" }}
-          >
-            <strong>Patient list unavailable</strong>
-            <p>The record service could not be reached. Patient and visit information cannot be confirmed.</p>
-            <a href="/" className="underline">Try again</a>
-          </div>
-        )}
-
-        {!error && (
-          <div className="mb-6 flex items-center gap-3">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filter by name, ID, place, regimen, or rule..."
-              className="sa-search-input"
-            />
-            {search.trim() && (
-              <span className="shrink-0 text-xs tabular-nums" style={{ color: "var(--sa-ink-muted)" }}>
-                {totalShown} of {totalAll}
-              </span>
-            )}
-          </div>
-        )}
-
-        {!error && totalAll === 0 && (
-          <p className="text-sm" style={{ color: "var(--sa-ink-muted)" }}>
-            No day-care visits in the next 7 days for patients under your care.
-          </p>
-        )}
-
-        {!error && search.trim() && totalShown === 0 && totalAll > 0 && (
-          <p className="text-sm" style={{ color: "var(--sa-ink-muted)" }}>
-            No patients match &ldquo;{search.trim()}&rdquo;.{" "}
-            <button type="button" className="underline" onClick={() => setSearch("")}
-              style={{ color: "var(--sa-ink-secondary)" }}>Clear filter</button>
-          </p>
-        )}
-
-        {filtered.map(({ day, label, chairs: dayChairs }) => {
-          const t = search.trim() ? tally(dayChairs) : censusData.find((g) => g.day === day)!.tally;
-          return (
-            <section key={day} className="mb-10">
-              <h2 className="mb-4 text-xl font-medium tracking-tight">{label}</h2>
-
-              <div className="mb-3 flex flex-wrap items-center gap-x-7 gap-y-2 border-b pb-4 text-xs" style={{ borderColor: "var(--sa-rule)" }}>
-                {(["ready", "advisory", "waiting", "conflict", "blocked"] as const).map((key) => (
-                  <div key={key} className="flex items-baseline gap-2">
-                    <span className="tabular-nums text-base font-medium">{t[key]}</span>
-                    <span className="capitalize" style={{ color: "var(--sa-ink-muted)" }}>{key}</span>
-                  </div>
-                ))}
-              </div>
-
-              {dayChairs.map((chair) => (
-                <Link
-                  key={chair.encounterId}
-                  href={`/patient/${chair.patientId}`}
-                  prefetch={false}
-                  className="sa-census-card grid grid-cols-1 items-center gap-3 border-t py-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] sm:gap-7"
-                  style={{ borderColor: "var(--sa-rule)" }}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium">{chair.name}</div>
-                    <div className="mt-0.5 text-sm" style={{ color: "var(--sa-ink-muted)" }}>
-                      {chair.place}
-                      {chair.language ? ` · ${chair.language}` : ""}
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--sa-ink-muted)" }}>
-                      {chair.regimen}
-                      {chair.cycle ? ` · cycle ${chair.cycle}` : ""}
-                    </div>
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="mb-1.5">
-                      <CensusChip status={chair.status} />
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--sa-ink-secondary)" }}>
-                      {chair.headlineRule && (
-                        <code
-                          className="mr-1 rounded px-1 py-0.5 text-xs"
-                          style={{ background: "var(--sa-surface-sunken)", color: "var(--sa-ink-muted)" }}
-                        >
-                          {chair.headlineRule}
-                        </code>
-                      )}
-                      {chair.headline}
-                      {chair.otherIssues > 0 && (
-                        <span className="ml-1 text-xs" style={{ color: "var(--sa-ink-muted)" }}>
-                          +{chair.otherIssues} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <span
-                    className="sa-open-btn w-fit shrink-0 rounded-full px-4 py-2 text-sm"
-                    aria-hidden="true"
-                  >
-                    Open
-                  </span>
-                </Link>
-              ))}
-            </section>
-          );
-        })}
-
-        <div className="mt-6 border-t pt-4 text-xs" style={{ borderColor: "var(--sa-rule)", color: "var(--sa-ink-muted)" }}>
-          Every status comes from the SQL readiness snapshot; no model decides it. Open a patient
-          to inspect each rule, its evidence, and its as-of time. A patient is listed only with
-          active care-team membership and valid consent.
-        </div>
-      </div>
-
-      <div>
-        <div className="mb-4 text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
-          Also under your care
-        </div>
-        {alsoUnderCare.length ? alsoUnderCare.map((p) => (
-          <Link
-            key={p.id}
-            href={`/patient/${p.id}`}
-            prefetch={false}
-            className="sa-sidebar-link block rounded-lg px-1 py-2 text-sm"
-            style={{ color: "var(--sa-ink)" }}
-          >
-            {p.name}
-          </Link>
-        )) : (
-          <div className="text-sm" style={{ color: "var(--sa-ink-muted)" }}>
-            {error ? "Patient information is unavailable." : "All accessible patients have upcoming visits."}
-          </div>
-        )}
-      </div>
-    </div>
+  const dates = getAvailableVisitDates(censusData);
+  const { search, setSearch, view, setView, selectedDate, setSelectedDate, dateRange,
+    setDateRange } = useWorklistState(dates);
+  const showNextSevenDays = dateRange === "next7";
+  const visibleRows = filterDayCareVisits(
+    censusData,
+    showNextSevenDays ? "all" : selectedDate,
+    search,
   );
+  const stateGroups = groupWorklistByState(visibleRows);
+
+  if (error) return <PatientListError />;
+  return <section aria-label="Day-care visits">
+    <WorklistToolbar model={{ dates, selectedDate, setSelectedDate, showNextSevenDays,
+      setShowNextSevenDays: (show) => setDateRange(show ? "next7" : "date"), search,
+      setSearch, view, setView, resultCount: visibleRows.length }} />
+    {visibleRows.length === 0 && <EmptyResults query={search} onClear={() => setSearch("")} />}
+    <WorklistResults view={view} visibleRows={visibleRows} stateGroups={stateGroups} />
+    <p className="sa-meta">Open a patient to inspect each record check, its source, and its
+      as-of time. The list is limited to your active care team and current consent.</p>
+  </section>;
+}
+
+function PatientListError(): ReactNode {
+  return <div role="alert" className="sa-empty-state">
+    <strong>Patient list unavailable</strong>
+    <p>The record service could not be reached. Patient and visit information cannot be confirmed.
+    </p>
+    <a href="/" className="underline">Try again</a>
+  </div>;
+}
+
+type ToolbarModel = {
+  dates: string[];
+  selectedDate: string;
+  setSelectedDate: (date: string) => void;
+  showNextSevenDays: boolean;
+  setShowNextSevenDays: (show: boolean) => void;
+  search: string;
+  setSearch: (value: string) => void;
+  view: "state" | "visits";
+  setView: (value: "state" | "visits") => void;
+  resultCount: number;
+};
+
+function WorklistToolbar({ model }: { model: ToolbarModel }): ReactNode {
+  return <div className={styles.boardControls}>
+    <VisitDateControl model={model} />
+    <ViewControl view={model.view} setView={model.setView} />
+    <SearchControl search={model.search} setSearch={model.setSearch} />
+    <p className={styles.resultCount} role="status" aria-live="polite">
+      {model.resultCount} {model.resultCount === 1 ? "visit" : "visits"} shown
+    </p>
+  </div>;
+}
+
+function VisitDateControl({ model }: { model: ToolbarModel }): ReactNode {
+  return <div className={styles.dateControls} role="group" aria-label="Visit date range">
+    <label htmlFor="visit-date">Visit date</label>
+    <select id="visit-date" className={styles.dateSelect} disabled={!model.dates.length}
+      value={model.selectedDate} onChange={(event) => {
+        model.setSelectedDate(event.target.value);
+      }}>
+      {model.dates.map((date) => <option key={date} value={date}>{formatDay(date)}</option>)}
+    </select>
+    <button type="button" className={styles.rangeButton}
+      aria-pressed={model.showNextSevenDays} disabled={!model.dates.length}
+      onClick={() => model.setShowNextSevenDays(true)}>Next 7 days</button>
+  </div>;
+}
+
+function ViewControl({ view, setView }: {
+  view: ToolbarModel["view"];
+  setView: ToolbarModel["setView"];
+}): ReactNode {
+  return <div className="sa-view-switch" role="group" aria-label="Day care view">
+    <button type="button" aria-pressed={view === "state"}
+      onClick={() => setView("state")}>By record state</button>
+    <button type="button" aria-pressed={view === "visits"}
+      onClick={() => setView("visits")}>Visits</button>
+  </div>;
+}
+
+function SearchControl({ search, setSearch }: {
+  search: string;
+  setSearch: (value: string) => void;
+}): ReactNode {
+  return <div className={styles.searchControls}>
+    <input aria-label="Search day-care visits" type="search" value={search}
+      onChange={(event) => setSearch(event.target.value)}
+      placeholder="Search patients or recorded checks"
+      className={`sa-search-input ${styles.searchInput}`} />
+    {search && <button type="button" className={styles.clearButton}
+      onClick={() => setSearch("")}>Clear search</button>}
+  </div>;
+}
+
+function EmptyResults({ query, onClear }: { query: string; onClear: () => void }): ReactNode {
+  const message = query.trim()
+    ? `No visits match “${query.trim()}”.`
+    : "No day-care visits were returned for this date range.";
+  return <p className={styles.emptyState} role="status">{message}{" "}
+    {query.trim() && <button type="button" className="underline" onClick={onClear}>
+      Clear search
+    </button>}
+  </p>;
+}
+
+function WorklistResults({ view, visibleRows, stateGroups }: {
+  view: "state" | "visits";
+  visibleRows: Chair[];
+  stateGroups: ReturnType<typeof groupWorklistByState<Chair>>;
+}): ReactNode {
+  if (view === "visits") return <VisitTable chairs={visibleRows} />;
+  return <div className="sa-worklist-board">
+    {stateGroups.filter((group) => group.rows.length > 0).map((group) => (
+      <section key={group.key} aria-label={`${group.label}, ${group.rows.length} visits`}>
+        <h2>{group.label}<span>{group.rows.length}</span></h2>
+        {group.rows.map((chair) => <WorklistCard key={chair.encounterId} chair={chair} />)}
+      </section>
+    ))}
+  </div>;
+}
+
+function formatDay(day: string): string {
+  return formatVisitDate(`${day}T00:00:00`);
+}
+
+function visitTime(scheduled: string): string {
+  return /T(\d{2}:\d{2})/.exec(scheduled)?.[1] ?? "Time unavailable";
+}
+
+function cycleLabel(cycle: number | null): string {
+  return cycle !== null ? ` · Cycle ${cycle}` : "";
+}
+
+function WorklistCard({ chair }: { chair: Chair }): ReactNode {
+  return <Link href={`/patient/${chair.patientId}`} prefetch={false} className="sa-worklist-card">
+    <strong>{chair.name}</strong>
+    <small>{chair.patientId} · {formatDay(chair.scheduled.slice(0, 10))}
+      {` · ${visitTime(chair.scheduled)}`}
+      {cycleLabel(chair.cycle)}</small>
+    <CensusChip status={chair.status} />
+    <span>{chair.headline ?? "No issue summary returned"}</span>
+    {chair.headlineRule && <code>{chair.headlineRule}</code>}
+    {chair.otherIssues > 0 && <small>+{chair.otherIssues} more record issues</small>}
+  </Link>;
 }
