@@ -2,7 +2,17 @@
 
 **Purpose:** Systematically verify every frontend feature before hackathon evaluation. Record results in the table at the end. Share failures with the dev team for fix-and-retest cycles.
 
-**Setup:** `cd web && npm run dev` then open `http://localhost:3000`
+**Setup:**
+1. `cd web`
+2. Create `web/.env.local` if it does not exist (gitignored, never committed):
+   ```
+   SNOWFLAKE_ACCOUNT=IFTDBGM-EA72552
+   SNOWFLAKE_USER=DAKSHA
+   SNOWFLAKE_PRIVATE_KEY_PATH=/Users/mac/.snowflake/keys/daksha_snow_rsa.p8
+   SNOWFLAKE_WAREHOUSE=SAARTHI_AI_WH
+   ```
+   Danush does not need this file -- his credentials are the defaults in the code.
+3. `npm run dev` then open `http://localhost:3000`
 
 ---
 
@@ -54,11 +64,12 @@ Count the status chips in the census against this expected breakdown:
 
 **Pass criteria:** Tally numbers match the actual chips shown. Sum equals total patients for that day.
 
-### A3. Sort order is severity-first
-1. **Verify:** Blocked patients appear before Conflict, which appears before Waiting, then Advisory, then Ready
+### A3. Sort order is severity-first (intentional design)
+1. **Verify:** Blocked patients appear FIRST, then Conflict, then Waiting, then Advisory, then Ready
 2. Within the same status, patients should be sorted by scheduled time
+3. **This is intentional.** The coordinator needs to see patients who need attention first. A "Ready" patient at the top would push blockers below the fold. The sort order is: `blocked > conflict > waiting > advisory > ready`. Same logic runs in both the Python and TypeScript frontends.
 
-**Pass criteria:** No "Ready" patient appears above a "Blocked" patient for the same day.
+**Pass criteria:** No "Ready" patient appears above a "Blocked" patient for the same day. Blocked patients are always at the top.
 
 ### A4. Patient picker shows ALL bindable patients
 1. Click "Select patient" dropdown (top right)
@@ -466,6 +477,125 @@ For each language:
 
 ---
 
+## SECTION K: Navigator View Tests (`/navigator/[id]`)
+
+### K1. Navigator page loads
+1. Open PAT-DC-04 patient view
+2. Click "Navigator View" button in the header
+3. **Verify:** Opens `/navigator/PAT-DC-04`
+4. **Verify:** Shows patient name, ID, visit date, practitioner
+5. **Verify:** "Full patient view" and "Census" links visible
+
+**Pass criteria:** Navigator page loads with correct patient context.
+
+### K2. Checklist items from failing gates
+1. On `/navigator/PAT-DC-04` (CLIN-PLT-001 fail)
+2. **Verify:** At least one checklist item appears
+3. **Verify:** Each item shows which rule generated it (e.g., `CLIN-PLT-001`)
+4. **Verify:** Items are numbered
+
+**Pass criteria:** Checklist derives from non-passing gates. Rule attribution visible.
+
+### K3. All-clear on navigator
+1. Open `/navigator/PAT-DC-01` (all pass)
+2. **Verify:** "All clear" message appears, no preparation items
+
+**Pass criteria:** No false items when everything passes.
+
+### K4. Language switching on navigator
+1. On `/navigator/PAT-DC-04`, switch language dropdown through all 5:
+   - [ ] English
+   - [ ] Hindi
+   - [ ] Tamil
+   - [ ] Bengali (Fatima's language)
+   - [ ] Marathi
+2. **Verify:** Checklist text and message change with each language
+
+**Pass criteria:** All 5 languages render correctly.
+
+### K5. Copy message from navigator
+1. Click "Copy message"
+2. Paste into a text editor
+3. **Verify:** Full message with header, numbered items, and footer
+
+**Pass criteria:** Clipboard contains the complete message.
+
+### K6. Eligible government schemes
+1. On `/navigator/PAT-DC-04`
+2. **Verify:** "Eligible government schemes" section appears
+3. **Verify:** PM-JAY (central scheme) is listed with annual limit ₹5,00,000
+4. Try `/navigator/PAT-DC-08` (Savitri, Maharashtra) -- should show MH-MJPJAY too
+
+**Pass criteria:** Scheme cards show scheme name, type, annual limit, status.
+
+### K7. "Your treating team decides" notice
+1. **Verify:** The disclaimer appears at the bottom of every navigator page
+2. **Verify:** Text says this is a preparation checklist, not a clinical recommendation
+
+**Pass criteria:** Disclaimer always visible.
+
+### K8. Navigator for patient with no visit
+1. Open a patient with no upcoming daycare visit (if available)
+2. **Verify:** "No upcoming day-care visit" message appears
+3. **Verify:** No fabricated preparation items
+
+**Pass criteria:** Graceful empty state.
+
+---
+
+## SECTION L: Judge Console Tests (`/judge`)
+
+### L1. Judge page loads
+1. Click "Judge Console" on the homepage header
+2. **Verify:** Opens `/judge`
+3. **Verify:** Title "SAARTHI · Judge Console" visible
+4. **Verify:** 8 probe buttons visible in a grid
+5. **Verify:** "Run all 8 probes" button visible
+
+**Pass criteria:** Page loads with all 8 probe buttons.
+
+### L2. Run all probes
+1. Click "Run all 8 probes"
+2. **Verify:** All 8 buttons show "Running..." then update with results
+3. **Verify:** Summary counter appears: "X of 8 passing"
+4. **Verify:** Each probe shows pass (green border) or fail (red border)
+
+**Pass criteria:** All 8 probes return results. No hanging "Running..." state.
+
+### L3. Individual probe details
+1. After running probes, scroll down
+2. For each completed probe, **verify:**
+   - [ ] Title and description visible
+   - [ ] PASS or FAIL badge
+   - [ ] "Expected" vs "Got" row count
+   - [ ] "Show SQL" button works -- reveals the actual query
+   - [ ] Result table with column headers and data rows
+
+**Pass criteria:** Every probe has visible SQL, result, and pass/fail.
+
+### L4. Expected probe results
+| Probe | Title | Expected result |
+|---|---|---|
+| 1 | Rule catalog completeness | PASS — 16 active rules |
+| 2 | RAP scopes READINESS_STATE | PASS — 0 leaked rows |
+| 3 | Binding lifecycle integrity | PASS — 0 dangling bindings |
+| 4 | Three-clock coverage (R2) | PASS — 0 events with missing clocks |
+| 5 | Review task idempotency | PASS — 0 duplicate keys |
+| 6 | Consent-gated access | Informational — lists patients without active consent |
+| 7 | Gate outcome distribution | PASS — 4 outcomes (pass, fail, not_evaluated, conflicting) |
+| 8 | Scheme eligibility coverage | PASS — 3 schemes with eligible patients |
+
+**Pass criteria:** Probes 1-5, 7, 8 should pass. Probe 6 is informational.
+
+### L5. Re-run individual probe
+1. Click any single probe button after the initial run
+2. **Verify:** That probe re-runs independently
+3. **Verify:** Summary counter updates
+
+**Pass criteria:** Individual re-run works without re-running all 8.
+
+---
+
 ## Results Template
 
 Copy this table. Fill in as you test. Share failures with the dev team.
@@ -523,6 +653,23 @@ Copy this table. Fill in as you test. Share failures with the dev team.
 | J4 | Advisory doesn't block | DC-09 | PASS / FAIL | |
 | J5 | Conflicting evidence display | DC-07 | PASS / FAIL | |
 | J6 | No patient_id in tool input | DC-04 | PASS / FAIL | |
+| K1 | Navigator page loads | DC-04 | PASS / FAIL | |
+| K2 | Checklist from failing gates | DC-04 | PASS / FAIL | |
+| K3 | All-clear on navigator | DC-01 | PASS / FAIL | |
+| K4 | Language: English | DC-04 | PASS / FAIL | |
+| K4 | Language: Hindi | DC-04 | PASS / FAIL | |
+| K4 | Language: Tamil | DC-04 | PASS / FAIL | |
+| K4 | Language: Bengali | DC-04 | PASS / FAIL | |
+| K4 | Language: Marathi | DC-04 | PASS / FAIL | |
+| K5 | Copy message from navigator | DC-04 | PASS / FAIL | |
+| K6 | Eligible schemes shown | DC-04 | PASS / FAIL | |
+| K7 | "Treating team decides" notice | DC-04 | PASS / FAIL | |
+| K8 | Navigator no-visit state | varies | PASS / FAIL / SKIP | |
+| L1 | Judge page loads | -- | PASS / FAIL | |
+| L2 | Run all 8 probes | -- | PASS / FAIL | |
+| L3 | Probe details visible | -- | PASS / FAIL | |
+| L4 | Expected probe results match | -- | PASS / FAIL | |
+| L5 | Re-run individual probe | -- | PASS / FAIL | |
 
 ---
 
