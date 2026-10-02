@@ -1,7 +1,8 @@
 import {createRequire} from 'node:module';
 import {readFileSync} from 'node:fs';
 const require=createRequire(new URL('../../web/package.json',import.meta.url));
-const sf=require('snowflake-sdk'); sf.configure({logLevel:'ERROR'});
+import {snowflakeDriverConfig} from '../../web/lib/snowflake-driver-config.mjs';
+const sf=require('snowflake-sdk'); sf.configure(snowflakeDriverConfig);
 export function statements(source) {
   let state = '', part = '', out = [];
   for (let i = 0; i < source.length; i++) {
