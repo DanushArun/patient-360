@@ -318,8 +318,3 @@
   background: #f5f4f1;
 }
 .sa-screen-header .sa-quiet-button, .sa-screen-header .sa-primary-action { flex: 0 0 auto; }
-.sa-task-draft { margin-top: 16px; }
-.sa-task-draft h3 { margin: 0 0 14px; font-size: 16px; font-weight: 600; }
-.sa-task-draft dl { display: grid; gap: 12px; }
-.sa-task-draft dt { color: var(--sa-muted); font-size: 12px; }
-.sa-task-draft dd { margin: 3px 0 0; font-size: 14px; overflow-wrap: anywhere; }

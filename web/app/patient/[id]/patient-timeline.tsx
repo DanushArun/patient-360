@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { buttonStyle } from "@/components/sa";
 import type { PatientTimeline, TimelineEvent } from "@/lib/patient";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
@@ -13,7 +14,9 @@ function Clock({ label, value }: { label: string; value: string }): ReactNode {
   </div>;
 }
 
-function EventRow({ event }: { event: TimelineEvent }): ReactNode {
+function EventRow({ event, patientId, knownAsOf }: {
+  event: TimelineEvent; patientId?: string; knownAsOf?: string;
+}): ReactNode {
   return <div className="sa-timeline-event">
     <div className="sa-timeline-title">
       {event.concept}{event.value !== null && <> · {event.value} {event.unit}</>}
@@ -32,11 +35,13 @@ function EventRow({ event }: { event: TimelineEvent }): ReactNode {
     </div>
     {event.derivation && <p className="sa-meta">Derivation: {event.derivation}</p>}
     {event.valid_until && <p className="sa-meta">Valid until: {event.valid_until}</p>}
-    <EventSources event={event} />
+    <EventSources event={event} patientId={patientId} knownAsOf={knownAsOf} />
   </div>;
 }
 
-function EventSources({ event }: { event: TimelineEvent }): ReactNode {
+function EventSources({ event, patientId, knownAsOf }: {
+  event: TimelineEvent; patientId?: string; knownAsOf?: string;
+}): ReactNode {
   const groups = [
     ["Source events", event.source_event_ids],
     ["Verified assertions", event.source_assertion_ids],
@@ -49,6 +54,12 @@ function EventSources({ event }: { event: TimelineEvent }): ReactNode {
     {event.source_links_observed_at && <div>
       <dt>Source links observed</dt><dd>{event.source_links_observed_at}</dd>
     </div>}
+    {patientId && knownAsOf && event.source_document_ids?.map((docId) => <div key={docId}>
+      <Link prefetch={false} href={`/patient/${encodeURIComponent(patientId)}/documents/`
+        + `${encodeURIComponent(docId)}?${new URLSearchParams({
+          known_as_of: knownAsOf, return: "timeline",
+        })}`}>Open document {docId}</Link>
+    </div>)}
   </dl>;
 }
 
@@ -65,7 +76,8 @@ async function requestTimeline(
   signal: AbortSignal,
 ): Promise<PatientTimeline | null> {
   const response = await fetch(
-    `/api/patient/${encodeURIComponent(patientId)}/timeline`, { cache: "no-store", signal },
+    `/api/patient/${encodeURIComponent(patientId)}/timeline`, { cache: "no-store",
+      signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]) },
   );
   const result = await response.json() as PatientTimeline & {
     error?: string; purge_patient_state?: boolean;
@@ -125,7 +137,9 @@ function TimelineError({ retry }: { retry: () => void }): ReactNode {
   </div>;
 }
 
-export function PatientTimelineContent({ data }: { data: PatientTimeline | null }): ReactNode {
+export function PatientTimelineContent({ data, patientId }: {
+  data: PatientTimeline | null; patientId?: string;
+}): ReactNode {
   return <section aria-label="Patient timeline">
     <div className="sa-field-label">Record timeline · known as of {data?.known_as_of}</div>
     <div className="sa-meta" style={{ margin: "4px 0 14px" }}>
@@ -141,7 +155,8 @@ export function PatientTimelineContent({ data }: { data: PatientTimeline | null 
       Source links reflect the record at {data.provenance_observed_at}.
     </p>}
     {data?.timeline.length
-      ? [...data.timeline].reverse().map((event) => <EventRow key={event.event_id} event={event} />)
+      ? [...data.timeline].reverse().map((event) => <EventRow key={event.event_id} event={event}
+        patientId={patientId} knownAsOf={data.known_as_of} />)
       : <div className="sa-limitation">No timeline events were returned for this patient.</div>}
   </section>;
 }
@@ -150,5 +165,5 @@ export function PatientTimelinePanel({ patientId }: { patientId: string }): Reac
   const timeline = usePatientTimeline(patientId);
   if (timeline.state === "loading") return <TimelineLoading />;
   if (timeline.state === "error") return <TimelineError retry={timeline.retry} />;
-  return <PatientTimelineContent data={timeline.data} />;
+  return <PatientTimelineContent data={timeline.data} patientId={patientId} />;
 }

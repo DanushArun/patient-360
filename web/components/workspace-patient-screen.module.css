@@ -1,0 +1,81 @@
+.identity {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.avatar {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid var(--sa-rule);
+  border-radius: 50%;
+  color: var(--sa-ink-secondary);
+  background: #f7f7f5;
+}
+
+.identityCopy {
+  min-width: 0;
+}
+
+.nameLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.nameLine h1 {
+  margin: 0 0 5px;
+}
+
+.previewBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-bottom: 5px;
+  padding: 2px 7px;
+  border: 1px solid #c9c6bf;
+  border-radius: 3px;
+  color: var(--sa-ink-secondary);
+  background: #f7f7f5;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.patientDetails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+}
+
+.patientDetails span + span::before {
+  margin-right: 14px;
+  color: var(--sa-ink-muted);
+  content: "·";
+}
+
+@media (max-width: 600px) {
+  .identity {
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .patientDetails {
+    display: grid;
+    gap: 3px;
+  }
+
+  .patientDetails span + span::before {
+    content: none;
+  }
+}

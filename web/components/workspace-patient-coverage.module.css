@@ -1,0 +1,215 @@
+.coverage {
+  min-width: 0;
+}
+
+.coverage button,
+.coverage :global(.sa-inline-link) {
+  min-height: 44px;
+}
+
+.coverage button:focus-visible,
+.coverage :global(.sa-inline-link:focus-visible) {
+  outline: 3px solid #735a1f;
+  outline-offset: 2px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--sa-rule);
+}
+
+.heading h2,
+.columns h3 {
+  margin: 0;
+  color: var(--sa-ink);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.heading p,
+.rule,
+.meta,
+.message,
+.empty,
+.noWinner {
+  margin: 5px 0 0;
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rule {
+  margin-top: 10px;
+  color: var(--sa-ink);
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--sa-ink-muted);
+}
+
+.context {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 18px;
+  margin: 15px 0 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--sa-rule);
+}
+
+.context dt {
+  color: var(--sa-ink-muted);
+  font-size: 12px;
+}
+
+.context dd {
+  margin: 3px 0 0;
+  color: var(--sa-ink);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.tableWrap {
+  width: 100%;
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tableWrap th,
+.tableWrap td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--sa-rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tableWrap thead th {
+  color: var(--sa-ink-secondary);
+  font-weight: 600;
+}
+
+.tableWrap tbody th {
+  min-width: 120px;
+  color: var(--sa-ink-secondary);
+  font-weight: 500;
+}
+
+.tableWrap td {
+  min-width: 150px;
+  color: var(--sa-ink);
+}
+
+.tableWrap td > span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.tableWrap small {
+  display: block;
+  margin-top: 3px;
+  color: var(--sa-ink-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.taskSection {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sa-rule);
+}
+
+.taskSection h3 {
+  margin: 0;
+  color: var(--sa-ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.taskSection p {
+  margin: 5px 0 10px;
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+}
+
+.message,
+.empty {
+  margin: 12px 0;
+}
+
+.noWinner {
+  margin: 14px 0;
+  padding: 9px 0;
+  border-top: 1px solid var(--sa-rule);
+}
+
+@media (max-width: 720px) {
+  .context {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tableWrap {
+    overflow: visible;
+  }
+
+  .tableWrap table,
+  .tableWrap tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .tableWrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .tableWrap tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-top: 1px solid var(--sa-rule);
+  }
+
+  .tableWrap td,
+  .tableWrap tbody th {
+    min-width: 0;
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--sa-rule);
+  }
+
+  .tableWrap tbody th::after {
+    display: block;
+    margin-top: 2px;
+    color: var(--sa-ink-muted);
+    content: "Field";
+    font-size: 11px;
+  }
+
+  .tableWrap td:nth-child(2)::before {
+    content: "Structured record · ";
+  }
+
+  .tableWrap td:nth-child(3)::before {
+    content: "Authorization letter · ";
+  }
+
+  .tableWrap td:nth-child(4)::before {
+    content: "Evidence / check · ";
+  }
+
+  .tableWrap td::before {
+    color: var(--sa-ink-muted);
+    font-size: 11px;
+  }
+}

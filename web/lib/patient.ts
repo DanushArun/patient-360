@@ -26,6 +26,7 @@ export type PatientData = {
   patientName: string;
   consentId: string | null;
   practitionerName: string;
+  treatingPractitionerName?: string | null;
   language: string | null;
   nextVisit: string | null;
   scheduledAt: string | null;
@@ -208,6 +209,14 @@ export type AnswerArtifact = {
   overall_status: "supported" | "partial" | "refused";
   known_as_of: string | null;
   binding_id?: string | null;
+  consent_id?: string | null;
+  refusal?: {
+    reason_code: "class_a_clinical_judgment";
+    message: string;
+    practitioner: { practitioner_id: string; name: string; nmc_registration_no: string };
+    evidence_packet_offered?: boolean;
+    evidence_packet_id?: string | null;
+  };
   rule_versions?: Record<string, number>;
 };
 

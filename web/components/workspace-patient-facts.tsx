@@ -112,7 +112,8 @@ function useFactsData(patientId: string, domain: FactDomain, knownAsOf: string |
   useEffect(() => {
     const controller = new AbortController();
     setResult({ key, state: "loading", data: null });
-    const input = { url, domain, patientId, knownAsOf, signal: controller.signal };
+    const input = { url, domain, patientId, knownAsOf,
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]) };
     void readFacts(input).then((response) => {
       if (!controller.signal.aborted) setResult({ key, ...response });
     }).catch(() => {
