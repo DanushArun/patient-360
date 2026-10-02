@@ -39,3 +39,7 @@ test("recognizes an explicit patient access purge response", () => {
   assert.equal(workspace.purgesPatientState({ error: "access_withdrawn", purge_patient_state: true }), true);
   assert.equal(workspace.purgesPatientState({ error: "service_unavailable" }), false);
 });
+
+test("test_section_when_comparison_hash_returns_restores_coverage_comparison", () => {
+  assert.equal(workspace.resolvePatientSection("coverage-comparison"), "Coverage comparison");
+});

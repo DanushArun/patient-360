@@ -4,6 +4,7 @@ const PATIENT_SECTIONS = new Set([
   "Timeline",
   "Documents",
   "Coverage",
+  "Coverage comparison",
   "Review",
   "Family",
 ]);
@@ -17,6 +18,7 @@ const RULE_OUTCOMES = {
 
 /** @param {string | null} value @returns {string} */
 export function resolvePatientSection(value) {
+  if (value === "coverage-comparison") return "Coverage comparison";
   return PATIENT_SECTIONS.has(value ?? "") ? value : "Overview";
 }
 

@@ -1,5 +1,5 @@
 /* ---- reset Streamlit's chrome ------------------------------------------- */
-#MainMenu, footer, header [data-testid="stStatusWidget"] { visibility: hidden; }
+#MainMenu, header [data-testid="stStatusWidget"] { visibility: hidden; }
 /* Top padding must clear the fixed toolbar, or the masthead - the line carrying
    consent and known_as_of - renders underneath it and is unreadable. */
 .block-container { padding-top: 5rem; max-width: 1180px; }
@@ -220,6 +220,14 @@ span[class*="material-symbols"], span[class*="material-icons"] {
     background: #FFF3C4; color: #1A1D21; font-weight: 600;
     border-bottom: 2px solid #8A5300;
     padding: 1px 0; border-radius: 2px;
+}
+.sa-source-page-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    max-height: min(65vh, 720px);
+    overflow: auto;
+    overscroll-behavior: contain;
 }
 
 /* ---- focus: visible, never removed ------------------------------------ */

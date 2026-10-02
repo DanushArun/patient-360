@@ -1,5 +1,5 @@
 export type PatientSection = "Overview" | "Facts" | "Timeline" | "Documents"
-  | "Coverage" | "Review" | "Family";
+  | "Coverage" | "Coverage comparison" | "Review" | "Family";
 export function resolvePatientSection(value: string | null): PatientSection;
 export function isLatestPatientResponse(
   requestPatientId: string,

@@ -1,0 +1,218 @@
+:root {
+  --sa-ink: #202020;
+  --sa-ink-secondary: #555451;
+  --sa-ink-muted: #76746f;
+  --sa-rule: #e8e7e4;
+  --sa-surface-sunken: #f5f4f1;
+  --sa-accent: #2463a6;
+  --sa-sidebar-width: 216px;
+}
+
+body {
+  background: #fff !important;
+  color: var(--sa-ink);
+}
+.sa-page, main.mx-auto.max-w-7xl {
+  box-sizing: border-box;
+  width: auto;
+  max-width: none !important;
+  min-height: 100vh;
+  margin: 0 0 0 var(--sa-sidebar-width);
+  padding: 0 48px 48px !important;
+  color: var(--sa-ink);
+}
+.sa-page:not(:has(.sa-workspace-nav)) { margin-left: var(--sa-sidebar-width); }
+.sa-workspace-nav {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  box-sizing: border-box;
+  width: var(--sa-sidebar-width);
+  min-height: 100vh;
+  padding: 20px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  background: #f7f7f5;
+  border: 0;
+  border-right: 1px solid var(--sa-rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+.sa-brand {
+  gap: 9px;
+  padding: 0 5px;
+  margin: 0 0 30px;
+}
+.sa-brand img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+.sa-brand strong {
+  color: var(--sa-ink);
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -.2px;
+}
+.sa-brand small {
+  color: var(--sa-ink-muted);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+.sa-sidebar-heading, .ct-roster-heading {
+  padding: 0 8px;
+  margin: 0 0 7px;
+  color: var(--sa-ink-muted);
+  font-size: 11px;
+  line-height: 17px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sa-workspace-links {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  margin: 0;
+}
+.sa-workspace-link {
+  min-height: 36px;
+  padding: 7px 9px;
+  gap: 9px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--sa-ink-secondary);
+  font-size: 13px;
+  text-decoration: none;
+}
+.sa-workspace-link:hover {
+  background: #eeedea;
+  color: var(--sa-ink);
+}
+.sa-workspace-link-active {
+  background: #eeedea;
+  color: var(--sa-ink);
+  font-weight: 600;
+  box-shadow: none;
+}
+.sa-workspace-link:focus-visible,
+.ct-patient-option:focus-visible {
+  outline: 2px solid var(--sa-accent);
+  outline-offset: 2px;
+}
+.sa-workspace-nav > .sa-workspace-link {
+  margin-top: 2px;
+}
+.ct-roster {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  margin: 22px -14px 12px;
+  padding: 0 14px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+}
+.ct-roster-heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+.ct-search {
+  min-height: 32px;
+  margin: 0 0 5px;
+  padding: 0 8px;
+  border: 1px solid var(--sa-rule);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--sa-ink-muted);
+}
+.ct-search input {
+  min-width: 0;
+  font-size: 12px;
+}
+.ct-patient-list {
+  min-height: 0;
+  overflow: auto;
+}
+.ct-patient-option {
+  min-height: 38px;
+  gap: 8px;
+  padding: 4px 7px;
+  border-radius: 5px;
+}
+.ct-patient-option:hover,
+.ct-patient-option.selected {
+  background: #eeedea;
+}
+.ct-patient-option .ct-avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+.ct-patient-option strong {
+  color: var(--sa-ink-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+.ct-patient-option small {
+  color: var(--sa-ink-muted);
+  font-size: 10px;
+}
+.ct-roster-empty {
+  padding: 8px;
+  color: var(--sa-ink-muted);
+  font-size: 12px;
+}
+.sa-ask-link {
+  margin-top: auto !important;
+}
+.sa-workspace-context {
+  min-height: 40px;
+  margin: 8px 0 0;
+  padding: 10px 8px 0;
+  border-top: 1px solid var(--sa-rule);
+  color: var(--sa-ink-secondary);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sa-utility-bar {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 -48px 24px;
+  padding: 0 48px;
+  border-bottom: 1px solid var(--sa-rule);
+  color: var(--sa-ink-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+.sa-utility-bar > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.sa-utility-bar a {
+  color: var(--sa-ink-secondary);
+  text-decoration: none;
+}
+.sa-utility-bar strong {
+  overflow: hidden;
+  color: var(--sa-ink);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sa-utility-asof {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
