@@ -33,6 +33,9 @@ function ReviewFeedbackItem({ action, state, gate }: {
       <strong>{state.replay ? "Task already filed" : "Task filed"}</strong>
       <div>{verb} · {gate.rule_id} · {state.taskState ?? "State unavailable"}</div>
       <div>Task ID <code>{state.taskId}</code></div>
+      <div>Record check remains {gate.outcome.replaceAll("_", " ")}.
+        Creating this task does not recompute readiness.</div>
+      <a className="sa-quiet-button" href="/review-queue">Open review queue</a>
     </>}
     {state.status === "error" && <>
       <strong>{state.uncertain

@@ -5,6 +5,7 @@ import type { Gate, PatientData } from "@/lib/patient";
 import data from "@/lib/navigator-data.json";
 import { familyLanguages, familyRecord } from "@/lib/family-record.mjs";
 import type { FamilyRecordItem } from "@/lib/family-record.mjs";
+import { FamilyBringList } from "./workspace-family-bring-list";
 import styles from "./workspace-patient-family.module.css";
 
 type LanguageCode = "en" | "hi" | "ta" | "bn" | "mr";
@@ -46,8 +47,9 @@ function prettyStatus(status: string): string {
   return status ? status[0].toUpperCase() + status.slice(1) : "Outcome unavailable";
 }
 
-export function FamilyChecklist({ patient, gates, language, setLanguage }: {
+export function FamilyChecklist({ patient, gates, language, setLanguage, preview = false }: {
   patient: PatientData; gates: Gate[]; language: string; setLanguage: (value: string) => void;
+  preview?: boolean;
 }): ReactNode {
   const date = patient.nextVisit ? visitDate(patient.nextVisit) : null;
   if (!date || !patient.nextVisit) return <div className={styles.limitation} role="status">
@@ -58,15 +60,22 @@ export function FamilyChecklist({ patient, gates, language, setLanguage }: {
   const header = familyHeader(patient, lang, date);
   const message = familyMessage(header, result, gates);
   return <div className={styles.family}>
-    <LanguageSelect language={language} setLanguage={setLanguage} />
-    <p className={styles.visitDate}>Recorded visit: <time dateTime={patient.nextVisit}
-      title={patient.nextVisit}>{date}</time></p>
+    <h2 className={styles.title}>Family preparation</h2>
+    <div className={styles.properties}>
+      <p className={styles.visitDate}>Recorded visit: <time dateTime={patient.nextVisit}
+        title={patient.nextVisit}>{date}</time></p>
+      <LanguageSelect language={language} setLanguage={setLanguage} />
+    </div>
     <p className={styles.languageNote}>
       Only the visit heading is translated. Check names and reasons retain their source
       language; reviewed translations are not available.
     </p>
-    <FamilyGateList items={result.items} gates={gates} result={result} />
-    <FamilyMessage key={patient.patientId + ":" + message} message={message} />
+    <div className={styles.columns}>
+      <div><FamilyBringList patientId={patient.patientId} knownAsOf={patient.knownAsOf}
+        preview={preview} />
+        <FamilyGateList items={result.items} gates={gates} result={result} /></div>
+      <FamilyMessage key={patient.patientId + ":" + message} message={message} />
+    </div>
   </div>;
 }
 

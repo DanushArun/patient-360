@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Page, WorkspaceNav } from "@/components/sa";
 import type { LiveReviewQueue, QueueIssue, QueueTask } from "@/lib/review-queue.mjs";
 import styles from "./review-queue.module.css";
@@ -17,20 +19,98 @@ export function ReviewQueueView({ queue, loadedAt }: ReviewQueueViewProps): Reac
         <a className={styles.dayCare} href="/review-queue">Refresh queue</a>
       </header>
       <QueueProvenance loadedAt={loadedAt} issues={queue.issues} />
-      <section aria-label="Review tasks" className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th scope="col">Task</th><th scope="col">Patient and visit</th>
-            <th scope="col">Task status</th><th scope="col">Owner</th>
-            <th scope="col">Task created</th><th scope="col">Record check</th>
-            <th scope="col">Review</th></tr></thead>
-          <tbody>{rows.map((row) => <QueueTableRow key={row.task?.taskId ?? row.issue?.key}
-            row={row} />)}</tbody>
-        </table>
-        {!rows.length && <EmptyQueue patients={queue.patients.length} />}
-      </section>
+      <QueueWorkspace rows={rows} patients={queue.patients.length} />
       {queue.unavailable.length > 0 && <UnavailableRecords patients={queue.unavailable} />}
     </div>
   </Page>;
+}
+
+
+function QueueWorkspace({ rows, patients }: { rows: QueueRow[]; patients: number }): ReactNode {
+  const [view, setView] = useState("active");
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const visible = view === "active" ? rows.filter((row) => row.issue?.outcome !== "pass"
+    && Boolean(row.issue) || row.task?.state !== "closed") : rows;
+  const selected = visible.find((row) => row.task?.taskId === selectedKey) ?? visible[0] ?? null;
+  if (!rows.length) return <EmptyQueue patients={patients} />;
+  return <>
+    <nav className={styles.views} aria-label="Review queue views">
+      <button type="button" aria-pressed={view === "active"}
+        onClick={() => setView("active")}>Active issues</button>
+      <button type="button" aria-pressed={view === "visit"}
+        onClick={() => setView("visit")}>By visit</button>
+    </nav>
+    {view === "visit" ? <section aria-label="Review tasks" className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead><tr><th>Task</th><th>Patient and visit</th><th>Task status</th><th>Owner</th>
+          <th>Task created</th><th>Record check</th><th>Review</th></tr></thead>
+        <tbody>{[...rows].sort((a, b) => (a.issue?.scheduled ?? "")
+          .localeCompare(b.issue?.scheduled ?? "")).map((row) =>
+          <QueueTableRow key={row.task?.taskId ?? row.issue?.key} row={row} />)}</tbody>
+      </table>
+    </section> : <div className={styles.boardLayout}>
+      <QueueBoard rows={visible} selectedKey={selected?.task?.taskId ?? null}
+        onSelect={setSelectedKey} />
+      {selected && <TaskInspector row={selected} />}
+    </div>}
+  </>;
+}
+
+function QueueBoard({ rows, selectedKey, onSelect }: {
+  rows: QueueRow[]; selectedKey: string | null; onSelect: (key: string) => void;
+}): ReactNode {
+  const groups = ["Open", "Evidence received", "Closed", "Other task states"];
+  return <section className={styles.board} aria-label="Task board">
+    {groups.map((group) => {
+      const tasks = rows.filter((row) => row.task && taskGroup(row.task.state) === group);
+      if (group === "Other task states" && !tasks.length) return null;
+      return <div className={styles.column} key={group}>
+        <h2>{group} <span>{tasks.length}</span></h2>
+        {tasks.map((row) => <button type="button" key={row.task!.taskId}
+          className={styles.taskCard} aria-pressed={row.task!.taskId === selectedKey}
+          onClick={() => onSelect(row.task!.taskId)}>
+          <strong>{humanize(row.task!.action) || "Review task"}</strong>
+          <span>{row.issue?.patientName ?? row.task!.patientId}</span>
+          <span className={styles.secondary}>{row.task!.reason ?? "Reason not recorded"}</span>
+          <span className={styles.secondary}>{row.task!.owner ?? "Unassigned"}</span>
+          <span className={styles.taskState}>{humanize(row.task!.state)}</span>
+        </button>)}
+        {!tasks.length && <p className={styles.columnEmpty}>No tasks in this state</p>}
+        {group === "Open" && rows.filter((row) => !row.task).map((row) =>
+          <div className={styles.uncreated} key={row.issue!.key}>
+            <strong>{row.issue!.patientName}</strong><p>No task created · {row.issue!.reason}</p>
+            <PatientLink patientId={row.issue!.patientId} />
+          </div>)}
+      </div>;
+    })}
+  </section>;
+}
+
+function taskGroup(state: string | null): string {
+  if (state === "closed") return "Closed";
+  if (state === "evidence_received") return "Evidence received";
+  if (["open", "acknowledged", "escalated", "requested"].includes(state ?? "")) return "Open";
+  return "Other task states";
+}
+
+function TaskInspector({ row }: { row: QueueRow }): ReactNode {
+  const patientId = row.task?.patientId ?? row.issue!.patientId;
+  return <aside className={styles.inspector} aria-label="Task details">
+    <h2>Task details</h2>
+    <h3>{humanize(row.task?.action ?? null) || "Readiness result needs review"}</h3>
+    <dl>
+      <dt>Patient</dt><dd><PatientCell patientId={patientId} issue={row.issue} /></dd>
+      <dt>Task status</dt><dd>{titleCase(humanize(row.task?.state ?? null)) || "No task"}</dd>
+      <dt>Owner</dt><dd>{row.task?.owner ?? "Unassigned"}</dd>
+      <dt>Task created</dt><dd><Timestamp value={row.task?.createdAt ?? null} /></dd>
+    </dl>
+    <p>{row.task?.reason ?? "No task created"}</p>
+    <h3>Record check</h3><ReadinessCell issue={row.issue} />
+    <p className={styles.secondary}>Task completion does not change the rule outcome.</p>
+    <PatientLink patientId={patientId} />
+    <Link className={styles.reviewLink} href={`/history/${encodeURIComponent(patientId)}`}
+      prefetch={false}>Open task history</Link>
+  </aside>;
 }
 
 export function ReviewQueueFailure(): ReactNode {

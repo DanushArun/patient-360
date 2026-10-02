@@ -36,7 +36,7 @@ type LoadState = "loading" | "ready" | "error" | "access";
 type ViewMode = "table" | "type" | "expected";
 type LibraryFilters = { search: string; facility: string; state: string; type: string };
 
-function useWorkspaceData(url: string, patientId: string): {
+export function useWorkspaceData(url: string, patientId: string, disabled = false): {
   data: WorkspaceData | null; state: LoadState; retry: () => void;
 } {
   const [attempt, setAttempt] = useState(0);
@@ -45,6 +45,7 @@ function useWorkspaceData(url: string, patientId: string): {
     key: string; data: WorkspaceData | null; state: LoadState;
   }>({ key: "", data: null, state: "loading" });
   useEffect(() => {
+    if (disabled) return;
     const controller = new AbortController();
     setLoad({ key, data: null, state: "loading" });
     readDocumentLibrary(url, patientId, controller.signal).then((result) => {
@@ -56,7 +57,7 @@ function useWorkspaceData(url: string, patientId: string): {
       if (!controller.signal.aborted) setLoad({ key, data: null, state: "error" });
     });
     return () => controller.abort();
-  }, [key, patientId, url]);
+  }, [key, patientId, url, disabled]);
   const current = load.key === key ? load : { data: null, state: "loading" as const };
   return { ...current, retry: () => setAttempt((value) => value + 1) };
 }

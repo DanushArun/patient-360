@@ -2,6 +2,7 @@ import { StatusChip, type Outcome } from "@/components/sa";
 import type { Gate, PatientData } from "@/lib/patient";
 import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import type { ReactNode } from "react";
+import { OverviewRecordInventory } from "./overview-record-inventory";
 import styles from "./workspace-patient-overview.module.css";
 
 type PatientOverviewProps = {
@@ -9,11 +10,10 @@ type PatientOverviewProps = {
   preview: boolean;
   onSelectGate: (ruleId: string) => void;
   onCompareSources?: () => void;
-  onSelectDocuments?: () => void;
 };
 
 export function PatientOverview({ patient, preview, onSelectGate, onCompareSources,
-  onSelectDocuments }: PatientOverviewProps): ReactNode {
+}: PatientOverviewProps): ReactNode {
   const issues = patient.gates.filter((gate) => gate.outcome !== "pass");
   return <div className={styles.overview}>
     <ReadinessSummary gates={patient.gates} />
@@ -22,10 +22,8 @@ export function PatientOverview({ patient, preview, onSelectGate, onCompareSourc
     {preview && <p id="overview-preview-limit" className={styles.previewLimit}>
       Recorded preview: source evidence and live evidence actions are unavailable.
     </p>}
-    <div className={styles.summaryGrid}>
-      <VisitSummary patient={patient} />
-      <RecordBasis patient={patient} preview={preview} onSelectDocuments={onSelectDocuments} />
-    </div>
+    <OverviewRecordInventory patientId={patient.patientId} knownAsOf={patient.knownAsOf}
+      preview={preview} visit={<VisitSummary patient={patient} />} />
   </div>;
 }
 
@@ -182,34 +180,4 @@ function formatVisitDay(value: string | null): string {
 
 function Property({ label, value }: { label: string; value: ReactNode }): ReactNode {
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
-}
-
-function RecordBasis({ patient, preview, onSelectDocuments }: {
-  patient: PatientData;
-  preview: boolean;
-  onSelectDocuments?: () => void;
-}): ReactNode {
-  return <section className={styles.summarySection} aria-label="Record basis">
-    <h2>Record basis</h2>
-    <dl>
-      <Property label="Patient ID" value={patient.patientId} />
-      <Property label="Snapshot known as of" value={patient.knownAsOf
-        ? <time dateTime={patient.knownAsOf} title={patient.knownAsOf}>
-          {formatRecordDate(patient.knownAsOf)}
-        </time> : "Timestamp unavailable"} />
-      <Property label="Snapshot source" value={preview
-        ? "Recorded synthetic fixture" : "Stored SQL readiness snapshot"} />
-    </dl>
-    <p className={styles.previewLimit}>
-      Recent source inventory is not part of this SQL snapshot.
-    </p>
-    <button type="button" className="sa-quiet-button" disabled={preview || !onSelectDocuments}
-      onClick={onSelectDocuments}>Open documents</button>
-    {!preview && !onSelectDocuments && <p className={styles.actionHelp}>
-      Documents navigation is unavailable in this view.
-    </p>}
-    {preview && <p className={styles.actionHelp}>
-      Document details are not included in this recorded preview.
-    </p>}
-  </section>;
 }

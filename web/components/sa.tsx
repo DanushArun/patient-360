@@ -1,7 +1,3 @@
-// Markup mirrors frontend/core/answer_render.py and frontend/core/design.py
-// one-for-one: same class names (styled by the generated saarthi.css), same
-// inline status styles. Values below were measured from the running Streamlit
-// app, not chosen.
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { ClipboardList, LayoutDashboard, PanelLeft, Users } from "lucide-react";
@@ -16,22 +12,22 @@ export const INK_CONFLICT = "#8A5300";
 export const RULE = "#D8DCDF";
 export const SURFACE_SUNKEN = "#F6F7F8";
 
-// design.py STATUS dict, verbatim.
 const STATUS = {
-  pass: { glyph: "✓", word: "Pass", ink: INK_PASS, border: `1px solid ${INK_PASS}`, weight: 500 },
-  fail: { glyph: "✕", word: "Fail", ink: INK_FAIL, border: `2px solid ${INK_FAIL}`, weight: 600 },
+  pass: { glyph: "✓", word: "Pass", ink: INK_PASS,
+    border: "1px solid transparent", weight: 500, background: "#E7F3EC" },
+  fail: { glyph: "✕", word: "Fail", ink: INK_FAIL,
+    border: "1px solid transparent", weight: 600, background: "#FDE8E7" },
   not_evaluated: {
     glyph: "–", word: "Not evaluated", ink: INK_MUTED,
-    border: `1px dashed ${INK_MUTED}`, weight: 400,
+    border: "1px solid transparent", weight: 400, background: "#F2F2F1",
   },
   conflicting: {
     glyph: "⇄", word: "Conflicting", ink: INK_CONFLICT,
-    border: `3px double ${INK_CONFLICT}`, weight: 500,
+    border: "1px solid transparent", weight: 500, background: "#FFF0D5",
   },
 } as const;
 export type Outcome = keyof typeof STATUS;
 
-// census.py STATUS_LABEL / STATUS_OUTCOME, verbatim.
 export type CensusStatus = "blocked" | "conflict" | "waiting" | "advisory" | "ready";
 const CENSUS_LABEL: Record<CensusStatus, string> = {
   blocked: "Blocked", conflict: "Conflict", waiting: "Waiting on evidence",
@@ -45,7 +41,8 @@ const CENSUS_OUTCOME: Record<CensusStatus, Outcome> = {
 function Chip({ outcome, word }: { outcome: Outcome; word?: string }): ReactNode {
   const s = STATUS[outcome];
   return (
-    <span className="sa-status" style={{ color: s.ink, border: s.border, fontWeight: s.weight }}>
+    <span className="sa-status" style={{ color: s.ink, border: s.border, fontWeight: s.weight,
+      background: s.background }}>
       <span className="sa-status-glyph" aria-hidden="true">{s.glyph}</span>
       <span>{word ?? s.word}</span>
     </span>
@@ -86,10 +83,12 @@ type WorkspaceNavProps = {
   practitioner?: string;
   preview?: boolean;
   onAsk?: () => void;
+  onReferences?: () => void;
 };
 
 export function WorkspaceNav({
-  current, patients, patientsAvailable = true, patientId, practitioner, preview = false, onAsk,
+  current, patients, patientsAvailable = true, patientId, practitioner,
+  preview = false, onAsk, onReferences,
 }: WorkspaceNavProps = {}): ReactNode {
   return <nav className="sa-workspace-nav" aria-label="SAARTHI workspace">
     <WorkspaceBrand />
@@ -98,6 +97,8 @@ export function WorkspaceNav({
     <Link href="/#patient-roster" className="sa-workspace-link">
       <Users size={16} strokeWidth={1.8} aria-hidden="true" />Patients
     </Link>
+    {onReferences && <button type="button" className="sa-workspace-link"
+      onClick={onReferences}>References</button>}
     {patients && <PatientRoster patients={patients} selectedId={patientId} preview={preview}
       available={patientsAvailable} />}
     {patientId && !preview && <WorkspaceAsk patientId={patientId} onAsk={onAsk} />}
@@ -141,13 +142,15 @@ function WorkspaceAsk({ patientId, onAsk }: {
     className={className}>Ask the record</Link>;
 }
 
-export function WorkspaceBar({ section, knownAsOf }: {
-  section: string; knownAsOf: ReactNode;
+export function WorkspaceBar({ section, knownAsOf, actions }: {
+  section: string; knownAsOf: ReactNode; actions?: ReactNode;
 }): ReactNode {
   return <div className="sa-utility-bar">
     <div><Link href="/">Care workspace</Link><span aria-hidden="true">/</span>
       <strong>{section}</strong></div>
-    <span className="sa-utility-asof">{knownAsOf}</span>
+    <div className="sa-utility-actions">
+      <span className="sa-utility-asof">{knownAsOf}</span>{actions}
+    </div>
   </div>;
 }
 

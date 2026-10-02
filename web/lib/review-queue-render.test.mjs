@@ -69,6 +69,17 @@ test("empty and unavailable data render distinct truthful states", () => {
   assert.match(noIssues, /No review tasks or readiness gaps/);
 });
 
+test("queue exposes task board groups and contextual task detail without changing rule state", () => {
+  const markup = renderToStaticMarkup(React.createElement(view.ReviewQueueView, {
+    queue, loadedAt: "2026-10-02T10:02:00",
+  }));
+  assert.match(markup, /Evidence received/);
+  assert.match(markup, /Closed/);
+  assert.match(markup, /Task details/);
+  assert.match(markup, /Conflicting/);
+  assert.match(markup, /Active issues/);
+});
+
 function loadView() {
   const path = fileURLToPath(new URL("../app/review-queue/review-queue-view.tsx", import.meta.url));
   const source = readFileSync(path, "utf8");

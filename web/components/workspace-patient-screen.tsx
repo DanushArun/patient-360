@@ -60,18 +60,26 @@ export function PatientWorkspaceScreen({ model }: { model: PatientScreenModel })
   return <Page>
     <WorkspaceNav patients={model.patients} patientId={model.patient.patientId}
       practitioner={model.preview ? "Design preview" : model.patient.practitionerName}
-      preview={model.preview} onAsk={model.preview ? undefined : model.toggleAsk} />
+      preview={model.preview} onAsk={model.preview ? undefined : model.toggleAsk}
+      onReferences={model.preview ? undefined : () => {
+        model.setSourceScope("reference");
+        if (!model.askOpen) model.toggleAsk();
+      }} />
     <WorkspaceBar section={model.patient.patientName} knownAsOf={
       <time dateTime={model.patient.knownAsOf ?? undefined}
         title={model.patient.knownAsOf ?? "Timestamp unavailable"}>
         Known as of {formatRecordDate(model.patient.knownAsOf)}
       </time>
-    } />
+    } actions={!model.preview && <button type="button" className="sa-quiet-button"
+      disabled={model.refreshState === "refreshing"}
+      onClick={() => void model.refreshReadiness()}>Refresh record</button>} />
     <PatientHeader patient={model.patient} preview={model.preview} onAsk={model.toggleAsk} />
     <RefreshStatus model={model} />
-    {!model.preview && <button type="button" className="sa-quiet-button"
+    {!model.preview && <div className="sa-recompute-toolbar"><button type="button"
+      className="sa-quiet-button"
       disabled={model.refreshState === "refreshing"}
-      onClick={() => void model.refreshReadiness(true)}>Recompute readiness</button>}
+      onClick={() => void model.refreshReadiness(true)}>Recompute readiness</button>
+      <span>Evaluate the versioned SQL rules against verified evidence.</span></div>}
     <PatientTabs section={model.section} onChange={model.setSection} />
     <PatientWorkspaceBody model={model} />
   </Page>;
@@ -126,7 +134,8 @@ function RefreshStatus({ model }: { model: PatientScreenModel }): ReactNode {
   const text = model.refreshState === "refreshing"
     ? `Checking live readiness. Displaying the stored SQL snapshot${knownAsOf}.`
     : `Live readiness refresh failed. The stored SQL snapshot${knownAsOf} remains visible.`;
-  return <div className="sa-meta" role="status">{text}
+  return <div className="sa-snapshot-notice"
+    role={model.refreshState === "failed" ? "alert" : "status"}>{text}
     {model.refreshState === "failed" && <button type="button" className="ml-2 underline"
       onClick={() => void model.refreshReadiness()}>Retry current check</button>}
   </div>;
@@ -169,12 +178,11 @@ function PatientSectionMain({ model }: { model: PatientScreenModel }): ReactNode
   return <section className="sa-workspace-main" aria-label="Patient workspace content">
     {model.section === "Family"
       ? <FamilyChecklist patient={model.patient} gates={model.patient.gates}
-        language={model.language} setLanguage={model.setLanguage} />
+        language={model.language} setLanguage={model.setLanguage} preview={model.preview} />
       : <PatientSectionContent section={model.section} patient={model.patient}
         preview={model.preview} onSelectGate={model.onSelectGate}
         onCompareSources={() => model.setSection("Coverage comparison")}
-        onBackToCoverage={() => model.setSection("Coverage")}
-        onSelectDocuments={() => model.setSection("Documents")} />}
+        onBackToCoverage={() => model.setSection("Coverage")} />}
   </section>;
 }
 
@@ -205,7 +213,8 @@ function AskPanel({ model }: { model: PatientScreenModel }): ReactNode {
     </div>
     <SourceScopeSelect scope={model.sourceScope} setScope={model.setSourceScope}
       disabled={model.chat.busy} />
-    <PatientConversation patientId={model.patient.patientId} turns={model.turns}
+    <PatientConversation patientId={model.patient.patientId} patient={model.patient}
+      turns={model.turns}
       sourceScope={model.sourceScope}
       selected={model.selected} onSelect={model.onSelectAnswer} busy={model.chat.busy}
       onSend={(text) => void model.chat.send(text, model.sourceScope)}

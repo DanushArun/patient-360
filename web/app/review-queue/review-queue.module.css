@@ -223,3 +223,33 @@
     gap: 2px;
   }
 }
+
+.views { display: flex; gap: 16px; border-bottom: 1px solid #e8e7e4; margin-bottom: 20px; }
+.views button { min-height: 44px; padding: 8px 4px; color: #4a5157;
+  border-bottom: 2px solid transparent; }
+.views button[aria-pressed="true"] { color: #1a1d21; border-bottom-color: #2463a6; }
+.boardLayout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; }
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+  align-items: start; }
+.column { padding: 10px; min-width: 0; background: #f7f7f5; border-radius: 4px; }
+.column h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+.column h2 span { margin-left: 8px; color: #656c73; font-weight: 400; }
+.taskCard { display: grid; gap: 8px; text-align: left; padding: 12px; width: 100%;
+  margin-bottom: 10px; background: #fff; border: 1px solid #e8e7e4; border-radius: 4px;
+  font-size: 13px; overflow-wrap: anywhere; }
+.taskCard[aria-pressed="true"] { border-color: #2463a6; }
+.taskCard:focus-visible, .views button:focus-visible { outline: 3px solid #2463a6;
+  outline-offset: 2px; }
+.taskState { color: #4a5157; font-size: 12px; text-transform: capitalize; }
+.columnEmpty { color: #656c73; font-size: 12px; }
+.uncreated { padding: 12px 0; font-size: 13px; border-top: 1px solid #e8e7e4; }
+.inspector { min-width: 0; padding-left: 20px; border-left: 1px solid #e8e7e4; font-size: 13px; }
+.inspector h2 { margin: 0 0 16px; font-size: 18px; }
+.inspector h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
+.inspector dl { display: grid; grid-template-columns: 85px minmax(0, 1fr); gap: 12px; }
+.inspector dt { color: #656c73; }
+.inspector dd { margin: 0; overflow-wrap: anywhere; }
+.inspector .reviewLink { display: flex; }
+@media (max-width: 1100px) { .boardLayout { grid-template-columns: 1fr; }
+  .inspector { padding: 20px 0 0; border-left: 0; border-top: 1px solid #e8e7e4; } }
+@media (max-width: 600px) { .board { grid-template-columns: 1fr; } }

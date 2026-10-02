@@ -11,8 +11,8 @@ import {
   type SetStateAction,
 } from "react";
 import { ArrowUp } from "lucide-react";
-import { PreparePacket } from "@/components/evidence-history";
-import type { AgentTurn } from "@/lib/patient";
+import { ClinicalReferral } from "./clinical-referral";
+import type { AgentTurn, PatientData } from "@/lib/patient";
 import {
   announcePatientAccessWithdrawn,
   isLatestPatientResponse,
@@ -306,9 +306,10 @@ function storedQuestion(storageKey: string): string {
 }
 
 export function PatientConversation({
-  patientId, turns, selected, onSelect, busy, onSend, onRetry, sourceScope,
+  patientId, turns, selected, onSelect, busy, onSend, onRetry, sourceScope, patient,
 }: {
   patientId: string;
+  patient?: PatientData;
   turns: Turn[];
   sourceScope?: SourceScope;
   selected: { turnId: string; ruleId: string } | null;
@@ -329,8 +330,8 @@ export function PatientConversation({
         && <PatientAnswerArtifact turn={turn} patientId={patientId} sourceScope={sourceScope} />}
       {turn.role === "assistant" && !turn.error && turn.artifact?.classification === "CLASS_A"
         && turns[index - 1]?.role === "user"
-        && <PreparePacket patientId={patientId} question={turns[index - 1].text}
-          practitionerName={turn.artifact.refusal?.practitioner.name ?? ""} />}
+        && <ClinicalReferral patientId={patientId} patient={patient} turn={turn}
+          question={turns[index - 1].text} />}
     </div>)}
     {busy && <div className="sa-meta" role="status">Consulting the record…</div>}
     {last?.error && <button type="button" className="sa-quiet-button"

@@ -119,13 +119,6 @@
   background: #f7f7f5;
 }
 
-.summaryGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 24px;
-  margin-top: 22px;
-}
-
 .summarySection {
   min-width: 0;
 }
@@ -215,8 +208,5 @@
     font-size: 11px;
   }
 
-  .summaryGrid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
+
 }

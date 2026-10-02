@@ -84,6 +84,9 @@ function loadComponent() {
 }
 
 function mockedRequire(name) {
+  if (name === "./workspace-family-bring-list") return {
+    FamilyBringList: () => React.createElement("section", null, "Bring before the visit"),
+  };
   if (name.endsWith(".module.css")) {
     return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
   }

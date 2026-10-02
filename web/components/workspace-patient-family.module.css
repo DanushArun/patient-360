@@ -1,7 +1,7 @@
 .family {
   display: grid;
   gap: 20px;
-  max-width: 860px;
+  width: 100%;
   min-width: 0;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .visitDate {
-  margin: -10px 0 0;
+  margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -71,7 +71,7 @@
 
 .checkHeading {
   overflow-wrap: anywhere;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.4;
   font-weight: 600;
 }
@@ -98,7 +98,7 @@
   margin: 0 0 12px;
   padding: 12px;
   border: 1px solid #d8dcdf;
-  background: #f6f7f8;
+  background: #fff;
   color: #1a1d21;
   font: inherit;
   line-height: 1.5;
@@ -118,7 +118,7 @@
 }
 
 .copyButton:hover {
-  background: #f6f7f8;
+  background: #fff;
 }
 
 .feedback {
@@ -156,4 +156,14 @@
   .messageText {
     padding: 10px;
   }
+}
+
+.title { margin: 0; font-size: 22px; font-weight: 600; }
+.properties { display: flex; align-items: center; gap: 32px; flex-wrap: wrap;
+  padding: 10px 0; border-block: 1px solid #e8e7e4; }
+.columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 32px; align-items: start; }
+@media (max-width: 760px) {
+  .columns { grid-template-columns: 1fr; gap: 24px; }
+  .properties { gap: 12px; }
 }

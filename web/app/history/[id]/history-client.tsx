@@ -5,13 +5,16 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Field, Page, WorkspaceNav, buttonStyle } from "@/components/sa";
 import type { Gate, PatientData, ReviewTask } from "@/lib/patient";
 import { TaskActions } from "@/components/task-actions";
+import { RecordChangeHistory, readRecordChanges, type RecordChange }
+  from "@/components/record-change-history";
 import { EvidenceHistory } from "@/components/evidence-history";
 import { usePatientAccess } from "@/components/patient-access-boundary";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
 
 type State = "loading" | "ready" | "error";
 type Owner = { id: string; name: string };
-type HistoryLoadState = { tasks: ReviewTask[]; owners: Owner[]; state: State };
+type HistoryLoadState = { tasks: ReviewTask[]; owners: Owner[]; state: State;
+  changes: RecordChange[] | null };
 const displayState = (state: string): string => state.replaceAll("_", " ");
 
 function TaskLifecycle({ task, patientId, owners, onSaved }: {
@@ -35,25 +38,28 @@ function TaskLifecycle({ task, patientId, owners, onSaved }: {
 }
 
 async function readTaskHistory(patientId: string, rule: string, signal: AbortSignal): Promise<{
-  tasks: ReviewTask[]; owners: Owner[];
+  tasks: ReviewTask[]; owners: Owner[]; changes: RecordChange[] | null;
 } | null> {
   const url = `/api/patient/${encodeURIComponent(patientId)}/review-tasks`
     + `?ruleId=${encodeURIComponent(rule)}`;
   const response = await fetch(url, { cache: "no-store", signal });
   const body = await response.json() as {
-    tasks?: ReviewTask[]; owners?: Owner[]; purge_patient_state?: boolean;
+    tasks?: ReviewTask[]; owners?: Owner[]; changes?: unknown; purge_patient_state?: boolean;
   };
   if (purgesPatientState(body)) {
     announcePatientAccessWithdrawn(patientId);
     return null;
   }
   if (!response.ok || !Array.isArray(body.tasks)) throw new Error("task_history_unavailable");
-  return { tasks: body.tasks, owners: Array.isArray(body.owners) ? body.owners : [] };
+  return { tasks: body.tasks, owners: Array.isArray(body.owners) ? body.owners : [],
+    changes: readRecordChanges(body.changes)?.filter((change) =>
+      change.after.rule_id === rule) ?? null };
 }
 
 function useTaskHistory(patientId: string, rule: string, revision: number): HistoryLoadState {
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
+  const [changes, setChanges] = useState<RecordChange[] | null>(null);
   const [state, setState] = useState<State>("loading");
   const [loadedKey, setLoadedKey] = useState("");
   const key = JSON.stringify([patientId, rule, revision]);
@@ -66,6 +72,7 @@ function useTaskHistory(patientId: string, rule: string, revision: number): Hist
       if (controller.signal.aborted || !result) return;
       setTasks(result.tasks);
       setOwners(result.owners);
+      setChanges(result.changes);
       setLoadedKey(key); setState("ready");
     }).catch(() => {
       if (!controller.signal.aborted) { setLoadedKey(key); setState("error"); }
@@ -73,7 +80,8 @@ function useTaskHistory(patientId: string, rule: string, revision: number): Hist
     return () => controller.abort();
   }, [patientId, rule, revision]);
   return { tasks: loadedKey === key ? tasks : [], owners: loadedKey === key ? owners : [],
-    state: loadedKey === key ? state : "loading" };
+    state: loadedKey === key ? state : "loading",
+    changes: loadedKey === key ? changes : null };
 }
 
 function AccessUnavailable(): ReactNode {
@@ -111,6 +119,7 @@ function HistoryWorkspace({ patient, rule, setRule, revision, onSaved }: {
         <RuleSelector gates={patient.gates} rule={rule} onChange={setRule}
           selected={selectedGate} />
         <TaskHistoryList patientId={patient.patientId} history={history} onSaved={onSaved} />
+        {history.state === "ready" && <RecordChangeHistory changes={history.changes} />}
       </section>
       <aside className="sa-history-aside"><EvidenceHistory patientId={patient.patientId} /></aside>
     </div>

@@ -45,7 +45,8 @@ test("overview exposes returned visit and SQL cutoff without inventing source in
   assert.match(markup, /Carboplatin \+ Paclitaxel/);
   assert.match(markup, /Dr Meera Iyer/);
   assert.match(markup, /1 Oct 2026, 09:42/);
-  assert.match(markup, /Recent source inventory is not part of this SQL snapshot/);
+  assert.match(markup, /Recent record/);
+  assert.match(markup, /Overview documents/);
   assert.doesNotMatch(markup, /City Labs|HealthSure TPA|Metro Pathology/);
 });
 
@@ -57,7 +58,7 @@ test("overview keeps unavailable navigation disabled and explains the missing ca
 
   assert.match(markup, /disabled/);
   assert.match(markup, /Coverage comparison navigation is unavailable/);
-  assert.match(markup, /Documents navigation is unavailable/);
+  assert.match(markup, /Recent record/);
 });
 
 test("overview disables evidence actions in the recorded preview", () => {
@@ -104,6 +105,11 @@ function loadComponent() {
 }
 
 function componentDependency(name) {
+  if (name === "./overview-record-inventory") return {
+    OverviewRecordInventory: ({ visit, knownAsOf, preview }) => React.createElement("div", null,
+      visit, "Recent record · Overview documents · ", dateHelpers.formatRecordDate(knownAsOf),
+      preview ? "Document details are not included in this recorded preview" : "Loading inventory"),
+  };
   if (name === "@/components/sa") return {
     StatusChip: ({ outcome }) => React.createElement("span", null, outcome),
   };

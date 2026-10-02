@@ -17,11 +17,11 @@ function Clock({ label, value }: { label: string; value: string }): ReactNode {
 function EventRow({ event, patientId, knownAsOf }: {
   event: TimelineEvent; patientId?: string; knownAsOf?: string;
 }): ReactNode {
-  return <div className="sa-timeline-event">
-    <div className="sa-timeline-title">
+  return <details open className="sa-timeline-event">
+    <summary className="sa-timeline-title">
       {event.concept}{event.value !== null && <> · {event.value} {event.unit}</>}
       {event.value_text && <> · {event.value_text}</>}
-    </div>
+    </summary>
     <div className="sa-meta">
       <code>{event.event_id || "Event ID unavailable"}</code>
       {event.is_derived && " · Derived value"}
@@ -36,7 +36,7 @@ function EventRow({ event, patientId, knownAsOf }: {
     {event.derivation && <p className="sa-meta">Derivation: {event.derivation}</p>}
     {event.valid_until && <p className="sa-meta">Valid until: {event.valid_until}</p>}
     <EventSources event={event} patientId={patientId} knownAsOf={knownAsOf} />
-  </div>;
+  </details>;
 }
 
 function EventSources({ event, patientId, knownAsOf }: {
@@ -137,15 +137,52 @@ function TimelineError({ retry }: { retry: () => void }): ReactNode {
   </div>;
 }
 
+type TimelineClock = "event_time" | "source_recorded_at" | "ingested_at";
+
 export function PatientTimelineContent({ data, patientId }: {
   data: PatientTimeline | null; patientId?: string;
 }): ReactNode {
+  const [clock, setClock] = useState<TimelineClock>("event_time");
+  const [source, setSource] = useState("all");
+  const events = (data?.timeline ?? []).filter((event) => matchesSource(event, source))
+    .sort((a, b) => String(b[clock] ?? "").localeCompare(String(a[clock] ?? "")));
   return <section aria-label="Patient timeline">
-    <div className="sa-field-label">Record timeline · known as of {data?.known_as_of}</div>
-    <div className="sa-meta" style={{ margin: "4px 0 14px" }}>
-      These recorded events show when they happened, when the source recorded them, and when
-      SAARTHI ingested them. A derived value is labelled explicitly.
+    <TimelineHeading data={data} />
+    <div className="sa-timeline-filters">
+      <label>Source type<select value={source} onChange={(event) => setSource(event.target.value)}>
+        <option value="all">All recorded events</option>
+        <option value="document">Document backed</option>
+        <option value="derived">Derived values</option>
+        <option value="unlinked">No linked document</option>
+      </select></label>
+      <label>Order by<select value={clock}
+        onChange={(event) => setClock(event.target.value as TimelineClock)}>
+        <option value="event_time">Event time</option>
+        <option value="source_recorded_at">Source recorded</option>
+        <option value="ingested_at">Ingested</option>
+      </select></label>
     </div>
+    {events.length ? events.map((event) => <EventRow key={event.event_id} event={event}
+      patientId={patientId} knownAsOf={data?.known_as_of} />)
+      : <p className="sa-limitation" role="status">{data?.timeline.length
+        ? "No events match this source filter."
+        : "No timeline events were returned for this patient."}</p>}
+  </section>;
+}
+
+function matchesSource(event: TimelineEvent, source: string): boolean {
+  if (source === "document") return Boolean(event.source_document_ids?.length);
+  if (source === "derived") return event.is_derived;
+  if (source === "unlinked") return !event.source_document_ids?.length;
+  return true;
+}
+
+function TimelineHeading({ data }: { data: PatientTimeline | null }): ReactNode {
+  return <header className="sa-timeline-heading">
+    <h2>Record timeline</h2>
+    <p className="sa-meta">Snapshot known as of {data?.known_as_of ?? "Not available"}.</p>
+    <p className="sa-meta">Three clocks remain visible for each event. Changing the order
+      does not recompute the snapshot or reconstruct a historical rule result.</p>
     {data?.total_events !== undefined && <p className="sa-meta">
       Showing {data.timeline.length} of {data.total_events} recorded events.
       {data.truncated && <> This view contains the latest {data.timeline_limit} events;
@@ -154,11 +191,7 @@ export function PatientTimelineContent({ data, patientId }: {
     {data?.provenance_observed_at && <p className="sa-meta">
       Source links reflect the record at {data.provenance_observed_at}.
     </p>}
-    {data?.timeline.length
-      ? [...data.timeline].reverse().map((event) => <EventRow key={event.event_id} event={event}
-        patientId={patientId} knownAsOf={data.known_as_of} />)
-      : <div className="sa-limitation">No timeline events were returned for this patient.</div>}
-  </section>;
+  </header>;
 }
 
 export function PatientTimelinePanel({ patientId }: { patientId: string }): ReactNode {

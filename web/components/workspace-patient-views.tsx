@@ -18,7 +18,6 @@ type SectionContentProps = {
   onSelectGate: (ruleId: string) => void;
   onCompareSources?: () => void;
   onBackToCoverage?: () => void;
-  onSelectDocuments?: () => void;
 };
 
 export function PatientSectionContent({
@@ -28,7 +27,6 @@ export function PatientSectionContent({
   onSelectGate,
   onCompareSources,
   onBackToCoverage,
-  onSelectDocuments,
 }: SectionContentProps): ReactNode {
   if (section === "Coverage comparison") return <WorkspaceAuthorizationComparison
     patientId={patient.patientId} patientName={patient.patientName} knownAsOf={patient.knownAsOf}
@@ -59,7 +57,7 @@ export function PatientSectionContent({
       onSelectGate={preview ? undefined : onSelectGate} />;
   }
   return <PatientOverview patient={patient} preview={preview} onSelectGate={onSelectGate}
-    onCompareSources={onCompareSources} onSelectDocuments={onSelectDocuments} />;
+    onCompareSources={onCompareSources} />;
 }
 
 function ReviewView({ patientId, preview, gates, onSelectGate }: {

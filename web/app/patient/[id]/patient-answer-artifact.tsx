@@ -39,25 +39,23 @@ function Citation({ source, index, patientId, knownAsOf, sourceScope }: {
       Open cited source
     </Link>}
     {!href && source.kind === "document_span"
-      && <div className="sa-meta">Exact page or text location is unavailable.</div>}
+      && <div className="sa-meta">{sourceScope === "reference"
+        ? "Reference source viewer is unavailable."
+        : "Exact page or text location is unavailable."}</div>}
   </li>;
 }
 
-function Claim({ claim, citationOffset, patientId, knownAsOf, sourceScope }: {
-  claim: AnswerClaim; citationOffset: number; patientId: string; knownAsOf: string | null;
-  sourceScope?: "patient" | "reference";
+function Claim({ claim, citationOffset }: {
+  claim: AnswerClaim; citationOffset: number;
 }): ReactNode {
   return <li className="space-y-2">
     <p>{claim.text}</p>
     <div className="sa-meta">Claim type: {claim.claim_type}</div>
     {claim.asserted_value !== undefined && claim.asserted_value !== null
       && <div className="sa-meta">Recorded value: {String(claim.asserted_value)}</div>}
-    {claim.evidence.length > 0
-      ? <ol className="space-y-2">{claim.evidence.map((source, citationIndex) =>
-        <Citation key={`${source.id}-${citationIndex}`} source={source as Evidence}
-          index={citationOffset + citationIndex}
-          patientId={patientId} knownAsOf={knownAsOf} sourceScope={sourceScope} />)}</ol>
-      : <div className="sa-meta">No citation supplied for this claim.</div>}
+    <div className="sa-meta">{claim.evidence.length
+      ? "Citations " + claim.evidence.map((_, index) => `[${citationOffset + index + 1}]`).join(" ")
+      : "No citation supplied for this claim."}</div>
   </li>;
 }
 
@@ -86,12 +84,28 @@ export function PatientAnswerArtifact({ turn, patientId, sourceScope }: {
         <Claim key={`${claim.claim_type}-${index}`} claim={claim}
           citationOffset={artifact.claims.slice(0, index).reduce((count, item) =>
             count + item.evidence.length, 0)}
-          patientId={patientId} knownAsOf={artifact.known_as_of} sourceScope={sourceScope} />)}</ol>
+          />)}</ol>
+      {artifact.classification !== "CLASS_A" && <CitationIndex claims={artifact.claims}
+        patientId={patientId} knownAsOf={artifact.known_as_of} sourceScope={sourceScope} />}
       {artifact.limitations.map((limitation, index) =>
         <div key={index} className="sa-limitation">{limitation}</div>)}
     </>}
     {turn.error && <div role="alert" className="sa-limitation">
       Answer unavailable: {turn.error}
     </div>}
+  </section>;
+}
+
+function CitationIndex({ claims, patientId, knownAsOf, sourceScope }: {
+  claims: AnswerClaim[]; patientId: string; knownAsOf: string | null;
+  sourceScope?: "patient" | "reference";
+}): ReactNode {
+  const sources = claims.flatMap((claim) => claim.evidence);
+  if (!sources.length) return null;
+  return <section className="sa-citation-index" aria-label="Citation index">
+    <h3>Citation index</h3>
+    <ol>{sources.map((source, index) => <Citation key={`${source.id}-${index}`}
+      source={source as Evidence} index={index} patientId={patientId}
+      knownAsOf={knownAsOf} sourceScope={sourceScope} />)}</ol>
   </section>;
 }

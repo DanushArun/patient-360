@@ -102,7 +102,7 @@ export function StructuredFactsWorkspace({ patientId, knownAsOf }: {
   </section>;
 }
 
-function useFactsData(patientId: string, domain: FactDomain, knownAsOf: string | null): {
+export function useFactsData(patientId: string, domain: FactDomain, knownAsOf: string | null): {
   current: LoadResult; retry: () => void;
 } {
   const [attempt, setAttempt] = useState(0);

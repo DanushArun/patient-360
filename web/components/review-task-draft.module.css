@@ -10,7 +10,7 @@
 
 .draft dl {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 
 .draft dt {
@@ -59,3 +59,7 @@
     width: 100%;
   }
 }
+
+.draft dl > div { display: grid; grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px; padding: 10px 0; border-top: 1px solid #e8e7e4; font-size: 13px; }
+.draft dd { margin: 0; }
