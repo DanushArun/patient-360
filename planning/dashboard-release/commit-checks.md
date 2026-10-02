@@ -11,7 +11,8 @@ Branch: `codex/dashboard-workflow-gates`. No remote update performed.
 | `bd4cb3d` | Generate Next route types before clean-checkout typecheck |
 
 These are foundations for the pending dashboard integration. They do not establish
-live workflow completion. UI, SQL, deployment and dependency changes remain uncommitted.
+live workflow completion. UI, SQL and deployment integration remain uncommitted;
+the SDK update is reviewed and committed.
 
 ## Verification
 
@@ -40,3 +41,17 @@ The gate and new API/receipt tests use only Python/Node standard libraries.
 
 Live Snowflake execution, application credentials, two-patient isolation, and the
 complete evidence-to-handoff journey are not proved by these checks.
+
+## Later reviewed slices
+
+- `8db0e38`: retain isolated foundation verification.
+- `effa252`: missing or unknown readiness outcomes fail closed; isolated checks passed.
+- `8a49a1d`: GET reads stored readiness; explicit POST recomputes. Actual route regression
+  tests, 73 web tests, typecheck and build passed in the intended commit snapshot.
+  [Read/refresh verification](evidence/read-refresh-commit-check.txt).
+- `e4fd7ca`: pin Snowflake SDK 3.4.0 and TOML 5.0.0; every SDK client enables OCSP
+  and fails closed on revocation checks. Fresh locked offline install, 74 web tests,
+  typecheck and build passed in the intended commit snapshot.
+  [SDK verification](evidence/sdk-commit-check.txt).
+
+These commits do not prove live TLS, authentication, SQL deployment, or journey acceptance.

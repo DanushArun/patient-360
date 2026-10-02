@@ -1,0 +1,53 @@
+
+> web@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:98898) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 26 tests using 1 worker
+
+(node:98901) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/26] [chromium] › tests/e2e/patient-workspace.spec.ts:5:5 › S04/X3 recorded preview preserves identity and cutoff
+[2/26] [chromium] › tests/e2e/patient-workspace.spec.ts:26:5 › S04 overview shows supplied checks, visit properties, and preview limits
+[3/26] [chromium] › tests/e2e/patient-workspace.spec.ts:48:5 › X1 roster switching replaces patient identity, cutoff, and evidence together
+[4/26] [chromium] › tests/e2e/patient-workspace.spec.ts:68:5 › workspace roster stays readable, searchable, and selected on desktop
+[5/26] [chromium] › tests/e2e/patient-workspace.spec.ts:107:5 › X1/S21 live patient route hides fixture content when unavailable
+[6/26] [chromium] › tests/e2e/patient-workspace.spec.ts:115:5 › S01/S13 unavailable live workspaces expose recovery
+[7/26] [chromium] › tests/e2e/patient-workspace.spec.ts:134:5 › X6 family message copy confirms clipboard only
+[8/26] [chromium] › tests/e2e/patient-workspace.spec.ts:170:5 › X6 clipboard denial leaves selectable text and reports copy failure
+[9/26] [chromium] › tests/e2e/patient-workspace.spec.ts:187:5 › X1/S22 keyboard navigation keeps a visible focus indicator
+[10/26] [chromium] › tests/e2e/patient-workspace.spec.ts:202:5 › X4 ask endpoint rejects malformed and array request bodies
+[11/26] [chromium] › tests/e2e/patient-workspace.spec.ts:227:5 › X4 ask endpoint enforces its request byte cap
+[12/26] [chromium] › tests/e2e/patient-workspace.spec.ts:242:5 › X5 review writes reject requests without an Origin header
+[13/26] [chromium] › tests/e2e/patient-workspace.spec.ts:254:5 › X5 same-origin writes accept the default 127.0.0.1 development host
+[14/26] [chromium] › tests/e2e/patient-workspace.spec.ts:270:5 › X5 review writes reject a foreign Origin
+[15/26] [chromium] › tests/e2e/patient-workspace.spec.ts:285:5 › X4 accepts reference scope explicitly and rejects mixed scope
+[16/26] [chromium] › tests/e2e/patient-workspace.spec.ts:314:7 › S22 workspace has no horizontal overflow at 1024px
+[17/26] [chromium] › tests/e2e/patient-workspace.spec.ts:314:7 › S22 workspace has no horizontal overflow at 390px
+[18/26] [chromium] › tests/e2e/performance.spec.ts:169:5 › performance: 20 fresh-context preview navigations
+[chromium] › tests/e2e/performance.spec.ts:169:5 › performance: 20 fresh-context preview navigations
+PERF {"scenario":"fresh-context-navigation","elapsedMs":{"n":20,"median":177.6231045000004,"p95":179.45779200000106,"max":195.65570900000057},"lcpMs":{"n":20,"median":56,"p95":60,"max":60},"cls":{"n":20,"median":0.00031615810394287105,"p95":0.00031615810394287105,"max":0.00031615810394287105}}
+
+[19/26] [chromium] › tests/e2e/performance.spec.ts:182:5 › performance: 20 warm full-document preview navigations
+[chromium] › tests/e2e/performance.spec.ts:182:5 › performance: 20 warm full-document preview navigations
+PERF {"scenario":"warm-document-navigation","elapsedMs":{"n":20,"median":76.30102100000113,"p95":92.30095900000015,"max":93.31774999999834},"lcpMs":{"n":20,"median":40,"p95":44,"max":48},"cls":{"n":20,"median":0,"p95":0,"max":0}}
+
+[20/26] [chromium] › tests/e2e/performance.spec.ts:204:5 › performance: 20 warm roster patient switches
+[chromium] › tests/e2e/performance.spec.ts:204:5 › performance: 20 warm roster patient switches
+PERF {"scenario":"warm-roster-switch","elapsedMs":{"n":20,"median":66.72647899999902,"p95":69.02920799999993,"max":114.67587500000081}}
+
+[21/26] [chromium] › tests/e2e/performance.spec.ts:231:5 › performance: 20 local patient-section interactions
+[chromium] › tests/e2e/performance.spec.ts:231:5 › performance: 20 local patient-section interactions
+PERF {"scenario":"local-section-interaction","elapsedMs":{"n":20,"median":33.070042000001195,"p95":35.02287500000239,"max":77.82374999999956}}
+
+[22/26] [chromium] › tests/e2e/worklist-recovery.spec.ts:3:5 › test_worklist_when_service_unavailable_does_not_claim_zero_counts
+[23/26] [chromium] › tests/e2e/worklist-recovery.spec.ts:10:5 › test_worklist_when_service_unavailable_does_not_claim_successful_refresh
+[24/26] [chromium] › tests/e2e/worklist-recovery.spec.ts:16:5 › test_worklist_when_service_unavailable_disables_patient_selection
+[25/26] [chromium] › tests/e2e/workspace-entry.spec.ts:3:5 › test_workspace_when_897px_wide_keeps_patient_context_visible
+[26/26] [chromium] › tests/e2e/workspace-entry.spec.ts:12:5 › test_worklist_when_live_unavailable_offers_explicit_recorded_preview
+  26 passed (24.2s)

@@ -1,0 +1,98 @@
+{
+  "scenario": "warm-roster-switch",
+  "source": "Recorded design-preview fixture; not live patient data or backend performance.",
+  "browser": "Chromium 153.0.8010.12",
+  "viewport": "1280x900",
+  "timing": "Playwright action-to-visible-state; includes automation and protocol overhead.",
+  "sampleCount": 20,
+  "summary": {
+    "elapsedMs": {
+      "n": 20,
+      "median": 66.72647899999902,
+      "p95": 69.02920799999993,
+      "max": 114.67587500000081
+    }
+  },
+  "samples": [
+    {
+      "elapsedMs": 114.67587500000081,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 54.29558399999951,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 64.7687079999996,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 68.12033299999894,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 64.5871249999982,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 66.6841659999991,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 66.76879199999894,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 66.48391700000138,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 66.86933300000237,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 64.89441700000316,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 68.38379200000054,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 67.51612500000192,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 64.13929199999984,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 68.22691699999996,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 65.45216599999912,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 68.19487500000105,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 64.15250000000015,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 69.02920799999993,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    },
+    {
+      "elapsedMs": 65.09074999999939,
+      "action": "PAT-DC-04 to PAT-DC-09"
+    },
+    {
+      "elapsedMs": 66.78254100000049,
+      "action": "PAT-DC-09 to PAT-DC-04"
+    }
+  ]
+}

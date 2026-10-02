@@ -1,0 +1,130 @@
+{
+  "scenario": "warm-document-navigation",
+  "source": "Recorded design-preview fixture; not live patient data or backend performance.",
+  "browser": "Chromium 153.0.8010.12",
+  "viewport": "1280x900",
+  "timing": "Playwright action-to-visible-state; includes automation and protocol overhead.",
+  "sampleCount": 20,
+  "summary": {
+    "elapsedMs": {
+      "n": 20,
+      "median": 76.30102100000113,
+      "p95": 92.30095900000015,
+      "max": 93.31774999999834
+    },
+    "lcpMs": {
+      "n": 20,
+      "median": 40,
+      "p95": 44,
+      "max": 48
+    },
+    "cls": {
+      "n": 20,
+      "median": 0,
+      "p95": 0,
+      "max": 0
+    }
+  },
+  "samples": [
+    {
+      "elapsedMs": 76.23741700000028,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.18266700000095,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.0077089999977,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.26691700000083,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.09041699999943,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.56991700000071,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 93.31774999999834,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.18554099999892,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.21749999999884,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.17454200000066,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.33512500000143,
+      "lcpMs": 44,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 75.50354199999856,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 77.8448750000025,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 75.65641599999799,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.75379099999918,
+      "lcpMs": 36,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 77.93083299999853,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.4262920000001,
+      "lcpMs": 44,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.34799999999814,
+      "lcpMs": 40,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 92.30095900000015,
+      "lcpMs": 48,
+      "cls": 0
+    },
+    {
+      "elapsedMs": 76.6347919999971,
+      "lcpMs": 36,
+      "cls": 0
+    }
+  ]
+}
