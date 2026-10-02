@@ -39,13 +39,30 @@ export type TimelineEvent = {
   concept: string;
   value: number | null;
   is_derived: boolean;
+  value_state?: string;
+  value_text?: string | null;
+  unit?: string | null;
+  derivation?: string | null;
+  abnormal_flag?: string | null;
+  valid_until?: string | null;
+  source_event_ids?: string[];
+  source_assertion_ids?: string[];
+  source_document_ids?: string[];
+  source_links_observed_at?: string | null;
   event_time: string;
   source_recorded_at: string;
   ingested_at: string;
   event_id: string;
 };
 
-export type PatientTimeline = { timeline: TimelineEvent[]; known_as_of: string };
+export type PatientTimeline = {
+  timeline: TimelineEvent[];
+  known_as_of: string;
+  provenance_observed_at?: string;
+  total_events?: number;
+  timeline_limit?: number;
+  truncated?: boolean;
+};
 
 export type ReviewTask = {
   taskId: string;

@@ -1,0 +1,109 @@
+✖ test_timeline_when_qualitative_result_present_displays_recorded_text (7.735584ms)
+✖ test_timeline_when_numeric_derived_displays_unit_formula_and_sources (1.821792ms)
+✖ test_timeline_when_pending_displays_missingness_without_value (0.536708ms)
+✖ test_timeline_when_truncated_discloses_total_and_limit (0.480958ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 419.035209
+
+✖ failing tests:
+
+test at web/lib/patient-timeline-render.test.mjs:25:1
+✖ test_timeline_when_qualitative_result_present_displays_recorded_text (7.735584ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /IHC 2\+/. Input:
+  
+  '<section aria-label="Patient timeline"><div class="sa-field-label">Record timeline · known as of 2026-09-23T14:14:48</div><div class="sa-meta" style="margin:4px 0 14px">These recorded events show when they happened, when the source recorded them, and when SAARTHI ingested them. A derived value is labelled explicitly.</div><div class="sa-timeline-event"><div class="sa-timeline-title">HER2</div><div class="sa-meta"><code>EV-1</code></div><div class="sa-clocks"><div><div class="sa-clock-label">Event time</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Source recorded</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Ingested</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div></div></div></section>'
+  
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/patient-timeline-render.test.mjs:26:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.start (node:internal/test_runner/test:1096:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<section aria-label="Patient timeline"><div class="sa-field-label">Record timeline · known as of 2026-09-23T14:14:48</div><div class="sa-meta" style="margin:4px 0 14px">These recorded events show when they happened, when the source recorded them, and when SAARTHI ingested them. A derived value is labelled explicitly.</div><div class="sa-timeline-event"><div class="sa-timeline-title">HER2</div><div class="sa-meta"><code>EV-1</code></div><div class="sa-clocks"><div><div class="sa-clock-label">Event time</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Source recorded</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Ingested</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div></div></div></section>',
+    expected: /IHC 2\+/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at web/lib/patient-timeline-render.test.mjs:29:1
+✖ test_timeline_when_numeric_derived_displays_unit_formula_and_sources (1.821792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      true,
+  +   false,
+  +   false,
+  +   false,
+  +   false,
+  +   false
+  -   true,
+  -   true,
+  -   true,
+  -   true,
+  -   true
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/patient-timeline-render.test.mjs:34:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ true, false, false, false, false, false ],
+    expected: [ true, true, true, true, true, true ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at web/lib/patient-timeline-render.test.mjs:38:1
+✖ test_timeline_when_pending_displays_missingness_without_value (0.536708ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /pending/. Input:
+  
+  '<section aria-label="Patient timeline"><div class="sa-field-label">Record timeline · known as of 2026-09-23T14:14:48</div><div class="sa-meta" style="margin:4px 0 14px">These recorded events show when they happened, when the source recorded them, and when SAARTHI ingested them. A derived value is labelled explicitly.</div><div class="sa-timeline-event"><div class="sa-timeline-title">HER2</div><div class="sa-meta"><code>EV-1</code></div><div class="sa-clocks"><div><div class="sa-clock-label">Event time</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Source recorded</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Ingested</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div></div></div></section>'
+  
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/patient-timeline-render.test.mjs:39:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<section aria-label="Patient timeline"><div class="sa-field-label">Record timeline · known as of 2026-09-23T14:14:48</div><div class="sa-meta" style="margin:4px 0 14px">These recorded events show when they happened, when the source recorded them, and when SAARTHI ingested them. A derived value is labelled explicitly.</div><div class="sa-timeline-event"><div class="sa-timeline-title">HER2</div><div class="sa-meta"><code>EV-1</code></div><div class="sa-clocks"><div><div class="sa-clock-label">Event time</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Source recorded</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Ingested</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div></div></div></section>',
+    expected: /pending/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at web/lib/patient-timeline-render.test.mjs:42:1
+✖ test_timeline_when_truncated_discloses_total_and_limit (0.480958ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Showing 1 of 250 recorded events/. Input:
+  
+  '<section aria-label="Patient timeline"><div class="sa-field-label">Record timeline · known as of 2026-09-23T14:14:48</div><div class="sa-meta" style="margin:4px 0 14px">These recorded events show when they happened, when the source recorded them, and when SAARTHI ingested them. A derived value is labelled explicitly.</div><div class="sa-timeline-event"><div class="sa-timeline-title">HER2</div><div class="sa-meta"><code>EV-1</code></div><div class="sa-clocks"><div><div class="sa-clock-label">Event time</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Source recorded</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Ingested</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div></div></div></section>'
+  
+      at TestContext.<anonymous> (file:///Users/danusharun/Documents/patient-360/web/lib/patient-timeline-render.test.mjs:43:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<section aria-label="Patient timeline"><div class="sa-field-label">Record timeline · known as of 2026-09-23T14:14:48</div><div class="sa-meta" style="margin:4px 0 14px">These recorded events show when they happened, when the source recorded them, and when SAARTHI ingested them. A derived value is labelled explicitly.</div><div class="sa-timeline-event"><div class="sa-timeline-title">HER2</div><div class="sa-meta"><code>EV-1</code></div><div class="sa-clocks"><div><div class="sa-clock-label">Event time</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Source recorded</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div><div><div class="sa-clock-label">Ingested</div><div class="sa-clock-value sa-num">2026-09-23T14:14:48</div></div></div></div></section>',
+    expected: /Showing 1 of 250 recorded events/,
+    operator: 'match',
+    diff: 'simple'
+  }
