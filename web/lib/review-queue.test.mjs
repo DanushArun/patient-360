@@ -85,9 +85,9 @@ test('three bounded reads, and a task-read failure is not shown as no tasks', as
 
 test('live queue does not import fixtures or link to design-preview', () => {
   const page = readFileSync(new URL('../app/review-queue/page.tsx', import.meta.url), 'utf8');
-  const client = readFileSync(new URL('../app/review-queue/review-queue-client.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(page + client, /fixtures\/|design-preview\/|read-only preview|Recorded fixture preview/);
+  const view = readFileSync(new URL('../app/review-queue/review-queue-view.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(page + view, /fixtures\/|design-preview\/|read-only preview|Recorded fixture preview/);
   assert.match(page, /withReadSession\(readLiveReviewQueue\)/);
-  assert.match(client, /href=\{`\/patient\//);
-  assert.match(client, /patients=\{queue.patients\} \/>/);
+  assert.match(view, /href=\{`\/patient\//);
+  assert.match(view, /WorkspaceNav current="queue" \/>/);
 });
