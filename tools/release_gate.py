@@ -71,14 +71,27 @@ def acceptance_failures(packet: object) -> list[str]:
     return failures
 
 
+def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def read_packet(path: Path) -> object:
+    return json.loads(path.read_text(), object_pairs_hook=unique_object)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("packet", type=Path)
     args = parser.parse_args()
     try:
-        packet = json.loads(args.packet.read_text())
+        packet = read_packet(args.packet)
         failures = acceptance_failures(packet)
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    except (OSError, UnicodeError, ValueError) as error:
         failures = [f"packet unreadable: {error}"]
     print(json.dumps({"accepted": not failures, "failures": failures}, indent=2))
     return 1 if failures else 0

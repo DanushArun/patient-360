@@ -1,8 +1,9 @@
 import unittest
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from tools.release_gate import ROOT, REQUIRED_IDS, acceptance_failures
+from tools.release_gate import ROOT, REQUIRED_IDS, acceptance_failures, read_packet
 
 
 def complete_packet(evidence: object) -> dict[str, object]:
@@ -13,6 +14,24 @@ def complete_packet(evidence: object) -> dict[str, object]:
 
 
 class AcceptanceGateTests(unittest.TestCase):
+    def test_duplicate_acceptance_when_parsed_rejects_ambiguous_record(self) -> None:
+        content = json.dumps(complete_packet(["tools/test_release_gate.py"]))
+        content = content.replace('"acceptance": "accepted"',
+                                  '"acceptance": "incomplete", "acceptance": "accepted"')
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "record.json"
+            path.write_text(content)
+            with self.assertRaisesRegex(ValueError, "duplicate JSON key: acceptance"):
+                read_packet(path)
+
+    def test_duplicate_status_when_parsed_rejects_hidden_pending_requirement(self) -> None:
+        content = '{"status": "pending", "status": "passed"}'
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "record.json"
+            path.write_text(content)
+            with self.assertRaisesRegex(ValueError, "duplicate JSON key: status"):
+                read_packet(path)
+
     def test_complete_record_when_repo_evidence_exists_passes(self) -> None:
         self.assertEqual(acceptance_failures(complete_packet(["tools/test_release_gate.py"])), [])
 
