@@ -361,4 +361,9 @@
 .sa-record-change-columns dl { font-size: 13px; }
 .sa-record-change-columns dt { color: #656c73; }
 .sa-record-change-columns dd { margin: 2px 0 12px; overflow-wrap: anywhere; }
+.sa-record-change-history table { width: 100%; table-layout: fixed;
+  border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+.sa-record-change-history th, .sa-record-change-history td { padding: 10px 12px;
+  border: 1px solid #e8e7e4; text-align: left; overflow-wrap: anywhere; vertical-align: top; }
+.sa-record-change-history thead { background: #f7f7f5; }
 @media (max-width: 600px) { .sa-record-change-columns { grid-template-columns: 1fr; } }
