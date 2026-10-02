@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ReviewTask } from "@/lib/patient";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
 
+import { persistTaskAttempt, useTaskUpdateRecovery }
+  from "@/components/use-task-update-recovery";
+
 type Owner = { id: string; name: string };
 type Action = "acknowledge" | "reassign" | "resolve";
 type TaskUpdateBody = { error?: string; read_back_confirmed?: boolean };
@@ -41,6 +44,7 @@ async function submitTaskUpdate(
   runtime.setMessage("Task update saved.");
   runtime.setReason("");
   runtime.attempt.current = null;
+  persistTaskAttempt(runtime.patientId, runtime.task.taskId, null);
   runtime.setLocked(false);
   runtime.onSaved();
 }
@@ -48,6 +52,7 @@ async function submitTaskUpdate(
 function handleTaskError(runtime: SaveRuntime, error?: string): void {
   if (error === "stale_task") {
     runtime.attempt.current = null;
+    persistTaskAttempt(runtime.patientId, runtime.task.taskId, null);
     runtime.setLocked(false);
     runtime.setMessage("This task changed. Reloaded its latest state; review it before retrying.");
     runtime.onSaved();
@@ -61,6 +66,7 @@ function handleTaskError(runtime: SaveRuntime, error?: string): void {
 type TaskSaveContext = Omit<SaveRuntime,
   "setMessage" | "setReason" | "attempt" | "setLocked" | "isCurrent"> & {
   setReason: (reason: string) => void;
+  setAction: (action: Action) => void; setOwner: (owner: string) => void;
 };
 
 function useTaskSave(runtime: TaskSaveContext): {
@@ -76,6 +82,15 @@ function useTaskSave(runtime: TaskSaveContext): {
     return () => { mounted.current = false; };
   }, []);
   const attempt = useRef<{ payload: string; id: string } | null>(null);
+  useTaskUpdateRecovery({ patientId: runtime.patientId, taskId: runtime.task.taskId,
+    attempt, report: setMessage, restore: (saved) => {
+      const payload = JSON.parse(saved.payload) as {
+        action: Action; ownerId: string | null; reason: string;
+      };
+      runtime.setAction(payload.action); runtime.setOwner(payload.ownerId ?? "");
+      runtime.setReason(payload.reason); setLocked(true);
+      setMessage("Unconfirmed task update restored. Retry to confirm the same request.");
+    } });
   const save = (): Promise<void> => runTaskSave({ ...runtime, active, mounted, attempt,
     setBusy, setMessage, setLocked });
   return { busy, locked, message, save };
@@ -92,7 +107,8 @@ async function runTaskSave(runtime: TaskSaveRuntime): Promise<void> {
   const { active, mounted, attempt, setBusy, setMessage, setLocked } = runtime;
   if (active.current) return;
   active.current = true;
-  const payload = JSON.stringify({ taskId: runtime.task.taskId, action: runtime.action,
+  const payload = attempt.current?.payload ?? JSON.stringify({
+    taskId: runtime.task.taskId, action: runtime.action,
     ownerId: runtime.owner || null, reason: runtime.reason.trim(),
     version: runtime.task.issueVersion });
   if (attempt.current?.payload !== payload) {
@@ -100,7 +116,8 @@ async function runTaskSave(runtime: TaskSaveRuntime): Promise<void> {
   }
   setBusy(true);
   setLocked(true);
-  setMessage("");
+  const persisted = persistTaskAttempt(runtime.patientId, runtime.task.taskId, attempt.current);
+  setMessage(persisted ? "" : "Reload retry is unavailable; keep this page open.");
   try {
     await submitTaskUpdate({ ...runtime, setMessage, attempt, setLocked,
       isCurrent: () => mounted.current }, payload, attempt.current.id);
@@ -121,7 +138,7 @@ export function TaskActions({ patientId, task, owners, onSaved }: {
   const effectiveAction = action === "acknowledge" && task.state !== "open"
     ? "reassign" : action;
   const saveState = useTaskSave({ patientId, task, action: effectiveAction, owner, reason,
-    onSaved, setReason });
+    onSaved, setReason, setAction, setOwner });
   if (task.isEvent || ["closed", "resolved", "cancelled"].includes(task.state)
     || !owners.length) return null;
   return <details className="sa-task-actions"><summary>Update task</summary>

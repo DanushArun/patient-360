@@ -134,7 +134,7 @@ async function askRecord(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ patientId, question, sourceScope }),
-    signal,
+    signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
   });
   const result = await response.json() as AgentTurn & {
     error?: string;

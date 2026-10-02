@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Page, Field, Rule, buttonStyle } from "@/components/sa";
+import { Page, Field, Rule, WorkspaceNav, buttonStyle } from "@/components/sa";
 import type { PatientData } from "@/lib/patient";
 import { usePatientAccess } from "@/components/patient-access-boundary";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
@@ -30,6 +30,7 @@ function AuthorizedNavigator({ patient }: { patient: PatientData }): ReactNode {
   const visit = patient.nextVisit ? new Date(`${patient.nextVisit}T00:00:00`) : null;
   const [language, setLanguage] = useState(initialLanguage(patient.language));
   return <Page>
+    <WorkspaceNav patientId={patient.patientId} />
     <NavigatorHeader patient={patient} visit={visit} />
     {visit
       ? <FamilyChecklist patient={patient} gates={patient.gates} language={language}
@@ -83,19 +84,21 @@ async function loadSchemes(
 
 async function fetchSchemes(patientId: string, signal: AbortSignal): Promise<Scheme[] | null> {
   const response = await fetch(
-    `/api/patient/${encodeURIComponent(patientId)}/schemes`, { signal, cache: "no-store" },
+    `/api/patient/${encodeURIComponent(patientId)}/schemes`,
+    { signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]), cache: "no-store" },
   );
   const result = await response.json() as Scheme[] & { purge_patient_state?: boolean };
   if (purgesPatientState(result)) {
     announcePatientAccessWithdrawn(patientId);
     return null;
   }
-  if (!response.ok) throw new Error("schemes_unavailable");
+  if (!response.ok || !Array.isArray(result)) throw new Error("schemes_unavailable");
   return result;
 }
 
 function AccessUnavailable(): ReactNode {
   return <Page>
+    <WorkspaceNav />
     <h1>Patient access is no longer available</h1>
     <p className="sa-data-unavailable">
       Patient content was removed after access could not be confirmed.
