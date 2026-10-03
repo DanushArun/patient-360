@@ -243,12 +243,18 @@ BEGIN
 -- <<< SAARTHI PREAMBLE v1 END
 IF (VIEW_NAME = 'context') THEN
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
+-- Same visit as the 'snapshot' gates: the next upcoming daycare visit, else the most
+-- recent past one. Requiring a future visit blanked the header the day after a visit
+-- while the gates still described it.
 WITH next_visit AS (
          SELECT patient_id, cycle_number,
                 TO_VARCHAR(scheduled_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS scheduled_at
            FROM SAARTHI.CORE.ENCOUNTER
-          WHERE encounter_type = 'daycare' AND scheduled_time >= CURRENT_DATE()
-          QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY scheduled_time) = 1
+          WHERE encounter_type = 'daycare' AND patient_id = :v_patient_id
+          QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY
+            IFF(scheduled_time >= CURRENT_TIMESTAMP(), 0, 1),
+            IFF(scheduled_time >= CURRENT_TIMESTAMP(), scheduled_time, NULL) ASC NULLS LAST,
+            IFF(scheduled_time < CURRENT_TIMESTAMP(), scheduled_time, NULL) DESC NULLS LAST) = 1
        ), latest_plan AS (
          SELECT patient_id, regimen_display
            FROM SAARTHI.CORE.TREATMENT_PLAN

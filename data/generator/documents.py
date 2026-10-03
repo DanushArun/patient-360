@@ -69,6 +69,26 @@ _RENDERERS = {
 }
 
 
+def render_authorization_letter(*, patient_id: str, auth_id: str, payer: str,
+                                package: str, decision: str, decided_on: str,
+                                valid_until: str) -> bytes:
+    """Synthetic pre-authorisation letter for a day-care cohort patient. The cohort
+    is seeded in SQL, not from a ledger, so its fields are passed explicitly. PAT-DC-07
+    is the SPEC scenario-6 case: the AUTHORIZATION row says pending while this letter
+    says approved, and COV-AUTH-001 must report `conflicting` with both retained."""
+    pdf = new_pdf()
+    render_line(pdf, f"{payer} - Pre-Authorisation Decision", bold=True)
+    render_line(pdf, "SYNTHETIC DOCUMENT - NOT A REAL PAYER LETTER")
+    render_line(pdf, f"Patient: {patient_id}")
+    render_line(pdf, f"Pre-auth reference: {auth_id}")
+    render_line(pdf, f"Package: {package}")
+    render_line(pdf, "")
+    render_line(pdf, f"Authorisation status: {decision}")
+    render_line(pdf, f"Decision date: {decided_on}")
+    render_line(pdf, f"Valid until: {valid_until}")
+    return bytes(pdf.output())
+
+
 def build_documents(ledger: Ledger) -> dict[str, bytes]:
     """Returns `{event_id: pdf_bytes}` for every ledger event with a PDF
     rendering. Current scope is cbc_lab and her2_result only — the two
