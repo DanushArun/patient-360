@@ -344,12 +344,15 @@ VALUES ('PA-DEEP-0002', 'PAT-DEEP-0001', 'EVT-CHEMO-05', 'COV-DEEP-0001', 'PM-JA
 -- Real narrative: the initial CBC had platelet 260604; a repeat manual count
 -- three days later corrected it to 245100. Both events reference the same
 -- specimen_id but have different event_id + accession_id.
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CBC-01-PLT-ADDENDUM' AS event_id) s ON t.event_id = s.event_id
+-- concept_id is resolved by name: CLINICAL_ONTOLOGY ids are UUID_STRING() per account, so a
+-- literal id copied from one account orphans the event on the next.
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CBC-01-PLT-ADDENDUM' AS event_id, (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'PLT') AS concept_id) s ON t.event_id = s.event_id
+WHEN MATCHED AND t.concept_id IS DISTINCT FROM s.concept_id THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id,
   code_system, code, display, value_num, unit, status, negation, specimen_id, accession_id,
   event_time, source_recorded_at, ingested_at)
 VALUES ('EVT-CBC-01-PLT-ADDENDUM', 'PAT-DEEP-0001', 'EVT-CHEMO-03', 'lab',
-  '59ab8f31-38fc-4b0d-ad13-b9b7869a43ab', 'LOINC', '777-3', 'Platelets [#/volume] in Blood',
+  s.concept_id, 'LOINC', '777-3', 'Platelets [#/volume] in Blood',
   245100, '/uL', 'amended', FALSE, 'SPEC-CBC-01', 'LAB-2025-0327-CBC-ADDENDUM',
   TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 27, 6, 0, 0),   -- SAME event_time as EVT-CBC-01-PLT
   TIMESTAMP_NTZ_FROM_PARTS(2025, 3, 30, 14, 20, 0), -- 3 days later source_recorded_at
@@ -453,17 +456,20 @@ VALUES ('PLAN-DEEP-0001', 'PAT-DEEP-0001', 1, 'TH',
 -- the source text for reviewer audit. Plus one creatinine with `mg%` source
 -- unit. Correct behaviour per SPEC row 714: both normalise; implausible values
 -- would be rejected by UNIT_REGISTRY.
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-HB-GMPCT' k) s ON t.event_id = s.k
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-HB-GMPCT' k, (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HEMOGLOBIN') AS concept_id) s ON t.event_id = s.k
+WHEN MATCHED AND t.concept_id IS DISTINCT FROM s.concept_id THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, event_type, concept_id, display, value_num, unit, original_value, original_unit, status, event_time, source_recorded_at)
-VALUES ('EVT-HB-GMPCT', 'PAT-DEEP-0001', 'lab', 'f6bc768e-c5aa-4b60-beb9-47f9be4add05', 'Hemoglobin', 11.4, 'g/dL', '11.4 GM%', 'GM%', 'final', DATEADD(day, -45, CURRENT_TIMESTAMP()), DATEADD(day, -45, CURRENT_TIMESTAMP()));
+VALUES ('EVT-HB-GMPCT', 'PAT-DEEP-0001', 'lab', s.concept_id, 'Hemoglobin', 11.4, 'g/dL', '11.4 GM%', 'GM%', 'final', DATEADD(day, -45, CURRENT_TIMESTAMP()), DATEADD(day, -45, CURRENT_TIMESTAMP()));
 
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-HB-GDL' k) s ON t.event_id = s.k
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-HB-GDL' k, (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HEMOGLOBIN') AS concept_id) s ON t.event_id = s.k
+WHEN MATCHED AND t.concept_id IS DISTINCT FROM s.concept_id THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, event_type, concept_id, display, value_num, unit, original_value, original_unit, status, event_time, source_recorded_at)
-VALUES ('EVT-HB-GDL', 'PAT-DEEP-0001', 'lab', 'f6bc768e-c5aa-4b60-beb9-47f9be4add05', 'Hemoglobin', 11.4, 'g/dL', '11.4 g/dL', 'g/dL', 'final', DATEADD(day, -30, CURRENT_TIMESTAMP()), DATEADD(day, -30, CURRENT_TIMESTAMP()));
+VALUES ('EVT-HB-GDL', 'PAT-DEEP-0001', 'lab', s.concept_id, 'Hemoglobin', 11.4, 'g/dL', '11.4 g/dL', 'g/dL', 'final', DATEADD(day, -30, CURRENT_TIMESTAMP()), DATEADD(day, -30, CURRENT_TIMESTAMP()));
 
-MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CREAT-MGPCT' k) s ON t.event_id = s.k
+MERGE INTO SAARTHI.CORE.CLINICAL_EVENT t USING (SELECT 'EVT-CREAT-MGPCT' k, (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'CREATININE') AS concept_id) s ON t.event_id = s.k
+WHEN MATCHED AND t.concept_id IS DISTINCT FROM s.concept_id THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, event_type, concept_id, display, value_num, unit, original_value, original_unit, status, event_time, source_recorded_at)
-VALUES ('EVT-CREAT-MGPCT', 'PAT-DEEP-0001', 'lab', 'd74263e5-108d-455d-985a-23505d911cc7', 'Creatinine', 0.9, 'mg/dL', '0.9 mg%', 'mg%', 'final', DATEADD(day, -20, CURRENT_TIMESTAMP()), DATEADD(day, -20, CURRENT_TIMESTAMP()));
+VALUES ('EVT-CREAT-MGPCT', 'PAT-DEEP-0001', 'lab', s.concept_id, 'Creatinine', 0.9, 'mg/dL', '0.9 mg%', 'mg%', 'final', DATEADD(day, -20, CURRENT_TIMESTAMP()), DATEADD(day, -20, CURRENT_TIMESTAMP()));
 
 -- SCENARIO 5 - Missing FISH bring-list after IHC 2+.
 -- EVT-HER2-SURGICAL already has ihc_score='2+', which the DOC-HER2 state

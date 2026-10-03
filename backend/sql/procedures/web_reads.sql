@@ -444,7 +444,8 @@ IF (v_domain = 'labs') THEN
                 WHERE el.relation = 'supports' AND d.status = 'active'
                   AND d.ingested_at <= :v_known_as_of
                 GROUP BY el.target_id) l ON l.target_id = h.event_id
-   WHERE h.patient_id = :v_patient_id AND h.ingested_at <= :v_known_as_of);
+   WHERE h.patient_id = :v_patient_id AND h.event_type IN ('lab', 'vitals')
+     AND h.ingested_at <= :v_known_as_of);
   RETURN OBJECT_CONSTRUCT('domain','labs','facts',v_facts,'known_as_of',v_known_as_of_s,
     'requested_known_as_of',v_requested,'as_of_semantics','ingested_cutoff','binding_id',v_binding_id);
 ELSEIF (v_domain = 'demographics') THEN
