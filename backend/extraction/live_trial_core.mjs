@@ -47,9 +47,13 @@ export function checkMetadata({identity,defaultRole,warehouse,monitor,routing}) 
   if(field(warehouse,'state')!=='SUSPENDED' || field(warehouse,'size')!=='X-Small' ||
       field(warehouse,'type')!=='STANDARD' || Number(field(warehouse,'max_cluster_count'))!==1 ||
       Number(field(warehouse,'auto_suspend'))!==60 || field(warehouse,'resource_monitor')!=='SAARTHI_PROTOTYPE_LIMIT') fail('warehouse_not_exclusive_bounded_xs');
-  const used=Number(field(monitor,'used_credits')), quota=Number(field(monitor,'credit_quota'));
+  const usedRaw=field(monitor,'used_credits');
+  const used=Number(usedRaw), quota=Number(field(monitor,'credit_quota'));
   const suspend=Number.parseFloat(field(monitor,'suspend_immediately_at'));
-  if(!monitor || !Number.isFinite(used) || used<0 || used>=1.5 || quota!==2 || !Number.isFinite(suspend) || suspend>90) fail('monitor_reserve_unconfirmed');
+  // 90% of three credits is 2.7; leave the full $0.70 compute reserve
+  // (about 0.11 credits at the published Business Critical list rate), plus
+  // ample headroom for lag and concurrent cloud-services accounting.
+  if(!monitor || usedRaw==null || !Number.isFinite(used) || used<0 || used>=2.0 || quota!==3 || !Number.isFinite(suspend) || suspend!==90) fail('monitor_reserve_unconfirmed');
 }
 
 export function scopedPage(rows,bindingId) {

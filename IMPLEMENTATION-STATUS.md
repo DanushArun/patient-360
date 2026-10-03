@@ -9,8 +9,12 @@ estimated cost and writes no clinical assertions. Local mocked tests pass;
 The reported second-laptop role fix is recorded in the release gates. A fresh
 Snowsight balance and exclusive warehouse use are required for the approved
 $10 continued-work approval; each invocation still reserves at most $1, and
-billing remains an estimate, not an account-wide hard cap. The separate
-Snowflake warehouse resource monitor is unchanged.
+billing remains an estimate, not an account-wide hard cap. The user also
+approved a 3-credit warehouse monitor. A one-property, fail-closed migration
+script is prepared; the local secure connection failed OCSP validation and
+stopped at its 45-second deadline before any live metadata read, so **the
+monitor has not been changed here**. The local
+runner now requires the 3-credit setting before it will run.
 
 **3 October 2026 — default-role change approved but not applied:** the attempted
 change could not authenticate because the missing-OCSP certificate failure

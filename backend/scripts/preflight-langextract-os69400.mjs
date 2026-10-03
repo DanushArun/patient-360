@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Metadata preflight for the separately approved, maximum-$1 trial.
+// Metadata preflight for the separately approved continued-work trial.
 // A separate explicit flag applies the approved default-role change only.
 // No warehouse selection/resume, patient reads, inference, grants or deployment.
 import { createRequire } from 'node:module';
@@ -68,7 +68,9 @@ try {
   const blockers = [];
   if (defaultRole !== 'SAARTHI_APP') blockers.push('rest_default_role_not_restricted_app_role');
   if (field(warehouse, 'size') !== 'X-Small' || field(warehouse, 'resource_monitor') !== 'SAARTHI_PROTOTYPE_LIMIT') blockers.push('warehouse_protection_mismatch');
-  if (!monitor || !Number.isFinite(Number(field(monitor, 'used_credits'))) || Number(field(monitor, 'used_credits')) >= 1.5) blockers.push('warehouse_reserve_unconfirmed');
+  const used = field(monitor, 'used_credits');
+  if (!monitor || Number(field(monitor, 'credit_quota')) !== 3 || Number.parseFloat(field(monitor, 'suspend_immediately_at')) !== 90 ||
+      used == null || !Number.isFinite(Number(used)) || Number(used) >= 2.0) blockers.push('warehouse_reserve_unconfirmed');
   if (blockers.length) {
     console.log('STOP_BEFORE_INFERENCE', JSON.stringify(blockers));
     process.exitCode = 1;

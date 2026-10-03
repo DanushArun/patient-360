@@ -79,6 +79,15 @@ JWT authentication was subsequently verified by the SQL deployment connection.
 - At bootstrap, the web environment was disabled pending integration checks.
   The subsequent user-requested local recording exception is documented below.
 
+The original 2-credit `FREQUENCY=NEVER` monitor above is historical bootstrap
+state. On 3 October, the user approved a bounded increase to **3 credits**
+with the same 90% immediate-suspend trigger. The matching code guards and an
+account-pinned migration script are prepared, but fail-closed OCSP verification
+stopped the local connection before the current setting could be read or
+changed on this machine. Until
+the migration is run and verified on the connected laptop, do not claim that
+Snowflake's live monitor is 3 credits. See `backend/extraction/README.md`.
+
 Evidence query IDs: key registration `01c76f43-0003-e025-0001-fcae000d50c6`, monitor
 creation `01c76f43-0003-dffe-0001-fcae000d9036`, warehouse creation
 `01c76f43-0003-db91-0001-fcae000d312e`, and suspended-warehouse verification

@@ -255,6 +255,27 @@ still may bill for an attempted Cortex call or a resumed warehouse; the report
 records the attempts, token usage when available, query IDs and observed final
 warehouse state. The Snowflake billing statement may arrive later.
 
+The user approved raising the existing **warehouse** monitor from 2 to 3
+credits, retaining `FREQUENCY=NEVER` and immediate suspension at 90%. This is
+separate from the $10 test-work approval. The local runner now requires the
+3-credit monitor, but **the Snowflake setting has not been changed or verified
+from this machine**. On the securely connected laptop, first refresh the
+approval JSON above with a current Snowsight balance of at least $6.50 and a
+prior-spend estimate that leaves $6.50 within the $10 approval. Then run:
+
+```sh
+node --use-system-ca backend/scripts/raise-monitor-os69400.mjs --approved-raise-to-3 /absolute/path/to/local-trial-approval.json
+```
+
+The command checks the exact account, administrator session, suspended X-Small
+warehouse, sole monitor assignment, existing 2-credit quota, `NEVER` frequency,
+90% immediate-suspend trigger and reported use below 2 credits. It changes
+only `CREDIT_QUOTA` to 3 and reads it back. If any check fails, stop; do not
+recreate the monitor, change its trigger, bypass TLS or run a full deployment.
+The published on-demand Business Critical rate for this GCP region is $6.50
+per warehouse credit, but actual billing and AI charges require separate
+review. Raising a resource monitor is not a hard dollar cap.
+
 This tests B (corrected direct extraction) against C (LangExtract) on one page;
 it does not run arm A (the deployed historical pipeline) or establish general
 accuracy. The two arms use the same page, model families, token cap and unrelated

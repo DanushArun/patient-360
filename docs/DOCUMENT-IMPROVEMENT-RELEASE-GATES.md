@@ -75,8 +75,16 @@ raised the continued-work approval to **$10 total**, not $10 per invocation.
 The one-page runner still reserves at most $1 per invocation. It does not
 measure cumulative spend across machines; the operator must enter prior
 observed or conservatively estimated spend and the runner requires that prior
-spend plus the next $1 reserve remain within $10. The separate 2-credit
-Snowflake warehouse resource monitor was not changed.
+spend plus the next $1 reserve remain within $10. The user subsequently
+approved raising the separate warehouse monitor from 2 to 3 credits while
+preserving its 90% immediate-suspend trigger. A guarded migration command is
+prepared; this machine's Snowflake SDK rejected the inspected certificate
+because OCSP AuthorityInfoAccess was missing, then stopped at the 45-second
+deadline before live metadata could be read. The account change remains
+**unverified and unapplied here**. TLS/OCSP verification was not bypassed.
+The command reserves the full additional credit at the published $6.50 list
+rate inside the $10 work approval. It must run on the securely connected
+laptop before the local trial runner will accept the monitor.
 This does not authorise deployment, role/grant changes or background services.
 No model calls were made in the documented attempts; any later use on the
 other laptop must be verified from its run report.

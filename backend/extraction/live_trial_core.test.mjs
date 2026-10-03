@@ -30,11 +30,13 @@ test('budget check requires fresh verified operator funds and explicit exclusive
 test('metadata gates refuse admin default, active warehouse and lost monitor',()=>{
   const base={identity:{A:'JR18576',U:'SITAR',R:'GCP_ME_CENTRAL2'},defaultRole:'SAARTHI_APP',routing:'ANY_REGION',
     warehouse:{state:'SUSPENDED',size:'X-Small',type:'STANDARD',max_cluster_count:1,auto_suspend:60,resource_monitor:'SAARTHI_PROTOTYPE_LIMIT'},
-    monitor:{used_credits:'1.33',credit_quota:'2.00',suspend_immediately_at:'90%'}};
+    monitor:{used_credits:'1.33',credit_quota:'3.00',suspend_immediately_at:'90%'}};
   assert.doesNotThrow(()=>checkMetadata(base));
   assert.throws(()=>checkMetadata({...base,defaultRole:'ACCOUNTADMIN'}));
   assert.throws(()=>checkMetadata({...base,warehouse:{...base.warehouse,state:'STARTED'}}));
-  assert.throws(()=>checkMetadata({...base,monitor:{...base.monitor,used_credits:'1.8'}}));
+  assert.throws(()=>checkMetadata({...base,monitor:{...base.monitor,used_credits:'2.0'}}));
+  assert.throws(()=>checkMetadata({...base,monitor:{...base.monitor,used_credits:null}}));
+  assert.throws(()=>checkMetadata({...base,monitor:{...base.monitor,credit_quota:'2.00'}}));
 });
 
 test('bound page is checked against exact source identity',()=>{

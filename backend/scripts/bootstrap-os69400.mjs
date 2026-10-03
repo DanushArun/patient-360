@@ -26,7 +26,7 @@ if (!apply) {
   console.log(JSON.stringify({ account, username, mode: 'plan', fingerprint,
     actions: ['Verify account locator JR18576 and user SITAR',
       'Register public key only in an empty RSA slot (never replace another key)',
-      'Create 2-credit NEVER-reset resource monitor; suspend immediately at 90%',
+      'Create 3-credit NEVER-reset resource monitor; suspend immediately at 90%',
       'Create initially suspended XSMALL SAARTHI_AI_WH and attach monitor',
       'Set warehouse statement timeout 120s and queue timeout 30s',
       'Create SAARTHI database and its seven project schemas'],
@@ -68,9 +68,9 @@ try {
     const quota = Number(value(existing[0], 'credit_quota'));
     const frequency = String(value(existing[0], 'frequency')).toUpperCase();
     const suspend = Number.parseFloat(value(existing[0], 'suspend_immediately_at'));
-    if (!(quota > 0 && quota <= 2 && frequency === 'NEVER' && suspend > 0 && suspend <= 90)) throw new Error('Existing monitor requires review; not changed');
+    if (!(quota === 3 && frequency === 'NEVER' && suspend === 90)) throw new Error('Existing monitor requires review; not changed');
   } else {
-    await query(`CREATE RESOURCE MONITOR ${monitor} WITH CREDIT_QUOTA = 2 FREQUENCY = NEVER START_TIMESTAMP = IMMEDIATELY TRIGGERS ON 90 PERCENT DO SUSPEND_IMMEDIATE`);
+    await query(`CREATE RESOURCE MONITOR ${monitor} WITH CREDIT_QUOTA = 3 FREQUENCY = NEVER START_TIMESTAMP = IMMEDIATELY TRIGGERS ON 90 PERCENT DO SUSPEND_IMMEDIATE`);
   }
   const warehouses = await query("SHOW WAREHOUSES LIKE 'SAARTHI_AI_WH'");
   if (warehouses.length) throw new Error('SAARTHI_AI_WH already exists; inspect it before continuing; no warehouse changed');
