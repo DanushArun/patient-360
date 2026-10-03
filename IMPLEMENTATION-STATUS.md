@@ -1,5 +1,15 @@
 # SAARTHI — Implementation Status
 
+**3 October 2026 — bounded runner candidate, not live verified:** a private Node/Python
+test runner now connects scoped patient reads, local key-pair JWT creation,
+two direct model reads and two real LangExtract reads for one existing synthetic
+page. It checks access and source version before each call, plans the four-call
+estimated cost and writes no clinical assertions. Local mocked tests pass;
+**zero live Cortex calls have run and no accuracy improvement is claimed**.
+The reported second-laptop role fix is recorded in the release gates. A fresh
+Snowsight balance and exclusive warehouse use are required for the approved
+$1 trial; billing remains an estimate, not an account-wide hard cap.
+
 **3 October 2026 — default-role change approved but not applied:** the attempted
 change could not authenticate because the missing-OCSP certificate failure
 returned. The connection deadline stopped the run before SQL. Last verified

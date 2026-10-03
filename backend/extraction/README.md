@@ -198,12 +198,62 @@ needed, `--approved-set-app-default` applies only that change and verifies it.
 Neither mode reads patient data, selects/resumes a warehouse or calls a model.
 Both keep TLS/OCSP protection enabled and stop after 45 seconds.
 
-**There is not yet a complete live-test runner.** The transport still requires
-real server-side authorisation/token wiring and dollar-bound checks before the
-approved one-page, maximum-four-call, $1 test. Do not call the existing full
-deployment or one-document ingestion scripts as a substitute. See the release
-gates for the exact approval scope, blockers and remaining work.
+The new `live_trial.py` and `live_trial_bridge.mjs` provide an opt-in live runner
+for this account. They use a private Node/Python stdio channel, the existing
+patient binding and scoped `GET_WEB_PATIENT_DATA('document', ...)` procedure,
+and a fresh check of the same source and consent before each model call. Node
+generates a short-lived key-pair JWT locally and talks only to Snowflake's
+Cortex REST endpoint. There is no assertion write. The real LangExtract path
+and the direct comparison path each request independent Llama and Claude reads.
 
-Latest offline checkpoint: 51 targeted Python tests, 265 frontend tests,
+**This runner has only passed local mocked tests; it has not made a live call.**
+Its cost gate reserves up to $0.10 for inference, $0.70 for bounded warehouse
+compute/metadata and $0.20 for uncertainty within the approved $1 test. These
+are conservative estimates, not an account-wide billing cap. It requires an
+operator-observed Snowsight trial balance at least $1, checked within the past
+hour, plus exclusive use of the suspended X-Small warehouse. Concurrent account
+activity or unreported Snowflake charges can break an estimated dollar bound.
+If the operator cannot establish these facts, do not invoke `--live`.
+
+Create a local JSON file outside the repository, using the balance observed in
+Snowsight and the actual check time. This contains no credentials:
+
+```json
+{
+  "approvedBudgetUsd": 1,
+  "availableFundsUsd": 1,
+  "fundsCheckedAt": "2026-10-03T10:00:00Z",
+  "fundsSource": "Snowsight trial balance",
+  "exclusiveWarehouse": true,
+  "acceptEstimatedBilling": true
+}
+```
+
+Replace `availableFundsUsd` and `fundsCheckedAt` with observed values; never
+reuse the example timestamp. Run from the repository root only on the connected
+machine after reviewing the printed account/preflight data:
+
+```sh
+python -m backend.extraction.live_trial
+python -m backend.extraction.live_trial --live --approval-file /absolute/path/to/local-trial-approval.json
+```
+
+The live command uses `node` from PATH (or `--node /absolute/path/to/node`) and
+the isolated Python environment with LangExtract 1.7.0. It stops if the account,
+role, document, source version, monitor, budget estimate, model response or
+per-call access check fails. It does not probe extra models, retry, launch Search,
+run ingestion, start schedules, deploy SQL or save clinical assertions. Failures
+still may bill for an attempted Cortex call or a resumed warehouse; the report
+records the attempts, token usage when available, query IDs and observed final
+warehouse state. The Snowflake billing statement may arrive later.
+
+This tests B (corrected direct extraction) against C (LangExtract) on one page;
+it does not run arm A (the deployed historical pipeline) or establish general
+accuracy. The two arms use the same page, model families, token cap and unrelated
+format example, but prompt wording differs, so interpret score differences
+carefully. Do not run the existing full deployment or one-document ingestion
+scripts as a substitute. See the release gates for remaining validation.
+
+Latest offline checkpoint: 54 targeted Python tests, 5 runner guard tests, 265 frontend tests,
 TypeScript and nine manifest/preamble gates passed. No clinical validation or
 live extraction-accuracy result is claimed.

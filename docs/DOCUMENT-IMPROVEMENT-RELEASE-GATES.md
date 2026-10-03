@@ -158,6 +158,25 @@ no SQL statements, model calls or warehouse changes. Work is being handed off
 on `langextract_use`; the live runner is still incomplete, not ready to invoke
 simply by enabling the frontend flag.
 
+### Other laptop report and local runner follow-up
+
+The teammate's separate working laptop reported a secure app-role connection to
+this same account and then an approved change of `SITAR`'s default role to
+`SAARTHI_APP`; the reported warehouse was suspended, X-Small and monitored with
+1.33 of 2 credits used. These are reported observations from that laptop, not
+queries run in this session. No source page or model call was made there.
+
+After that report, a local opt-in runner was added under `backend/extraction/`.
+It supplies actual per-call scoped reads and locally generated Snowflake JWTs,
+performs B/C four-call planning with no assertion persistence, and checks the
+account, funds confirmation, monitor and source version. Local mocked tests
+cover the runner. **The runner is not yet live verified.** Its $1 budget remains
+an estimate and requires a fresh operator-observed trial balance and exclusive
+warehouse use; no code can guarantee an account-wide cap against other usage.
+The original CortexTransport mock contract remains separate from this private
+Node bridge. Complete live acceptance on the other laptop before treating
+LangExtract compatibility, cost or accuracy as measured.
+
 ## Clinical and hosting approvals are not software test results
 
 A qualified reviewer must resolve whether each source's neutrophil percentage
