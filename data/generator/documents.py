@@ -89,6 +89,36 @@ def render_authorization_letter(*, patient_id: str, auth_id: str, payer: str,
     return bytes(pdf.output())
 
 
+def render_cohort_lab_report(*, patient_id: str, facility: str, report_date: str,
+                             results: list[tuple[str, str, str]]) -> bytes:
+    """One dated lab panel for a SQL-seeded cohort patient. `results` are
+    (label, value, unit) exactly as stored, so extraction can be checked against
+    the structured rows. Counts use Indian digit grouping, as on real Indian reports."""
+    pdf = new_pdf()
+    render_line(pdf, facility, bold=True)
+    render_line(pdf, "LABORATORY REPORT - SYNTHETIC")
+    render_line(pdf, f"Patient: {patient_id}")
+    render_line(pdf, f"Report date: {report_date}")
+    render_line(pdf, "")
+    for label, value, unit in results:
+        render_line(pdf, f"{label}: {value} {unit}".rstrip())
+    return bytes(pdf.output())
+
+
+def render_cohort_pathology_report(*, patient_id: str, facility: str, specimen_id: str,
+                                   report_date: str, lines: list[str]) -> bytes:
+    pdf = new_pdf()
+    render_line(pdf, facility, bold=True)
+    render_line(pdf, "HISTOPATHOLOGY REPORT - SYNTHETIC")
+    render_line(pdf, f"Patient: {patient_id}")
+    render_line(pdf, f"Specimen: {specimen_id}")
+    render_line(pdf, f"Report date: {report_date}")
+    render_line(pdf, "")
+    for line in lines:
+        render_line(pdf, line)
+    return bytes(pdf.output())
+
+
 def build_documents(ledger: Ledger) -> dict[str, bytes]:
     """Returns `{event_id: pdf_bytes}` for every ledger event with a PDF
     rendering. Current scope is cbc_lab and her2_result only — the two
