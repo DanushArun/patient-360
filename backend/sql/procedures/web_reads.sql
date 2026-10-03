@@ -166,7 +166,7 @@ RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS $$
 DECLARE KNOWN_AS_OF VARCHAR DEFAULT NULL;
 v_known_as_of TIMESTAMP_NTZ; v_known_as_of_s VARCHAR; v_binding_id VARCHAR;
 v_patient_id VARCHAR; v_practitioner VARCHAR; v_care_team_id VARCHAR; v_consent_id VARCHAR;
-v_rows ARRAY;
+v_rows ARRAY; v_expected ARRAY;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -341,6 +341,220 @@ FROM SAARTHI.DOCUMENTS.DOC_PAGE dp JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id
 WHERE d.doc_id=:ARGUMENT AND d.scope='patient' AND d.patient_id=:v_patient_id AND d.status='active'
 AND d.ingested_at<=:v_known_as_of ORDER BY dp.page_index
 );
+ELSEIF (VIEW_NAME = 'documents') THEN
+-- ARGUMENT carries the caller's known_as_of cutoff; the reply must echo it exactly.
+IF (ARGUMENT IS NOT NULL) THEN
+  v_known_as_of := TRY_TO_TIMESTAMP_NTZ(:ARGUMENT, 'YYYY-MM-DD"T"HH24:MI:SS');
+  IF (v_known_as_of IS NULL) THEN
+    RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',:v_known_as_of_s);
+  END IF;
+  v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
+END IF;
+SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
+SELECT d.doc_id, d.doc_type, d.version, d.scope, d.source_quality,
+       f.name AS source_facility, COALESCE(pg.page_count, 0) AS page_count,
+       CASE WHEN a.conflicting_assertions > 0 THEN 'conflicting'
+            WHEN a.present_assertions > 0 THEN 'present' ELSE 'received' END AS missingness_state,
+       COALESCE(a.assertion_count, 0) AS assertion_count,
+       COALESCE(a.verified_assertions, 0) AS verified_assertions,
+       COALESCE(a.conflicting_assertions, 0) AS conflicting_assertions,
+       :v_known_as_of_s AS verification_observed_at,
+       TO_VARCHAR(d.effective_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS event_time,
+       TO_VARCHAR(d.signed_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS source_recorded_at,
+       TO_VARCHAR(d.ingested_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS ingested_at
+FROM SAARTHI.DOCUMENTS.DOCUMENT d
+LEFT JOIN SAARTHI.GOVERNANCE.FACILITY f ON f.facility_id = d.source_facility_id
+LEFT JOIN (SELECT doc_id, COUNT(*) AS page_count FROM SAARTHI.DOCUMENTS.DOC_PAGE GROUP BY doc_id) pg
+  ON pg.doc_id = d.doc_id
+LEFT JOIN (SELECT doc_id, COUNT(*) AS assertion_count,
+                  COUNT_IF(verification_status = 'verified') AS verified_assertions,
+                  COUNT_IF(verification_status = 'conflicting') AS conflicting_assertions,
+                  COUNT_IF(missingness_state = 'present') AS present_assertions
+             FROM SAARTHI.EVIDENCE.ASSERTION GROUP BY doc_id) a ON a.doc_id = d.doc_id
+WHERE d.patient_id = :v_patient_id AND d.scope = 'patient' AND d.status = 'active'
+  AND d.ingested_at <= :v_known_as_of
+ORDER BY d.signed_at DESC NULLS LAST, d.doc_id
+);
+-- Expected records: documentation gates not satisfied for the selected visit. State comes
+-- from the rule outcome, never from reason prose: not_evaluated = awaited, fail = absent (R3).
+SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_expected FROM (
+WITH ranked_encounters AS (
+  SELECT e.encounter_id,
+         ROW_NUMBER() OVER (ORDER BY
+           IFF(e.scheduled_time >= CURRENT_TIMESTAMP(), 0, 1),
+           IFF(e.scheduled_time >= CURRENT_TIMESTAMP(), e.scheduled_time, NULL) ASC NULLS LAST,
+           IFF(e.scheduled_time < CURRENT_TIMESTAMP(), e.scheduled_time, NULL) DESC NULLS LAST
+         ) AS visit_rank
+    FROM SAARTHI.CORE.ENCOUNTER e
+   WHERE e.patient_id = :v_patient_id AND e.encounter_type = 'daycare'
+)
+SELECT rc.display_name AS title, rs.rule_id,
+       IFF(rs.outcome = 'not_evaluated', 'pending', 'not_received') AS missingness_state,
+       rs.reason
+FROM SAARTHI.OPERATIONAL.READINESS_STATE rs
+JOIN ranked_encounters e ON e.encounter_id = rs.encounter_id AND e.visit_rank = 1
+JOIN SAARTHI.OPERATIONAL.RULE_CATALOG rc
+  ON rc.rule_id = rs.rule_id AND rc.rule_version = rs.rule_version
+WHERE rs.patient_id = :v_patient_id AND rs.gate = 'documentation'
+  AND rs.outcome IN ('not_evaluated', 'fail')
+ORDER BY rs.rule_id
+);
+RETURN OBJECT_CONSTRUCT('rows',v_rows,'expected_documents',v_expected,
+  'known_as_of',v_known_as_of_s,'binding_id',v_binding_id);
+ELSEIF (VIEW_NAME = 'facts') THEN
+-- ARGUMENT is {"domain": ..., "known_as_of": ...}. Only labs honour the cutoff (they carry
+-- ingested_at); every other domain is current at query time and says so.
+LET v_args VARIANT := TRY_PARSE_JSON(:ARGUMENT);
+LET v_domain VARCHAR := v_args:domain::VARCHAR;
+LET v_requested VARCHAR := v_args:known_as_of::VARCHAR;
+LET v_facts VARIANT;
+IF (v_requested IS NOT NULL) THEN
+  v_known_as_of := TRY_TO_TIMESTAMP_NTZ(:v_requested, 'YYYY-MM-DD"T"HH24:MI:SS');
+  IF (v_known_as_of IS NULL) THEN
+    RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',:v_known_as_of_s);
+  END IF;
+END IF;
+-- Clinical consent is not financial consent (preamble note 1).
+IF (v_domain = 'coverage' AND NOT ARRAY_CONTAINS('financial'::VARIANT,
+    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id))) THEN
+  RETURN OBJECT_CONSTRUCT('error','consent_not_valid','known_as_of',:v_known_as_of_s);
+END IF;
+IF (v_domain = 'labs') THEN
+  v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
+  v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
+      'event_id', h.event_id, 'concept', h.concept_name, 'value', h.value_num,
+      'value_text', h.value_text, 'unit', ce.unit, 'abnormal_flag', h.abnormal_flag,
+      'value_state', h.plausibility_state, 'is_derived', h.is_derived, 'derivation', h.derivation,
+      'valid_until', TO_VARCHAR(h.valid_until, 'YYYY-MM-DD"T"HH24:MI:SS'),
+      'event_time', TO_VARCHAR(h.event_time, 'YYYY-MM-DD"T"HH24:MI:SS'),
+      'source_recorded_at', TO_VARCHAR(h.source_recorded_at, 'YYYY-MM-DD"T"HH24:MI:SS'),
+      'ingested_at', TO_VARCHAR(h.ingested_at, 'YYYY-MM-DD"T"HH24:MI:SS'),
+      'source_event_ids', IFF(h.is_derived, ARRAY_CONSTRUCT(), ARRAY_CONSTRUCT(h.event_id)),
+      'source_assertion_ids', COALESCE(l.assertion_ids, ARRAY_CONSTRUCT()),
+      'source_document_ids', COALESCE(l.doc_ids, ARRAY_CONSTRUCT()),
+      'source_links_observed_at', :v_known_as_of_s))
+      WITHIN GROUP (ORDER BY h.event_time DESC NULLS LAST, h.concept_name), ARRAY_CONSTRUCT())
+    FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS h
+    LEFT JOIN SAARTHI.CORE.CLINICAL_EVENT ce ON ce.event_id = h.event_id
+    LEFT JOIN (SELECT el.target_id, ARRAY_AGG(DISTINCT a.assertion_id) assertion_ids,
+                      ARRAY_AGG(DISTINCT a.doc_id) doc_ids
+                 FROM SAARTHI.EVIDENCE.EVIDENCE_LINK el
+                 JOIN SAARTHI.EVIDENCE.ASSERTION a ON a.assertion_id = el.assertion_id
+                 JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = a.doc_id
+                WHERE el.relation = 'supports' AND d.status = 'active'
+                  AND d.ingested_at <= :v_known_as_of
+                GROUP BY el.target_id) l ON l.target_id = h.event_id
+   WHERE h.patient_id = :v_patient_id AND h.ingested_at <= :v_known_as_of);
+  RETURN OBJECT_CONSTRUCT('domain','labs','facts',v_facts,'known_as_of',v_known_as_of_s,
+    'requested_known_as_of',v_requested,'as_of_semantics','ingested_cutoff','binding_id',v_binding_id);
+ELSEIF (v_domain = 'demographics') THEN
+  v_facts := (SELECT OBJECT_CONSTRUCT_KEEP_NULL('patient_id', patient_id, 'name', name,
+      'dob', TO_VARCHAR(dob), 'gender', gender, 'district', district, 'state', state,
+      'primary_language', primary_language)
+    FROM SAARTHI.CORE.PATIENT WHERE patient_id = :v_patient_id);
+ELSEIF (v_domain = 'coverage') THEN
+  v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL('payer_name', payer_name,
+      'annual_limit', annual_limit, 'used_amount', used_amount,
+      'is_family_floater', is_family_floater)) WITHIN GROUP (ORDER BY priority, coverage_id),
+      ARRAY_CONSTRUCT())
+    FROM SAARTHI.CORE.COVERAGE WHERE patient_id = :v_patient_id);
+ELSEIF (v_domain = 'treatment_plan') THEN
+  v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL('version', version,
+      'regimen_display', regimen_display, 'intent', intent,
+      'decided_at', TO_VARCHAR(decided_at, 'YYYY-MM-DD"T"HH24:MI:SS')))
+      WITHIN GROUP (ORDER BY version DESC), ARRAY_CONSTRUCT())
+    FROM SAARTHI.CORE.TREATMENT_PLAN WHERE patient_id = :v_patient_id);
+ELSEIF (v_domain = 'encounters') THEN
+  v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL('encounter_id', encounter_id,
+      'cycle_number', cycle_number, 'event_time', TO_VARCHAR(event_time, 'YYYY-MM-DD"T"HH24:MI:SS'),
+      'gap_type', gap_type)) WITHIN GROUP (ORDER BY event_time, encounter_id), ARRAY_CONSTRUCT())
+    FROM SAARTHI.CORE.ENCOUNTER WHERE patient_id = :v_patient_id);
+ELSEIF (v_domain = 'identity') THEN
+  v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL('source_system', source_system,
+      'link_status', link_status)) WITHIN GROUP (ORDER BY source_system), ARRAY_CONSTRUCT())
+    FROM SAARTHI.CORE.ID_MAP WHERE patient_id = :v_patient_id);
+ELSE
+  RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',:v_known_as_of_s);
+END IF;
+RETURN OBJECT_CONSTRUCT('domain',v_domain,'facts',COALESCE(v_facts, OBJECT_CONSTRUCT()),
+  'known_as_of',TO_VARCHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD"T"HH24:MI:SS'),
+  'requested_known_as_of',v_requested,'as_of_semantics','current_at_query','binding_id',v_binding_id);
+ELSEIF (VIEW_NAME = 'coverage_comparison') THEN
+-- Authorization rows have no ingestion clock, so they are current at query; letters are
+-- limited to documents received by the cutoff. ARGUMENT carries that cutoff.
+IF (ARGUMENT IS NOT NULL) THEN
+  v_known_as_of := TRY_TO_TIMESTAMP_NTZ(:ARGUMENT, 'YYYY-MM-DD"T"HH24:MI:SS');
+  IF (v_known_as_of IS NULL) THEN
+    RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',:v_known_as_of_s);
+  END IF;
+  v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
+END IF;
+IF (NOT ARRAY_CONTAINS('financial'::VARIANT,
+    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id))) THEN
+  RETURN OBJECT_CONSTRUCT('error','consent_not_valid','known_as_of',:v_known_as_of_s);
+END IF;
+LET v_auths ARRAY := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
+    'auth_id', a.auth_id, 'status', a.status, 'letter_status', a.letter_status,
+    'payer_name', c.payer_name,
+    'requested_at', TO_VARCHAR(a.requested_at, 'YYYY-MM-DD"T"HH24:MI:SS'),
+    'decided_at', TO_VARCHAR(a.decided_at, 'YYYY-MM-DD"T"HH24:MI:SS'),
+    'expires_at', TO_VARCHAR(a.expires_at, 'YYYY-MM-DD"T"HH24:MI:SS')))
+    WITHIN GROUP (ORDER BY a.decided_at DESC NULLS LAST, a.requested_at DESC NULLS LAST, a.auth_id),
+    ARRAY_CONSTRUCT())
+  FROM (SELECT * FROM SAARTHI.CORE.AUTHORIZATION WHERE patient_id = :v_patient_id
+         ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST, auth_id LIMIT 21) a
+  LEFT JOIN SAARTHI.CORE.COVERAGE c ON c.coverage_id = a.coverage_id);
+LET v_letters ARRAY := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
+    'assertion_id', l.assertion_id, 'predicate', l.predicate, 'value', l.value,
+    'verification_status', l.verification_status, 'doc_id', l.doc_id, 'doc_type', l.doc_type,
+    'page_index', l.page_index, 'char_start', l.char_start, 'char_end', l.char_end,
+    'source_link_status', l.source_link_status, 'excerpt_start', l.excerpt_start,
+    'excerpt', IFF(l.source_link_status = 'verified_assertion_exact_page_span',
+      SUBSTR(l.text, l.excerpt_start + 1, l.char_end - l.excerpt_start + 120), NULL),
+    'source_facility', l.source_facility, 'event_time', l.event_time,
+    'source_recorded_at', l.source_recorded_at, 'ingested_at', l.ingested_at))
+    WITHIN GROUP (ORDER BY l.ingested_at DESC, l.assertion_id), ARRAY_CONSTRUCT())
+  FROM (SELECT a.assertion_id, a.predicate, a.value, a.verification_status, a.doc_id, d.doc_type,
+               a.page_index, a.char_start, a.char_end, dp.text, f.name AS source_facility,
+               GREATEST(COALESCE(a.char_start, 0) - 120, 0) AS excerpt_start,
+               IFF(a.verification_status = 'verified' AND dp.doc_id IS NOT NULL
+                   AND a.char_start >= 0 AND a.char_end > a.char_start
+                   AND a.char_end <= LENGTH(dp.text),
+                   'verified_assertion_exact_page_span', 'span_unavailable') AS source_link_status,
+               TO_VARCHAR(d.effective_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS event_time,
+               TO_VARCHAR(d.signed_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS source_recorded_at,
+               TO_VARCHAR(d.ingested_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS ingested_at
+          FROM SAARTHI.EVIDENCE.ASSERTION a
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = a.doc_id
+          LEFT JOIN SAARTHI.DOCUMENTS.DOC_PAGE dp
+            ON dp.doc_id = a.doc_id AND dp.page_index = a.page_index
+          LEFT JOIN SAARTHI.GOVERNANCE.FACILITY f ON f.facility_id = d.source_facility_id
+         WHERE d.patient_id = :v_patient_id AND d.scope = 'patient' AND d.status = 'active'
+           AND d.doc_type = 'authorization_letter' AND d.ingested_at <= :v_known_as_of
+         ORDER BY d.ingested_at DESC, a.assertion_id LIMIT 21) l);
+LET v_rule VARIANT := (WITH ranked_encounters AS (
+    SELECT e.encounter_id, ROW_NUMBER() OVER (ORDER BY
+      IFF(e.scheduled_time >= CURRENT_TIMESTAMP(), 0, 1),
+      IFF(e.scheduled_time >= CURRENT_TIMESTAMP(), e.scheduled_time, NULL) ASC NULLS LAST,
+      IFF(e.scheduled_time < CURRENT_TIMESTAMP(), e.scheduled_time, NULL) DESC NULLS LAST) AS visit_rank
+      FROM SAARTHI.CORE.ENCOUNTER e
+     WHERE e.patient_id = :v_patient_id AND e.encounter_type = 'daycare')
+  SELECT OBJECT_CONSTRUCT_KEEP_NULL('rule_id', rs.rule_id, 'rule_version', rs.rule_version,
+      'outcome', rs.outcome, 'reason', rs.reason,
+      'known_as_of', TO_VARCHAR(rs.known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS'))
+    FROM SAARTHI.OPERATIONAL.READINESS_STATE rs
+    JOIN ranked_encounters e ON e.encounter_id = rs.encounter_id AND e.visit_rank = 1
+   WHERE rs.patient_id = :v_patient_id AND rs.rule_id = 'COV-AUTH-001' LIMIT 1);
+RETURN OBJECT_CONSTRUCT('rows', ARRAY_CONSTRUCT(OBJECT_CONSTRUCT_KEEP_NULL(
+    'known_as_of', v_known_as_of_s, 'requested_known_as_of', :ARGUMENT,
+    'as_of_semantics', 'authorization_current_at_query_document_ingestion_cutoff',
+    'observed_at', TO_VARCHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD"T"HH24:MI:SS'),
+    'authorizations_truncated', ARRAY_SIZE(v_auths) > 20,
+    'letters_truncated', ARRAY_SIZE(v_letters) > 20,
+    'rule', v_rule,
+    'authorizations', ARRAY_SLICE(v_auths, 0, 20),
+    'letters', ARRAY_SLICE(v_letters, 0, 20))),
+  'known_as_of', v_known_as_of_s, 'binding_id', v_binding_id);
 ELSE RETURN OBJECT_CONSTRUCT('error','invalid_argument'); END IF;
 RETURN OBJECT_CONSTRUCT('rows',v_rows,'known_as_of',v_known_as_of_s,'binding_id',v_binding_id);
 END;
