@@ -24,6 +24,7 @@ Any change to what the model is asked to return, or to how it is asked to behave
 
 | Date | Prompt | Version | Change | Why |
 |---|---|---|---|---|
+| 2026-10-03 | `independent_page_read` | `independent-page-read@0.1` / `independent-two-family@0.2` | Draft, not deployed: same prompt to two readers, bounded calls, exact quotes, typed agreement, document-type hints | Remove first-answer leakage from batch verification and preserve distinct evidence; offline source tests are not a scored live evaluation |
 | 2026-09-20 | `pass_a_lab` | `@1` | created, verbatim from `AI-INTEGRATION-ARCHITECTURE.md` §4.2 | the specified extraction prompt, unmodified |
 | 2026-09-20 | `pass_b_verify` | `@1` | created, verbatim from `AI-INTEGRATION-ARCHITECTURE.md` §4.3 | R7 pass B, unmodified |
 | 2026-09-20 | `pass_b_verify` | **`@2`** | **model changed `llama3.1-70b` → `claude-haiku-4-5`; `temperature: 0` pinned on both passes; fallback chain recorded** | Pass A and pass B were the **same Meta family**, so the cross-family independence R7 depends on did not exist. `llama3.1-70b` is also now `[legacy]`, end-of-life pending. See `AI-INTEGRATION-ARCHITECTURE.md` §1.1. |

@@ -1,3 +1,5 @@
+import { evidenceSpan } from './evidence-span.mjs';
+
 /** @param {unknown} value @returns {boolean} */
 function timestamp(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
@@ -47,13 +49,8 @@ export function readDocumentPage(rows, request) {
 
 /** @param {string} content @param {object} request @returns {object|null} */
 function sourceHighlight(content, request) {
-  if (request.start === undefined && request.end === undefined) return null;
-  if (!/^\d+$/.test(request.start ?? '') || !/^\d+$/.test(request.end ?? '')) {
-    throw new Error('source_invalid');
-  }
-  const start = Number(request.start), end = Number(request.end);
-  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end)
-      || end <= start || end > content.length) throw new Error('source_invalid');
-  return { before: content.slice(0, start), cited: content.slice(start, end),
-    after: content.slice(end) };
+  const span = evidenceSpan(content, request.start, request.end);
+  if (span.reason === 'invalid_span') throw new Error('source_invalid');
+  if (span.kind === 'page') return null;
+  return { before: span.before, cited: span.highlight, after: span.after };
 }

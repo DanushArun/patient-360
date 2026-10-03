@@ -138,9 +138,27 @@ BEGIN
            AND d.ingested_at<=:v_known_as_of;
 
         IF (v_text IS NOT NULL) THEN
+            -- Retrieval is page-level context. Only the verified assertion
+            -- pointers below are eligible for a document-backed factual claim.
+            LET v_evidence ARRAY;
+            SELECT ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
+                'kind','document_span','id',a.assertion_id,'assertion_id',a.assertion_id,
+                'doc_id',a.doc_id,'page_index',a.page_index,
+                'char_start',a.char_start,'char_end',a.char_end,
+                'text',SUBSTR(:v_text,a.char_start+1,a.char_end-a.char_start),
+                'value',a.value,'unit',a.unit,'missingness_state',a.missingness_state,
+                'verification_status',a.verification_status))
+                WITHIN GROUP (ORDER BY a.char_start,a.assertion_id) INTO :v_evidence
+              FROM SAARTHI.EVIDENCE.ASSERTION a
+             WHERE a.doc_id=:v_doc_id AND a.page_index=:v_page_index
+               AND a.verification_status='verified'
+               AND a.missingness_state IN ('present','explicitly_negative','pending','unreadable')
+               AND a.char_start>=0 AND a.char_end>a.char_start AND a.char_end<=LENGTH(:v_text);
             v_out := ARRAY_APPEND(v_out, OBJECT_CONSTRUCT(
                 'kind', 'document_span', 'chunk_id', v_chunk_id, 'doc_id', v_doc_id,
-                'page_index', v_page_index, 'char_start', 0, 'char_end', LENGTH(v_text), 'text', v_text));
+                'page_index', v_page_index, 'char_start', 0, 'char_end', LENGTH(v_text), 'text', v_text,
+                'citation_level','page','claim_eligible',FALSE,
+                'evidence',COALESCE(v_evidence,ARRAY_CONSTRUCT())));
         END IF;
         v_i := v_i + 1;
     END WHILE;

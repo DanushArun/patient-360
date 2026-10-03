@@ -1,0 +1,3 @@
+# Isolated optional test environment only. Not production/frontend dependencies.
+langextract==1.7.0
+pypdf==6.10.0

@@ -45,7 +45,7 @@ export function DocumentSourceView(props: SourceProps): ReactNode {
     </p>}
     <p className="sa-meta">Extracted source text. {span
       ? "The exact citation is highlighted with up to 360 characters of surrounding context."
-      : "No exact citation span was supplied; this is the full source page."}</p>
+      : "Page-level evidence; no precise excerpt is highlighted. This is the full source page."}</p>
     <pre className="sa-page-text sa-source-page-text" tabIndex={0}>
       {citedExcerpt(source)}
     </pre>

@@ -1,5 +1,53 @@
 # SAARTHI — Implementation Status
 
+**3 October 2026 — default-role change approved but not applied:** the attempted
+change could not authenticate because the missing-OCSP certificate failure
+returned. The connection deadline stopped the run before SQL. Last verified
+default is still `ACCOUNTADMIN`; no model calls or warehouse resume occurred.
+The user's approval and failed attempt are recorded in the release-gates log.
+
+**3 October 2026 — connection retry passed, role gate remains:** TLS/OCSP and
+metadata checks now succeed. The warehouse remains suspended; `SITAR` defaults
+to `ACCOUNTADMIN`, so the bounded Cortex REST test stopped before source reads
+or inference. No role/grant changes or paid model calls occurred. Changing the
+default role awaits approval. [Recorded checks](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+
+**3 October 2026 — approved live preflight blocked:** the user approved a maximum
+$1 for one synthetic-page/four-call compatibility test. Authentication failed
+before any SQL or inference: first certificate-chain trust, then missing OCSP
+AuthorityInfoAccess with the system trust store. Certificate checks remain on;
+no warehouse was resumed and no paid model call ran. This is not a live
+compatibility result. Local checks: **51 targeted Python tests, 265 frontend
+unit/render tests, TypeScript and 9 manifest/preamble gates passed**; source tests
+do not prove SQL compilation. Details: [release gates](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+
+**3 October 2026 — second local document checkpoint, partial:** candidate SQL
+updates add conservative heading routing, remove filename-based source-quality
+claims, make batch model reads independent, tighten both extraction paths, and
+carry verified patient assertion IDs/exact spans from Search into stricter answer
+validation. They are **not deployed or Snowflake-compiled**. Local Python now also
+evaluates supplied parse output, compares saved A/B/C predictions and tests an
+opt-in Snowflake-only HTTP transport with fake responses. No credentials or paid
+services were used. Clinical approval, persistent SQL specimen links, shared
+extraction envelopes, reference-clause validation, actual orchestration/E2E,
+live cost/accuracy and hosting remain open. See [release gates and cost proposal](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+
+**3 October 2026 — offline extraction trial, partial:** LangExtract 1.7.0 ran
+locally with injected fake Cortex responses and network-blocked tests. **26/26
+targeted Python tests, 265/265 frontend unit/render tests, and TypeScript passed.**
+The four existing synthetic PDFs contained all ten expected field lines and
+matching context anchors. That is a text baseline, not model accuracy or OCR
+validation. Exact evidence highlighting now uses Unicode code-point offsets;
+whole-page evidence is not presented as an exact highlighted excerpt. Latest
+`main` was incorporated at `d5c5f8c`, and the fix preserves its document-viewer
+structure and scoped reads. The first broad frontend run failed because local
+dependencies lagged the pulled lockfile; syncing that lockfile resolved the
+missing `ajv` / Playwright dependencies without changing dependency manifests.
+No database queries, paid model calls, SQL changes, deployments, or full E2E
+tests were performed for this checkpoint. Live Cortex transport, accuracy
+comparison, batch-path integration, ANC source-field review, and hosting remain
+open. See [the trial instructions and limits](backend/extraction/README.md).
+
 **1 October 2026 update — OS69400, partial E2E:** the dashboard and review queue
 now use access-checked owner procedures with `SAARTHI_APP`; the local admin override
 is off. One approved task passed acknowledgement, same-owner reassignment,

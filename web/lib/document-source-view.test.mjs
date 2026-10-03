@@ -93,6 +93,13 @@ test("test_source_view_when_span_is_missing_does_not_claim_exact_highlight", () 
   const data = sourceFixture(undefined, undefined);
   const markup = render(data);
 
-  assert.match(markup, /No exact citation span was supplied/);
+  assert.match(markup, /Page-level evidence; no precise excerpt is highlighted/);
+  assert.doesNotMatch(markup, /<mark>/);
+});
+
+test("source view labels a whole-page citation as page-level evidence", () => {
+  const data = sourceFixture("0", String(Array.from(sourceFixture().text).length));
+  const markup = render(data);
+  assert.match(markup, /Page-level evidence; no precise excerpt is highlighted/);
   assert.doesNotMatch(markup, /<mark>/);
 });
