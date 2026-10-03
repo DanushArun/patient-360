@@ -70,9 +70,16 @@ AI credit pricing at $2.20 gives approximately $0.03022. This is an illustrative
 inference estimate, not a measured bill or hard account-wide cap. Input length,
 account terms and any warehouse-based access checks affect the total.
 
-Approved budget: **$1 total for this bounded test**, confirmed by the user.
+Initial approved budget: **$1 total for this bounded test**. The user later
+raised the continued-work approval to **$10 total**, not $10 per invocation.
+The one-page runner still reserves at most $1 per invocation. It does not
+measure cumulative spend across machines; the operator must enter prior
+observed or conservatively estimated spend and the runner requires that prior
+spend plus the next $1 reserve remain within $10. The separate 2-credit
+Snowflake warehouse resource monitor was not changed.
 This does not authorise deployment, role/grant changes or background services.
-No model calls have been made.
+No model calls were made in the documented attempts; any later use on the
+other laptop must be verified from its run report.
 Request limits alone do not enforce a dollar cap. Before execution, confirm
 account/routing/pricing and the access-check path; refuse the run if the preflight
 estimate cannot fit the approved budget. Record returned usage per request and
@@ -170,7 +177,8 @@ After that report, a local opt-in runner was added under `backend/extraction/`.
 It supplies actual per-call scoped reads and locally generated Snowflake JWTs,
 performs B/C four-call planning with no assertion persistence, and checks the
 account, funds confirmation, monitor and source version. Local mocked tests
-cover the runner. **The runner is not yet live verified.** Its $1 budget remains
+cover the runner. **The runner is not yet live verified.** Its $10 continued-work
+approval still reserves at most $1 per invocation; billing remains
 an estimate and requires a fresh operator-observed trial balance and exclusive
 warehouse use; no code can guarantee an account-wide cap against other usage.
 The original CortexTransport mock contract remains separate from this private

@@ -17,20 +17,25 @@ export function cell(rows) {
 export function checkApproval(config, now=Date.now()) {
   // A fresh human check in Snowsight is accepted explicitly, never invented from
   // the warehouse monitor. This is not an account-wide spending guarantee.
-  if(config?.approvedBudgetUsd!==1 || config?.exclusiveWarehouse!==true) fail('test_approval_missing');
+  if(config?.approvedBudgetUsd!==10 || config?.exclusiveWarehouse!==true) fail('test_approval_missing');
   const time=Date.parse(config.fundsCheckedAt);
   if(!Number.isFinite(time) || time>now || now-time>3600000 ||
       typeof config.availableFundsUsd!=='number' || !Number.isFinite(config.availableFundsUsd) || config.availableFundsUsd<1 ||
       config.fundsSource!=='Snowsight trial balance') fail('fresh_funds_confirmation_required');
+  if(typeof config.priorTrialSpendUsd!=='number' || !Number.isFinite(config.priorTrialSpendUsd) ||
+      config.priorTrialSpendUsd<0 || config.priorTrialSpendUsd+1>10) fail('cumulative_trial_budget_unconfirmed');
   if(config.acceptEstimatedBilling!==true) fail('billing_uncertainty_not_accepted');
   // Published 2 October prices must be reviewed again after this short test window.
   if(now<Date.parse('2026-10-02T00:00:00Z') || now>=Date.parse('2026-10-10T00:00:00Z')) fail('pricing_review_required');
-  return {approvedBudgetUsd:1, fundsVerification:'operator-reported Snowsight balance',
+  return {approvedBudgetUsd:10, priorTrialSpendUsd:config.priorTrialSpendUsd,
+    fundsVerification:'operator-reported Snowsight balance and prior trial spend',
     availableFundsUsd:config.availableFundsUsd,fundsCheckedAt:config.fundsCheckedAt,
     // Reserve $0.70 for at most 90s of XS compute + 60s auto-suspend tail,
     // possible in-flight cancellation (10s), and metadata/cloud-services margin.
     // 1.35 credits/h * 160s * $9.75 / 3600 = $0.585; rest is margin.
-    // NOT a metered account-wide cap. Concurrent usage is excluded/refused.
+    // The $10 approval is for continued work, not $10 for each run. This
+    // one-page runner still reserves at most $1 per invocation and cannot
+    // meter cumulative account spend. Concurrent usage is excluded/refused.
     supportingComputeReserveUsd:0.70, inferenceAllowanceUsd:0.10,
     unallocatedReserveUsd:0.20, billingIsEstimate:true};
 }

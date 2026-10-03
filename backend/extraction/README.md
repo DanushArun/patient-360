@@ -207,12 +207,16 @@ Cortex REST endpoint. There is no assertion write. The real LangExtract path
 and the direct comparison path each request independent Llama and Claude reads.
 
 **This runner has only passed local mocked tests; it has not made a live call.**
-Its cost gate reserves up to $0.10 for inference, $0.70 for bounded warehouse
-compute/metadata and $0.20 for uncertainty within the approved $1 test. These
-are conservative estimates, not an account-wide billing cap. It requires an
-operator-observed Snowsight trial balance at least $1, checked within the past
-hour, plus exclusive use of the suspended X-Small warehouse. Concurrent account
-activity or unreported Snowflake charges can break an estimated dollar bound.
+Its cost gate still reserves up to $0.10 for inference, $0.70 for bounded
+warehouse compute/metadata and $0.20 for uncertainty **per invocation**. The
+approved ceiling for continued test work is now $10; it is not $10 per run.
+These are estimates, not an account-wide billing cap, and the runner does not
+track cumulative spending across runs or machines. It requires an
+operator-observed Snowsight trial balance of at least $1, checked within the
+past hour, plus exclusive use of the suspended X-Small warehouse. Before each
+run, the operator must also confirm that prior spending plus this run's $1
+reserve fits within the $10 approval. Concurrent account activity or delayed
+Snowflake charges can break an estimated dollar bound.
 If the operator cannot establish these facts, do not invoke `--live`.
 
 Create a local JSON file outside the repository, using the balance observed in
@@ -220,8 +224,9 @@ Snowsight and the actual check time. This contains no credentials:
 
 ```json
 {
-  "approvedBudgetUsd": 1,
+  "approvedBudgetUsd": 10,
   "availableFundsUsd": 1,
+  "priorTrialSpendUsd": 1,
   "fundsCheckedAt": "2026-10-03T10:00:00Z",
   "fundsSource": "Snowsight trial balance",
   "exclusiveWarehouse": true,
@@ -229,9 +234,12 @@ Snowsight and the actual check time. This contains no credentials:
 }
 ```
 
-Replace `availableFundsUsd` and `fundsCheckedAt` with observed values; never
-reuse the example timestamp. Run from the repository root only on the connected
-machine after reviewing the printed account/preflight data:
+Replace `availableFundsUsd`, `priorTrialSpendUsd` and `fundsCheckedAt` with
+observed or conservatively estimated values; the example `1` for prior spend
+is **not** a measured result. Never reuse the example timestamp. The runner
+refuses a run if prior spend plus its $1 reserve exceeds $10. Run from the
+repository root only on the connected machine after reviewing the printed
+account/preflight data:
 
 ```sh
 python -m backend.extraction.live_trial

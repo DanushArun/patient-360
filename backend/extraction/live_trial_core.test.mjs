@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {checkApproval,checkMetadata,scopedPage,Trial,requestQuote,SUBJECT} from './live_trial_core.mjs';
 
 const now=Date.parse('2026-10-03T10:00:00Z');
-const safeApproval={approvedBudgetUsd:1,exclusiveWarehouse:true,
+const safeApproval={approvedBudgetUsd:10,exclusiveWarehouse:true,
   fundsCheckedAt:'2026-10-03T09:30:00Z',availableFundsUsd:10,
-  fundsSource:'Snowsight trial balance',acceptEstimatedBilling:true};
+  fundsSource:'Snowsight trial balance',priorTrialSpendUsd:1,
+  acceptEstimatedBilling:true};
 const source=`Patient: ${SUBJECT.patient_id}\nSpecimen: ${SUBJECT.specimen_id}\nHER2 IHC: 2+`;
 const pageResult=(text=source)=>[{VALUE:{binding_id:'binding-1',known_as_of:'2026-10-03T09:30:00',
   rows:[{DOC_ID:SUBJECT.doc_id,PAGE_INDEX:0,SCOPE:'patient',VERSION:1,TEXT:text}]}}];
@@ -14,9 +15,12 @@ const plan=()=>[request('llama3.3-70b',source),request('claude-haiku-4-5',source
                   request('llama3.3-70b',source+'\nRead'),request('claude-haiku-4-5',source+'\nRead')];
 
 test('budget check requires fresh verified operator funds and explicit exclusive use',()=>{
-  assert.equal(checkApproval(safeApproval,now).approvedBudgetUsd,1);
+  assert.equal(checkApproval(safeApproval,now).approvedBudgetUsd,10);
   for(const broken of [
+    {...safeApproval,approvedBudgetUsd:1},
     {...safeApproval,availableFundsUsd:0.99},
+    {...safeApproval,priorTrialSpendUsd:9.01},
+    {...safeApproval,priorTrialSpendUsd:undefined},
     {...safeApproval,fundsCheckedAt:'2026-10-03T08:00:00Z'},
     {...safeApproval,exclusiveWarehouse:false},
     {...safeApproval,acceptEstimatedBilling:false},
