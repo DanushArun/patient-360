@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS SAARTHI.DOCUMENTS.DOCUMENT (
     effective_date     DATE,                        -- reference docs
     status             VARCHAR CHECK (status IN ('active','duplicate','unreadable'))
 );
+-- Stage-relative path of the ingested file. file_hash is our SHA-256 and can never equal
+-- a stage etag, so without a stable key parse_documents_proc re-parsed every staged file
+-- (paid) and inserted duplicates. ADD ... IF NOT EXISTS keeps existing accounts in step.
+ALTER TABLE SAARTHI.DOCUMENTS.DOCUMENT ADD COLUMN IF NOT EXISTS source_path VARCHAR;
 
 -- RAP-PROTECTED (F3, F4) - the governed content store. Row access policy
 -- attached in step 8, keyed on CURRENT_USER(), never CURRENT_ROLE() (F3).
@@ -37,6 +41,9 @@ CREATE TABLE IF NOT EXISTS SAARTHI.DOCUMENTS.DOC_PAGE (
     char_count  INT,
     PRIMARY KEY (doc_id, page_index)
 );
+-- Set before the paid extraction calls. A page with no extractable finding (or one that
+-- failed closed) has no ASSERTION rows, so "no assertions" re-selected it on every run.
+ALTER TABLE SAARTHI.DOCUMENTS.DOC_PAGE ADD COLUMN IF NOT EXISTS extraction_attempted_at TIMESTAMP_NTZ;
 
 -- NO RAP (F4 forces this) - search index source only, returns chunk IDs.
 -- Content is re-fetched from DOC_PAGE through a governed procedure (Layer 3).

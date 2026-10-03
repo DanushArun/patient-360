@@ -36,7 +36,14 @@ DECLARE
     c_pages CURSOR FOR
         SELECT dp.doc_id, dp.page_index, dp.text
           FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
-         WHERE NOT EXISTS (
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = dp.doc_id
+         -- Patient pages only: without this the task would run paid two-model extraction
+         -- over the whole reference corpus.
+         WHERE d.scope = 'patient' AND d.status = 'active'
+           -- Attempted once only. A page with no extractable finding, or one that failed
+           -- closed, has no assertions; "no assertions" alone re-billed it every run.
+           AND dp.extraction_attempted_at IS NULL
+           AND NOT EXISTS (
                  SELECT 1 FROM SAARTHI.EVIDENCE.ASSERTION a
                   WHERE a.doc_id = dp.doc_id AND a.page_index = dp.page_index
                );
@@ -45,6 +52,10 @@ BEGIN
     FETCH c_pages INTO v_doc_id, v_page_index, v_page_text;
 
     WHILE (v_doc_id IS NOT NULL) DO
+        -- Stamped before the model calls, so an error or empty result is never retried
+        -- automatically. Re-extraction is a deliberate act: clear the stamp by hand.
+        UPDATE SAARTHI.DOCUMENTS.DOC_PAGE SET extraction_attempted_at = CURRENT_TIMESTAMP()
+         WHERE doc_id = :v_doc_id AND page_index = :v_page_index;
         -- pass_a_lab@1, verbatim prompt with {page_text} substituted.
         v_prompt_a :=
             'You extract structured assertions from one page of an Indian medical document.\n' ||
@@ -197,8 +208,10 @@ BEGIN
 END;
 $$;
 
+-- EXECUTE AS USER for the same DOC_PAGE row access policy reason as TASK_PARSE_DOCUMENTS.
 CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_EXTRACT_ASSERTIONS
   WAREHOUSE = SAARTHI_AI_WH
   AFTER SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
+  EXECUTE AS USER SITAR
 AS
   CALL SAARTHI.OPERATIONAL.extract_assertions_proc();
