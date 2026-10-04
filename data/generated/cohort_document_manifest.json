@@ -1,0 +1,146 @@
+[
+  {
+    "doc_id": "DOC-LAB-DC-01",
+    "patient_id": "PAT-DC-01",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-PATH-DC-01",
+    "patient_id": "PAT-DC-01",
+    "doc_type": "pathology",
+    "facility_id": "FAC-02",
+    "event_time": "2026-06-12T09:30:00",
+    "signed_at": "2026-06-12T12:30:00",
+    "must_contain": "SPEC-DC-01"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-02",
+    "patient_id": "PAT-DC-02",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-PATH-DC-02",
+    "patient_id": "PAT-DC-02",
+    "doc_type": "pathology",
+    "facility_id": "FAC-02",
+    "event_time": "2025-12-04T09:30:00",
+    "signed_at": "2025-12-04T12:30:00",
+    "must_contain": "SPEC-DC-02"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-03",
+    "patient_id": "PAT-DC-03",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-09-24T09:30:00",
+    "signed_at": "2026-09-24T12:30:00",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-04",
+    "patient_id": "PAT-DC-04",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-PATH-DC-04",
+    "patient_id": "PAT-DC-04",
+    "doc_type": "pathology",
+    "facility_id": "FAC-02",
+    "event_time": "2026-07-22T09:30:00",
+    "signed_at": "2026-07-22T12:30:00",
+    "must_contain": "SPEC-DC-04"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-05",
+    "patient_id": "PAT-DC-05",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-06",
+    "patient_id": "PAT-DC-06",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-PATH-DC-06",
+    "patient_id": "PAT-DC-06",
+    "doc_type": "pathology",
+    "facility_id": "FAC-02",
+    "event_time": "2026-08-31T09:30:00",
+    "signed_at": "2026-08-31T12:30:00",
+    "must_contain": "SPEC-DC-06"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-07",
+    "patient_id": "PAT-DC-07",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-08",
+    "patient_id": "PAT-DC-08",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T09:30:00",
+    "signed_at": "2026-10-03T12:30:00",
+    "must_contain": "Serum creatinine|Total bilirubin"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-09",
+    "patient_id": "PAT-DC-09",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-10",
+    "patient_id": "PAT-DC-10",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  },
+  {
+    "doc_id": "DOC-PATH-DC-10",
+    "patient_id": "PAT-DC-10",
+    "doc_type": "pathology",
+    "facility_id": "FAC-02",
+    "event_time": "2026-08-16T09:30:00",
+    "signed_at": "2026-08-16T12:30:00",
+    "must_contain": "SPEC-DC-10"
+  },
+  {
+    "doc_id": "DOC-LAB-DC-11",
+    "patient_id": "PAT-DC-11",
+    "doc_type": "lab_report",
+    "facility_id": "FAC-02",
+    "event_time": "2026-10-03T23:03:11",
+    "signed_at": "2026-10-04T02:03:11",
+    "must_contain": "WBC|Neutrophils (differential)"
+  }
+]
