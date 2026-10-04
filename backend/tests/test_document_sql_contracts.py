@@ -27,6 +27,26 @@ class DocumentSqlContractTests(unittest.TestCase):
             self.assertIn(clause,sql)
         self.assertNotIn("'single_pass'",sql)
 
+    def test_merge_preserves_once_only_extraction_before_any_model_call(self):
+        sql = self.read("tasks/extract_assertions.sql")
+        self.assertIn("AND dp.extraction_attempted_at IS NULL", sql)
+        self.assertLess(sql.index("SET extraction_attempted_at = CURRENT_TIMESTAMP()"),
+                        sql.index("'page_size_limit'"))
+        self.assertLess(sql.index("'page_size_limit'"), sql.index("SELECT AI_COMPLETE("))
+        self.assertIn("EXECUTE AS USER SITAR", sql)
+
+    def test_merge_preserves_ingestion_dedupe_stream_and_unreadable_records(self):
+        sql = self.read("tasks/parse_documents.sql")
+        self.assertEqual(sql.count("doc.source_path = d.relative_path OR doc.file_hash = d.etag"), 2)
+        self.assertIn("FROM SAARTHI.DOCUMENTS.DOC_STREAM WHERE METADATA$ACTION = 'INSERT'", sql)
+        self.assertIn("ALTER STAGE SAARTHI.STAGES.PATIENT_DOCS REFRESH", sql)
+        self.assertIn("ALTER STAGE SAARTHI.STAGES.REFERENCE_DOCS REFRESH", sql)
+        self.assertEqual(sql.count("'downloaded_pdf', 'unreadable'"), 2)
+        self.assertNotIn("RETURN OBJECT_CONSTRUCT('error','parse_", sql)
+        self.assertIn("'patient', :v_doc_type, :v_file_hash, :v_relative_path", sql)
+        self.assertIn("CALL SAARTHI.OPERATIONAL.chunk_documents_proc()", sql)
+        self.assertIn("EXECUTE AS USER SITAR", sql)
+
     def test_repeat_findings_do_not_collapse_to_concept_only(self):
         sql = self.read("procedures/extract_one_document.sql")
         self.assertIn("PARTITION BY co.concept_id,a.f:quote::VARCHAR",sql)

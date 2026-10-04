@@ -14,7 +14,8 @@ const KNOWN_AS_OF = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
 /**
  * @typedef {{view: "facts", domain: FactDomain, knownAsOf: string | null,
  *   documentId: null} | {view: "documents", domain: null,
- *   knownAsOf: string | null, documentId: string | null}} WorkspaceQuery
+ *   knownAsOf: string | null, documentId: string | null} | {view: "coverage_comparison",
+ *   domain: null, knownAsOf: string | null, documentId: null}} WorkspaceQuery
  */
 
 const ERROR_CATEGORIES = {
@@ -84,6 +85,9 @@ export function validateWorkspaceQuery(params) {
   }
   if (view === "documents" && domain === null) {
     return { view, domain: null, knownAsOf, documentId };
+  }
+  if (view === "coverage_comparison" && domain === null && documentId === null) {
+    return { view, domain: null, knownAsOf, documentId: null };
   }
   return null;
 }

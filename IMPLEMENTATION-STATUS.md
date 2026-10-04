@@ -1,5 +1,78 @@
 # SAARTHI — Implementation Status
 
+**4 October 2026 — PR #14 integration, local verification only:** the document
+improvement branch is reconciled with PR #15. The combined task sources retain
+stage-path deduplication, directory refresh, stream consumption, task user identity
+and once-only extraction stamping alongside independent bounded model reads,
+heading routing and exact evidence checks. Invalid patient parses are recorded
+as unreadable with their stage path. Both branches’ historical checkpoints below
+are retained; their live results do not validate this combined SQL or the
+LangExtract runner. Snowflake compilation, live runner validation and the
+remaining release gates still require separate work.
+
+**3 October 2026 — cohort documents, reference corpus and Search live, OS69400:** 22
+single-page synthetic reports (one lab panel + one histopathology per `PAT-DC-*` patient,
+rendered by `data/generator/cohort_documents.py` from an exported `CLINICAL_EVENT` snapshot)
+went through parse → two-family extraction. **68 assertions, all verified**; 6 diagnosis-only
+pathology pages yielded 0 (no diagnosis concept in the ontology); **PAT-DC-08 pathology failed
+closed** (`pass_b_invalid` from `claude-haiku-4-5`, no value asserted, page kept). Every
+patient now has documents (28 active). Linker: **66 of 66** verified numeric values link to
+exactly one structured event. Reference corpus loaded: **7 documents, 692 pages, 692 chunks**
+(the 431-page AIIMS manual in 40-page `page_filter` batches, because the warehouse caps a
+statement at 120 s). Both Search services resumed and `ACTIVE` (692 reference / 26 patient
+rows); verified as `SAARTHI_APP`: PM-JAY pre-authorisation clauses returned with page indexes,
+and a PAT-DC-04-bound search for another patient's specimen returned only PAT-DC-04 pages. The 4
+Dynamic Tables resumed and refreshed (`DT_REVIEW_QUEUE` 0 → 17 rows). **The 7 Tasks stay
+suspended on purpose:** `parse_documents_proc` deduplicates on `DIRECTORY().etag`, but every
+document here stores a SHA-256 in `file_hash`, so resuming would re-parse all ~29 staged files
+and create paid duplicates. Not tested: a Class A question against the new reference corpus
+(refusal is upstream in the classifier, unchanged).
+
+**3 October 2026 — two documents extracted, provenance and letter conflict live, OS69400:**
+the credit quota was raised, so two single-page synthetic PDFs went through parse → two-family
+extraction (`llama3.3-70b` + `claude-haiku-4-5`). **Tata Memorial CBC (PAT-DEEP-0001): 3/3
+verified** (WBC 6,000, neutrophils 35.0%, platelets 2,60,604). **PM-JAY letter (PAT-DC-07): 2/2
+verified** (`Approved`, valid until 2026-11-30). Both readers agreed on every field, so this
+shows nothing about disagreement handling. The first parse was cancelled by the 120 s statement
+timeout (no rows written) and succeeded on one retry with a 900 s session limit.
+`reconcile_evidence_proc` now writes `EVIDENCE_LINK` `supports` rows only when exactly one
+same-patient, same-concept, same-day event carries the identical number: 3 links, platelets to
+the original 260,604 rather than the amended 245,100; the first live call hit the timeout, the
+second completed with no duplicates. The ontology gained `AUTH_STATUS` / `AUTH_VALID_UNTIL`
+(extraction drops anything outside the ontology, so letters previously yielded nothing).
+Coverage comparison for PAT-DC-07 now shows table `pending`, letter `Approved` with exact
+spans, gate `conflicting`; a cutoff before ingestion hides the letter. The patient header now
+uses the same visit as the gates (it went blank the day after a visit). Still open: the other 11
+patients have no documents except DC-07's letter; reference corpus not loaded.
+
+**3 October 2026 — workspace reads built, OS69400, partial:** the patient workspace's
+Documents, Facts and Coverage-comparison reads had **no server route**: every
+`/api/patient/[id]/workspace` call returned 404, and the browser suites passed only because
+`storyboard-api.ts` stubs that endpoint. Now built: `documents`, `facts` (6 domains) and
+`coverage_comparison` views in `GET_WEB_PATIENT_DATA`, plus the route. Each was exercised live
+as `SAARTHI_APP` with secondary roles off, through the running route on PAT-DEEP-0001 and
+PAT-DC-09: cutoff echo, bad-cutoff rejection, and the financial-consent refusal (PAT-DEEP-0001
+lacks it; the route no longer purges patient state for that case). No browser or E2E test
+covers these reads against live data yet. Observed limits, not fixed: only PAT-DEEP-0001 has
+documents (4 active) — the other 11 patients have none, and the repo holds no synthetic
+documents for them; `EVIDENCE_LINK` is empty, so lab facts show no source documents; no
+`authorization_letter` documents exist, so Coverage comparison shows no letters; several
+PAT-DEEP-0001 labs have no ontology concept. All 7 Tasks were **created suspended** (none
+existed). The 4 Dynamic Tables and both Search services remain **suspended**;
+`REFERENCE_DOC_SEARCH` holds 0 rows (the 159-chunk figure below is from JN89282). Nothing was
+resumed: `SAARTHI_PROTOTYPE_LIMIT` had 1.57 of 2.00 credits used, suspends at 90%, and never
+resets.
+
+**3 October 2026 — orphaned lab concepts fixed:** four PAT-DEEP-0001 lab events (the amended
+platelet count, two haemoglobins, one creatinine) carried concept UUIDs hard-coded from
+JN89282, so on OS69400 they matched no ontology row and no rule could see them.
+`load_synthetic.sql` now resolves each by `canonical_name` and repairs existing rows. Applied
+live (4 rows updated); after a single `DT_HARMONIZED_EVENTS` refresh and a readiness recompute,
+`CLIN-PLT-001` cites the amended count and no outcome changed. The Facts "labs" domain no longer
+lists diagnoses, histopathology or medications. `EVIDENCE_LINK` has **no writer anywhere in the
+repo**: the one truthful candidate link is pathology, and no lab document has been extracted
+(the CBC page has 0 assertions), so lab source links stay empty without paid extraction.
+
 **3 October 2026 — bounded runner candidate, not live verified:** a private Node/Python
 test runner now connects scoped patient reads, local key-pair JWT creation,
 two direct model reads and two real LangExtract reads for one existing synthetic

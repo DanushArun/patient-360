@@ -40,6 +40,8 @@ DECLARE
           FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
           JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
          WHERE d.scope='patient' AND d.status='active'
+           -- Empty or failed-closed pages must not trigger paid automatic retries.
+           AND dp.extraction_attempted_at IS NULL
            AND NOT EXISTS (
                  SELECT 1 FROM SAARTHI.EVIDENCE.ASSERTION a
                   WHERE a.doc_id = dp.doc_id AND a.page_index = dp.page_index
@@ -50,6 +52,10 @@ BEGIN
     FETCH c_pages INTO v_doc_id, v_page_index, v_page_text,v_doc_type;
 
     WHILE (v_doc_id IS NOT NULL) DO
+        -- Stamped before the model calls, so an error or empty result is never retried
+        -- automatically. Re-extraction is a deliberate act: clear the stamp by hand.
+        UPDATE SAARTHI.DOCUMENTS.DOC_PAGE SET extraction_attempted_at = CURRENT_TIMESTAMP()
+         WHERE doc_id = :v_doc_id AND page_index = :v_page_index;
         IF (v_page_text IS NULL OR LENGTH(v_page_text)=0 OR LENGTH(v_page_text)>12000) THEN
             RETURN OBJECT_CONSTRUCT('error','page_size_limit','assertions_created',v_count);
         END IF;
@@ -223,8 +229,10 @@ BEGIN
 END;
 $$;
 
+-- EXECUTE AS USER for the same DOC_PAGE row access policy reason as TASK_PARSE_DOCUMENTS.
 CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_EXTRACT_ASSERTIONS
   WAREHOUSE = SAARTHI_AI_WH
   AFTER SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
+  EXECUTE AS USER SITAR
 AS
   CALL SAARTHI.OPERATIONAL.extract_assertions_proc();

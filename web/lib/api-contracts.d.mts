@@ -14,7 +14,7 @@ export function validateReviewTaskBody(
   body: unknown,
 ): { patientId: string; ruleId: string; action: "request_document" | "escalate" } | null;
 export function validateWorkspaceQuery(params: URLSearchParams): {
-  view: "facts" | "documents";
+  view: "facts" | "documents" | "coverage_comparison";
   domain:
     | "demographics"
     | "labs"

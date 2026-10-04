@@ -27,6 +27,12 @@ USING (
   -- but neither is a named concept in SPEC.md/WORK-PLAN.md's ontology list.
   UNION ALL SELECT 'WBC',        'analyte',   FALSE, ARRAY_CONSTRUCT('white blood cell count','WBC count')
   UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', FALSE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%')
+  -- Same gap: pass_a_claim.md names auth_status and valid_until as the letter fields
+  -- COV-AUTH-001 compares with the AUTHORIZATION row, but extraction keeps only
+  -- ontology concepts, so a letter yielded no assertions. 'document_type' is the
+  -- closest allowed concept_type; these are letter fields, not clinical results.
+  UNION ALL SELECT 'AUTH_STATUS',      'document_type', FALSE, ARRAY_CONSTRUCT('pre-authorisation status','authorization decision','auth status')
+  UNION ALL SELECT 'AUTH_VALID_UNTIL', 'document_type', FALSE, ARRAY_CONSTRUCT('authorisation valid until','validity','expiry date')
 ) s
 ON t.canonical_name = s.canonical_name
 WHEN MATCHED THEN

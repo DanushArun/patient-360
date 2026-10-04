@@ -38,6 +38,14 @@ test("test_workspace_query_accepts_only_known_domains_and_bounded_selectors", ()
     view: "documents", domain: null, knownAsOf: "2026-10-02T08:00:00", documentId: "DOC-1",
   });
   assert.equal(validateWorkspaceQuery(new URLSearchParams("view=facts&domain=arbitrary")), null);
+  assert.deepEqual(validateWorkspaceQuery(new URLSearchParams(
+    "view=coverage_comparison&known_as_of=2026-10-02T08%3A00%3A00",
+  )), {
+    view: "coverage_comparison", domain: null, knownAsOf: "2026-10-02T08:00:00", documentId: null,
+  });
+  assert.equal(validateWorkspaceQuery(new URLSearchParams(
+    "view=coverage_comparison&domain=labs",
+  )), null);
   assert.equal(validateWorkspaceQuery(new URLSearchParams(
     "view=documents&documentId=bad%2Fid",
   )), null);

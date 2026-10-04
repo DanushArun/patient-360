@@ -2,7 +2,7 @@
 -- STEP 16a - TASK parse_documents (pulled forward - unstructured ingestion)
 -- =============================================================================
 -- WORK-PLAN.md Day 3-4. AI_PARSE_DOCUMENT(LAYOUT, page_split) -> DOCUMENT +
--- DOC_PAGE. Dedup on SHA-256 file_hash before parsing. The only place this
+-- DOC_PAGE. Dedup on stage source_path (legacy fallback: etag) before parsing. The only place this
 -- AI function may run is a Task (never a Dynamic Table - non-deterministic).
 --
 -- Scans DIRECTORY(@PATIENT_DOCS) for files not yet in DOCUMENT (dedup on
@@ -32,22 +32,40 @@ DECLARE
     v_doc_type      VARCHAR;
     v_type_count    INTEGER;
     v_reference_count INTEGER DEFAULT 0;
+    v_run_id        VARCHAR DEFAULT UUID_STRING();
+    -- A file is already ingested if a DOCUMENT row records its stage path (source_path)
+    -- or, for rows from before that column, its etag. file_hash alone never matched:
+    -- rows loaded by the bounded scripts hold a SHA-256, never an etag.
     c_new_files CURSOR FOR
         SELECT d.relative_path, d.etag,
                SPLIT_PART(d.relative_path, '/', 1) AS patient_id
           FROM DIRECTORY(@SAARTHI.STAGES.PATIENT_DOCS) d
          WHERE NOT EXISTS (
                  SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT doc
-                  WHERE doc.file_hash = d.etag
+                  WHERE doc.scope = 'patient'
+                    AND (doc.source_path = d.relative_path OR doc.file_hash = d.etag)
                );
     c_new_reference CURSOR FOR
         SELECT d.relative_path, d.etag
           FROM DIRECTORY(@SAARTHI.STAGES.REFERENCE_DOCS) d
          WHERE NOT EXISTS (
                  SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT doc
-                  WHERE doc.file_hash = d.etag
+                  WHERE doc.scope = 'reference'
+                    AND (doc.source_path = d.relative_path OR doc.file_hash = d.etag)
                );
 BEGIN
+    -- Internal-stage directory tables refresh only on demand, so an upload is invisible
+    -- to DIRECTORY() and DOC_STREAM until refreshed. Uploaders refresh PATIENT_DOCS so
+    -- the stream fires this task; refreshing here as well covers REFERENCE_DOCS, which
+    -- has no stream.
+    ALTER STAGE SAARTHI.STAGES.PATIENT_DOCS REFRESH;
+    ALTER STAGE SAARTHI.STAGES.REFERENCE_DOCS REFRESH;
+    -- Consume DOC_STREAM. The work list is DIRECTORY(), not the stream, but an unconsumed
+    -- stream keeps SYSTEM$STREAM_HAS_DATA true and wakes this task every 5 minutes
+    -- forever. The DML that consumes it doubles as the run's audit row.
+    INSERT INTO SAARTHI.OPERATIONAL.INGESTION_RUN (run_id, source_id, records_received, file_hashes)
+    SELECT :v_run_id, 'PATIENT_DOCS', COUNT(*), ARRAY_AGG(etag)
+      FROM SAARTHI.DOCUMENTS.DOC_STREAM WHERE METADATA$ACTION = 'INSERT';
     OPEN c_new_files;
     FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
 
@@ -69,16 +87,29 @@ BEGIN
                         {'mode':'LAYOUT', 'page_split': true}));
         v_page_count := (SELECT GET_PATH(:v_parsed, 'metadata.pageCount')::INTEGER);
         v_doc_id := UUID_STRING();
+        -- Record unusable parses once as unreadable; retain exact page validation.
         IF (v_page_count IS NULL OR v_page_count<1 OR NOT COALESCE(IS_ARRAY(v_parsed:pages),FALSE)
             OR ARRAY_SIZE(v_parsed:pages)!=v_page_count) THEN
-            RETURN OBJECT_CONSTRUCT('error','parse_output_invalid','documents_parsed',v_count);
+            INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
+                (doc_id, patient_id, scope, doc_type, file_hash, source_path, ingested_at, ingestion_method, status)
+            VALUES (:v_doc_id, :v_patient_id, 'patient', 'unknown', :v_file_hash, :v_relative_path,
+                    CURRENT_TIMESTAMP(), 'downloaded_pdf', 'unreadable');
+            v_count := v_count + 1;
+            FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
+            CONTINUE;
         END IF;
         SELECT COUNT(DISTINCT value:index::INTEGER) INTO :v_type_count
           FROM TABLE(FLATTEN(input=>:v_parsed:pages))
          WHERE IS_INTEGER(value:index) AND value:index::INTEGER>=0
            AND value:index::INTEGER<:v_page_count AND IS_VARCHAR(value:content);
         IF (v_type_count!=v_page_count) THEN
-            RETURN OBJECT_CONSTRUCT('error','parse_pages_invalid','documents_parsed',v_count);
+            INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
+                (doc_id, patient_id, scope, doc_type, file_hash, source_path, ingested_at, ingestion_method, status)
+            VALUES (:v_doc_id, :v_patient_id, 'patient', 'unknown', :v_file_hash, :v_relative_path,
+                    CURRENT_TIMESTAMP(), 'downloaded_pdf', 'unreadable');
+            v_count := v_count + 1;
+            FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
+            CONTINUE;
         END IF;
         v_first_text := NULL;
         SELECT value:content::VARCHAR INTO :v_first_text
@@ -98,9 +129,9 @@ BEGIN
         -- NULL means capture quality is unassessed (metadata, not clinical missingness).
         -- Clean extracted text cannot prove a clean image. Do not change the enum.
         INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
-            (doc_id, patient_id, scope, doc_type, file_hash, source_quality, ingested_at, ingestion_method, status)
+            (doc_id, patient_id, scope, doc_type, file_hash, source_path, source_quality, ingested_at, ingestion_method, status)
         VALUES
-            (:v_doc_id, :v_patient_id, 'patient', :v_doc_type, :v_file_hash,
+            (:v_doc_id, :v_patient_id, 'patient', :v_doc_type, :v_file_hash, :v_relative_path,
              NULL, CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
 
         v_i := 0;
@@ -115,6 +146,8 @@ BEGIN
         END WHILE;
 
         v_count := v_count + 1;
+        -- Was INTO ..., v_doc_id, ...: the etag landed in v_doc_id and v_file_hash kept
+        -- the previous file's value, so dedupe could not hold across iterations.
         FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
     END WHILE;
     CLOSE c_new_files;
@@ -139,9 +172,9 @@ BEGIN
         v_doc_id := UUID_STRING();
 
         INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
-            (doc_id, patient_id, scope, doc_type, file_hash, source_quality, ingested_at, ingestion_method, status)
+            (doc_id, patient_id, scope, doc_type, file_hash, source_path, source_quality, ingested_at, ingestion_method, status)
         VALUES
-            (:v_doc_id, NULL, 'reference', 'clinical_guideline', :v_file_hash,
+            (:v_doc_id, NULL, 'reference', 'clinical_guideline', :v_file_hash, :v_relative_path,
              NULL, CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
 
         v_i := 0;
@@ -160,16 +193,27 @@ BEGIN
     END WHILE;
     CLOSE c_new_reference;
 
+    -- Chunk in the same run so new pages reach Cortex Search; the stream-triggered chain
+    -- otherwise never chunks (only the orchestrator did).
+    CALL SAARTHI.OPERATIONAL.chunk_documents_proc();
+    UPDATE SAARTHI.OPERATIONAL.INGESTION_RUN
+       SET completed_at = CURRENT_TIMESTAMP(), records_loaded = :v_count + :v_reference_count
+     WHERE run_id = :v_run_id;
     RETURN OBJECT_CONSTRUCT(
+        'run_id', v_run_id,
         'documents_parsed', v_count,
         'reference_documents_parsed', v_reference_count
     );
 END;
 $$;
 
+-- EXECUTE AS USER: chunk_documents_proc reads DOC_PAGE, whose row access policy keys on
+-- CURRENT_USER() (F3); a task with no user sees no patient pages. The named user must be an
+-- active practitioner on the relevant care teams, and the owner needs IMPERSONATE on it.
 CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
   WAREHOUSE = SAARTHI_AI_WH
   SCHEDULE = '5 MINUTE'
+  EXECUTE AS USER SITAR
   WHEN SYSTEM$STREAM_HAS_DATA('SAARTHI.DOCUMENTS.DOC_STREAM')
 AS
   CALL SAARTHI.OPERATIONAL.parse_documents_proc();
