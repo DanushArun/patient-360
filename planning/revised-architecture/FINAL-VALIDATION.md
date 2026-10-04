@@ -1,5 +1,11 @@
 # SAARTHI — Final Architecture Validation
 
+> **Honesty note added 4 Oct 2026 (FIX-ROUND-5).** This is a historical 16-17 Sept snapshot. Competitor source code is **not
+> vendored in this repository**; statements about competitors are a researcher's file-level reading recorded in
+> `planning/research/clinical/ps04-competitive-landscape.md` (e.g. `streamlit/login.py`, `sql/00_infrastructure.sql`,
+> with no line numbers) and **cannot be re-verified from this repo**. Read "no competitor does X" as "we did not find X in
+> the code we reviewed". Superseded in part by `DECISION-household-removal.md`.
+
 **Written 2026-09-17. Validates the completed architecture against three independent standards: the verbatim hackathon brief, the confirmed judging rubric, and every surveyed competitor.**
 
 Architecture under validation:
@@ -81,7 +87,7 @@ Every requirement line, mapped to where it is satisfied and how it is proven.
 2. **F7** — "the app role has no `USAGE`" is false while secondary roles are active; a secondary ACCOUNTADMIN satisfies the check.
 3. **A1** — the agent derives `patient_id` from the *question text* and injects the filter itself.
 
-Each is reproducible with a query ID. Each is a live Judge Console probe. **No competitor has closed any of the three.**
+Each is reproducible with a query ID. Each is a live Judge Console probe. **We did not see any of the three closed in the competitor code we reviewed.**
 
 ### Real-World Relevance — 30%
 
@@ -145,10 +151,10 @@ Rule-by-rule, against what their **source code** does — not their READMEs.
 
 **SynapseCortex — widest clinical rule surface (FDA + HEDIS + drug safety).** Response: breadth without enforcement is the failure we document — `PATIENT_360_SNAPSHOT` returns the entire dataset to any querier. We adopt their rigid inline citation format (cheap, makes R1 legible at a glance) and counter breadth with provable correctness: 80 rule fixtures.
 
-### The three demo beats no competitor can answer
+### Three demo beats not found in the competitor code we reviewed
 
-1. **Consent revocation** — same user, same question, returns nothing. Nobody else models consent.
-2. **Two-pass extraction disagreement** — the system refuses to assert a value read off a degraded image and says why. Nobody else verifies extraction.
+1. **Consent revocation** — same user, same question, returns nothing. Consent modelling was not found in the competitor code we reviewed.
+2. **Two-pass extraction disagreement** — the system refuses to assert a value read off a degraded image and says why. Extraction verification was not found in the competitor code we reviewed.
 3. **Live scope-leak comparison** — run the naive path (F5/A1) and watch it return another patient's pathology, then run ours and watch it return nothing. Reproducible, with query IDs.
 
 ---
@@ -223,7 +229,7 @@ Five India-specific FHIR claims are unverified, notably the ABHA identifier syst
 **The architecture is complete, internally consistent, and validated against all three standards.**
 
 - **Brief:** all 8 requirements satisfied, all 4 CoCo phases addressed, 6 of 6 recommended tasks, 6 of 7 ingenuity categories.
-- **Rubric:** Technical Execution carries three empirically verified security findings no competitor has closed. Real-World Relevance rests on 19 real medical reports and consent held within the team. Solution Completeness is protected by deliberate scope restraint and mandated honest accounting.
+- **Rubric:** Technical Execution carries three empirically verified platform findings (query IDs in `evidence/coco/verification-query-ids.md`) that we did not see closed in the competitor code we reviewed. Real-World Relevance rests on 19 real medical reports and consent held within the team. Solution Completeness is protected by deliberate scope restraint and mandated honest accounting.
 - **Competition:** we lead on R2, R3, R4, R5, R6, R7 and consent — seven of eight architectural axes. We trail only on *shipped code*, which the Day-5 gate exists to fix.
 - **Internal:** all 16 fatal findings resolved, 7 deferred with stated reasons, 0 contradictions.
 

@@ -37,7 +37,7 @@ This matters more for us than for any competitor because we make the strongest s
 
 3. **Check 6 in the validator — assertion trustworthiness.** A claim resting on an assertion with `extraction_confidence` below threshold, or `source_quality = 'rotated_photo'`, or unverified two-pass status, is downgraded: the value is not asserted, and the answer states *"a value was read from a low-quality image and has not been verified — confirm against the original report."*
 
-**This single addition is stronger differentiation than anything else in the architecture.** No competitor verifies extraction. It converts our safety claim from "we cite our sources" to "we know when our sources are unreliable and we say so."
+**This single addition is stronger differentiation than anything else in the architecture.** We did not find extraction verification in the competitor code we reviewed. It converts our safety claim from "we cite our sources" to "we know when our sources are unreliable and we say so."
 
 ---
 
@@ -73,7 +73,7 @@ The system must express a third relation that the current model cannot: **"same 
 - Reconciliation adds a second matching pass on `(patient_id, subject, predicate)` **ignoring specimen**, comparing results across specimens, emitting discordance links.
 - A rule — `DOC-DISCORD-001` — surfaces biomarker discordance as an advisory with both values, both specimens, both labs, and both dates. Never auto-resolved to the newer value.
 
-This is a demo beat drawn directly from a real patient's records, and it is a failure mode no competitor models.
+This is a demo beat drawn directly from a real patient's records, and it is a failure mode not found in the competitor code we reviewed.
 
 ---
 
@@ -208,8 +208,8 @@ That is a lot of genuine, legally safe recommendation value that the architectur
 
 ### The 5 that decide whether we win
 
-1. **D1 — extraction verification.** Our safety story currently cannot catch a wrong extracted value. Fixing it is the strongest differentiator in the entire design; no competitor has it.
-2. **F1 — consent, enforced at query time.** Legally mandatory, uniquely Indian, no competitor has it, demoable in 30 seconds.
+1. **D1 — extraction verification.** Our safety story currently cannot catch a wrong extracted value. Fixing it is the strongest differentiator in the entire design; not found in the competitor code we reviewed.
+2. **F1 — consent, enforced at query time.** Legally mandatory, uniquely Indian, not found in the competitor code we reviewed, demoable in 30 seconds.
 3. **C1 / F2 — real identity and access.** `CURRENT_USER()` in container runtime returns the app owner. Until this is fixed, our security claim is exactly as cosmetic as CareCompass's role picker — the flaw we built the pitch around attacking.
 4. **D7 — federated index positioning.** Resolves a self-contradiction a knowledgeable judge will find, and converts it into the strongest architectural narrative available.
 5. **D3 — biomarker discordance.** Straight from Dipali's real reports, modelled by nobody, and the most vivid clinical failure we can demonstrate.

@@ -156,8 +156,7 @@ remained enabled with `NODE_USE_SYSTEM_CA=1`; no insecure certificate bypass was
   warehouse, and performance at this size still needs live measurement.
 
 These protections do not change clinical rules, verification passes, consent
-checks, model families or retrieval scoping. Ollama still needs Snowflake for SQL
-facts and scope checks; switching the model provider does not make live mode free.
+checks, model families or retrieval scoping.
 
 ## Confirm the account before connecting
 

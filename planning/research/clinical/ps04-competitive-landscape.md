@@ -1,5 +1,11 @@
 # PS-04 Field Report
 
+> **Honesty note added 4 Oct 2026 (FIX-ROUND-5).** This is a historical 16-17 Sept snapshot. Competitor source code is **not
+> vendored in this repository**; statements about competitors are a researcher's file-level reading recorded in
+> `planning/research/clinical/ps04-competitive-landscape.md` (e.g. `streamlit/login.py`, `sql/00_infrastructure.sql`,
+> with no line numbers) and **cannot be re-verified from this repo**. Read "no competitor does X" as "we did not find X in
+> the code we reviewed". Superseded in part by `DECISION-household-removal.md`.
+
 Competitive intelligence on the PS-04 hackathon field, researched 2026-09-16, updated same day with a fourth confirmed competitor found via GitHub search (`carecompass-app`, missed in the original manual list). Method: ~30 public GitHub repos surveyed — deep source review for the four confirmed PS-04 threats (Verity, ATLAS, SynapseCortex, CareCompass), lighter passes for adjacent PS-02 entries, the official Snowflake HCLS baseline, and unrelated hackathon submissions scanned only for transferable patterns. Confirmed via the official event page (hack2skill.com/event/cococlihack-gccedition) that this is the "GCC Edition," prototype submission window is **13 Sept – 4 Oct 2026**, and there is no public submissions gallery — so this list can never be guaranteed complete; re-search periodically. This is a snapshot; competitor repos are active and will drift — re-run closer to the 4 Oct deadline if time allows.
 
 **Thesis:** SAARTHI's six architectural rules (`plan.md`) are, rule for rule, more rigorous than any confirmed competitor. The problem is SAARTHI is also the only serious entrant with zero shipped code. Verity has a deployed $7 demo run. ATLAS has a live public URL, CI, and 23 tests. The field is won on the intersection of rigor and evidence, not rigor alone.

@@ -17,7 +17,7 @@ CURRENT_USER() → ROLE_PATIENT_MAP → patient_id filter
 
 But `platform-constraints.md` §FINDING 3 and `streamlit-container-runtime.md` both state: Streamlit container runtime runs as the **owner role**. In an owner's-rights stored procedure called from a container-runtime Streamlit app, `CURRENT_USER()` returns the **Streamlit owner**, not the logged-in person.
 
-**This means**: Every tool reads the owner's patient list, not the end user's. The scope injection is broken. Every competitor we're attacking for cosmetic auth has the same problem — and our spec has the same bug.
+**This means**: Every tool reads the owner's patient list, not the end user's. The scope injection is broken. The competitors we criticised for cosmetic auth may have the same problem (unverified) — and our spec has the same bug.
 
 **Fix options**:
 1. Use Cortex Agent's `is_immutable_session_attribute: true` to pass user identity. Read back via `SYS_CONTEXT('SNOWFLAKE$SESSION_ATTRIBUTES', 'user_id')` in RAP and procedures. This is Snowflake's documented multi-tenancy pattern.
