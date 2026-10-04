@@ -47,6 +47,19 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
       - question: "Is the pathology report final?"
       - question: "What changed since 09:00?"
 
+  # Skills describe HOW to use the tools; they carry no scope logic (backend/skills/README.md). The path names the
+  # FOLDER, not SKILL.md. Loaded by backend/skills/upload_skills.sql. unverified-needs-deploy: whether this account's
+  # agent spec accepts the skills block has not been run.
+  skills:
+    - name: "clinical-question-routing"
+      source: {type: "STAGE", path: "@SAARTHI.STAGES.SKILLS/clinical-question-routing"}
+    - name: "evidence-retrieval"
+      source: {type: "STAGE", path: "@SAARTHI.STAGES.SKILLS/evidence-retrieval"}
+    - name: "risk-stratification"
+      source: {type: "STAGE", path: "@SAARTHI.STAGES.SKILLS/risk-stratification"}
+    - name: "evidence-reconciliation"
+      source: {type: "STAGE", path: "@SAARTHI.STAGES.SKILLS/evidence-reconciliation"}
+
   tools:
     - tool_spec:
         type: "generic"
