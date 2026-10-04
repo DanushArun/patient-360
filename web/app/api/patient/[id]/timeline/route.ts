@@ -1,4 +1,5 @@
 import { loadPatientTimeline } from "@/lib/patient";
+import { apiError, apiErrorStatus } from "@/lib/api-contracts.mjs";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +11,7 @@ export async function GET(
     const { id } = await context.params;
     return Response.json(await loadPatientTimeline(id));
   } catch (error) {
-    const code = error instanceof Error ? error.message : "timeline_unavailable";
-    const status = code.includes("access") || code.includes("bind failed") ? 403 : 502;
-    return Response.json({ error: code }, { status });
+    const failure = apiError(error, "timeline_unavailable");
+    return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
 }

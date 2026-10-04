@@ -1,0 +1,72 @@
+PAT-DC-01 / 200 7.7s leaves 120 empties {'.gates[].evidence_ids[]': 10}
+PAT-DC-01 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-01 /evidence 200 7.0s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-01 /timeline 200 5.0s leaves 99 empties {'.timeline[].value': 2}
+PAT-DC-01 /schemes 200 5.3s leaves 8 empties {}
+PAT-DC-01 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-02 / 200 6.0s leaves 120 empties {'.gates[].evidence_ids[]': 10}
+PAT-DC-02 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-02 /evidence 200 6.1s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-02 /timeline 200 5.0s leaves 99 empties {'.timeline[].value': 2}
+PAT-DC-02 /schemes 200 5.1s leaves 15 empties {}
+PAT-DC-02 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-03 / 200 6.8s leaves 97 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-03 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-03 /evidence 200 5.5s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-03 /timeline 200 4.6s leaves 78 empties {'.timeline[].value': 2}
+PAT-DC-03 /schemes 200 5.2s leaves 8 empties {}
+PAT-DC-03 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-04 / 200 6.6s leaves 105 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-04 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-04 /evidence 200 5.8s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-04 /timeline 200 4.4s leaves 85 empties {'.timeline[].value': 2}
+PAT-DC-04 /schemes 200 4.7s leaves 8 empties {}
+PAT-DC-04 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-05 / 200 6.4s leaves 97 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-05 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-05 /evidence 200 5.6s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-05 /timeline 200 4.1s leaves 78 empties {'.timeline[].value': 2}
+PAT-DC-05 /schemes 200 4.8s leaves 16 empties {}
+PAT-DC-05 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-06 / 200 6.8s leaves 120 empties {'.gates[].evidence_ids[]': 10}
+PAT-DC-06 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-06 /evidence 200 5.8s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-06 /timeline 200 4.2s leaves 99 empties {'.timeline[].value': 2}
+PAT-DC-06 /schemes 200 4.6s leaves 8 empties {}
+PAT-DC-06 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-07 / 200 6.7s leaves 97 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-07 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-07 /evidence 200 5.9s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-07 /timeline 200 4.5s leaves 78 empties {'.timeline[].value': 2}
+PAT-DC-07 /schemes 200 4.4s leaves 8 empties {}
+PAT-DC-07 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-08 / 200 7.1s leaves 95 empties {'.gates[].evidence_ids[]': 11}
+PAT-DC-08 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-08 /evidence 200 6.3s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-08 /timeline 200 5.1s leaves 50 empties {'.timeline[].value': 2}
+PAT-DC-08 /schemes 200 4.3s leaves 16 empties {}
+PAT-DC-08 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-09 / 200 6.0s leaves 97 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-09 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-09 /evidence 200 6.5s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-09 /timeline 200 5.3s leaves 78 empties {'.timeline[].value': 2}
+PAT-DC-09 /schemes 200 4.8s leaves 8 empties {}
+PAT-DC-09 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-10 / 200 6.3s leaves 105 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-10 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-10 /evidence 200 6.1s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-10 /timeline 200 4.9s leaves 85 empties {'.timeline[].value': 2}
+PAT-DC-10 /schemes 200 4.8s leaves 15 empties {}
+PAT-DC-10 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DC-11 / 200 6.3s leaves 97 empties {'.gates[].evidence_ids[]': 9}
+PAT-DC-11 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DC-11 /evidence 200 6.0s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DC-11 /timeline 200 6.1s leaves 78 empties {'.timeline[].value': 2}
+PAT-DC-11 /schemes 200 4.9s leaves 8 empties {}
+PAT-DC-11 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}
+PAT-DEEP-0001 / 200 5.9s leaves 127 empties {'.gates[].evidence_ids[]': 11}
+PAT-DEEP-0001 /workspace 400 0.0s leaves 0 empties {'{"error":"invalid_argument","category":"invalid","purge_patient_state":false}': 1}
+PAT-DEEP-0001 /evidence 200 5.9s leaves 0 empties {'.answers[]': 1, '.packets[]': 1}
+PAT-DEEP-0001 /timeline 200 5.7s leaves 106 empties {'.timeline[].value': 4}
+PAT-DEEP-0001 /schemes 200 6.2s leaves 16 empties {}
+PAT-DEEP-0001 /review-tasks 400 0.0s leaves 0 empties {'{"error":"invalid_argument"}': 1}

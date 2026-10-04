@@ -12,7 +12,10 @@ export function validateAskBody(
 ): { patientId: string; question: string; sourceScope: "patient" | "reference" } | null;
 export function validateReviewTaskBody(
   body: unknown,
-): { patientId: string; ruleId: string; action: "request_document" | "escalate" } | null;
+): {
+  patientId: string; ruleId: string; action: "request_document" | "escalate";
+  requestId?: string;
+} | null;
 export function validateWorkspaceQuery(params: URLSearchParams): {
   view: "facts" | "documents" | "coverage_comparison";
   domain:
@@ -29,3 +32,4 @@ export function validateWorkspaceQuery(params: URLSearchParams): {
 export function isSameOrigin(request: Request): boolean;
 export function apiError(error: unknown, fallback?: string): ApiFailure;
 export function apiErrorStatus(code: string): number;
+export function isValidPatientId(id: unknown): boolean;

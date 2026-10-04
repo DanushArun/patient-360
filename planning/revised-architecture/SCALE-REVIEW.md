@@ -218,6 +218,6 @@ We cannot build a pan-India system in the remaining window. But the architecture
 
 Fixing all 21 issues in SPEC-REVIEW.md gets us a **correct single-hospital prototype**. That is roughly where Verity already is, with shipped code and a $7 reproducible run.
 
-The 6 fatal gaps above are what separate "a good patient-360 demo" from "a system designed for the problem India actually has." Four of them — consent, organizational hierarchy, referral, member/household — are things **no competitor has**, are **directly implied by the problem statement**, and are **grounded in research we already did and then failed to carry into the architecture**.
+The 6 fatal gaps above are what separate "a good patient-360 demo" from "a system designed for the problem India actually has." Four of them — consent, organizational hierarchy, referral, member/household — are things not found in the competitor code we reviewed, are **directly implied by the problem statement**, and are **grounded in research we already did and then failed to carry into the architecture**.
 
 That last point is the real finding of this review: the research is not the weak link. **The gap between our research and our architecture is.** Consent, the FHIR mapping, the family floater, the `conflicting` status, the retention clocks, the model-risk register — every one of these is already written down in `planning/research/`, with citations, and none of them made it into SPEC.md.

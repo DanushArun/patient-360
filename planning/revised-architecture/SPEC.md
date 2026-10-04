@@ -48,13 +48,13 @@ R1–R6 carry over from `plan.md`. **R7 is new and comes from empirical testing.
 |---|---|---|
 | **R1** | The LLM never decides. It extracts typed assertions, interprets questions into bounded tool calls, ranks passages, and phrases answers from supplied facts. Every status, number, date, threshold comparison and gate outcome is produced by SQL against a versioned rule. | Design |
 | **R2** | Three clocks: `event_time`, `source_recorded_at`, `ingested_at`. Every answer carries `known_as_of`. | Design |
-| **R3** | Missingness is a type: `present · explicitly_negative · pending · not_received · conflicting · unreadable · superseded`. **Mapped to `Observation.dataAbsentReason` where FHIR has an equivalent code — see §2.6. Claimed as *enforced*, not novel: FHIR provides the vocabulary but compels nobody to populate it, and no competitor uses a typed taxonomy at all.** | `fhir-field-mapping.md` §0.1 |
+| **R3** | Missingness is a type: `present · explicitly_negative · pending · not_received · conflicting · unreadable · superseded`. **Mapped to `Observation.dataAbsentReason` where FHIR has an equivalent code — see §2.6. Claimed as *enforced*, not novel: FHIR provides the vocabulary but compels nobody to populate it, and we did not find a typed taxonomy in the competitor code we reviewed.** | `fhir-field-mapping.md` §0.1 |
 | **R4** | Identity is ABHA-anchored and federated. Never joined on name. Ambiguous matches quarantine and contribute **no** evidence. | `abdm-architecture.md` |
 | **R5** | Scope is enforced server-side before retrieval, in three layers. | **F3, F5, F6, F7 verified** |
 | **R6** | Two document corpora, never mixed in one ranked list. Physically separate services. | **F4 verified — platform-forced** |
 | **R7** | **Extraction is never trusted on a single pass for safety-critical fields.** Two passes; disagreement yields `conflicting` and the gate returns `not_evaluated`. A value is never asserted from one unverified read. | `DEEP-REVIEW-3.md` D1 |
 
-**R7 is the differentiator no competitor has.** `[TE]` `[RWR]`
+**R7 is a differentiator not found in the competitor code we reviewed.** `[TE]` `[RWR]`
 
 ### R5 — the three layers, as verified
 
@@ -147,7 +147,7 @@ CONSENT                 [B]  consent_id PK · patient_id FK
 2. `ANSWER_RUN` records the `consent_id` that authorised each answer.
 3. Revocation takes effect immediately — no cache survives it.
 
-*Scoring:* `[RWR]` structurally correct for ABDM · `[TE]` real enforcement · **no competitor has it** · demos in 30 seconds.
+*Scoring:* `[RWR]` structurally correct for ABDM · `[TE]` real enforcement · **not found in the competitor code we reviewed** · demos in 30 seconds.
 
 ### 2.3 Patient core
 
@@ -642,7 +642,7 @@ For every concept with `is_safety_critical = TRUE`:
 2. Pass 2 — differently-worded prompt B.
 3. Agreement → `verified`. Disagreement → `conflicting`, both values retained in `pass1_value`/`pass2_value`, and **the gate returns `not_evaluated` rather than a number**.
 
-This converts our safety claim from *"we cite our sources"* to *"we know when our sources are unreliable, and we say so."* Cost: doubles parse spend on critical fields only — affordable at $1,200. **No competitor verifies extraction.**
+This converts our safety claim from *"we cite our sources"* to *"we know when our sources are unreliable, and we say so."* Cost: doubles parse spend on critical fields only — affordable at $1,200. **We did not find extraction verification in the competitor code we reviewed.**
 
 **Answer output schema** — frozen, because both the agent prompt and the validator depend on it (C5):
 ```json

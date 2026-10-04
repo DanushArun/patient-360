@@ -18,6 +18,9 @@ export interface ReadinessRow {
   OUTCOME: "pass" | "fail" | "not_evaluated" | "conflicting" | null;
   SEVERITY: "blocker" | "advisory" | null;
   REASON: string | null;
+  /** R2: the clock the gate outcome was computed against (READINESS_STATE.known_as_of). */
+  KNOWN_AS_OF?: string | null;
+  COMPUTED_AT?: string | null;
 }
 
 export async function fetchCensus(horizonDays = 7): Promise<ReadinessRow[]> {
@@ -98,4 +101,28 @@ export function buildCensus(rows: ReadinessRow[]): Chair[] {
       a.scheduled.localeCompare(b.scheduled)
   );
   return chairs;
+}
+
+/** Oldest gate clock across the census, so the page never claims to be fresher than its
+ * stalest row. Null when no row carries one (nothing computed yet). Timestamps are ISO
+ * strings in a fixed format, so lexical order is chronological. */
+export function oldestKnownAsOf(rows: ReadinessRow[]): string | null {
+  let oldest: string | null = null;
+  for (const row of rows) {
+    if (typeof row.KNOWN_AS_OF === "string" && row.KNOWN_AS_OF
+      && (oldest === null || row.KNOWN_AS_OF < oldest)) oldest = row.KNOWN_AS_OF;
+  }
+  return oldest;
+}
+
+/** R2: show the data's own clock, never the page-load time as if it were the data's.
+ * "Nothing computed" (no rows) is distinct from "rows exist but carry no clock" (older
+ * procedure deployment): the second must not claim readiness is missing. */
+export function censusClockLabel(error: string | null, asOf: string | null,
+  loadedAt: string, rowCount: number): string {
+  if (error) return `Last attempt ${loadedAt}`;
+  if (asOf) return `Readiness as of ${asOf.replace('T', ' ')} (page loaded ${loadedAt})`;
+  return rowCount > 0
+    ? `Readiness clock not reported by the server (page loaded ${loadedAt})`
+    : `No readiness computed yet (page loaded ${loadedAt})`;
 }

@@ -23,6 +23,7 @@ DECLARE
     v_patient_id   VARCHAR;
     v_practitioner VARCHAR;
     v_role_type    VARCHAR;
+    v_inserted     NUMBER DEFAULT 0;
     v_task_id      VARCHAR;
     v_existing     VARCHAR;
     v_issue_in_scope BOOLEAN;
@@ -62,6 +63,7 @@ BEGIN
                          FROM SAARTHI.GOVERNANCE.CARE_TEAM
                         WHERE practitioner_id = :v_practitioner
                           AND patient_id     = :v_patient_id
+                          AND role_type IN ('treating', 'coordinator')
                           AND active_from   <= CURRENT_DATE()
                           AND (active_to IS NULL OR active_to >= CURRENT_DATE())
                         ORDER BY active_from DESC
@@ -151,11 +153,41 @@ BEGIN
     IF (:ACTION IN ('close', 'reassign')) THEN
         RETURN OBJECT_CONSTRUCT('error', 'task_transition_requires_review');
     END IF;
-    INSERT INTO SAARTHI.OPERATIONAL.REVIEW_TASK
-        (task_id, issue_id, owner_practitioner_id, state, decision, reason, actor_practitioner_id, idempotency_key)
-    VALUES
-        (:v_task_id, :ISSUE_ID, :v_practitioner, 'open', :ACTION, :REASON, :v_practitioner, :IDEMPOTENCY_KEY);
 
-    RETURN OBJECT_CONSTRUCT('task_id', v_task_id, 'idempotent_replay', FALSE);
+    -- Snowflake does not enforce the UNIQUE on idempotency_key, and SELECT-then-INSERT
+    -- races on a double click. One MERGE does the check and the insert together: MERGE takes
+    -- the table lock, so a concurrent request waits for this transaction and then matches the
+    -- row it wrote. It also de-duplicates STILL-OPEN work: a second request for the same
+    -- issue and action while one is open or acknowledged returns that task instead of a copy.
+    BEGIN TRANSACTION;
+    MERGE INTO SAARTHI.OPERATIONAL.REVIEW_TASK t
+    USING (SELECT :v_task_id AS task_id, :ISSUE_ID AS issue_id, :ACTION AS action,
+                  :REASON AS reason, :v_practitioner AS practitioner_id,
+                  :IDEMPOTENCY_KEY AS idempotency_key) s
+       ON t.idempotency_key = s.idempotency_key
+       OR (t.issue_id = s.issue_id AND t.decision = s.action
+           AND t.state IN ('open', 'acknowledged')
+           AND t.idempotency_key NOT LIKE 'web-event:%')
+    WHEN NOT MATCHED THEN INSERT
+        (task_id, issue_id, owner_practitioner_id, state, decision, reason,
+         actor_practitioner_id, idempotency_key)
+    VALUES
+        (s.task_id, s.issue_id, s.practitioner_id, 'open', s.action, s.reason,
+         s.practitioner_id, s.idempotency_key);
+    v_inserted := SQLROWCOUNT;
+    v_existing := (SELECT task_id FROM SAARTHI.OPERATIONAL.REVIEW_TASK
+                    WHERE idempotency_key = :IDEMPOTENCY_KEY
+                       OR (issue_id = :ISSUE_ID AND decision = :ACTION
+                           AND state IN ('open', 'acknowledged')
+                           AND idempotency_key NOT LIKE 'web-event:%')
+                    ORDER BY (idempotency_key = :IDEMPOTENCY_KEY) DESC, created_at ASC, task_id
+                    LIMIT 1);
+    COMMIT;
+
+    RETURN OBJECT_CONSTRUCT('task_id', v_existing, 'idempotent_replay', v_inserted = 0);
+EXCEPTION
+    WHEN OTHER THEN
+        ROLLBACK;
+        RAISE;
 END;
 $$;

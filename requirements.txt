@@ -5,3 +5,4 @@ PyYAML
 fpdf2
 pypdf
 streamlit
+streamlit-extras

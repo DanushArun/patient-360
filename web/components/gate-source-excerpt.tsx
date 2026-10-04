@@ -10,7 +10,7 @@ type SourceSpan = {
 };
 
 export function readGateSourceSpans(gate: Gate, patientId: string): SourceSpan[] {
-  const input = (gate as Gate & { source_spans?: unknown }).source_spans;
+  const input: unknown = gate.source_spans;
   if (!Array.isArray(input) || !gate.known_as_of
     || !Array.isArray(gate.evidence_ids) || !gate.evidence_ids.length) return [];
   return input.filter((source) => validSpan(source)

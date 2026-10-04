@@ -39,9 +39,9 @@ Everything else is support. If the schedule collapses, these survive.
 
 | # | Item | Rubric impact | Why it wins |
 |---|---|---|---|
-| **1** | **Two-pass extraction verification** | Technical 40% + Relevance 30% | Today, if AI misreads a lab value as 1200 when the page says 2100, all five validator checks pass and the answer is beautifully cited and clinically wrong. Reading safety-critical fields twice and refusing to assert on disagreement fixes the most dangerous bug in the design. **No competitor does this.** |
-| **2** | **Consent enforced at query time** | Relevance 30% + Technical 40% | Legally mandatory in India, structurally correct per ABDM, **no competitor has it**, and it demos in 30 seconds: revoke consent → same question returns nothing. |
-| **3** | **Real identity + `CURRENT_USER()`-keyed RAP** | Technical 40% | Now *proven* to work. Every competitor's access control is cosmetic — CareCompass's is a `st.radio` picker, SynapseCortex has confirmed zero RLS. This is the claim we can defend live. |
+| **1** | **Two-pass extraction verification** | Technical 40% + Relevance 30% | Today, if AI misreads a lab value as 1200 when the page says 2100, all five validator checks pass and the answer is beautifully cited and clinically wrong. Reading safety-critical fields twice and refusing to assert on disagreement fixes the most dangerous bug in the design. **Not found in the competitor code we reviewed (file-level, 16 Sept; not re-verifiable here).** |
+| **2** | **Consent enforced at query time** | Relevance 30% + Technical 40% | Legally mandatory in India, structurally correct per ABDM, **not found in the competitor code we reviewed**, and it demos in 30 seconds: revoke consent → same question returns nothing. |
+| **3** | **Real identity + `CURRENT_USER()`-keyed RAP** | Technical 40% | Now *proven* to work. In the two competitor repositories read on 16 Sept (file-level; sources not vendored here), CareCompass's login was a `st.radio` picker (`streamlit/login.py`) and no row-level security was found for SynapseCortex (`sql/00_infrastructure.sql`, per `ps04-competitive-landscape.md`). This is the claim we can defend live. |
 | **4** | **4 skills + one orchestrating Task** | Both named bonuses | The brief calls reusable skills "the headline bonus"; the explainer says build one skill per process and orchestrate with a Task. One change, two bonus categories. |
 | **5** | **Working vertical slice, deployed** | Completeness 30% | Two competitors already have live URLs. "Technical **Execution**" — shipped beats designed. Until one patient flows document → parsed → rule → cited answer on screen, everything above is a document. |
 
@@ -138,7 +138,7 @@ Then, in order:
 6. **Class A question** ("should she take the treatment?") → refused in every role, evidence packet offered to the named treating practitioner.
 7. **Regulatory** → answered from the real PM-JAY manual, page and clause.
 
-Beat 5 is the one nobody else can show. Beat 3 is the one nobody else has.
+Beats 3 and 5 were not found in the competitor code we reviewed.
 
 ---
 

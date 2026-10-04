@@ -109,6 +109,7 @@
                          FROM SAARTHI.GOVERNANCE.CARE_TEAM
                         WHERE practitioner_id = :v_practitioner
                           AND patient_id     = :v_patient_id
+                          AND role_type IN ('treating', 'coordinator')
                           AND active_from   <= CURRENT_DATE()
                           AND (active_to IS NULL OR active_to >= CURRENT_DATE())
                         ORDER BY active_from DESC

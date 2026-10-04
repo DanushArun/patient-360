@@ -8,7 +8,7 @@
    ```
    SNOWFLAKE_ACCOUNT=IFTDBGM-EA72552
    SNOWFLAKE_USER=DAKSHA
-   SNOWFLAKE_PRIVATE_KEY_PATH=/Users/mac/.snowflake/keys/daksha_snow_rsa.p8
+   SNOWFLAKE_PRIVATE_KEY_PATH=<path-to-your-private-key-file>
    SNOWFLAKE_WAREHOUSE=SAARTHI_AI_WH
    ```
    Danush does not need this file -- his credentials are the defaults in the code.

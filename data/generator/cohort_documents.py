@@ -33,9 +33,16 @@ def number(value: float, grouped: bool) -> str:
     return f"{value:g}"
 
 
-def main() -> None:
-    events = json.loads(EVENTS.read_text())
-    OUT.mkdir(parents=True, exist_ok=True)
+def main(argv: list[str] | None = None, events_path: Path = EVENTS, out: Path = OUT) -> list[dict]:
+    """Render the cohort documents. `--manifest PATH` writes the JSON array that
+    backend/scripts/prepare_synthetic_documents.py consumes (this is the step that creates
+    data/generated/cohort_document_manifest.json). Stale `DOC-*` PDFs in the output directory
+    that this run did not regenerate are reported, and removed only with `--prune`."""
+    argv = list(argv if argv is not None else [])
+    manifest_path = Path(argv[argv.index("--manifest") + 1]) if "--manifest" in argv else None
+    events = json.loads(events_path.read_text())
+    records: list[dict] = []
+    out.mkdir(parents=True, exist_ok=True)
     by_patient = defaultdict(list)
     for event in events:
         by_patient[event["patient_id"]].append(event)
@@ -51,28 +58,44 @@ def main() -> None:
                        for c, label, grouped in PANEL if c in on_panel]
             first = next(iter(on_panel.values()))
             doc = f"DOC-LAB-{patient_id[4:]}"
-            (OUT / doc).write_bytes(render_cohort_lab_report(
+            (out / doc).write_bytes(render_cohort_lab_report(
                 patient_id=patient_id, facility=FACILITIES[first["facility_id"]],
                 report_date=panel_time[:10], results=results))
-            print(json.dumps({"doc_id": doc, "patient_id": patient_id, "doc_type": "lab_report",
-                              "facility_id": first["facility_id"], "event_time": panel_time,
-                              "signed_at": first["source_recorded_at"],
-                              "must_contain": "|".join(label for label, _, _ in results[:2])}))
+            record = {"doc_id": doc, "patient_id": patient_id, "doc_type": "lab_report",
+                      "facility_id": first["facility_id"], "event_time": panel_time,
+                      "signed_at": first["source_recorded_at"],
+                      "must_contain": "|".join(label for label, _, _ in results[:2])}
+            records.append(record)
+            print(json.dumps(record))
         for path in (r for r in rows if r["event_type"] == "pathology"):
             text = path["value_text"] or ""
             lines = ([f"Grade: {text.split('grade=')[1].split()[0]}",
                       f"HER2 IHC: {text.split('ihc=')[1]}"] if "ihc=" in text
                      else [f"Diagnosis: {text}"])
             doc = f"DOC-PATH-{patient_id[4:]}"
-            (OUT / doc).write_bytes(render_cohort_pathology_report(
+            (out / doc).write_bytes(render_cohort_pathology_report(
                 patient_id=patient_id, facility=FACILITIES[path["facility_id"]],
                 specimen_id=path["specimen_id"], report_date=path["event_time"][:10],
                 lines=lines))
-            print(json.dumps({"doc_id": doc, "patient_id": patient_id, "doc_type": "pathology",
-                              "facility_id": path["facility_id"], "event_time": path["event_time"],
-                              "signed_at": path["source_recorded_at"],
-                              "must_contain": path["specimen_id"]}))
+            record = {"doc_id": doc, "patient_id": patient_id, "doc_type": "pathology",
+                      "facility_id": path["facility_id"], "event_time": path["event_time"],
+                      "signed_at": path["source_recorded_at"],
+                      "must_contain": path["specimen_id"]}
+            records.append(record)
+            print(json.dumps(record))
+    if manifest_path:
+        manifest_path.write_text(json.dumps(records, indent=1) + "\n")
+    current = {r["doc_id"] for r in records}
+    stale = sorted(p.name for p in out.glob("DOC-*") if p.name not in current)
+    for name in stale:
+        if "--prune" in argv:
+            (out / name).unlink()
+    if stale:
+        print(f"{'removed' if '--prune' in argv else 'STALE (not in manifest; use --prune)'}: "
+              + ", ".join(stale))
+    return records
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(sys.argv[1:])

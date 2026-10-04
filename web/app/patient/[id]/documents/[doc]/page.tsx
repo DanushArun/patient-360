@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 import { withPatientSession, procedureValue } from "@/lib/snowflake";
 import { documentRequest, documentReturn, readDocumentPage } from "@/lib/document-source.mjs";
 import type { DocumentQuery } from "@/lib/document-source.mjs";
-import { apiError } from "@/lib/api-contracts.mjs";
+import { notFound } from "next/navigation";
+import { apiError, isValidPatientId } from "@/lib/api-contracts.mjs";
 import { DocumentSourceView } from "@/components/document-source-view";
 import { Page, WorkspaceNav } from "@/components/sa";
 import { withUiReadDeadline } from "@/lib/ui-read-deadline.mjs";
@@ -17,6 +18,7 @@ type RouteProps = {
 export default async function DocumentPage(props: RouteProps): Promise<ReactNode> {
   const { id, doc } = await props.params;
   const query = await props.searchParams;
+  if (!isValidPatientId(id)) notFound();
   const returnHref = documentReturn(id, query.return);
   try {
     const request = documentRequest(doc, query);

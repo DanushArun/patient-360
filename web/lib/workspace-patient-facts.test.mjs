@@ -36,3 +36,24 @@ test("mutable facts explain current-at-query semantics without claiming history"
     known_as_of: "2026-10-02T09:00:00", requested_known_as_of: "2026-09-23T14:14:48" }),
   "Current facts read at 2026-10-02T09:00:00; the requested historical cutoff does not apply.");
 });
+
+test("timeline value state is derived from the value and never defaults to not_received (R3)", async () => {
+  const { deriveValueState } = await import("./workspace-patient-facts.mjs");
+  assert.equal(deriveValueState(undefined, -0.8, null), "present");
+  assert.equal(deriveValueState(undefined, null, "IHC 2+"), "present");
+  assert.equal(deriveValueState(undefined, null, null), "state_unavailable");
+  assert.equal(deriveValueState(undefined, null, "   "), "state_unavailable");
+  assert.equal(deriveValueState("pending", null, null), "pending");
+  assert.equal(deriveValueState("not_received", null, null), "not_received");
+  assert.equal(deriveValueState("bogus", 1, null), "present");
+  assert.equal(factStateLabel(deriveValueState(undefined, null, null)), "State unavailable");
+});
+
+test("N4-04: a present event with a concept but no value never renders a bare Present", async () => {
+  const { factStateDisplay } = await import("./workspace-patient-facts.mjs");
+  assert.equal(factStateDisplay({ value_state: "present", value: null, value_text: null }),
+    "Present · no value recorded");
+  assert.equal(factStateDisplay({ value_state: "present", value: 0 }), "Present");
+  assert.equal(factStateDisplay({ value_state: "present", value_text: "IHC 2+" }), "Present");
+  assert.equal(factStateDisplay({ value_state: "pending" }), "Pending");
+});

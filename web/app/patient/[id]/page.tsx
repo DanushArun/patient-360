@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { isValidPatientId } from "@/lib/api-contracts.mjs";
 import type { ReactNode } from "react";
 import { withUiReadDeadline } from "@/lib/ui-read-deadline.mjs";
 import { loadPatientSnapshot } from "@/lib/patient";
@@ -11,6 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function PatientPage({ params }: PageProps<"/patient/[id]">)
   : Promise<ReactNode> {
   const { id } = await params;
+  if (!isValidPatientId(id)) notFound();
   try {
     const patient = await withUiReadDeadline(loadPatientSnapshot(id));
     const patients = await withUiReadDeadline(fetchBindablePatients())

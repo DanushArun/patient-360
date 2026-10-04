@@ -12,7 +12,7 @@ WITH patient_scope AS (
   JOIN SAARTHI.GOVERNANCE.CARE_TEAM ct ON ct.patient_id = p.patient_id
   JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = ct.practitioner_id
   LEFT JOIN SAARTHI.GOVERNANCE.FACILITY f ON f.facility_id = pr.facility_id
-  WHERE UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
+  WHERE pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
     AND ct.role_type IN ('treating', 'coordinator')
     AND ct.active_from <= CURRENT_DATE()
     AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE())
@@ -35,7 +35,7 @@ WITH patient_scope AS (
   JOIN SAARTHI.GOVERNANCE.CARE_TEAM ct ON ct.patient_id = p.patient_id
   JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = ct.practitioner_id
   LEFT JOIN SAARTHI.GOVERNANCE.FACILITY f ON f.facility_id = pr.facility_id
-  WHERE UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
+  WHERE pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
     AND ct.role_type IN ('treating', 'coordinator')
     AND ct.active_from <= CURRENT_DATE()
     AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE())
@@ -76,7 +76,7 @@ WITH patient_scope AS (
   JOIN SAARTHI.GOVERNANCE.CARE_TEAM ct ON ct.patient_id = p.patient_id
   JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = ct.practitioner_id
   LEFT JOIN SAARTHI.GOVERNANCE.FACILITY f ON f.facility_id = pr.facility_id
-  WHERE UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
+  WHERE pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
     AND ct.role_type IN ('treating', 'coordinator')
     AND ct.active_from <= CURRENT_DATE()
     AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE())
@@ -119,7 +119,7 @@ WITH patient_scope AS (
   JOIN SAARTHI.GOVERNANCE.CARE_TEAM ct ON ct.patient_id = p.patient_id
   JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = ct.practitioner_id
   LEFT JOIN SAARTHI.GOVERNANCE.FACILITY f ON f.facility_id = pr.facility_id
-  WHERE UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
+  WHERE pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
     AND ct.role_type IN ('treating', 'coordinator')
     AND ct.active_from <= CURRENT_DATE()
     AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE())
@@ -141,7 +141,9 @@ WITH patient_scope AS (
   SELECT e.encounter_id, p.patient_id, p.name, p.district, p.state, p.primary_language,
          plan.regimen_display, e.cycle_number,
          TO_VARCHAR(e.scheduled_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS scheduled,
-         rs.gate, rs.rule_id, rs.rule_version, rs.outcome, rs.severity, rs.reason
+         rs.gate, rs.rule_id, rs.rule_version, rs.outcome, rs.severity, rs.reason,
+         TO_VARCHAR(rs.known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS') AS known_as_of,
+         TO_VARCHAR(rs.computed_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS computed_at
     FROM SAARTHI.CORE.ENCOUNTER e
     JOIN SAARTHI.CORE.PATIENT p ON p.patient_id = e.patient_id
     LEFT JOIN plan ON plan.patient_id = e.patient_id
@@ -154,7 +156,7 @@ WITH patient_scope AS (
 );
 ELSEIF (VIEW_NAME = 'practitioner') THEN
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
-SELECT name, qualification FROM SAARTHI.GOVERNANCE.PRACTITIONER WHERE UPPER(snowflake_user)=UPPER(CURRENT_USER()) AND active=TRUE
+SELECT name, qualification FROM SAARTHI.GOVERNANCE.PRACTITIONER WHERE snowflake_user = CURRENT_USER() AND active=TRUE
 );
 ELSE RETURN OBJECT_CONSTRUCT('error','invalid_argument'); END IF;
 RETURN OBJECT_CONSTRUCT('rows',v_rows);
@@ -166,7 +168,7 @@ RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS $$
 DECLARE KNOWN_AS_OF VARCHAR DEFAULT NULL;
 v_known_as_of TIMESTAMP_NTZ; v_known_as_of_s VARCHAR; v_binding_id VARCHAR;
 v_patient_id VARCHAR; v_practitioner VARCHAR; v_care_team_id VARCHAR; v_consent_id VARCHAR;
-v_rows ARRAY; v_expected ARRAY;
+v_rows ARRAY; v_expected ARRAY; v_doc_id VARCHAR; v_doc_cutoff VARCHAR; v_scheme_fin BOOLEAN DEFAULT FALSE;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -203,6 +205,7 @@ BEGIN
                          FROM SAARTHI.GOVERNANCE.CARE_TEAM
                         WHERE practitioner_id = :v_practitioner
                           AND patient_id     = :v_patient_id
+                          AND role_type IN ('treating', 'coordinator')
                           AND active_from   <= CURRENT_DATE()
                           AND (active_to IS NULL OR active_to >= CURRENT_DATE())
                         ORDER BY active_from DESC
@@ -269,7 +272,7 @@ WITH next_visit AS (
               pr.name AS practitioner_name
          FROM SAARTHI.CORE.PATIENT p
          JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr
-           ON UPPER(pr.snowflake_user) = UPPER(CURRENT_USER()) AND pr.active = TRUE
+           ON pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
          LEFT JOIN next_visit nv ON nv.patient_id = p.patient_id
          LEFT JOIN latest_plan lp ON lp.patient_id = p.patient_id
         WHERE p.patient_id = :v_patient_id
@@ -287,13 +290,46 @@ WITH ranked_encounters AS (
                 ) AS visit_rank
            FROM SAARTHI.CORE.ENCOUNTER e
           WHERE e.patient_id = :v_patient_id AND e.encounter_type = 'daycare'
+       ), gate_cites AS (
+         -- One plain comma-LATERAL FLATTEN, nothing else in its FROM: the documented form.
+         -- Later joins happen in gate_spans, so no JOIN/comma mixing exists in one FROM clause.
+         SELECT rs.rule_id, rs.rule_version, rs.known_as_of, f.value::VARCHAR AS cited_id
+           FROM SAARTHI.OPERATIONAL.READINESS_STATE rs,
+                LATERAL FLATTEN(input => rs.evidence_ids) f
+          WHERE rs.patient_id = :v_patient_id
+            AND rs.encounter_id IN (SELECT encounter_id FROM ranked_encounters WHERE visit_rank = 1)
+       ), gate_spans AS (
+         -- Exact source spans for every gate citation that is a verified document assertion.
+         -- Span-less citations (event ids, coverage ids) stay as ids: provenance is never guessed.
+         SELECT gc.rule_id, gc.rule_version,
+                ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
+                  'patient_id', d.patient_id, 'scope', d.scope,
+                  'assertion_id', a.assertion_id, 'doc_id', a.doc_id, 'version', d.version,
+                  'page_index', a.page_index, 'char_start', a.char_start, 'char_end', a.char_end,
+                  'excerpt_start', GREATEST(a.char_start - 120, 0),
+                  'excerpt', SUBSTR(dp.text, GREATEST(a.char_start - 120, 0) + 1,
+                                    a.char_end - GREATEST(a.char_start - 120, 0) + 120),
+                  'known_as_of', TO_VARCHAR(gc.known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS'),
+                  'verification_status', a.verification_status)
+                  ) WITHIN GROUP (ORDER BY a.doc_id, a.page_index, a.char_start, a.assertion_id) AS source_spans
+           FROM gate_cites gc
+           JOIN SAARTHI.EVIDENCE.ASSERTION a ON a.assertion_id = gc.cited_id
+           JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = a.doc_id
+           JOIN SAARTHI.DOCUMENTS.DOC_PAGE dp ON dp.doc_id = a.doc_id AND dp.page_index = a.page_index
+          WHERE d.patient_id = :v_patient_id AND d.scope = 'patient' AND d.status = 'active'
+            AND a.verification_status = 'verified'
+            AND a.char_start >= 0 AND a.char_end > a.char_start AND a.char_end <= LENGTH(dp.text)
+          GROUP BY gc.rule_id, gc.rule_version
        )
        SELECT rs.gate, rs.rule_id, rs.rule_version, rs.outcome, rs.severity, rs.reason,
               rs.evidence_ids::VARCHAR AS evidence_ids,
+              gs.source_spans::VARCHAR AS source_spans,
               TO_VARCHAR(rs.known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS') AS known_as_of
          FROM SAARTHI.OPERATIONAL.READINESS_STATE rs
          JOIN ranked_encounters e
            ON e.patient_id = rs.patient_id AND e.encounter_id = rs.encounter_id
+         LEFT JOIN gate_spans gs
+           ON gs.rule_id = rs.rule_id AND gs.rule_version = rs.rule_version
         WHERE e.visit_rank = 1
         ORDER BY rs.gate, rs.rule_id
 );
@@ -307,7 +343,9 @@ FROM SAARTHI.OPERATIONAL.REVIEW_TASK rt
 LEFT JOIN SAARTHI.OPERATIONAL.REVIEW_ISSUE ri ON ri.issue_id=rt.issue_id
 LEFT JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id=rt.owner_practitioner_id
 LEFT JOIN SAARTHI.GOVERNANCE.PRACTITIONER actor ON actor.practitioner_id=rt.actor_practitioner_id
-WHERE (rt.issue_id=:v_patient_id||':'||:ARGUMENT OR (ri.patient_id=:v_patient_id AND ri.rule_id=:ARGUMENT))
+WHERE (rt.issue_id=:v_patient_id||':'||:ARGUMENT OR (ri.patient_id=:v_patient_id AND ri.rule_id=:ARGUMENT)
+   -- Write read-back by task id, still scoped to the bound patient's own issues.
+   OR (rt.task_id=:ARGUMENT AND (ri.patient_id=:v_patient_id OR STARTSWITH(rt.issue_id, :v_patient_id||':'))))
 ORDER BY rt.created_at DESC,rt.task_id
 );
 ELSEIF (VIEW_NAME = 'owners') THEN
@@ -323,8 +361,17 @@ AND c.purpose_code IN ('treatment','coordination') AND (c.granted_to_facility_id
 ORDER BY p.name,p.practitioner_id
 );
 ELSEIF (VIEW_NAME = 'schemes') THEN
+-- Scheme status derives from COVERAGE rows, so it is financial data (CR1-07). Without a
+-- financial grant the registry rows are still listed (they are not patient data) but the
+-- patient-specific limit, status and packages are withheld and the state says why (R3).
+v_scheme_fin := COALESCE(ARRAY_CONTAINS('financial'::VARIANT,
+    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id)), FALSE);
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
-SELECT scheme_id,scheme_name,scheme_type,annual_limit,eligibility_status,covered_packages FROM SAARTHI.OPERATIONAL.DT_SCHEME_ELIGIBILITY WHERE patient_id=:v_patient_id
+SELECT scheme_id, scheme_name, scheme_type,
+       IFF(:v_scheme_fin, annual_limit, NULL) AS annual_limit,
+       IFF(:v_scheme_fin, eligibility_status, 'financial_consent_required') AS eligibility_status,
+       IFF(:v_scheme_fin, covered_packages, NULL) AS covered_packages
+FROM SAARTHI.OPERATIONAL.DT_SCHEME_ELIGIBILITY WHERE patient_id=:v_patient_id
 );
 ELSEIF (VIEW_NAME = 'answers') THEN
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
@@ -337,14 +384,35 @@ SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INT
 SELECT ep.packet_id, ep.evidence_ids,ep.gate_snapshot,ep.consent_id,
 pr.name AS practitioner_name,ep.delivered_at::VARCHAR AS delivered_at
 FROM SAARTHI.EVIDENCE.EVIDENCE_PACKET ep LEFT JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr
-ON pr.practitioner_id=ep.delivered_to_practitioner_id WHERE ep.patient_id=:v_patient_id LIMIT 50
+ON pr.practitioner_id=ep.delivered_to_practitioner_id WHERE ep.patient_id=:v_patient_id
+  AND (:ARGUMENT IS NULL OR ep.packet_id=:ARGUMENT)  -- write read-back looks the packet up by id
+ORDER BY ep.delivered_at DESC, ep.packet_id LIMIT 50
 );
 ELSEIF (VIEW_NAME = 'document') THEN
+-- Citation readers send doc_id|known_as_of. Resolve the bounded identifier and
+-- cutoff separately; comparing the whole argument to doc_id hid valid sources.
+v_doc_id := SPLIT_PART(:ARGUMENT, '|', 1);
+IF (v_doc_id IS NULL OR NOT REGEXP_LIKE(v_doc_id, '^[A-Za-z0-9_-]{1,160}$')
+    OR ARRAY_SIZE(SPLIT(:ARGUMENT, '|')) > 2) THEN
+  RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',v_known_as_of_s);
+END IF;
+IF (POSITION('|', :ARGUMENT) > 0) THEN
+  v_doc_cutoff := SPLIT_PART(:ARGUMENT, '|', 2);
+  v_known_as_of := TRY_TO_TIMESTAMP_NTZ(:v_doc_cutoff, 'YYYY-MM-DD"T"HH24:MI:SS');
+  IF (v_known_as_of IS NULL OR v_known_as_of > CURRENT_TIMESTAMP()::TIMESTAMP_NTZ) THEN
+    RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',v_known_as_of_s);
+  END IF;
+  v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
+END IF;
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
-SELECT d.doc_id,dp.page_index,dp.text,d.doc_type,d.scope,d.version,d.signed_at::VARCHAR AS source_recorded_at,
-d.effective_at::VARCHAR AS event_time,d.ingested_at::VARCHAR AS ingested_at
+SELECT d.doc_id,dp.page_index,dp.text,d.doc_type,d.scope,d.version,
+TO_VARCHAR(d.signed_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS source_recorded_at,
+TO_VARCHAR(d.effective_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS event_time,
+TO_VARCHAR(d.ingested_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS ingested_at,
+d.status AS document_status,
+TO_VARCHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD"T"HH24:MI:SS') AS status_observed_at
 FROM SAARTHI.DOCUMENTS.DOC_PAGE dp JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
-WHERE d.doc_id=:ARGUMENT AND d.scope='patient' AND d.patient_id=:v_patient_id AND d.status='active'
+WHERE d.doc_id=:v_doc_id AND d.scope='patient' AND d.patient_id=:v_patient_id AND d.status='active'
 AND d.ingested_at<=:v_known_as_of ORDER BY dp.page_index
 );
 ELSEIF (VIEW_NAME = 'documents') THEN
@@ -359,8 +427,15 @@ END IF;
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
 SELECT d.doc_id, d.doc_type, d.version, d.scope, d.source_quality,
        f.name AS source_facility, COALESCE(pg.page_count, 0) AS page_count,
+       -- R7: a document is 'present' only through a verified present assertion. A single-pass or
+       -- unverified read is 'pending'. Unreadable / superseded / explicitly_negative surface as
+       -- themselves; a document with no extraction yet is 'pending' (pipeline not run), never blank.
        CASE WHEN a.conflicting_assertions > 0 THEN 'conflicting'
-            WHEN a.present_assertions > 0 THEN 'present' ELSE 'received' END AS missingness_state,
+            WHEN a.verified_present_assertions > 0 THEN 'present'
+            WHEN a.unreadable_assertions > 0 THEN 'unreadable'
+            WHEN a.explicitly_negative_assertions > 0 THEN 'explicitly_negative'
+            WHEN a.superseded_assertions > 0 THEN 'superseded'
+            ELSE 'pending' END AS missingness_state,
        COALESCE(a.assertion_count, 0) AS assertion_count,
        COALESCE(a.verified_assertions, 0) AS verified_assertions,
        COALESCE(a.conflicting_assertions, 0) AS conflicting_assertions,
@@ -375,7 +450,11 @@ LEFT JOIN (SELECT doc_id, COUNT(*) AS page_count FROM SAARTHI.DOCUMENTS.DOC_PAGE
 LEFT JOIN (SELECT doc_id, COUNT(*) AS assertion_count,
                   COUNT_IF(verification_status = 'verified') AS verified_assertions,
                   COUNT_IF(verification_status = 'conflicting') AS conflicting_assertions,
-                  COUNT_IF(missingness_state = 'present') AS present_assertions
+                  COUNT_IF(missingness_state = 'present' AND verification_status = 'verified')
+                    AS verified_present_assertions,
+                  COUNT_IF(missingness_state = 'unreadable') AS unreadable_assertions,
+                  COUNT_IF(missingness_state = 'explicitly_negative') AS explicitly_negative_assertions,
+                  COUNT_IF(missingness_state = 'superseded') AS superseded_assertions
              FROM SAARTHI.EVIDENCE.ASSERTION GROUP BY doc_id) a ON a.doc_id = d.doc_id
 WHERE d.patient_id = :v_patient_id AND d.scope = 'patient' AND d.status = 'active'
   AND d.ingested_at <= :v_known_as_of
@@ -421,8 +500,10 @@ IF (v_requested IS NOT NULL) THEN
   END IF;
 END IF;
 -- Clinical consent is not financial consent (preamble note 1).
-IF (v_domain = 'coverage' AND NOT ARRAY_CONTAINS('financial'::VARIANT,
-    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id))) THEN
+-- Fail closed: a NULL data_categories (or a missing consent row) makes ARRAY_CONTAINS NULL,
+-- and IF (NOT NULL) is skipped. COALESCE to FALSE so NULL means "no financial grant".
+IF (v_domain = 'coverage' AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT,
+    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id)), FALSE) = FALSE) THEN
   RETURN OBJECT_CONSTRUCT('error','consent_not_valid','known_as_of',:v_known_as_of_s);
 END IF;
 IF (v_domain = 'labs') THEN
@@ -430,7 +511,15 @@ IF (v_domain = 'labs') THEN
   v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
       'event_id', h.event_id, 'concept', h.concept_name, 'value', h.value_num,
       'value_text', h.value_text, 'unit', ce.unit, 'abnormal_flag', h.abnormal_flag,
-      'value_state', h.plausibility_state, 'is_derived', h.is_derived, 'derivation', h.derivation,
+      -- SHARED RULE (identical to 06_get_timeline.sql; contract-tested).
+      'value_state', CASE
+          WHEN h.plausibility_state <> 'present' THEN h.plausibility_state
+          WHEN h.value_num IS NOT NULL OR NULLIF(TRIM(h.value_text), '') IS NOT NULL THEN 'present'
+          WHEN ce.status = 'ordered' THEN 'pending'
+          WHEN ce.status = 'cancelled' THEN 'not_received'
+          WHEN COALESCE(NULLIF(TRIM(h.concept_name), ''), NULLIF(TRIM(ce.display), ''), NULLIF(TRIM(ce.code), '')) IS NOT NULL THEN 'present'
+          ELSE 'unreadable' END,
+      'is_derived', h.is_derived, 'derivation', h.derivation,
       'valid_until', TO_VARCHAR(h.valid_until, 'YYYY-MM-DD"T"HH24:MI:SS'),
       'event_time', TO_VARCHAR(h.event_time, 'YYYY-MM-DD"T"HH24:MI:SS'),
       'source_recorded_at', TO_VARCHAR(h.source_recorded_at, 'YYYY-MM-DD"T"HH24:MI:SS'),
@@ -447,7 +536,17 @@ IF (v_domain = 'labs') THEN
                  FROM SAARTHI.EVIDENCE.EVIDENCE_LINK el
                  JOIN SAARTHI.EVIDENCE.ASSERTION a ON a.assertion_id = el.assertion_id
                  JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = a.doc_id
+                 JOIN SAARTHI.CORE.CLINICAL_EVENT source_event
+                   ON source_event.event_id = el.target_id
+                  AND source_event.patient_id = d.patient_id
+                  AND source_event.concept_id = a.concept_id
+                  AND source_event.unit = a.unit
+                  AND source_event.value_num = TRY_TO_DOUBLE(REPLACE(a.value, ',', ''))
                 WHERE el.relation = 'supports' AND d.status = 'active'
+                  AND a.verification_status = 'verified'
+                  AND a.missingness_state = 'present'
+                  AND d.scope = 'patient'
+                  AND d.patient_id = :v_patient_id
                   AND d.ingested_at <= :v_known_as_of
                 GROUP BY el.target_id) l ON l.target_id = h.event_id
    WHERE h.patient_id = :v_patient_id AND h.event_type IN ('lab', 'vitals')
@@ -496,8 +595,8 @@ IF (ARGUMENT IS NOT NULL) THEN
   END IF;
   v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
 END IF;
-IF (NOT ARRAY_CONTAINS('financial'::VARIANT,
-    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id))) THEN
+IF (COALESCE(ARRAY_CONTAINS('financial'::VARIANT,
+    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id)), FALSE) = FALSE) THEN
   RETURN OBJECT_CONSTRUCT('error','consent_not_valid','known_as_of',:v_known_as_of_s);
 END IF;
 LET v_auths ARRAY := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(

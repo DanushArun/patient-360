@@ -1,5 +1,70 @@
 # SAARTHI — Implementation Status
 
+**Reconciled 4 October 2026 (FIX-ROUND-5).** This file has three parts: (A) the current state, keyed by Snowflake
+account; (B) the dated log of 1-4 Oct checkpoints (OS69400, current account); (C) the 20-23 Sept snapshot on JN89282,
+retained as **historical** and labelled per row. Where (A) and (C) differ, (A) wins. Live results below are
+**reported** from the dated entries and the evidence files; they cannot be re-run offline. `AGENTS.md` section 4 mandates
+this file; a claim not demonstrable from the repo is a defect.
+
+| Status | Meaning (changed 4 Oct: the old definition required clean-account reproduction, which has never been recorded) |
+|---|---|
+| **built** | Deployed on a named account and exercised (account and date stated). `reproduced-clean-account: no` for every component |
+| **partial** | Works for a bounded path; named limitation stated |
+| **designed-only** | Specified, not built. Not claimed as working anywhere |
+| **unverified-needs-deploy** | Present in the working tree; not run on Snowflake since the last edit |
+| **refused** | Deliberately not built (section 9) |
+
+Accounts: **OS69400** (org-qualified `OHCXVXM-OS69400`, locator `JR18576`) is the **current** account: the deploy
+scripts, web default allow-list and the 4 Oct live identity query (query ID `01c77fc2-0004-0cda-0001-fcae00112ae2`, in
+`evidence/coco/snowflake-new-account-rca.md`) target it. `KGTPGHJ-YJ28449` (locator `NY64016`) was the earlier 3 Oct
+migration target and still appears in `docs/superpowers/plans/2026-10-04-submission-account-inspection.md` and the RCA;
+the repo does not record a deployment of the current build there. **JN89282** is **historical** (16-23 Sept: agent, MCP,
+28 fixture tests); its counts are not current figures. Nothing from JN89282 is recorded as redeployed on OS69400 unless
+stated. Which account holds the submission build must be confirmed by the team (gap 13).
+
+## A. Current state by component (4 Oct 2026)
+
+| Component | Status | Account / date | Notes and corrected wording |
+|---|---|---|---|
+| Web dashboard (`web/`, 7 page routes incl. fixture preview, 8 API routes) | **built** (local) | OS69400, 1-4 Oct | Localhost `127.0.0.1`, single operator, role `SAARTHI_APP`, secondary roles off. No hosting, no per-user login. 257 unit, 40 e2e (stubbed API) pass offline on 4 Oct |
+| Judge Console | **designed-only** (UI) | - | **SQL probes only** (`backend/sql/procedures/judge/judge_probes.sql`); no UI exists (C-1, C-8) |
+| Streamlit-in-Snowflake app | **refused/removed** | - | Pages removed; `frontend/` keeps contracts, pure helpers, fixtures and tests only. `frontend/pages/` is empty (C-2) |
+| 12 synthetic patients | **partial** | OS69400, 3 Oct | PAT-DEEP-0001 + PAT-DC-01..11. 12 of a planned 100 (C-13) |
+| Documents | **partial** | OS69400, 3 Oct | 28 active documents (3 Oct); 22 single-page cohort PDFs generated from the same event snapshot they are checked against |
+| 16 SQL rules | **built** | 28 live fixture tests on JN89282 (23 Sept); OS69400: gates computed live, `CLIN-PLT-001` etc. | Fixture harness not re-run on OS69400 |
+| R7 two-pass extraction (R7) | **built** | OS69400, 3 Oct | Fired live: 68 assertions all `verified`, 1 page (PAT-DC-08 pathology) failed closed (`pass_b_invalid`). **The disagreement path (`conflicting` -> `not_evaluated`) has not been exercised live**: both readers agreed on every extracted field (C-7) |
+| Linker | **built** | OS69400, 3 Oct | 66 of 66 numeric values link to exactly one structured event. Documents are generated from the same event snapshot: this measures linkage, not independent extraction accuracy (C-20) |
+| Answer validator (6 checks, `validate_answer.sql`) | **partial** | JN89282 only | Procedure built; **not called by `ASK_SAARTHI` or the MCP path** (Round 6 reviewed wiring and declined: the agent is not constrained to emit the frozen claims schema the validator needs, so a call would either always fail closed or need a new claim-extraction step outside SPEC s7); `web/README.md` records the guard as deferred. Check 4 (`AI_FILTER`) only tested structurally (C-6) |
+| Cortex Agent (8 generic tools, no `patient_id` input) | **partial** | JN89282, 23 Sept | Not recorded on OS69400. `ASK_SAARTHI` is a thin `DATA_AGENT_RUN` wrapper |
+| MCP server | **partial** | JN89282, 23 Sept (query ID `01c74481-0003-92e6-0001-fca600116122`) | Inbound server over the agent verified there. No outbound action (ticket/notification send). MCP calls are not passed through `validate_answer` (C-19) |
+| Semantic view | **partial**; Round-6 version **unverified-needs-deploy** | JN89282 (old 2-entity view) | Working tree (4 Oct, Round 6): widened to 6 tables (patient, encounter, readiness, review_issue, authorization, scheme_eligibility) with **7 verified queries** (SPEC s8 lists 6; Class B only) and `AI_QUESTION_CATEGORIZATION`. Offline contract test checks every VQR column is defined in the view (`backend/tests/test_semantic_verified_queries.py`). **Not run on Snowflake:** the `AI_VERIFIED_QUERIES` clause syntax and the physical-table form of the VQR SQL are unverified, no VQR has been validated against its natural-language question, and the agent does not consult the view (no Cortex Analyst tool over patient data, AGENTS.md 3.5) (C-12) |
+| Skills (4 `SKILL.md`) | **partial**; loading **unverified-needs-deploy** | offline, 4 Oct (Round 6) | Four definitions authored. `backend/skills/upload_skills.sql` now generated (COPY INTO, one per skill; in `setup.sql` step 19 and bundle step 04), and the agent spec has a `skills:` block pointing at the stage folders: **none of this has run on Snowflake**, and whether the agent spec accepts the block is unknown. Reuse proof is offline only: `backend/skills/reuse-tests/evidence_reconciliation/` runs a deterministic **reference implementation** of the skill contract on a second synthetic schema (one mapping and a supersession chain; two ambiguities refused as `not_evaluated`). It is not an LLM executing the skill. `TASK_SAARTHI_ORCHESTRATOR` chains parse, chunk, extract, reconcile and refresh procedures; it does not orchestrate skills (C-3) |
+| Tasks (7) | **partial** | OS69400, 3 Oct | Created, **suspended on purpose** (cost). The etag-vs-`file_hash` dedupe bug is fixed in the working tree (Round 6: both cursors key on `DOCUMENT.source_path`, etag only as a legacy fallback; `parse_documents_proc` added to bundle step 04): **unverified-needs-deploy**, and `file_hash` on rows the task inserts still holds the stage etag, not a SHA-256. Chain exercised manually. Scheduled runs not demonstrated (C-11, gap 17) |
+| Dynamic Tables (4) | **built** | OS69400, 3 Oct | Resumed and refreshed (`DT_REVIEW_QUEUE` 0 -> 17 rows) at that checkpoint. AI steps correctly live in Tasks (platform fact 9) |
+| Cortex Search x2 (R6) | **built** | OS69400, 3 Oct | 692 reference / 26 patient rows `ACTIVE` at that checkpoint; **suspended afterwards**. Reference-scope selector disabled in the UI (`reference_scope_unavailable`) |
+| Reference corpus | **partial** | OS69400, 3 Oct | 7 documents, 692 pages loaded; scoped retrieval verified as `SAARTHI_APP`. No cited web-app answer against it recorded; the 159-chunk figure in part C is JN89282 |
+| Row access policy on `CURRENT_USER()` | **built**; Round-4 version **unverified-needs-deploy** | F3 verified (query IDs); OS69400 patient-scope check 3 Oct | N4-03 (does the inner `doc_id` bind to `DOC_PAGE`?) unresolved; **no recorded cross-patient negative test on `DOC_PAGE` for the current policy** |
+| Masking policies (2) | **built** | JN89282 only | Not recorded on OS69400 |
+| Eval harness (`backend/eval/`) | **partial** | offline, 4 Oct | `harness/score_results.py` (scorer) plus `harness/deterministic_routing_baseline.py`, a rules-only Class A/B baseline whose patterns are read from `classify_question.sql`. **Measured on `data/eval/dev.jsonl` (40 synthetic questions; engineering gate, not clinical validation; AI_CLASSIFY fallback not run):** rules decided 15, 14 correct, 1 Class B over-refused (DEV-018); 25 left for the LLM fallback (3 Class A, 22 Class B); of 9 Class A, 6 refused by rules and none answered as B. Results in `backend/eval/results/`. The 40 held-out questions, the end-to-end answer eval and any baseline-RAG comparison have **not** been run (C-4) |
+| Class A/B classifier | **built** (source) | JN89282 live; OS69400 web routing tests offline | Class B question-type coverage is not measured (C-5) |
+| Deploy bundle (`backend/sql/deploy/00-09`) | **unverified-needs-deploy** | - | Generated, drift check passes (11 files; Round 6 added the semantic view in step 02 inside an exception handler, and `parse_documents_proc` plus the skills upload in step 04); never run on a clean account (C-15) |
+| `setup.sql` manifest | **built** (manifest) | JN89282 run end-to-end at 55 steps | Now 59 active steps (`check_gate.py --manifest` PASS; Round 6 enabled the skills upload); contains `[NOT BUILT]` lines; clean-account reproduction unproven |
+| Competitor comparisons | **partial** | - | Competitor source is not vendored in this repo; claims are a researcher's reading, historical (C-16, C-17). See `docs/DECK-OUTLINE.md` |
+| 13 corruption scenarios | **partial** | - | 10 seeded and tested live on JN89282/OS69400; 3 handled by design, **not tested** (C-14) |
+| Model-risk register | **designed-only** | - | Not present in the repo |
+| CoCo lifecycle evidence | **built** | - | 4 YAML manifests (planning `complete`; development, execution, testing `in_progress` per their own `status:` fields); `evidence/coco/README.md` phase table corrected 4 Oct; work after 22 Sept is not CoCo evidence; session provenance to be reconfirmed by the team (gap 20) |
+
+**Not claimed:** hospital readiness, clinical validation, population scale, hosting, multi-surface (Snowsight Cloud
+Agents / Slackbot) evidence.
+
+## B. Dated log (newest first; OS69400 unless stated)
+
+**4 October 2026 — Round 6 offline build (working tree, `unverified-needs-deploy`; details in `evidence/qa/FIX-ROUND-6.md`):**
+semantic view widened with 7 verified queries and a column-contract test; skills upload generated and added to `setup.sql`, the
+agent spec (`skills:` block) and bundle step 04, with an offline second-schema reuse test; task dedupe on `source_path`
+documented, tested and bundled; deterministic Class A/B routing baseline measured on the 40 dev questions (counts in the
+eval row above); `evidence/coco/README.md` corrected. The answer validator was **not** wired in. Nothing here ran on Snowflake.
+
 **4 October 2026 — PR #14 integration, local verification only:** the document
 improvement branch is reconciled with PR #15. The combined task sources retain
 stage-path deduplication, directory refresh, stream consumption, task user identity
@@ -27,6 +92,17 @@ suspended on purpose:** `parse_documents_proc` deduplicates on `DIRECTORY().etag
 document here stores a SHA-256 in `file_hash`, so resuming would re-parse all ~29 staged files
 and create paid duplicates. Not tested: a Class A question against the new reference corpus
 (refusal is upstream in the classifier, unchanged).
+
+**4 October 2026 — QA Round 3 fixes (working tree, `unverified-needs-deploy`):** timeline and labs
+facts share one `value_state` rule (a recorded final event with a label is `present`, never
+`not_received`); the UI hides the unbuilt reference scope; the document manifest has a documented
+generator step; `DOC-SURG-NOTE-01` (PAT-DEEP-0001) gets a synthetic source page, so its three
+seeded assertions can now be read by the two-pass pipeline (they stay `unverified` until it runs;
+PAT-DEEP-0001 also has the live CBC document). **Designed-only, not claimed:** the
+`discordant_across_specimens` `EVIDENCE_LINK` rows written by `reconcile_evidence_proc` are never
+read by any gate. `DOC-DISC-001` counts distinct `specimen_id` on `CLINICAL_EVENT`, and the generated
+documents carry no `accession_id`, so document-derived discordance is **designed-only**.
+Detail: `evidence/qa/FIX-ROUND-3.md`.
 
 **3 October 2026 — two documents extracted, provenance and letter conflict live, OS69400:**
 the credit quota was raised, so two single-page synthetic PDFs went through parse → two-family
@@ -160,7 +236,13 @@ The dated deployment counts below are retained as historical observations, not
 current clean-account proof. Five of five read probes failed with `002003` under
 the configured `SAARTHI_APP` role. New source consent/release corrections are not deployed.
 
-**Every component, marked honestly. Updated as the build progresses.**
+## C. Historical snapshot, 20-23 September 2026 (JN89282) — superseded by section A
+
+Everything below this heading was written against **JN89282** between 20 and 23 September. Counts (35 tables, 55 deploy
+steps, 6 tasks "live", 159 reference chunks, "4 of 6 screens wired to fixtures") describe that account on those dates and
+**are not current figures**. Rows that say "built + live" mean "built and live on JN89282 on that date". "R7 has not yet
+fired live" was true then and is superseded by the 3 Oct entry in part B (68 assertions). The 6-screen list in section 5
+is superseded by the real routes in part A.
 
 **23 September audit notice:** Most inventory and counts below are a 20 September snapshot.
 They do not describe the current live database or Next.js page. Do not cite their old
@@ -174,13 +256,13 @@ pipeline, six specified workflows, access controls, or hospital readiness.
 
 | Status | Meaning |
 |---|---|
-| **built** | Deployed, exercised by a passing test, reproducible from `setup.sql` on a clean account |
+| **built** | (historical definition, replaced by the table at the top) |
 | **partial** | Works for the demo path; named limitations below |
 | **designed-only** | Specified in the architecture, not built. **Not claimed anywhere as working.** |
 | **verified** | Empirically tested against the live account, query ID recorded |
 | **refused** | Deliberately not built. Reason stated. |
 
-**Last updated: 23 Sept 2026 — v2 schema is live on JN89282; 55 active deploy steps; MCP end-to-end verified.**
+**Historical header (23 Sept 2026, JN89282):** v2 schema live on JN89282; 55 active deploy steps then (58 now); MCP inbound path verified.
 
 ---
 
@@ -292,11 +374,11 @@ Specified in `SPEC.md` §2. **All 34 `[B]`-marked tables are live on JN89282** a
 | `PATIENT_BINDING` + `bind_patient` — patient selection | **built + live** |
 | Agent specification, 8 generic tools | **built + live** — SAARTHI_AGENT with 8 tool procedures |
 | Class A/B classifier (keyword → structure → LLM → default A) | **built + live** — `classify_question.sql` |
-| Answer validator, 6 checks | **built + live** — all 6 checks; Check 4 uses AI_FILTER with return_error_details=TRUE (fail-closed); Check 5 uses 1% relative-numeric tolerance |
-| R7 two-pass extraction | **built** — `extract_assertions.sql` task deployed (has not yet fired live because parse_documents queue is empty) |
+| Answer validator, 6 checks | **partial** (not in the answer path; see section A) — procedure live on JN89282, all 6 checks; Check 4 uses AI_FILTER with return_error_details=TRUE (fail-closed); Check 5 uses 1% relative-numeric tolerance |
+| R7 two-pass extraction | **built** — superseded: fired live on OS69400 on 3 Oct (68 assertions verified, 1 fail-closed); disagreement path still unexercised |
 | Typed evidence contract, 3 kinds | **built** — structured / document_span / reference_clause |
 | Conversation model — binding and `known_as_of` persist, history clears on switch | designed-only (frontend concern) |
-| 10 Class B question types | **built + live** — deep-case ASK_SAARTHI returns cited answers |
+| 10 Class B question types | **partial** — deep-case `ASK_SAARTHI` returned cited answers on JN89282; question-type coverage not measured |
 | 12 named failure behaviours | **built** — `frontend/core/errors.py`, 10 tests, data-driven off `error_shape.json` |
 
 ---
@@ -314,10 +396,10 @@ either traced to a source or explicitly marked as a judgment call.
 | Review Queue | **partial** — urgency-ordered, unowned issues flagged. Fixture-driven. |
 | Patient 360 | **partial** — gate strip rebuilt to the status vocabulary. Facility timeline and discordance flags **not built**. |
 | Review + History | **partial** — role restriction and idempotency demonstrable live. Fixture-driven. |
-| Navigator View (4 languages) | designed-only |
-| Judge Console (8 probes) | designed-only |
+| Navigator View (4 languages) | superseded: `/navigator/[id]` exists in `web/` (4 Oct) |
+| Judge Console (8 probes) | designed-only (SQL probes only; no UI) |
 
-**All four built screens read fixtures, not Snowflake.** The backend tool procedures exist and
+**(Historical, 20 Sept: the Streamlit screens read fixtures. Superseded: `web/` now reads live procedures, part A.)** The backend tool procedures exist and
 are live (§6), but the frontend is not yet calling them. That wiring is the remaining step, and
 nothing here should be described as end-to-end until it is done.
 
@@ -368,13 +450,13 @@ Legend: 🟢 built + live on JN89282 · 🟡 partial · ⚪ designed-only.
 | Row access policy | 1 | 🟢 **1 built** — `patient_scope` with reference-scope OR-branch, keyed on `CURRENT_USER()` per F3 |
 | Masking policies | 2 | 🟢 **2 built** — `mask_direct_identifier`, `mask_dob` |
 | Procedures | 11 | 🟢 **18 built + live** — bind_patient, evaluate_gates (all 16 rules dispatch), classify_question, validate_answer, chunk_documents, parse_documents_proc, extract_assertions_proc, reconcile_evidence_proc, refresh_readiness_proc, notify_proc, flatten_fhir_proc, orchestrator_proc, 8 tool procs |
-| Tasks | 7 | 🟡 **6 of 7 built + live** — parse_documents, extract_assertions, reconcile_evidence, notify, refresh_readiness, flatten_fhir, TASK_SAARTHI_ORCHESTRATOR (the headline-bonus "task on top") |
+| Tasks | 7 | 🟡 (JN89282) **6 of 7 built + live**; on OS69400 all 7 created suspended — parse_documents, extract_assertions, reconcile_evidence, notify, refresh_readiness, flatten_fhir, TASK_SAARTHI_ORCHESTRATOR (the headline-bonus "task on top") |
 | Dynamic Tables | 5 | 🟢 **4 built + live** — DT_HARMONIZED_EVENTS, DT_REVIEW_QUEUE, DT_SCHEME_ELIGIBILITY, DT_TREATMENT_PLAN. Fifth listed as DT_DOC_CHUNK is a procedure not a DT (RAP-on-source forced synchronous population per F4) |
 | Cortex Search services | 2 | 🟢 **2 built + live** — PATIENT_DOC_SEARCH, REFERENCE_DOC_SEARCH (WHO + NCD guidelines, 159 chunks) |
-| Semantic view + VQRs | 1 + 6 | 🟢 **1 built** — SAARTHI_SEMANTIC_VIEW live |
+| Semantic view + VQRs | 1 + 6 | 🟡 **view built, verified queries NOT built** (0 of 6) |
 | Agent | 1 | 🟢 **1 built + live** — SAARTHI_AGENT with 8 tools |
 | MCP server | 1 | 🟢 **1 built + live, end-to-end verified** — `SAARTHI.OPERATIONAL.SAARTHI_MCP` exposes `SAARTHI_AGENT` as a single `CORTEX_AGENT_RUN` tool. Full path *external MCP client → server → agent (claude-opus-5) → tool procedure → answer* live-verified 23 Sept: `call "What is missing before Thursday?"` orchestrated `GetReadiness`, tool returned `no_patient_bound` (correct — MCP session has no bound patient), agent surfaced it verbatim without fabricating. Deliberate scope: no `SYSTEM_EXECUTE_SQL`, no raw-tool exposure. See `docs/MCP-QUICKSTART.md` for the 7-step reproduction. |
-| Skills | 4 | 🟢 **4 built** — all 4 SKILL.md files with 60+ line bodies |
+| Skills | 4 | 🟡 **4 definitions authored (59-63 lines each), not uploaded or referenced by the agent** |
 | Eval datasets | 2 | 🟢 **2 built** — `data/eval/dev.jsonl` (40 rows) + `data/eval/held_out.jsonl` (40 rows) per SPEC §14 (80 total, corrected from earlier "80+80=160") |
 
 **The v2 schema is live.** All 35 tables + 4 DTs + 6 tasks + 8 tool procedures + agent + MCP server + 2 search services deployed on JN89282. Cross-check via `python3 backend/scripts/check_gate.py --manifest` = PASS (55 active deploy steps).
@@ -391,8 +473,8 @@ Legend: 🟢 built + live · 🟡 partial · ⚪ designed-only.
 | 100 synthetic patients | 🟡 **12 of 100 built + live** — PAT-DEEP-0001 (Baseerah, full ledger-driven) + 11 daycare cohort patients (PAT-DC-01..11 via `load_daycare_cohort.sql`), each shaped around one distinct blocker: DC-02 LVEF overdue on trastuzumab, DC-03 CBC 11d old, DC-04 platelets 82k, DC-05 ANC 1150, DC-06 PM-JAY pre-auth pending, DC-07 pre-auth table-vs-letter drift, DC-08 no CBC on record, DC-09 HbA1c 9.4 advisory, DC-10 HER2 IHC 2+ FISH pending, DC-01+DC-11 ready. Live-verified: `EVALUATE_GATES` on DC-04 returns `CLIN-PLT-001: fail (PLT is 82000, below threshold 100000)` with 12 other rules passing. Remaining 88 need `ledger.py` parameterisation (§5 gap 11) — row-count-only rows without variance rejected as theatre. |
 | Deep case from the real record | 🟢 **built + audited** — PAT-DEEP-0001 (Baseerah) live on JN89282. 14 ledger facts present + 7 additional seeded (LVEF, HbA1c, creatinine, weight, bilirubin, AST, PM-JAY coverage + AUTHORIZATION); 28/28 rule-fixture tests pass end-to-end |
 | Insurance and government schemes | 🟢 **built + live** — `CORE.COVERAGE` (payer_type ∈ {scheme, private_insurance, self_pay}, `annual_limit`, `used_amount`, `is_family_floater`), `CORE.AUTHORIZATION` (scheme + package_code + letter-vs-table drift + `denial_is_curable`), `OPERATIONAL.SCHEME_REGISTRY` (3 schemes seeded: PM-JAY central + TN-CMHIS + MH-MJPJAY), `DT_SCHEME_ELIGIBILITY` cross-joining patients × schemes. Rules `COV-AUTH-001` + `COV-LIMIT-001` live-tested including the conflicting-letter drift (SPEC §247 flagship). Dedicated extraction prompt `pass_a_claim.md`. PM-JAY manual PDF ingested into `REFERENCE_DOC_SEARCH`; 8 eval questions answered from it. Family-floater balances are flagged, never computed (SPEC decision — no HOUSEHOLD table). |
-| 13 corruption scenarios | 🟢 **10 of 13 built + live-verified** — Deep case covers 2, 3, 12 (HER2 grade+IHC discordance across specimens, appendectomy `clinical_complication`); scratch harness covers 7, 8 (LVEF stale, ID quar); `corruptions.py` covers 13 (rotated CBC photo, R7); `load_synthetic.sql` covers 1, 4, 5, 6, 9, 10 (late addendum, unit chaos GM%/mg%/g%, missing FISH bring-list, auth letter drift flagship, duplicate dedup, prompt injection). Remaining: 11 (cross-patient ID, handled by A1 design guarantee — agent tool schemas omit patient_id) + 2 needing R7 two-pass live-run infra not yet fired. |
-| Synthetic PDF with Indian lab traps | 🟡 **built** — 1 of ~20. `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
+| 13 corruption scenarios | 🟡 **10 of 13 seeded and checked (3 by design, untested)** — Deep case covers 2, 3, 12 (HER2 grade+IHC discordance across specimens, appendectomy `clinical_complication`); scratch harness covers 7, 8 (LVEF stale, ID quar); `corruptions.py` covers 13 (rotated CBC photo, R7); `load_synthetic.sql` covers 1, 4, 5, 6, 9, 10 (late addendum, unit chaos GM%/mg%/g%, missing FISH bring-list, auth letter drift flagship, duplicate dedup, prompt injection). Remaining: 11 (cross-patient ID, handled by A1 design guarantee — agent tool schemas omit patient_id) + 2 needing R7 two-pass live-run infra not yet fired. |
+| Synthetic PDF with Indian lab traps | 🟡 **built** — 1 of ~20 at 23 Sept; 22 more cohort PDFs added 3 Oct (one lab + one pathology per PAT-DC patient). `GM%`, `/CUMM`, `1,50,000`, `L`/`H` flags, differential-only neutrophils |
 | Reference corpus Tier 1 | 🟢 **built + live** — WHO diabetes guideline (72 pages) + NCD treatment guidelines (87 pages) = 159 chunks in `REFERENCE_DOC_SEARCH`; cited answers verified via ASK_SAARTHI |
 | 80 rule fixtures | 🟢 **built + live-tested** — `data/fixtures/rules/rule_fixtures.yaml`, 16 rules × 5 scenarios; `backend/scripts/run_rule_fixtures.py` runs 3-stage harness (structural + deep-case + scratch-patient), 28/28 PASS on JN89282 |
 | 80 questions (40 dev + 40 held-out) eval | 🟢 **built** — `data/eval/dev.jsonl` + `data/eval/held_out.jsonl`. Covers Class A refusals, gate outcomes, missing/pending/superseded/unreadable, reference lookups, Hindi/Marathi/Bangla/Tamil, prompt-injection resistance |
@@ -406,10 +488,10 @@ The brief requires evidence at **every** phase. Legend: 🟢 complete · 🟡 pa
 
 | Phase | Status |
 |---|---|
-| **Planning** | 🟢 **complete** — 52 sessions, 26 single-question research sessions, banked in `evidence/coco/planning.yaml` (382 lines) |
+| **Planning** | 🟢 **complete** — 52 sessions, 26 single-question research sessions, banked in `evidence/coco/planning.yaml` (381 lines) |
 | **Development** | 🟢 **complete** — `evidence/coco/development.yaml` (145 lines), 3 stages spanning Danush's Days 1–5 scaffolding + Daksha's JN89282 deploy and extensions; every file_change carries a `verified_on: JN89282` entry |
 | **Execution** | 🟢 **complete** — `evidence/coco/execution.yaml` (222 lines), 5 stages covering the full vertical-slice deploy; 6 recorded failure-and-fix pairs including AUTHORIZATION consolidation (23 Sept) |
-| **Testing and validation** | 🟢 **built** — `evidence/coco/testing_validation.yaml` (438 lines), 6 stages: 10 platform behaviour probes with query IDs, 28-live-test rule fixture harness, all 13 corruption scenarios accounted for (10 seeded + 3 by-design), MCP external round trip, **9 failure-and-fix pairs** including the daycare cohort load discovery, prompt-injection inert-content proof, and the "Unknown UDF" grant fix from the MCP session. Named open gaps kept honest (multi-patient generation past 12, R7 live-run, frontend→live-backend wiring). |
+| **Testing and validation** | 🟢 **built** (10 scenarios tested live; 3 handled by design, not tested) — `evidence/coco/testing_validation.yaml` (438 lines), 6 stages: 10 platform behaviour probes with query IDs, 28-live-test rule fixture harness, 13 corruption scenarios accounted for (10 tested + 3 by-design, untested), MCP external round trip, **9 failure-and-fix pairs** including the daycare cohort load discovery, prompt-injection inert-content proof, and the "Unknown UDF" grant fix from the MCP session. Named open gaps kept honest (multi-patient generation past 12, R7 live-run, frontend→live-backend wiring). |
 
 **Failure-and-fix pairs are retained deliberately.** They are the most credible lifecycle evidence available and are not curated out.
 
@@ -437,5 +519,5 @@ Written now so they are not forgotten under deadline pressure.
 2. **Three thresholds are practice consensus, not guideline requirements.** Labelled ⚠️ in §3 and in the UI.
 3. **Five NRCeS ABDM FHIR profile claims are unverified** — flagged in `fhir-field-mapping.md` §12. Base-FHIR paths are standard and stable.
 4. **`ACCESS_HISTORY` lags up to 180 minutes.** Live probes use `QUERY_HISTORY`; the written pack uses `ACCESS_HISTORY`. Each is labelled.
-5. **Competitor comparisons cite public source file and line.** Where we infer from an absence, we say so.
+5. **Competitor comparisons are historical and not re-verifiable here.** Their source is not vendored in this repo and the file:line citations are limited to those in `planning/research/clinical/ps04-competitive-landscape.md`; no "no competitor does this" claim is made in judge-facing material (FIX-ROUND-5).
 6. **100 patients, not population scale.** Sharding and event-driven recomputation are documented, not built.

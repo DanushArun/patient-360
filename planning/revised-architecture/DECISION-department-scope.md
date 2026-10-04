@@ -153,7 +153,7 @@ Requires simultaneously:
 - **Cardiology** — is the LVEF assessment still inside 90 days, or did the 6-week interruption push it stale?
 - **Coverage** — is the authorisation still valid after the gap, or did it expire?
 
-Four departments, four gates, one question, every claim cited. This is a Patient-360 demonstration no competitor in the field can produce.
+Four departments, four gates, one question, every claim cited. We did not see this Patient-360 demonstration in the competitor code we reviewed.
 
 ### 5. Positioning
 
@@ -191,9 +191,9 @@ Depth lives in these properties, not in rule count. Adding departments does not 
 | Cross-department demo scenario | ~2 h |
 | **Total** | **~5 h** |
 
-**4 hours freed** versus the first version of this decision. Those hours are redirected to **D1 — extraction verification** (two-pass on safety-critical fields), which is the highest-value differentiator in the entire design and which no competitor has.
+**4 hours freed** versus the first version of this decision. Those hours are redirected to **D1 — extraction verification** (two-pass on safety-critical fields), which is the highest-value differentiator in the entire design and which we did not find in the competitor code we reviewed.
 
-Bought for ~5 h: satisfaction of the brief's "Patient 360" framing, neutralisation of CareCompass's strongest axis, a cross-department demo no competitor can produce, and a defensible extensibility claim — without the Completeness penalty that 20 partially-tested rules would incur.
+Bought for ~5 h: satisfaction of the brief's "Patient 360" framing, neutralisation of CareCompass's strongest axis, a cross-department demo (none seen in the competitor code we reviewed), and a defensible extensibility claim — without the Completeness penalty that 20 partially-tested rules would incur.
 
 ---
 

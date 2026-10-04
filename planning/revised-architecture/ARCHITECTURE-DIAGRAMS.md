@@ -679,7 +679,7 @@ Each is reproducible from a query ID in `evidence/coco/verification-query-ids.md
 
 **Every dotted line in this diagram terminates at** `FAIL CLOSED`**.** There is no pass-by-default path anywhere. If `AI_FILTER` errors, the claim is stripped. If consent is absent, the result is empty. If extraction pass B fails, no value is asserted.
 
-No competitor has closed any of the four. Two ship access control that is a Streamlit radio button writing to `st.session_state` — confirmed in their source, with their own comment admitting it.
+We did not see any of the four closed in the competitor code we reviewed. Two ship access control that is a Streamlit radio button writing to `st.session_state` — confirmed in their source, with their own comment admitting it.
 
 ---
 
@@ -755,7 +755,7 @@ sequenceDiagram
 
 > **Type** — Dynamic (collaboration style, numbered) · **Scope** — one page of one document becoming one asserted or refused value · **Audience** — technical
 >
-> **Why this diagram exists:** R7 is the differentiator no competitor has. It deserves its own runtime view.
+> **Why this diagram exists:** R7 is a differentiator not found in the competitor code we reviewed. It deserves its own runtime view.
 
 ```mermaid
 flowchart TB
@@ -807,7 +807,7 @@ Running `llama3.3-70b` twice **correlates its errors** — the same architecture
 
 **Cost is spent where harm lives.** Only concepts flagged `is_safety_critical` on `CLINICAL_ONTOLOGY` get pass B. A platelet count gets two reads; a patient's address gets one.
 
-**The demo beat:** hand the system a rotated photograph of a CBC where the platelet count is genuinely ambiguous. The passes disagree. The system says *"two reads of this page disagree on the platelet value — a human must confirm"*, and the gate returns `not_evaluated`. **It refuses to assert a number it cannot verify.** Every competitor asserts whatever their single pass returned, with no mechanism to know it was wrong.
+**The demo beat:** hand the system a rotated photograph of a CBC where the platelet count is genuinely ambiguous. The passes disagree. The system says *"two reads of this page disagree on the platelet value — a human must confirm"*, and the gate returns `not_evaluated`. **It refuses to assert a number it cannot verify.** The competitor projects we reviewed appeared to assert whatever their single pass returned, with no mechanism to know it was wrong.
 
 `not_evaluated` is not `fail`. An unverifiable lab does not mean the count is low — it means we do not know, and those two states demand different actions.
 
@@ -999,7 +999,7 @@ erDiagram
 
 
 
-### Four things here that no competitor models
+### Four things here that were not found in the competitor code we reviewed
 
 **The** `DOC_PAGE` **/** `DOC_CHUNK` **split is platform-forced — ADR-003.** Verified: `CREATE CORTEX SEARCH SERVICE` fails with *"Change tracking is not supported on queries with correlated subquery expressions"* when the source table carries a mapping-table row access policy. So the index must be un-governed and return IDs only, while content lives behind the policy. **The platform forced the correct security architecture**, and we found that out by trying it rather than by reasoning about it.
 

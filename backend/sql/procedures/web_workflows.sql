@@ -45,6 +45,7 @@ BEGIN
                          FROM SAARTHI.GOVERNANCE.CARE_TEAM
                         WHERE practitioner_id = :v_practitioner
                           AND patient_id     = :v_patient_id
+                          AND role_type IN ('treating', 'coordinator')
                           AND active_from   <= CURRENT_DATE()
                           AND (active_to IS NULL OR active_to >= CURRENT_DATE())
                         ORDER BY active_from DESC
@@ -127,6 +128,12 @@ v_changed := SQLROWCOUNT;
 IF (v_changed!=1) THEN ROLLBACK; RETURN OBJECT_CONSTRUCT('error','stale_task'); END IF;
 INSERT INTO SAARTHI.OPERATIONAL.REVIEW_TASK(task_id,issue_id,owner_practitioner_id,state,decision,reason,actor_practitioner_id,idempotency_key)
 SELECT UUID_STRING(),:v_issue,:v_owner,:v_next_state,:ACTION,:NOTE,:v_practitioner,:v_receipt;
+-- Keep the issue consistent with its tasks: when the last open work item on an issue is
+-- resolved the issue closes; it never stays 'open' behind an all-resolved task list.
+UPDATE SAARTHI.OPERATIONAL.REVIEW_ISSUE SET state='closed'
+WHERE issue_id=:v_issue AND patient_id=:v_patient_id AND :ACTION='resolve'
+AND NOT EXISTS (SELECT 1 FROM SAARTHI.OPERATIONAL.REVIEW_TASK rt2 WHERE rt2.issue_id=:v_issue
+  AND rt2.idempotency_key NOT LIKE 'web-event:%' AND rt2.state IN ('open','acknowledged'));
 COMMIT;
 RETURN OBJECT_CONSTRUCT('task_id',TASK_REF,'state',v_next_state,'version',EXPECTED_VERSION+1,'idempotent_replay',FALSE);
 EXCEPTION WHEN OTHER THEN
@@ -179,6 +186,7 @@ BEGIN
                          FROM SAARTHI.GOVERNANCE.CARE_TEAM
                         WHERE practitioner_id = :v_practitioner
                           AND patient_id     = :v_patient_id
+                          AND role_type IN ('treating', 'coordinator')
                           AND active_from   <= CURRENT_DATE()
                           AND (active_to IS NULL OR active_to >= CURRENT_DATE())
                         ORDER BY active_from DESC

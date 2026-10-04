@@ -20,12 +20,20 @@ This directory is the audit trail. Everything in it is machine-verifiable — se
 
 ## Phase status
 
-| Phase | Manifest | Status |
-|---|---|---|
-| **Planning** | `planning.yaml` | Complete — 52 sessions, 16–17 Sept |
-| **Development** | `development.yaml` | In progress — Daksha's JN89282 deploy + extensions (22 Sept), Danush's Days 1–5 scaffolding (18–20 Sept) |
-| **Execution** | `execution.yaml` | In progress — vertical slice verified end-to-end on JN89282 (22 Sept), 6 failure/fix pairs recorded |
-| **Testing & validation** | `testing.yaml` | Partial — platform verification done, see `verification-query-ids.md` |
+Manifest status is copied from each file's own `status:` field (checked 4 Oct 2026). "In progress" is what the manifests say; this README does not upgrade it.
+
+| Phase | Manifest (lines) | Manifest `status:` | Scope |
+|---|---|---|---|
+| **Planning** | `planning.yaml` (381) | complete | 52 sessions, 16-17 Sept |
+| **Development** | `development.yaml` (144) | in_progress | Daksha's JN89282 deploy and extensions (22 Sept), Danush's Days 1-5 scaffolding (18-20 Sept) |
+| **Execution** | `execution.yaml` (221) | in_progress | Vertical slice on JN89282 (22 Sept); 6 failure/fix pairs recorded |
+| **Testing & validation** | `testing_validation.yaml` (437) | in_progress | Platform verification, see `verification-query-ids.md`; failure/fix stage 5 in the manifest |
+
+Also in this directory: `sessions-raw.csv` (raw export), `verification-query-ids.md`, `robustness-review-2026-10-04.md`, `snowflake-new-account-rca.md`.
+
+**Provenance caveat.** Work after 22 Sept on the OS69400 account (rounds 1-6 of the QA/fix cycle, the deploy bundle, the web app) was done with
+other coding agents and by hand unless a session id above says otherwise. It is **not** CoCo lifecycle evidence and must not be presented as such.
+Session ids in the manifests have not been re-resolved with `cortex conversations transcript` since they were written (gap 20, `IMPLEMENTATION-STATUS.md`).
 
 ---
 

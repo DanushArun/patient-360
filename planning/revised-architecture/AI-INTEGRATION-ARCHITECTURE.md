@@ -443,7 +443,7 @@ Skills are uploaded by `setup.sql` via `COPY INTO @stage/<skill>/SKILL.md FROM (
 
 ## 4. Extraction — R7 two-pass, with real prompts
 
-`[TE]` `[RWR]` — the differentiator no competitor has.
+`[TE]` `[RWR]` — a differentiator not found in the competitor code we reviewed.
 
 ### 4.1 Document-type routing (closes M6)
 

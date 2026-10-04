@@ -197,10 +197,10 @@ WHEN MATCHED THEN UPDATE SET t.concept_id = s.concept_id
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code, display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id, accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)
 VALUES ('EVT-AST-01','PAT-DEEP-0001','EVT-CHEMO-06','lab',s.concept_id,'LOINC','1920-8','Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma',28,NULL,'U/L','28','U/L',NULL,NULL,'LAB-2025-0415-AST','final',FALSE,TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,9,22,0),TIMESTAMP_NTZ_FROM_PARTS(2025,4,15,11,37,0),CURRENT_TIMESTAMP(),NULL);
 
--- SURG-CLEAR-001 - 3 assertions extracted from a synthetic surgical note.
+-- SURG-CLEAR-001 - 3 expected assertions from a synthetic surgical-note fixture.
 -- Note: ASSERTION rows normally arrive via the extract_assertions task; seeding
--- them directly here is honest for the deep-case demo but future work should
--- add a matching CLINICAL_NOTE document that R7 extraction produces these from.
+-- them directly does not establish R7 verification. Keep their values unavailable
+-- until two independent model families have read the matching source page.
 -- ASSERTION.DOC_ID is NOT NULL so a synthetic DOCUMENT row anchors these three.
 
 MERGE INTO SAARTHI.DOCUMENTS.DOCUMENT t USING (SELECT 'DOC-SURG-NOTE-01' k) s ON t.doc_id = s.k
@@ -209,15 +209,33 @@ VALUES ('DOC-SURG-NOTE-01', 'PAT-DEEP-0001', 'patient', 'surgical_note', 'seed-s
 
 MERGE INTO SAARTHI.EVIDENCE.ASSERTION t USING (SELECT 'ASS-WOUND-01' k) s ON t.assertion_id = s.k
 WHEN NOT MATCHED THEN INSERT (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit, negation, missingness_state, verification_status, pass1_value, pass2_value, extractor_version, char_start, char_end)
-VALUES ('ASS-WOUND-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'wound_healing_status', 'healed', NULL, FALSE, 'present', 'verified', 'healed', 'healed', 'seed-v1', 0, 0);
+VALUES ('ASS-WOUND-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'wound_healing_status', NULL, NULL, FALSE, 'pending', 'unverified', NULL, NULL, 'seed-v1', NULL, NULL);
 
 MERGE INTO SAARTHI.EVIDENCE.ASSERTION t USING (SELECT 'ASS-INFECT-01' k) s ON t.assertion_id = s.k
 WHEN NOT MATCHED THEN INSERT (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit, negation, missingness_state, verification_status, pass1_value, pass2_value, extractor_version, char_start, char_end)
-VALUES ('ASS-INFECT-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'infection_status', 'resolved', NULL, FALSE, 'present', 'verified', 'resolved', 'resolved', 'seed-v1', 0, 0);
+VALUES ('ASS-INFECT-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'infection_status', NULL, NULL, FALSE, 'pending', 'unverified', NULL, NULL, 'seed-v1', NULL, NULL);
 
 MERGE INTO SAARTHI.EVIDENCE.ASSERTION t USING (SELECT 'ASS-CLEAR-01' k) s ON t.assertion_id = s.k
 WHEN NOT MATCHED THEN INSERT (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit, negation, missingness_state, verification_status, pass1_value, pass2_value, extractor_version, char_start, char_end)
-VALUES ('ASS-CLEAR-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'surgical_clearance_signed_by_practitioner', 'PRAC-01', NULL, FALSE, 'present', 'verified', 'PRAC-01', 'PRAC-01', 'seed-v1', 0, 0);
+VALUES ('ASS-CLEAR-01', 'DOC-SURG-NOTE-01', 0, NULL, 'PAT-DEEP-0001', 'surgical_clearance_signed_by_practitioner', NULL, NULL, FALSE, 'pending', 'unverified', NULL, NULL, 'seed-v1', NULL, NULL);
+
+-- Source page for the surgical note (D3-02). Synthetic text only. The seeded assertions above stay
+-- `unverified` with NULL spans: this page makes the document loadable so chunk_documents_proc and
+-- the two-pass extract_assertions_proc (R7) can read it. A document-cited gate span for
+-- PAT-DEEP-0001 appears only if both model families verify an assertion from this page.
+MERGE INTO SAARTHI.DOCUMENTS.DOC_PAGE t USING (SELECT 'DOC-SURG-NOTE-01' d, 0 p) s ON t.doc_id = s.d AND t.page_index = s.p
+WHEN NOT MATCHED THEN INSERT (doc_id, page_index, text, char_count)
+VALUES ('DOC-SURG-NOTE-01', 0,
+        'SYNTHETIC SURGICAL NOTE for PAT-DEEP-0001 (fictional test record). Wound healing status: satisfactory, incision clean and dry, no dehiscence. Infection status: no signs of infection. Surgical clearance signed by Dr S. Rao (synthetic surgeon) on the day of review.',
+        263);
+
+-- Repair earlier deployments of this fixture too. A seeded expectation is not
+-- evidence of two real model reads; retain the row but withhold its value.
+UPDATE SAARTHI.EVIDENCE.ASSERTION
+SET value=NULL, verification_status='unverified', missingness_state='pending',
+    pass1_value=NULL, pass2_value=NULL, char_start=NULL, char_end=NULL
+WHERE extractor_version='seed-v1' AND doc_id='DOC-SURG-NOTE-01'
+  AND assertion_id IN ('ASS-WOUND-01','ASS-INFECT-01','ASS-CLEAR-01');
 
 -- COV-AUTH-001 - AUTHORIZATION row (consolidated table per SPEC §239 + §247;
 -- retired the parallel PRE_AUTHORIZATION on 23 Sept - see REMAINING-WORK.md §5)

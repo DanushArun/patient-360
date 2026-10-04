@@ -2,6 +2,7 @@ import snowflake from "snowflake-sdk";
 import { snowflakeDriverConfig } from "./snowflake-driver-config.mjs";
 import { readFileSync } from "fs";
 import { snowflakeConfig } from "./snowflake-config.mjs";
+import { isValidPatientId } from "./api-contracts.mjs";
 
 snowflake.configure(snowflakeDriverConfig);
 
@@ -15,12 +16,19 @@ snowflake.configure(snowflakeDriverConfig);
 // connection per request is cheap and safe, unlike OAuth.
 async function openConnection(): Promise<snowflake.Connection> {
   const config = snowflakeConfig();
-  const privateKey = readFileSync(config.privateKeyPath, "utf8");
+  const auth = config.authenticator === "PROGRAMMATIC_ACCESS_TOKEN"
+    ? {
+        authenticator: "PROGRAMMATIC_ACCESS_TOKEN" as const,
+        token: readFileSync(config.patPath!, "utf8").trim(),
+      }
+    : {
+        authenticator: "SNOWFLAKE_JWT" as const,
+        privateKey: readFileSync(config.privateKeyPath!, "utf8"),
+      };
   const conn = snowflake.createConnection({
     account: config.account,
     username: config.username,
-    authenticator: "SNOWFLAKE_JWT",
-    privateKey,
+    ...auth,
     role: config.role,
     warehouse: config.warehouse,
   });
@@ -31,9 +39,27 @@ async function openConnection(): Promise<snowflake.Connection> {
     });
   });
   try {
-    await execOn(conn, "USE SECONDARY ROLES NONE");
-    // Per-statement protection, not an account dollar cap. Preserve fresh
-    // patient-bound sessions; never share connections to reduce cost.
+    try {
+      await execOn(conn, "USE SECONDARY ROLES NONE");
+    } catch (error) {
+      // Restricted PAT sessions reject role changes with 003107. That error
+      // alone does not prove safe privileges; verify the actual session below.
+      if (!(error && typeof error === "object" && "code" in error
+          && Number(error.code) === 3107)) throw error;
+    }
+    const identity = await execOn<{ APP_ROLE: string; SECONDARY_ROLES: string }>(conn,
+      "SELECT CURRENT_ROLE() AS APP_ROLE, CURRENT_SECONDARY_ROLES() AS SECONDARY_ROLES");
+    let secondary;
+    try {
+      secondary = JSON.parse(identity[0]?.SECONDARY_ROLES);
+    } catch {
+      throw new Error("snowflake_session_scope_unverified");
+    }
+    if (identity.length !== 1 || identity[0]?.APP_ROLE !== "SAARTHI_APP"
+        || !secondary || secondary.roles !== ""
+        || !["", "NONE"].includes(secondary.value)) {
+      throw new Error("snowflake_session_scope_unverified");
+    }
     await execOn(conn,
       "ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = 120, " +
       "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30, QUERY_TAG = 'saarthi_web_prototype'"
@@ -103,6 +129,8 @@ export async function withPatientSession<T>(
   patientId: string,
   fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>) => Promise<T>
 ): Promise<T> {
+  // Malformed ids are a client error and never reach Snowflake (F-04/F-05).
+  if (!isValidPatientId(patientId)) throw new Error("invalid_argument");
   const conn = await openConnection();
   const run = (sql: string, binds: (string | number | null)[] = []) => execOn(conn, sql, binds);
   try {

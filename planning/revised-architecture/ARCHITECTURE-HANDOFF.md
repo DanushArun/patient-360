@@ -37,9 +37,9 @@ This document exists for one reason: **three people, seventeen days, and no time
 
 If the schedule collapses, these survive in this order.
 
-1. **R7 two-pass extraction verification** — no competitor verifies extraction at all
-2. **Consent enforced at query time** — no competitor models consent at all
-3. **`CURRENT_USER()`-keyed RAP, proven** — every competitor's access control is cosmetic
+1. **R7 two-pass extraction verification** — we did not find extraction verification in the competitor code we reviewed
+2. **Consent enforced at query time** — we did not find consent modelling in the competitor code we reviewed
+3. **`CURRENT_USER()`-keyed RAP, proven** — competitor access control we reviewed was a UI role picker or coarse role grants (file-level, 16 Sept; not re-verifiable here)
 4. **4 skills + orchestrating Task** — hits both named bonus categories
 5. **A working vertical slice, deployed** — the category is *Technical Execution*
 

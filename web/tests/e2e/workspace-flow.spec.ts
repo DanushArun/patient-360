@@ -44,7 +44,7 @@ function answer(scope: string, clinical = false): unknown {
     suggested: [], gates: [], known_as_of: cutoff, error: null,
     artifact: { classification: clinical ? "CLASS_A" : "CLASS_B",
       overall_status: clinical ? "refused" : "supported", known_as_of: cutoff,
-      claims: clinical ? [] : [{ text: scope === "reference" ? "Reference passage" : "Cited record",
+      claims: clinical ? [] : [{ text: "Cited record",
         claim_type: "textual", evidence: [{ kind: "document_span", id: "ASSERT-SYN-1",
           doc_id: "DOC-SYNTHETIC-1", page_index: 0, char_start: 5, char_end: 12 }] }],
       limitations: [], ...(clinical ? { refusal } : {}) } };
@@ -94,6 +94,11 @@ test("test_answers_when_scope_changes_and_clinical_question_is_refused_keeps_bou
     const url = new URL(route.request().url());
     if (url.pathname === "/api/ask") {
       const body = route.request().postDataJSON();
+      if (body.sourceScope === "reference") {
+        await route.fulfill({ status: 409, contentType: "application/json",
+          body: JSON.stringify({ error: "reference_scope_unavailable", category: "conflict" }) });
+        return;
+      }
       await json(route, answer(body.sourceScope, body.question.includes("safe"))); return;
     }
     if (url.pathname.endsWith("/evidence") && route.request().method() === "POST") {
@@ -107,11 +112,11 @@ test("test_answers_when_scope_changes_and_clinical_question_is_refused_keeps_bou
   await input.fill("What is documented?"); await input.press("Enter");
   await expect(page.getByText("Cited record", { exact: true })).toBeVisible();
   await expect(page.getByText("Unsupported raw model prose must stay hidden")).toHaveCount(0);
-  await page.getByLabel("Search in").selectOption("reference");
-  await expect(page.getByText("Cited record", { exact: true })).toHaveCount(0);
-  await input.fill("What does the reference say?"); await input.press("Enter");
-  await expect(page.getByText("Reference passage", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open cited source" })).toHaveCount(0);
+  // The reference corpus is not built: the option is disabled and says why (real contract:
+  // /api/ask answers 409 reference_scope_unavailable).
+  const referenceOption = page.getByLabel("Search in").locator("option[value=reference]");
+  await expect(referenceOption).toHaveAttribute("disabled", "");
+  await expect(referenceOption).toContainText("not available");
   await page.getByLabel("Search in").selectOption("patient");
   await input.fill("Is it safe to proceed?"); await input.press("Enter");
   await page.getByRole("button", { name: "Prepare evidence packet for Dr Meera Iyer" }).click();

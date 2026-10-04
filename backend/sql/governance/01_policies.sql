@@ -33,6 +33,11 @@ EXCEPTION
 END;
 $$;
 
+-- N4-03: the policy argument is p_doc_id, NOT doc_id. Inside the subqueries below DOCUMENT d also has a
+-- column called doc_id, and an unqualified `doc_id` binds to the innermost scope (d.doc_id), turning
+-- `d.doc_id = doc_id` into a tautology: every DOC_PAGE row would be visible to anyone with any care-team
+-- link (and to everyone once any reference document exists). The distinct argument name removes the
+-- ambiguity. Proved after deploy by the canary test in deploy step 07 (it must see 0 rows).
 -- Layer 3 of R5: even a leaked chunk_id yields nothing, because DOC_PAGE
 -- content is re-fetched through this policy, keyed on the real caller.
 --
@@ -48,10 +53,10 @@ $$;
 --     CURRENT_USER(), never CURRENT_ROLE(); survives owner's-rights
 --     elevation exactly as R5 Layer 3 requires.
 CREATE OR REPLACE ROW ACCESS POLICY SAARTHI.GOVERNANCE.patient_scope
-  AS (doc_id VARCHAR) RETURNS BOOLEAN ->
+  AS (p_doc_id VARCHAR) RETURNS BOOLEAN ->
     EXISTS (
       SELECT 1 FROM SAARTHI.DOCUMENTS.DOCUMENT d
-       WHERE d.doc_id = doc_id AND d.scope = 'reference'
+       WHERE d.doc_id = p_doc_id AND d.scope = 'reference'
     )
     OR EXISTS (
       SELECT 1
@@ -61,8 +66,15 @@ CREATE OR REPLACE ROW ACCESS POLICY SAARTHI.GOVERNANCE.patient_scope
       JOIN SAARTHI.DOCUMENTS.DOCUMENT d
         ON d.patient_id = ct.patient_id
       WHERE p.snowflake_user = CURRENT_USER()
-        AND d.doc_id = doc_id
-        AND (ct.active_to IS NULL OR ct.active_to > CURRENT_TIMESTAMP())
+        AND p.active = TRUE
+        AND ct.role_type IN ('treating', 'coordinator')
+        AND ct.active_from <= CURRENT_DATE()
+        AND d.doc_id = p_doc_id
+        AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE())
+        -- N3-05: identity/role/active window now match the procedure preamble. Consent is NOT
+        -- re-checked here: it is enforced at query time in every procedure preamble (layer 2),
+        -- and pipeline procedures that read DOC_PAGE for the deploying user must not lose pages
+        -- when a consent window differs. Documented in evidence/qa/FIX-ROUND-3.md.
     );
 
 -- Sensitivity tag - direct identifiers vs de-identifiable dates.

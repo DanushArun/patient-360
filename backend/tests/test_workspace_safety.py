@@ -63,7 +63,7 @@ def test_review_task_scope_is_checked_before_idempotency_replay():
     source = (ROOT / 'backend/sql/procedures/tools/08_create_review_task.sql').read_text()
     guard = source.index('IF (NOT v_issue_in_scope)')
     replay = source.index('v_existing :=')
-    write = source.index('INSERT INTO')
+    write = source.index('MERGE INTO SAARTHI.OPERATIONAL.REVIEW_TASK')
     assert guard < replay < write
     assert "patient_id || ':' || rule_id = :ISSUE_ID" in source
     assert 'patient_id = :v_patient_id' in source

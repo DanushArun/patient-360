@@ -1,8 +1,11 @@
 import { withPatientSession, procedureRows } from "@/lib/snowflake";
+import { apiError, apiErrorStatus } from "@/lib/api-contracts.mjs";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
   try {
+    const { id } = await params;
     const schemes = await withPatientSession(id, async (run) => {
       const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('schemes',NULL)"));
       return rows.map((r) => ({
@@ -15,9 +18,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       }));
     });
     return Response.json(schemes);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (msg.includes("access") || msg.includes("bind failed")) return Response.json({ error: msg }, { status: 403 });
-    return Response.json({ error: "schemes_unavailable" }, { status: 502 });
+  } catch (error) {
+    // Fixed code set only: driver and procedure text never reaches the client.
+    const failure = apiError(error, "schemes_unavailable");
+    return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
 }

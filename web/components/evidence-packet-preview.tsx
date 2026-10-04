@@ -5,7 +5,7 @@ import type { PatientData } from "@/lib/patient";
 import { useFactsData } from "./workspace-patient-facts";
 import { useWorkspaceData } from "./workspace-patient-data";
 import { documentLibraryRows, documentSourceHref } from "@/lib/workspace-documents.mjs";
-import { factStateLabel, factValueLabel } from "@/lib/workspace-patient-facts.mjs";
+import { factStateDisplay, factValueLabel } from "@/lib/workspace-patient-facts.mjs";
 
 export function EvidencePacketPreview({ patient, knownAsOf, recipient }: {
   patient: PatientData; knownAsOf: string | null; recipient: string;
@@ -45,7 +45,7 @@ function PacketFacts({ patientId, knownAsOf }: {
     {current.state === "ready" && <ul>{facts.map((fact, index) =>
       <li key={String(fact.event_id ?? index)}>{String(fact.concept ?? "Concept unavailable")}
         {" · "}{factValueLabel(fact)} {String(fact.unit ?? "")}
-        {" · "}{factStateLabel(fact.value_state)}</li>)}</ul>}
+        {" · "}{factStateDisplay(fact)}</li>)}</ul>}
     {current.state === "ready" && !facts.length && <p>No recorded facts were returned.</p>}
   </section>;
 }

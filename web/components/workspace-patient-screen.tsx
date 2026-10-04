@@ -61,10 +61,8 @@ export function PatientWorkspaceScreen({ model }: { model: PatientScreenModel })
     <WorkspaceNav patients={model.patients} patientId={model.patient.patientId}
       practitioner={model.preview ? "Design preview" : model.patient.practitionerName}
       preview={model.preview} onAsk={model.preview ? undefined : model.toggleAsk}
-      onReferences={model.preview ? undefined : () => {
-        model.setSourceScope("reference");
-        if (!model.askOpen) model.toggleAsk();
-      }} />
+      // Reference search is not built (R6: separate corpus, no service yet); no entry point.
+      onReferences={undefined} />
     <WorkspaceBar section={model.patient.patientName} knownAsOf={
       <time dateTime={model.patient.knownAsOf ?? undefined}
         title={model.patient.knownAsOf ?? "Timestamp unavailable"}>
@@ -275,7 +273,8 @@ function SourceScopeSelect({ scope, setScope, disabled }: {
   return <label className="sa-source-scope">Search in
     <select value={scope} disabled={disabled}
       onChange={(event) => setScope(event.target.value as SourceScope)}>
-      <option value="patient">Patient record</option><option value="reference">References</option>
+      <option value="patient">Patient record</option><option value="reference" disabled>
+        References (not available: reference corpus not built)</option>
     </select>
   </label>;
 }

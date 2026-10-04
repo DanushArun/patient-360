@@ -196,7 +196,7 @@ All ten have a tool path. These are the worked examples the eval set is built fr
 | 5 | **Document lookup** | "What did the surgical pathology say about margins?" | `SearchPatientDocuments` | Page-anchored span, verification badge, supersession chain if amended |
 | 6 | **Regulatory lookup** | "What does PM-JAY require for this package?" | `SearchReferenceDocuments` | Clause-level citation with effective date. **No patient data in the answer.** |
 | 7 | **Cohort** | "Which patients lack a final report before this week's cycle?" | `CohortQuery` | Unavailable while a patient is bound. Counts and lists, never row-level PHI beyond the semantic view |
-| 8 | **Change detection** ⭐ | "What changed since 09:00?" | `GetChanges` | Diffs two `known_as_of` states. Answers a question no competitor can express |
+| 8 | **Change detection** ⭐ | "What changed since 09:00?" | `GetChanges` | Diffs two `known_as_of` states. Answers a question not seen in the competitor code we reviewed |
 | 9 | **Provenance** | "Where did this HER2 status come from?" | `GetTimeline` + `SearchPatientDocuments` | Facility, accession, specimen, and both discordant reads if they exist |
 | 10 | **Coverage utilisation** | "How much of the limit is left?" | `GetPatientFacts(coverage)` | Patient-level limit with an explicit statement when `is_family_floater` is true and the shared balance is unknown |
 
@@ -230,7 +230,7 @@ All ten have a tool path. These are the worked examples the eval set is built fr
 >
 > *Gate outcomes are produced by versioned SQL rules over the record as it stands. Your treating team decides whether treatment proceeds.*
 
-**Every design decision in this specification is visible in that one answer:** four distinct outcome states rather than a boolean, a rule id and version behind each, an action addressed to a named facility, `known_as_of` stated, a refusal to assert an unverifiable number, and a standing deferral to the practitioner. **No competitor's output can contain the fourth paragraph** — none of them knows when their own extraction is unreliable.
+**Every design decision in this specification is visible in that one answer:** four distinct outcome states rather than a boolean, a rule id and version behind each, an action addressed to a named facility, `known_as_of` stated, a refusal to assert an unverifiable number, and a standing deferral to the practitioner. **We did not see any competitor output containing the fourth paragraph** — none of the reviewed projects appeared to know when their own extraction is unreliable.
 
 ---
 
@@ -265,9 +265,9 @@ Ordered so each beat lands on a different judging criterion.
 | 0 | **Bind** | Coordinator signs in, picks the patient from a care-team-filtered list. Header shows the binding. | Sets up every claim that follows |
 | 1 | **Gap identification** | *"What is missing before Thursday?"* → the answer in §3 | RWR + TE |
 | 2 | **Click a citation** | Opens the page, span highlighted, verification badge. Then click the derived ANC → shows `WBC x (neut% + band%) / 100` | *"clear source evidence"* |
-| 3 | **Extraction refusal** | Point at paragraph 4. *"Two reads disagree, so it will not assert the number."* | **TE — nobody else has this** |
+| 3 | **Extraction refusal** | Point at paragraph 4. *"Two reads disagree, so it will not assert the number."* | **TE — not found in the competitor code we reviewed** |
 | 4 | **Class A refusal** | *"Should she proceed on Thursday?"* → refused, evidence packet offered, practitioner named | RWR — legal boundary |
-| 5 | **Consent revocation** | Revoke in a second window. Re-ask beat 1. Returns nothing, context clears. | **TE — nobody else models consent** |
+| 5 | **Consent revocation** | Revoke in a second window. Re-ask beat 1. Returns nothing, context clears. | **TE — not found in the competitor code we reviewed** |
 | 6 | **Change detection** | Re-bind, set `known_as_of` to 09:00, then to now. Two different, both correct, answers. | TE — R2 made visible |
 | 7 | **Judge Console** | Run the naive search probe live → returns another patient's pathology. Then ours → nothing. Query IDs on screen. | **TE — the strongest single claim** |
 | 8 | **Family view** | Same patient, caretaker role, bring-list in Hindi | RWR + completeness |

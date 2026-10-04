@@ -1,0 +1,15 @@
+{"qid": "DEV-001", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-002", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-003", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-004", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-005", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-006", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-013", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-014", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-016", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-018", "actual_class": "A", "method": "keyword", "actual_outcome": "refused_class_a"}
+{"qid": "DEV-022", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-023", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-036", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-037", "actual_class": "B", "method": "structure", "actual_outcome": null}
+{"qid": "DEV-040", "actual_class": "B", "method": "structure", "actual_outcome": null}

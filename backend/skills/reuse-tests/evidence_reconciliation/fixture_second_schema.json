@@ -1,0 +1,30 @@
+{
+  "_note": "SYNTHETIC. A second schema (LABDESK) with column names that appear nowhere in SAARTHI. Used only by reconcile_reference.py and backend/tests/test_skill_reuse.py.",
+  "schema": "LABDESK_SYNTHETIC",
+  "cases": {
+    "clean_supersession_chain": {
+      "columns": ["rpt_id", "pt_ref", "test_code", "specimen_ref", "reading", "rev_no", "replaces_rpt", "rev_kind"],
+      "rows": [
+        {"rpt_id": "LD-1", "pt_ref": "P-9", "test_code": "PLT", "specimen_ref": "SP-A", "reading": "260", "rev_no": 1, "replaces_rpt": null, "rev_kind": "ORIG"},
+        {"rpt_id": "LD-2", "pt_ref": "P-9", "test_code": "PLT", "specimen_ref": "SP-A", "reading": "245", "rev_no": 2, "replaces_rpt": "LD-1", "rev_kind": "CORR"},
+        {"rpt_id": "LD-3", "pt_ref": "P-9", "test_code": "HER2", "specimen_ref": "SP-A", "reading": "IHC 2+", "rev_no": 1, "replaces_rpt": null, "rev_kind": "ORIG"},
+        {"rpt_id": "LD-4", "pt_ref": "P-9", "test_code": "HER2", "specimen_ref": "SP-A", "reading": "FISH positive", "rev_no": 1, "replaces_rpt": "LD-3", "rev_kind": "ADDL"},
+        {"rpt_id": "LD-5", "pt_ref": "P-9", "test_code": "GRADE", "specimen_ref": "SP-B", "reading": "III", "rev_no": 1, "replaces_rpt": null, "rev_kind": "ORIG"},
+        {"rpt_id": "LD-6", "pt_ref": "P-9", "test_code": "GRADE", "specimen_ref": "SP-C", "reading": "II", "rev_no": 1, "replaces_rpt": null, "rev_kind": "ORIG"}
+      ]
+    },
+    "ambiguous_two_version_columns": {
+      "columns": ["rpt_id", "pt_ref", "test_code", "specimen_ref", "reading", "rev_no", "version_seq", "replaces_rpt", "rev_kind"],
+      "rows": [
+        {"rpt_id": "LD-7", "pt_ref": "P-9", "test_code": "PLT", "specimen_ref": "SP-A", "reading": "260", "rev_no": 1, "version_seq": 2, "replaces_rpt": null, "rev_kind": "ORIG"},
+        {"rpt_id": "LD-8", "pt_ref": "P-9", "test_code": "PLT", "specimen_ref": "SP-A", "reading": "245", "rev_no": 2, "version_seq": 1, "replaces_rpt": null, "rev_kind": "CORR"}
+      ]
+    },
+    "ambiguous_two_value_columns": {
+      "columns": ["rpt_id", "pt_ref", "test_code", "specimen_ref", "result_text", "result_num", "rev_no", "replaces_rpt", "rev_kind"],
+      "rows": [
+        {"rpt_id": "LD-9", "pt_ref": "P-9", "test_code": "ANC", "specimen_ref": "SP-A", "result_text": "2100", "result_num": 1200, "rev_no": 1, "replaces_rpt": null, "rev_kind": "ORIG"}
+      ]
+    }
+  }
+}

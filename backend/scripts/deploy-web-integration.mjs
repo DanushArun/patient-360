@@ -3,7 +3,9 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {session,statements,cell} from './bounded-session.mjs';
-const files=['web_reads.sql','web_workflows.sql','tools/08_create_review_task.sql'];
+// Order matters: gates and tool procedures first, then the web procedures that call them.
+const files=['evaluate_gates.sql','tools/06_get_timeline.sql','tools/08_create_review_task.sql',
+ 'web_reads.sql','web_workflows.sql','web_evidence.sql'];
 const plan=files.flatMap(f=>statements(readFileSync(new URL('../sql/procedures/'+f,import.meta.url),'utf8')).map(sql=>({file:f,sql})));
 const hash=createHash('sha256').update(JSON.stringify(plan)).digest('hex');
 console.log('PATCH_SHA256',hash);console.log(plan.map(p=>p.file+': '+p.sql.slice(0,130)).join('\n'));
@@ -17,7 +19,7 @@ if(process.argv.includes('--apply')){
  const r=cell(await s.q('CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE(?,7)',[view]));
  if(r.error||!Array.isArray(r.rows))throw new Error(view+': '+JSON.stringify(r));console.log('PASS',view,r.rows.length);}
  const b=cell(await s.q("CALL SAARTHI.OPERATIONAL.BIND_PATIENT('PAT-DC-07')"));if(b.error)throw new Error(JSON.stringify(b));
- for(const view of ['context','snapshot','tasks','owners','schemes','answers','packets']){
+ for(const view of ['context','snapshot','tasks','owners','schemes','answers','packets','documents']){
  const r=cell(await s.q('CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA(?,?)',[view,view==='tasks'?'COV-AUTH-001':null]));
  if(r.error||!Array.isArray(r.rows))throw new Error(view+': '+JSON.stringify(r));console.log('PASS',view,r.rows.length);}
  let denied=false;try{await s.q('SELECT * FROM SAARTHI.CORE.PATIENT LIMIT 1');}catch{denied=true;}if(!denied)throw new Error('Raw table access should fail');

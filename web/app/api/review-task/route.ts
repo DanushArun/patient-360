@@ -1,23 +1,33 @@
 import { createReviewTask } from "@/lib/patient";
+import {
+  apiError, apiErrorStatus, isSameOrigin, readJsonBody, validateReviewTaskBody,
+} from "@/lib/api-contracts.mjs";
 
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) {
+    return Response.json(apiError("invalid_origin"), { status: 403 });
+  }
+  let body: ReturnType<typeof validateReviewTaskBody>;
   try {
-    const body: unknown = await request.json();
-    if (!body || typeof body !== "object") return Response.json({ error: "invalid_argument" }, { status: 400 });
-    const { patientId, ruleId, action } = body as Record<string, unknown>;
-    if (
-      typeof patientId !== "string" || typeof ruleId !== "string" ||
-      !["request_document", "escalate"].includes(String(action))
-    ) return Response.json({ error: "invalid_argument" }, { status: 400 });
+    body = validateReviewTaskBody(await readJsonBody(request));
+  } catch (error) {
+    const failure = apiError(error, "invalid_argument");
+    return Response.json(failure, { status: apiErrorStatus(failure.error) });
+  }
+  if (!body) {
+    return Response.json(apiError("invalid_argument"), { status: 400 });
+  }
+  try {
     const result = await createReviewTask(
-      patientId, ruleId, action as "request_document" | "escalate"
-    );
+      body.patientId, body.ruleId, body.action, body.requestId);
     if (result.error) {
-      const status = result.error === "no_patient_access" ? 403 : 409;
-      return Response.json(result, { status });
+      const failure = apiError(result.error, "action_unavailable");
+      return Response.json({ ...result, ...failure },
+        { status: failure.error === "action_unavailable" ? 409 : apiErrorStatus(failure.error) });
     }
     return Response.json(result);
-  } catch {
-    return Response.json({ error: "action_unavailable" }, { status: 502 });
+  } catch (error) {
+    const failure = apiError(error, "action_unavailable");
+    return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
 }

@@ -170,3 +170,39 @@ test("test_snowflake_configuration_and_write_errors_have_distinct_statuses", () 
   assert.equal(apiErrorStatus("write_readback_unconfirmed"), 409);
   assert.equal(apiErrorStatus("write_readback_unavailable"), 503);
 });
+
+test("test_review_task_body_carries_a_bounded_per_attempt_request_id", () => {
+  const base = { patientId: "PAT-DC-07", ruleId: "CLIN-PLT-001", action: "escalate" };
+  assert.equal(validateReviewTaskBody({ ...base, requestId: "3f1c2a9e-0000-4000-8000-abcdef012345" })
+    ?.requestId, "3f1c2a9e-0000-4000-8000-abcdef012345");
+  for (const bad of ["short", "has space in it 12345", 42, "x".repeat(81)]) {
+    assert.equal(validateReviewTaskBody({ ...base, requestId: bad }), null);
+  }
+});
+
+test("test_malformed_patient_ids_are_rejected_before_any_record_read", async () => {
+  const { isValidPatientId } = await import("./api-contracts.mjs");
+  assert.equal(isValidPatientId("PAT-DC-07"), true);
+  for (const bad of ["", "' OR 1=1", "a/b", "x".repeat(81), undefined, 7]) {
+    assert.equal(isValidPatientId(bad), false);
+  }
+});
+
+test("test_route_failures_use_typed_codes_and_never_leak_driver_text", () => {
+  const leaked = apiError(new Error("SQL compilation error: table SAARTHI.CORE.X (acct ABC123)"),
+    "timeline_unavailable");
+  assert.deepEqual(leaked, { error: "timeline_unavailable", category: "unavailable",
+    purge_patient_state: false });
+  assert.equal(apiErrorStatus("timeline_unavailable"), 502);
+  assert.equal(apiError(new Error("bind failed: no_patient_access")).purge_patient_state, true);
+  assert.equal(apiErrorStatus(apiError(new Error("write_readback_unconfirmed")).error), 409);
+});
+
+test("round 2 error codes are catalogued with stable statuses", async () => {
+  const { apiError, apiErrorStatus } = await import("./api-contracts.mjs");
+  for (const code of ["task_transition_requires_review", "no_encounter", "reference_scope_unavailable"]) {
+    const failure = apiError(code, "action_unavailable");
+    assert.equal(failure.error, code);
+    assert.equal(apiErrorStatus(code), 409);
+  }
+});
