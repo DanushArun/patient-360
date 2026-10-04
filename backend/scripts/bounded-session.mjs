@@ -38,9 +38,10 @@ export async function session(tag) {
  if(who.A!=='JR18576'||who.U!=='SITAR')throw new Error('Unexpected identity');
  const [wh]=await q("SHOW WAREHOUSES LIKE 'SAARTHI_AI_WH'");
  const [rm]=await q("SHOW RESOURCE MONITORS LIKE 'SAARTHI_PROTOTYPE_LIMIT'");
- if(field(wh,'resource_monitor')!=='SAARTHI_PROTOTYPE_LIMIT'||field(wh,'size')!=='X-Small'||Number(field(rm,'credit_quota'))>2||parseFloat(field(rm,'suspend_immediately_at'))>90)throw new Error('Budget protection mismatch');
+ if(field(wh,'resource_monitor')!=='SAARTHI_PROTOTYPE_LIMIT'||field(wh,'size')!=='X-Small'||Number(field(rm,'credit_quota'))!==3||parseFloat(field(rm,'suspend_immediately_at'))!==90)throw new Error('Budget protection mismatch');
  console.log('WAREHOUSE_CREDITS_REPORTED',field(rm,'used_credits'),'of',field(rm,'credit_quota'),'excludes AI/Search; reporting lags');
- if(Number(field(rm,'used_credits'))>=1.5)throw new Error('Prototype reserve reached; do not raise monitor');
+ const used=field(rm,'used_credits');
+ if(used==null||!Number.isFinite(Number(used))||Number(used)>=2.0)throw new Error('Prototype reserve reached or unverified; stop and review spend');
  await q('USE SECONDARY ROLES NONE'); await q('USE WAREHOUSE SAARTHI_AI_WH');
  if(!/^[a-z_]+$/.test(tag))throw new Error('Bad query tag');
  await q("ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS=120,STATEMENT_QUEUED_TIMEOUT_IN_SECONDS=30,QUERY_TAG='"+tag+"'");

@@ -1,5 +1,97 @@
 # SAARTHI — Build Execution Plan
 
+## Current follow up tasks for langextract_use
+
+Added 2 October 2026. These are pending tasks, not completed features or permission to run paid services. This branch keeps the existing clinical workflow and R1–R7 architecture. Hosting remains after user end-to-end testing. The older build schedule below is historical context, not an instruction to redeploy everything or start services for this follow-up.
+
+### 1 Clinical calculation provenance and ANC review
+
+- [ ] Record an authoritative reference, publication/version, applicability, units, required inputs and clinical reviewer approval for each calculation. An LLM must never invent formulas, thresholds or missing inputs. Audit existing guideline mappings before enabling broader use.
+- [ ] Review ANC against the [Oncology Nursing Society calculation reference](https://www.ons.org/clinical-tools/huddle-cards/clinical-calculations-anc-huddle-card): WBC multiplied by the sum of segmented neutrophil and band percentages, divided by 100. Segmented neutrophils are mature cells; bands are immature neutrophils. This reference is not a treatment-clearance rule.
+- [ ] Resolve the mismatch in `backend/sql/dynamic_tables/01_harmonized_events.sql`: its comment mentions neutrophils plus bands, but its expression only uses `NEUTROPHIL_PCT`. Establish whether each source field includes bands already; never add them twice or treat an unreported required component as zero. Do not generalise the synthetic 6000 × 35 / 100 example without this mapping.
+- [ ] Check unit conversion, same patient/specimen/collection matching, missing and invalid inputs, duplicate records and reported-versus-derived ANC selection. The existing join and normalisation logic need review, not just an extra arithmetic term.
+- [ ] Keep reported and calculated values distinguishable. For a calculated result, expose “Derived”, input evidence, calculation version and relevant dates. Preserve source results and explain discrepancies rather than overwriting them.
+- [ ] Add deterministic tests for the approved mappings, including separately reported bands, a total neutrophil percentage, missing components, unit conversions, source mismatches and reported ANC. Keep treatment thresholds and decisions separate from calculating ANC.
+
+### 2 Baseline document quality and evidence integration
+
+- [x] Use existing synthetic CBC, altered CBC and HER2 documents to define expected text, facts, units, specimen IDs and source passages. The offline baseline covers four PDFs and ten expected field lines. Candidate accuracy remains unmeasured; the altered CBC expectation preserves its printed value, separately from the ledger.
+- [ ] Measure parsing omissions, reading order and label/value pairing. Separate document-type routing and genuine readability checks from filename-based fixture labels. Do not claim measured parity with Google without a comparable evaluation.
+- [ ] Unify single-document and batch extraction contracts, independent two-family verification, failure handling and missingness states. Agreement on shared OCR text is not independent verification of the original image.
+- [ ] Review patient/specimen reconciliation and deterministic assertion-to-rule mappings. Connect stable evidence IDs and exact spans through scoped Search, answer validation and the existing text viewer, including the separate reference-document path.
+- [ ] Compare A current pipeline, B corrected pipeline without LangExtract, and C the same corrected pipeline with LangExtract. Keep source text, model families and evaluated fields comparable; record prompt/chunking differences. Report absolute correct/missed/unsupported counts, citation matches, latency and cost. Adopt C only if its incremental benefit justifies its complexity.
+
+### 3 LangExtract locally with Snowflake model calls
+
+- [x] Pin a released LangExtract version and inspect its Python/dependency requirements. LangExtract 1.7.0 and pypdf 6.10.0 ran in an isolated Python 3.12 environment with mocked completions; frontend dependency manifests are unchanged. Transitive dependency locking remains a packaging follow-up.
+- [ ] Test whether its configurable OpenAI-compatible provider can target Snowflake Cortex directly. Check authentication, exact model identifiers, model-specific JSON/schema support, output-token controls and response handling. If incompatible, evaluate a small explicit Cortex adapter; do not silently change model family or provider.
+- [ ] Preserve approved patient binding, consent and role checks before reading or sending data; an inference endpoint alone does not provide patient authorisation. Verify all model traffic goes to the intended Snowflake account, with no vendor fallback or credentials in browser code/logs.
+- [ ] Test exact source spans, repeated passages, Unicode offsets, malformed/truncated output, timeouts and model disagreement. Fail closed. Keep two independent model families for safety-critical fields.
+- [ ] Before any live calls, agree the document/page count and cost limit. Start with one selected existing synthetic page, one worker, bounded tokens and explicit retry limits. Avoid extra recall passes and cloud batch modes until cost and compatibility are verified. Record actual calls and usage; same cloud provider does not mean free inference.
+
+### 4 Optional execution inside Snowflake
+
+- [ ] Only after the local integration passes, check the target account's supported Python runtime, approved package versions, Artifact Repository/package policy access and adapter dependencies.
+- [ ] In an approved isolated test procedure, verify imports and then the permitted Cortex calling method, caller identity/permissions, runtime limits, concurrency behaviour and idempotent writes. Local compatibility does not prove stored-procedure compatibility.
+- [ ] Compare the operational effort and cost with a controlled local worker. Do not launch persistent compute/container services merely to work around packaging. If Snowflake execution is unsuitable, keep the local option explicitly documented; it is not an always-on hosted deployment.
+
+### 5 Website performance and latency
+
+- [ ] Instrument page rendering, authorised patient-data loading, tab responsiveness, citation opening, document parsing, each extraction pass, verification, SQL refresh, retrieval and complete validated answers separately. Measure time to first answer text separately from time to a fully checked answer; unvalidated clinical claims must not appear as final.
+- [ ] Target [Core Web Vitals](https://web.dev/articles/vitals): LCP ≤2.5 seconds, INP ≤200 milliseconds and CLS ≤0.1 at the 75th percentile, segmented by device. These are reference targets, not current SAARTHI measurements or AI-answer deadlines.
+- [ ] Record sample counts, failures, p50/p95 latency and cold versus warm runs. Distinguish local development-server behaviour from a production build and, later, hosted performance. Set backend/AI latency budgets after a baseline; do not invent completion times.
+- [ ] Keep extraction off ordinary dashboard/page-load paths. Process once per document/version/configuration, reuse approved stored results, and invalidate affected evidence/results when source data changes. Recheck access and consent even when cached results exist; preserve timestamps and freshness labels.
+- [ ] Verify processing, partial-load, empty, timeout and retry states without hiding stale results or blocking unrelated records. Evaluate autosuspend/cold-start tradeoffs without leaving paid services running to improve a demo benchmark.
+
+### 6 Deployment after user end to end testing
+
+- [ ] Complete and record local end-to-end tests before hosting, including source → parse → independent verification → deterministic rule → cited answer, role restrictions, consent revocation, concurrent patient sessions, source updates and failures.
+- [ ] Confirm hosting destination, budget and whether extraction is a local worker or Snowflake job. Obtain explicit deployment approval; do not publish or choose a paid hosting service from this task list alone.
+- [ ] Prepare a production build, per-user access, least-privilege runtime roles, server-side secrets, HTTPS and safe logs. Never deploy the local administrator recording mode publicly.
+- [ ] Apply only reviewed incremental changes on the confirmed account. Preserve existing data and document rollback steps; no full reload/redeployment merely because a branch or teammate changed.
+- [ ] Add request/page/token/retry limits, usage reporting and alerts for warehouse and AI/Search services separately; warehouse monitors are not a universal spending cap. Keep scheduled/background services disabled unless explicitly needed and approved.
+- [ ] After deployment, repeat a bounded smoke test and performance checks, verify evidence links and freshness, and update `IMPLEMENTATION-STATUS.md` with demonstrated results and remaining gaps. Keep the Judge Console excluded.
+
+### 3 October checkpoint — first offline phase complete, integration still partial
+
+- Implemented a typed extraction contract, exact evidence/span validation,
+  specimen context checks, and conservative two-family reconciliation without
+  SQL writes or clinical calculations.
+- The real LangExtract library passes mocked Cortex-shaped response tests;
+  malformed/truncated responses, retries, fuzzy spans and silently dropped
+  findings are rejected. There is no live HTTP transport or default provider.
+- Corrected Unicode span handling in the latest document viewer. Whole-page
+  spans remain page-level evidence; invalid citations still fail closed.
+- **26 Python tests, 265 frontend tests and TypeScript passed.** Four synthetic
+  PDFs / ten expected lines matched. No live accuracy, cost or latency comparison
+  is claimed. No database or paid model calls were made.
+- ANC SQL mismatch was rechecked in local code: the comment mentions bands, the
+  expression uses only `NEUTROPHIL_PCT`. Formula and clinical rules are unchanged
+  pending source semantics and reviewer approval.
+- `main` already contains earlier frontend performance work. Reuse its recorded
+  baseline when planning new measurements; do not treat it as fresh hosted data.
+
+**Next action:** review the offline module and complete source-field mapping.
+Live Cortex compatibility needs a separately approved bounded test, authorised
+transport, and an agreed cost limit; inside-Snowflake execution comes afterward.
+See [trial commands, limits and remaining gates](../backend/extraction/README.md).
+
+### Second local checkpoint — candidate backend fixes
+
+Heading routing, supplied parse-output evaluation, independent bounded batch
+reads, strict quote agreement, verified Search assertion pointers and canonical
+validator citations are implemented locally. The optional Snowflake-only HTTP
+transport is off by default and tested with fake responses. A/B/C scoring reads
+saved outputs only; it does not call a model. SQL source regressions are not live
+SQL compilation. Do not mark these integration tasks complete until the
+[release gates](../docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md) pass. A four-call
+compatibility test now has an approved $1 total budget (3 October); metadata,
+current access and cost checks must pass before any model call. The approval
+does not include role/grant changes or deployment. Formula/threshold changes
+and hosting remain deferred.
+
+---
+
 **Two builders. Seventeen days. One vertical slice by Day 5 or cut scope.**
 
 Every task below names the exact objects to create, the file to create them in, the architecture diagram that specifies the behaviour, and the test that proves it works.

@@ -23,6 +23,13 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
       from tool results. Never state a status, number, date, or threshold
       comparison that did not come from a tool's returned facts. Every claim
       must cite the evidence_ids or event_id the tool returned. If a tool
+      returns patient document search results, the top-level chunk is retrieval
+      context, not a verified factual citation. For document-backed facts use
+      only the nested evidence items with their assertion id and exact span;
+      never substitute a chunk_id for an assertion id. An empty evidence list
+      means no verified finding is available from that result. Reference results
+      remain a separate corpus and must not be presented as patient assertions.
+      If a tool
       returns an error (no_patient_bound, no_patient_access, access_withdrawn,
       binding_mismatch, consent_not_valid), report exactly that outcome and
       nothing about why - never guess or soften it.

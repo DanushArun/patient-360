@@ -108,7 +108,7 @@ try {
   const { rows: [rm] } = await q("SHOW RESOURCE MONITORS LIKE 'SAARTHI_PROTOTYPE_LIMIT'");
   const quota = rm && Number(field(rm, 'credit_quota'));
   const immediate = rm && Number.parseFloat(field(rm, 'suspend_immediately_at'));
-  if (!rm || !(quota > 0 && quota <= 2) || !(immediate > 0 && immediate <= 90) || String(field(rm, 'frequency')).toUpperCase() !== 'NEVER') throw new Error('Budget monitor mismatch');
+  if (!rm || quota !== 3 || immediate !== 90 || String(field(rm, 'frequency')).toUpperCase() !== 'NEVER') throw new Error('Budget monitor mismatch');
   warehouseVerified = true;
   await q("ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = 120, STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30, QUERY_TAG = 'saarthi_prototype_deploy'");
   await q('USE WAREHOUSE SAARTHI_AI_WH');

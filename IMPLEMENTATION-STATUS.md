@@ -1,5 +1,15 @@
 # SAARTHI — Implementation Status
 
+**4 October 2026 — PR #14 integration, local verification only:** the document
+improvement branch is reconciled with PR #15. The combined task sources retain
+stage-path deduplication, directory refresh, stream consumption, task user identity
+and once-only extraction stamping alongside independent bounded model reads,
+heading routing and exact evidence checks. Invalid patient parses are recorded
+as unreadable with their stage path. Both branches’ historical checkpoints below
+are retained; their live results do not validate this combined SQL or the
+LangExtract runner. Snowflake compilation, live runner validation and the
+remaining release gates still require separate work.
+
 **3 October 2026 — cohort documents, reference corpus and Search live, OS69400:** 22
 single-page synthetic reports (one lab panel + one histopathology per `PAT-DC-*` patient,
 rendered by `data/generator/cohort_documents.py` from an exported `CLINICAL_EVENT` snapshot)
@@ -62,6 +72,70 @@ live (4 rows updated); after a single `DT_HARMONIZED_EVENTS` refresh and a readi
 lists diagnoses, histopathology or medications. `EVIDENCE_LINK` has **no writer anywhere in the
 repo**: the one truthful candidate link is pathology, and no lab document has been extracted
 (the CBC page has 0 assertions), so lab source links stay empty without paid extraction.
+
+**3 October 2026 — bounded runner candidate, not live verified:** a private Node/Python
+test runner now connects scoped patient reads, local key-pair JWT creation,
+two direct model reads and two real LangExtract reads for one existing synthetic
+page. It checks access and source version before each call, plans the four-call
+estimated cost and writes no clinical assertions. Local mocked tests pass;
+**zero live Cortex calls have run and no accuracy improvement is claimed**.
+The reported second-laptop role fix is recorded in the release gates. A fresh
+Snowsight balance and exclusive warehouse use are required for the approved
+$10 continued-work approval; each invocation still reserves at most $1, and
+billing remains an estimate, not an account-wide hard cap. The user also
+approved a 3-credit warehouse monitor. A one-property, fail-closed migration
+script is prepared; the local secure connection failed OCSP validation and
+stopped at its 45-second deadline before any live metadata read, so **the
+monitor has not been changed here**. The local
+runner now requires the 3-credit setting before it will run.
+
+**3 October 2026 — default-role change approved but not applied:** the attempted
+change could not authenticate because the missing-OCSP certificate failure
+returned. The connection deadline stopped the run before SQL. Last verified
+default is still `ACCOUNTADMIN`; no model calls or warehouse resume occurred.
+The user's approval and failed attempt are recorded in the release-gates log.
+
+**3 October 2026 — connection retry passed, role gate remains:** TLS/OCSP and
+metadata checks now succeed. The warehouse remains suspended; `SITAR` defaults
+to `ACCOUNTADMIN`, so the bounded Cortex REST test stopped before source reads
+or inference. No role/grant changes or paid model calls occurred. Changing the
+default role awaits approval. [Recorded checks](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+
+**3 October 2026 — approved live preflight blocked:** the user approved a maximum
+$1 for one synthetic-page/four-call compatibility test. Authentication failed
+before any SQL or inference: first certificate-chain trust, then missing OCSP
+AuthorityInfoAccess with the system trust store. Certificate checks remain on;
+no warehouse was resumed and no paid model call ran. This is not a live
+compatibility result. Local checks: **51 targeted Python tests, 265 frontend
+unit/render tests, TypeScript and 9 manifest/preamble gates passed**; source tests
+do not prove SQL compilation. Details: [release gates](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+
+**3 October 2026 — second local document checkpoint, partial:** candidate SQL
+updates add conservative heading routing, remove filename-based source-quality
+claims, make batch model reads independent, tighten both extraction paths, and
+carry verified patient assertion IDs/exact spans from Search into stricter answer
+validation. They are **not deployed or Snowflake-compiled**. Local Python now also
+evaluates supplied parse output, compares saved A/B/C predictions and tests an
+opt-in Snowflake-only HTTP transport with fake responses. No credentials or paid
+services were used. Clinical approval, persistent SQL specimen links, shared
+extraction envelopes, reference-clause validation, actual orchestration/E2E,
+live cost/accuracy and hosting remain open. See [release gates and cost proposal](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+
+**3 October 2026 — offline extraction trial, partial:** LangExtract 1.7.0 ran
+locally with injected fake Cortex responses and network-blocked tests. **26/26
+targeted Python tests, 265/265 frontend unit/render tests, and TypeScript passed.**
+The four existing synthetic PDFs contained all ten expected field lines and
+matching context anchors. That is a text baseline, not model accuracy or OCR
+validation. Exact evidence highlighting now uses Unicode code-point offsets;
+whole-page evidence is not presented as an exact highlighted excerpt. Latest
+`main` was incorporated at `d5c5f8c`, and the fix preserves its document-viewer
+structure and scoped reads. The first broad frontend run failed because local
+dependencies lagged the pulled lockfile; syncing that lockfile resolved the
+missing `ajv` / Playwright dependencies without changing dependency manifests.
+No database queries, paid model calls, SQL changes, deployments, or full E2E
+tests were performed for this checkpoint. Live Cortex transport, accuracy
+comparison, batch-path integration, ANC source-field review, and hosting remain
+open. See [the trial instructions and limits](backend/extraction/README.md).
 
 **1 October 2026 update — OS69400, partial E2E:** the dashboard and review queue
 now use access-checked owner procedures with `SAARTHI_APP`; the local admin override

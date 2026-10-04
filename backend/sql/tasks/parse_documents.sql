@@ -2,7 +2,7 @@
 -- STEP 16a - TASK parse_documents (pulled forward - unstructured ingestion)
 -- =============================================================================
 -- WORK-PLAN.md Day 3-4. AI_PARSE_DOCUMENT(LAYOUT, page_split) -> DOCUMENT +
--- DOC_PAGE. Dedup on SHA-256 file_hash before parsing. The only place this
+-- DOC_PAGE. Dedup on stage source_path (legacy fallback: etag) before parsing. The only place this
 -- AI function may run is a Task (never a Dynamic Table - non-deterministic).
 --
 -- Scans DIRECTORY(@PATIENT_DOCS) for files not yet in DOCUMENT (dedup on
@@ -28,6 +28,9 @@ DECLARE
     v_parsed        VARIANT;
     v_page_count    INTEGER;
     v_i             INTEGER;
+    v_first_text    VARCHAR;
+    v_doc_type      VARCHAR;
+    v_type_count    INTEGER;
     v_reference_count INTEGER DEFAULT 0;
     v_run_id        VARCHAR DEFAULT UUID_STRING();
     -- A file is already ingested if a DOCUMENT row records its stage path (source_path)
@@ -84,11 +87,9 @@ BEGIN
                         {'mode':'LAYOUT', 'page_split': true}));
         v_page_count := (SELECT GET_PATH(:v_parsed, 'metadata.pageCount')::INTEGER);
         v_doc_id := UUID_STRING();
-        -- An unusable parse is recorded as an unreadable document (R3), not skipped or
-        -- left unrecorded: an unrecorded file is re-parsed (paid) on every later trigger.
-        IF (v_page_count IS NULL OR v_page_count < 1
-            OR NOT COALESCE(IS_ARRAY(v_parsed:pages), FALSE)
-            OR ARRAY_SIZE(v_parsed:pages) != v_page_count) THEN
+        -- Record unusable parses once as unreadable; retain exact page validation.
+        IF (v_page_count IS NULL OR v_page_count<1 OR NOT COALESCE(IS_ARRAY(v_parsed:pages),FALSE)
+            OR ARRAY_SIZE(v_parsed:pages)!=v_page_count) THEN
             INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
                 (doc_id, patient_id, scope, doc_type, file_hash, source_path, ingested_at, ingestion_method, status)
             VALUES (:v_doc_id, :v_patient_id, 'patient', 'unknown', :v_file_hash, :v_relative_path,
@@ -97,27 +98,41 @@ BEGIN
             FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
             CONTINUE;
         END IF;
-
-        -- source_quality was hardcoded 'clean_pdf' for every file regardless
-        -- of actual content - verified live: the generator's own
-        -- ambiguous_cbc.pdf (data/generator/corruptions.py,
-        -- render_ambiguous_cbc_report) prints "Scan quality: LOW - rotated
-        -- capture" on the page itself, yet the loaded DOCUMENT row said
-        -- clean_pdf, which silently defeated any per-source_quality accuracy
-        -- reporting (WINNING-PLAN.md/SPEC.md's stated handling of degraded
-        -- sources). AI_PARSE_DOCUMENT's own output carries no quality
-        -- signal, and no capture-pipeline metadata exists yet, so the only
-        -- available signal is the filename the generator itself used -
-        -- stated as a limitation, not hidden: a real ingestion pipeline
-        -- would carry this from the actual scan/capture step, not sniff it
-        -- from a filename.
-        LET v_source_quality VARCHAR := CASE WHEN v_relative_path ILIKE '%ambiguous%' THEN 'rotated_photo'
-                                              ELSE 'clean_pdf' END;
+        SELECT COUNT(DISTINCT value:index::INTEGER) INTO :v_type_count
+          FROM TABLE(FLATTEN(input=>:v_parsed:pages))
+         WHERE IS_INTEGER(value:index) AND value:index::INTEGER>=0
+           AND value:index::INTEGER<:v_page_count AND IS_VARCHAR(value:content);
+        IF (v_type_count!=v_page_count) THEN
+            INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
+                (doc_id, patient_id, scope, doc_type, file_hash, source_path, ingested_at, ingestion_method, status)
+            VALUES (:v_doc_id, :v_patient_id, 'patient', 'unknown', :v_file_hash, :v_relative_path,
+                    CURRENT_TIMESTAMP(), 'downloaded_pdf', 'unreadable');
+            v_count := v_count + 1;
+            FETCH c_new_files INTO v_relative_path, v_file_hash, v_patient_id;
+            CONTINUE;
+        END IF;
+        v_first_text := NULL;
+        SELECT value:content::VARCHAR INTO :v_first_text
+          FROM TABLE(FLATTEN(input=>:v_parsed:pages)) WHERE value:index::INTEGER=0;
+        -- Conservative explicit-heading routing, not a clinical classifier.
+        -- Unknown/ambiguous headers stay unknown. No model call or filename guess.
+        SELECT COUNT(DISTINCT h.doc_type),MIN(h.doc_type) INTO :v_type_count,:v_doc_type
+          FROM TABLE(SPLIT_TO_TABLE(REPLACE(UPPER(:v_first_text),CHR(13),''),CHR(10))) line
+          JOIN (SELECT column1 AS title,column2 AS doc_type FROM VALUES
+            ('COMPLETE BLOOD COUNT','lab_report'),('LABORATORY REPORT','lab_report'),
+            ('HISTOPATHOLOGY / HER2 REPORT','pathology_report'),('HISTOPATHOLOGY REPORT','pathology_report'),
+            ('RADIOLOGY REPORT','imaging_report'),('DISCHARGE SUMMARY','discharge_summary'),
+            ('AUTHORIZATION LETTER','authorization_letter'),('AUTHORISATION LETTER','authorization_letter'),
+            ('PRESCRIPTION','prescription'),('CONSENT FORM','consent_form'),('REFERRAL LETTER','referral_letter')) h
+            ON TRIM(line.value)=h.title WHERE line.index<=8;
+        IF (v_type_count!=1) THEN v_doc_type:='unknown'; END IF;
+        -- NULL means capture quality is unassessed (metadata, not clinical missingness).
+        -- Clean extracted text cannot prove a clean image. Do not change the enum.
         INSERT INTO SAARTHI.DOCUMENTS.DOCUMENT
             (doc_id, patient_id, scope, doc_type, file_hash, source_path, source_quality, ingested_at, ingestion_method, status)
         VALUES
-            (:v_doc_id, :v_patient_id, 'patient', 'lab_report', :v_file_hash, :v_relative_path,
-             :v_source_quality, CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
+            (:v_doc_id, :v_patient_id, 'patient', :v_doc_type, :v_file_hash, :v_relative_path,
+             NULL, CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
 
         v_i := 0;
         WHILE (v_i < v_page_count) DO
@@ -160,7 +175,7 @@ BEGIN
             (doc_id, patient_id, scope, doc_type, file_hash, source_path, source_quality, ingested_at, ingestion_method, status)
         VALUES
             (:v_doc_id, NULL, 'reference', 'clinical_guideline', :v_file_hash, :v_relative_path,
-             'clean_pdf', CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
+             NULL, CURRENT_TIMESTAMP(), 'downloaded_pdf', 'active');
 
         v_i := 0;
         WHILE (v_i < v_page_count) DO

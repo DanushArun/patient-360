@@ -21,6 +21,25 @@ test('test_source_when_span_absent_does_not_claim_exact_highlight', () => {
   assert.equal(readDocumentPage([row], documentRequest('DOC-1', { page: '0' })).highlight, null);
 });
 
+test('source spans count Unicode code points rather than UTF-16 units', () => {
+  const source = { ...row, TEXT: '🧪 WBC 6000 confirmed' };
+  const request = documentRequest('DOC-1', { page: '0', start: '2', end: '10' });
+  assert.deepEqual(readDocumentPage([source], request).highlight,
+    { before: '🧪 ', cited: 'WBC 6000', after: ' confirmed' });
+});
+
+test('whole-page ranges do not claim precise excerpt highlighting', () => {
+  const request = documentRequest('DOC-1', { page: '0', start: '0',
+    end: String(Array.from(row.TEXT).length) });
+  assert.equal(readDocumentPage([row], request).highlight, null);
+});
+
+test('source range beyond code-point length remains invalid', () => {
+  const source = { ...row, TEXT: '🧪 WBC' };
+  const request = documentRequest('DOC-1', { page: '0', start: '2', end: '6' });
+  assert.throws(() => readDocumentPage([source], request), /source_invalid/);
+});
+
 test('test_source_when_requested_page_absent_rejects', () => {
   assert.throws(() => readDocumentPage([row], documentRequest('DOC-1', { page: '1' })),
     /source_unavailable/);

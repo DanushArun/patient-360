@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "scope": "Existing synthetic PDFs only; values transcribed from printed fields, not clinical validation",
+  "cases": [
+    {
+      "doc_id": "EVT-CBC-01", "file": "EVT-CBC-01", "patient_id": "PAT-DEEP-0001",
+      "doc_type": "lab_report", "specimen_id": null, "report_date": "2025-03-27",
+      "fields": [
+        {"concept": "WBC", "value": "6,000", "unit": "/CUMM", "quote": "WBC: 6,000 /CUMM"},
+        {"concept": "NEUTROPHIL_PCT", "value": "35.0", "unit": "%", "quote": "Neutrophils (differential): 35.0%"},
+        {"concept": "PLT", "value": "2,60,604", "unit": "/CUMM", "quote": "Platelet count: 2,60,604 /CUMM"}
+      ]
+    },
+    {
+      "doc_id": "EVT-HER2-OUTSIDE", "file": "EVT-HER2-OUTSIDE", "patient_id": "PAT-DEEP-0001",
+      "doc_type": "pathology_report", "specimen_id": "SPEC-OUTSIDE-001", "report_date": "2024-12-17",
+      "fields": [
+        {"concept": "histological_grade", "value": "II", "unit": null, "quote": "Grade: II"},
+        {"concept": "HER2_IHC", "value": "1+", "unit": null, "quote": "HER2 IHC: 1+"}
+      ]
+    },
+    {
+      "doc_id": "EVT-HER2-SURGICAL", "file": "EVT-HER2-SURGICAL", "patient_id": "PAT-DEEP-0001",
+      "doc_type": "pathology_report", "specimen_id": "SPEC-SURGICAL-001", "report_date": "2025-02-05",
+      "fields": [
+        {"concept": "histological_grade", "value": "III", "unit": null, "quote": "Grade: III"},
+        {"concept": "HER2_IHC", "value": "2+", "unit": null, "quote": "HER2 IHC: 2+"}
+      ]
+    },
+    {
+      "doc_id": "ambiguous_cbc.pdf", "file": "ambiguous_cbc.pdf", "patient_id": "PAT-DEEP-0001",
+      "doc_type": "lab_report", "specimen_id": null, "report_date": "2025-03-27",
+      "ledger_difference": "Printed PLT is 2,60,904; source ledger PLT is 2,60,604. Score extraction against print, not the hidden ledger.",
+      "fields": [
+        {"concept": "WBC", "value": "6,000", "unit": "/CUMM", "quote": "WBC: 6,000 /CUMM"},
+        {"concept": "NEUTROPHIL_PCT", "value": "35.0", "unit": "%", "quote": "Neutrophils (differential): 35.0%"},
+        {"concept": "PLT", "value": "2,60,904", "unit": "/CUMM", "quote": "Platelet count: 2,60,904 /CUMM"}
+      ]
+    }
+  ]
+}
