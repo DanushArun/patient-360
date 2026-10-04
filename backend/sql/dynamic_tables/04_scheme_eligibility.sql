@@ -7,12 +7,14 @@
 --
 -- Eligibility per SPEC / real Indian scheme rules:
 --   PM-JAY: SECC-C families only + income ceiling. We proxy SECC-C
---           membership with COVERAGE.payer_type='scheme' (present -> eligible).
---   State schemes: state domicile match (PATIENT.state).
+--           membership with a CURRENT (date-valid) COVERAGE.payer_type='scheme' row
+--           (present -> eligible; otherwise income_or_seccc_uncertain).
+--   State schemes: domicile match is necessary, not sufficient -> 'eligibility_unverified'
+--           until income / ration-card evidence exists (never 'eligible' from domicile alone).
 
 CREATE OR REPLACE DYNAMIC TABLE SAARTHI.OPERATIONAL.DT_SCHEME_ELIGIBILITY
   TARGET_LAG = '10 minute'
-  REFRESH_MODE = AUTO
+  REFRESH_MODE = FULL
   INITIALIZE = ON_CREATE
   WAREHOUSE = SAARTHI_AI_WH
 AS
@@ -27,16 +29,27 @@ SELECT
     sr.state_scope,
     CASE
         WHEN sr.scheme_type = 'central' THEN
-            CASE WHEN EXISTS (SELECT 1 FROM SAARTHI.CORE.COVERAGE c
-                              WHERE c.patient_id = p.patient_id AND c.payer_type = 'scheme')
+            CASE WHEN COALESCE(sc.has_current_scheme_coverage, FALSE)
                  THEN 'eligible'
                  ELSE 'income_or_seccc_uncertain'
             END
-        WHEN sr.state_scope = p.state THEN 'eligible'
+        -- Domicile alone is not eligibility: income / SECC tests were never evaluated (R1/R3).
+        WHEN sr.state_scope = p.state THEN 'eligibility_unverified'
         ELSE 'not_applicable'
     END AS eligibility_status,
     sr.covered_packages
 FROM SAARTHI.CORE.PATIENT p
+LEFT JOIN (
+    -- CURRENT_DATE() is evaluated per refresh, which is why this table is REFRESH_MODE = FULL
+    -- (incremental refresh does not support context functions). No correlated subquery.
+    SELECT c.patient_id,
+           COUNT_IF((c.effective_from IS NULL OR c.effective_from <= CURRENT_DATE())
+                AND (c.effective_to   IS NULL OR c.effective_to   >= CURRENT_DATE())) > 0
+             AS has_current_scheme_coverage
+      FROM SAARTHI.CORE.COVERAGE c
+     WHERE c.payer_type = 'scheme'
+     GROUP BY c.patient_id
+) sc ON sc.patient_id = p.patient_id
 CROSS JOIN SAARTHI.OPERATIONAL.SCHEME_REGISTRY sr
 WHERE sr.scheme_type = 'central'
    OR sr.state_scope = p.state;

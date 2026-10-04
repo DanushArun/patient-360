@@ -5,11 +5,12 @@
 -- DOC_PAGE. Dedup on stage source_path (legacy fallback: etag) before parsing. The only place this
 -- AI function may run is a Task (never a Dynamic Table - non-deterministic).
 --
--- Scans DIRECTORY(@PATIENT_DOCS) for files not yet in DOCUMENT (dedup on
--- relative_path as file_hash surrogate - real SHA-256 hashing of file bytes
--- needs a client-side read, not available from pure SQL over a stage; the
--- directory table's own file_md5/etag is over the file's stored bytes and
--- serves the same dedup purpose). Backfills pre-existing files immediately;
+-- Scans DIRECTORY(@PATIENT_DOCS) for files not yet in DOCUMENT. Dedup key (Round 6, unverified-needs-deploy):
+-- DOCUMENT.source_path = the stage relative_path, which is stable across runs. Rows loaded before source_path
+-- existed are matched on file_hash = etag as a legacy fallback only. Never etag alone: bounded loaders store a
+-- SHA-256 in file_hash, which can never equal a stage etag, so an etag-only key re-parses (paid) every staged
+-- file. Rows this task inserts still store the stage etag in file_hash (a real SHA-256 needs a client-side read);
+-- the dedupe does not depend on it. Backfills pre-existing files immediately;
 -- DOC_STREAM (step 13) drives the same procedure for files arriving after
 -- the stream's creation (e.g. a late addendum, mid-demo).
 CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.parse_documents_proc()

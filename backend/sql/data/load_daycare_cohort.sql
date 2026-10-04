@@ -264,13 +264,22 @@ USING (
          e.event_type,
          o.concept_id,
          e.code_system, e.code, e.display, e.value_num, e.value_text, e.unit, e.specimen,
-         DATEADD(minute, -ROUND(e.days_before * 1440), $dc_anchor)::TIMESTAMP_NTZ AS event_time
+         -- A tomorrow-relative fixture can otherwise place today's labs in the
+         -- future. Leave time for the three-hour source recording delay before
+         -- ingestion; historical/overdue scenarios retain their original age.
+         LEAST(DATEADD(minute, -ROUND(e.days_before * 1440), $dc_anchor)::TIMESTAMP_NTZ,
+               DATEADD(hour, -3, CURRENT_TIMESTAMP()::TIMESTAMP_NTZ)) AS event_time
     FROM SAARTHI.OPERATIONAL._DC_EVENTS e
     LEFT JOIN SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY o ON o.canonical_name = e.concept
 ) s ON t.event_id = s.event_id
 WHEN MATCHED THEN UPDATE SET
   t.concept_id = s.concept_id, t.event_time = s.event_time,
-  t.source_recorded_at = DATEADD(hour, 3, s.event_time)
+  t.source_recorded_at = DATEADD(hour, 3, s.event_time),
+  -- R2: ingested_at is the clock the record first entered the system. Re-stamp it only when the
+  -- relative-date fixture is re-anchored (event_time moved, so source_recorded_at moved with it
+  -- and the old ingestion time would precede the recording). An unchanged row keeps its clock,
+  -- so a known_as_of taken before a reload still sees what it saw.
+  t.ingested_at = IFF(t.event_time = s.event_time, t.ingested_at, CURRENT_TIMESTAMP())
 WHEN NOT MATCHED THEN INSERT (event_id, patient_id, encounter_id, event_type, concept_id, code_system, code,
   display, value_num, value_text, unit, original_value, original_unit, abnormal_flag, specimen_id,
   accession_id, status, negation, event_time, source_recorded_at, ingested_at, valid_until)

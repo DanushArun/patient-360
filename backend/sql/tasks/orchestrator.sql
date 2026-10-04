@@ -13,6 +13,7 @@
 --                         made background refresh return zero rows, found
 --                         live and documented in evidence/coco/execution.yaml)
 --   extract_assertions -> R7 two-pass typed extraction over new DOC_CHUNK rows
+--   reconcile_evidence -> conflicts, cross-specimen links, assertion->event 'supports' links
 --   refresh_readiness  -> re-evaluate all 16 gates and MERGE into READINESS_STATE
 --
 -- Everything each step needs is already present as a procedure; the task
@@ -36,12 +37,17 @@ DECLARE
     v_parsed VARIANT;
     v_chunked VARIANT;
     v_extracted VARIANT;
+    v_reconciled VARIANT;
     v_refreshed VARIANT;
     v_error VARCHAR;
 BEGIN
     v_parsed := (CALL SAARTHI.OPERATIONAL.parse_documents_proc());
     v_chunked := (CALL SAARTHI.OPERATIONAL.chunk_documents_proc());
     v_extracted := (CALL SAARTHI.OPERATIONAL.extract_assertions_proc());
+    -- reconcile_evidence writes the EVIDENCE_LINK rows (assertion -> event 'supports') that let a
+    -- gate cite the verified document span behind its number. It was only reachable as a child of
+    -- TASK_EXTRACT_ASSERTIONS, so an on-demand sweep left every gate without document provenance.
+    v_reconciled := (CALL SAARTHI.OPERATIONAL.reconcile_evidence_proc());
     v_refreshed := (CALL SAARTHI.OPERATIONAL.refresh_readiness_proc());
 
     RETURN OBJECT_CONSTRUCT(
@@ -49,6 +55,7 @@ BEGIN
         'parse', :v_parsed,
         'chunk', :v_chunked,
         'extract', :v_extracted,
+        'reconcile', :v_reconciled,
         'readiness', :v_refreshed
     );
 EXCEPTION

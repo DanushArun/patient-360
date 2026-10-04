@@ -3,9 +3,8 @@
 -- =============================================================================
 -- SPEC.md §12 / R7. Detects two cross-source conditions on the ASSERTION table:
 --   (a) same-specimen disagreement -> mark verification_status = 'conflicting'
---   (b) different-specimen disagreement -> leave verified but tag
---       missingness_state = 'discordant_across_specimens' so the evaluator can
---       surface both readings per DOC-DISC-001.
+--   (b) different-specimen disagreement -> preserve verified findings and write
+--       an EVIDENCE_LINK relation, keeping the seven-state missingness type.
 --
 -- Deterministic; no AI. Runs downstream of extract_assertions so it sees a
 -- coherent pass1/pass2 pair. Idempotent via MERGE - re-running produces the
@@ -41,29 +40,46 @@ BEGIN
 
     v_same_spec_conflicts := SQLROWCOUNT;
 
-    -- Cross-specimen discordance: same subject + predicate but different
-    -- doc_id AND different value. Neither is wrong - surface both.
-    MERGE INTO SAARTHI.EVIDENCE.ASSERTION t
+    -- Different documents alone do not establish different specimens. Require
+    -- distinct recorded accession IDs for the same patient and concept; missing
+    -- accession IDs contribute no inferred cross-specimen relation.
+    MERGE INTO SAARTHI.EVIDENCE.EVIDENCE_LINK t
     USING (
-        SELECT a1.assertion_id
+        SELECT DISTINCT a1.assertion_id, a2.assertion_id AS target_id
           FROM SAARTHI.EVIDENCE.ASSERTION a1
           JOIN SAARTHI.EVIDENCE.ASSERTION a2
-            ON a1.subject = a2.subject
-           AND a1.predicate = a2.predicate
+            ON a1.concept_id = a2.concept_id
            AND a1.doc_id <> a2.doc_id
            AND a1.value <> a2.value
+           -- Qualitative findings may legitimately have no unit in either read.
+           AND EQUAL_NULL(a1.unit, a2.unit)
            AND a1.verification_status = 'verified'
            AND a2.verification_status = 'verified'
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d1 ON d1.doc_id = a1.doc_id
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d2 ON d2.doc_id = a2.doc_id
+          -- Only specimen-bound concepts (biomarkers: HER2 IHC/FISH ...) can be discordant
+          -- across specimens. A serial analyte (Hb 10.1 then 11.2) is a trend, not a discordance.
+          JOIN SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY co
+            ON co.concept_id = a1.concept_id AND co.concept_type = 'biomarker'
          WHERE a1.missingness_state = 'present'
+           AND a2.missingness_state = 'present'
+           AND d1.patient_id = d2.patient_id
+           AND d1.scope = 'patient' AND d2.scope = 'patient'
+           AND d1.status = 'active' AND d2.status = 'active'
+           AND d1.accession_id <> d2.accession_id
+           AND LENGTH(TRIM(d1.accession_id)) > 0
+           AND LENGTH(TRIM(d2.accession_id)) > 0
     ) s
-    ON t.assertion_id = s.assertion_id
-    WHEN MATCHED THEN UPDATE SET t.missingness_state = 'discordant_across_specimens';
+    ON t.assertion_id = s.assertion_id AND t.target_id = s.target_id
+       AND t.target_type = 'assertion' AND t.relation = 'discordant_across_specimens'
+    WHEN NOT MATCHED THEN INSERT (assertion_id, target_type, target_id, relation)
+        VALUES (s.assertion_id, 'assertion', s.target_id, 'discordant_across_specimens');
 
     v_cross_spec_discordant := SQLROWCOUNT;
 
     -- Provenance: a verified numeric assertion SUPPORTS a structured event only when
     -- exactly one event of the same patient and concept, on the source document's
-    -- effective date, carries the same number (digit separators ignored, so the
+    -- effective date, carries the same number and exact unit (digit separators ignored, so the
     -- Indian "2,60,604" equals 260604). Ambiguity or mismatch writes no link -
     -- provenance is never guessed. Non-numeric results (HER2 IHC text) are not linked.
     MERGE INTO SAARTHI.EVIDENCE.EVIDENCE_LINK t
@@ -77,6 +93,9 @@ BEGIN
            AND ce.concept_id = a.concept_id
            AND ce.event_time::DATE = d.effective_at::DATE
            AND ce.value_num = TRY_TO_DOUBLE(REPLACE(a.value, ',', ''))
+           -- Equal numbers in different or unknown units are not corroboration.
+           -- Unit conversion belongs to the existing normalization rules.
+           AND a.unit = ce.unit
          WHERE a.verification_status = 'verified'
            AND a.missingness_state = 'present'
            AND TRY_TO_DOUBLE(REPLACE(a.value, ',', '')) IS NOT NULL
