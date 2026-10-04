@@ -21,6 +21,7 @@ $$
 DECLARE
     v_same_spec_conflicts INTEGER DEFAULT 0;
     v_cross_spec_discordant INTEGER DEFAULT 0;
+    v_links INTEGER DEFAULT 0;
 BEGIN
     -- Same-specimen disagreement: two ASSERTION rows share (subject, predicate,
     -- specimen_id via source doc) but disagree on value. Uses pass1_value <>
@@ -60,9 +61,39 @@ BEGIN
 
     v_cross_spec_discordant := SQLROWCOUNT;
 
+    -- Provenance: a verified numeric assertion SUPPORTS a structured event only when
+    -- exactly one event of the same patient and concept, on the source document's
+    -- effective date, carries the same number (digit separators ignored, so the
+    -- Indian "2,60,604" equals 260604). Ambiguity or mismatch writes no link -
+    -- provenance is never guessed. Non-numeric results (HER2 IHC text) are not linked.
+    MERGE INTO SAARTHI.EVIDENCE.EVIDENCE_LINK t
+    USING (
+        SELECT a.assertion_id, MIN(ce.event_id) AS event_id
+          FROM SAARTHI.EVIDENCE.ASSERTION a
+          JOIN SAARTHI.DOCUMENTS.DOCUMENT d
+            ON d.doc_id = a.doc_id AND d.scope = 'patient' AND d.status = 'active'
+          JOIN SAARTHI.CORE.CLINICAL_EVENT ce
+            ON ce.patient_id = d.patient_id
+           AND ce.concept_id = a.concept_id
+           AND ce.event_time::DATE = d.effective_at::DATE
+           AND ce.value_num = TRY_TO_DOUBLE(REPLACE(a.value, ',', ''))
+         WHERE a.verification_status = 'verified'
+           AND a.missingness_state = 'present'
+           AND TRY_TO_DOUBLE(REPLACE(a.value, ',', '')) IS NOT NULL
+         GROUP BY a.assertion_id
+        HAVING COUNT(*) = 1
+    ) s
+    ON t.assertion_id = s.assertion_id AND t.target_type = 'clinical_event'
+       AND t.target_id = s.event_id AND t.relation = 'supports'
+    WHEN NOT MATCHED THEN INSERT (assertion_id, target_type, target_id, relation)
+        VALUES (s.assertion_id, 'clinical_event', s.event_id, 'supports');
+
+    v_links := SQLROWCOUNT;
+
     RETURN OBJECT_CONSTRUCT(
         'same_specimen_conflicts', v_same_spec_conflicts,
         'cross_specimen_discordant', v_cross_spec_discordant,
+        'support_links_added', v_links,
         'reconciled_at', TO_VARCHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD"T"HH24:MI:SS')
     );
 END;
