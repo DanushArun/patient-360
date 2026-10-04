@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { buttonStyle } from "@/components/sa";
 import type { PatientTimeline, TimelineEvent } from "@/lib/patient";
+import { factStateDisplay } from "@/lib/workspace-patient-facts.mjs";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
 import { isCurrentPatientRequest } from "@/lib/patient-request-lifecycle.mjs";
 
@@ -25,7 +26,7 @@ function EventRow({ event, patientId, knownAsOf }: {
     <div className="sa-meta">
       <code>{event.event_id || "Event ID unavailable"}</code>
       {event.is_derived && " · Derived value"}
-      {" · "}{event.value_state}
+      {" · "}{factStateDisplay(event)}
       {event.abnormal_flag && <> · recorded flag: {event.abnormal_flag}</>}
     </div>
     <div className="sa-clocks">

@@ -1,4 +1,4 @@
-import { fetchCensus, fetchBindablePatients, fetchPractitionerName, buildCensus } from '@/lib/census';
+import { fetchCensus, fetchBindablePatients, fetchPractitionerName, buildCensus, oldestKnownAsOf, censusClockLabel } from '@/lib/census';
 import type { ReadinessRow, Chair } from '@/lib/census';
 import { WorkspaceBar, WorkspaceNav } from '@/components/sa';
 import type { ReactNode } from 'react';
@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { CensusSearch } from './census-search';
 import { PatientSearch } from '@/components/patient-search';
 import { withUiReadDeadline } from '@/lib/ui-read-deadline.mjs';
+import { apiError } from '@/lib/api-contracts.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +30,9 @@ async function readDayCare(): Promise<DayCareData> {
     patients.sort((left, right) => left.name.localeCompare(right.name));
     return { rows, patients, practitioner, error: null };
   } catch (error) {
+    // Fixed code set only: driver text can carry SQL fragments or account identifiers.
     return { rows: [], patients: [], practitioner: 'Practitioner',
-      error: error instanceof Error && error.message ? error.message : 'record_service_unavailable' };
+      error: apiError(error, 'record_service_unavailable').error };
   }
 }
 
@@ -48,12 +50,13 @@ function groupVisits(chairs: Chair[]): { day: string; chairs: Chair[] }[] {
 export default async function DayCarePage(): Promise<ReactNode> {
   const data = await readDayCare();
   const chairs = buildCensus(data.rows);
+  const asOf = oldestKnownAsOf(data.rows);
   const loadedAt = new Date().toLocaleTimeString('en-IN', { hour12: false });
   return <main className="mx-auto max-w-7xl px-8 py-10" style={{ color: 'var(--sa-ink)' }}>
     <WorkspaceNav current="census" patients={data.patients} patientsAvailable={!data.error}
       practitioner={data.practitioner} />
     <WorkspaceBar section="Day care"
-      knownAsOf={`${data.error ? 'Last attempt' : 'Refreshed'} ${loadedAt}`} />
+      knownAsOf={censusClockLabel(data.error, asOf, loadedAt, data.rows.length)} />
     <DayCareHeader data={data} visits={chairs.length} />
     {!data.error && <div className="sa-meta mb-4">
       <span>Visit window · next 7 days</span>{' · '}

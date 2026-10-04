@@ -31,6 +31,9 @@ const ERROR_CATEGORIES = {
   gate_not_found: "conflict",
   gate_not_actionable: "conflict",
   stale_task: "conflict",
+  task_transition_requires_review: "conflict",
+  no_encounter: "conflict",
+  reference_scope_unavailable: "conflict",
   invalid_transition: "conflict",
   owner_not_authorized: "conflict",
   task_update_unavailable: "unavailable",
@@ -38,6 +41,20 @@ const ERROR_CATEGORIES = {
   write_readback_unavailable: "uncertain",
   write_readback_unconfirmed: "uncertain",
   snowflake_access_disabled: "configuration",
+  action_unavailable: "unavailable",
+  agent_unreachable: "unavailable",
+  timeline_unavailable: "unavailable",
+  schemes_unavailable: "unavailable",
+  evidence_history_unavailable: "unavailable",
+  packet_unavailable: "unavailable",
+  task_history_unavailable: "unavailable",
+  clinical_referral_only: "conflict",
+  treating_practitioner_unavailable: "conflict",
+  readiness_unavailable: "unavailable",
+  readiness_refresh_unavailable: "unavailable",
+  workspace_data_unavailable: "unavailable",
+  record_service_unavailable: "unavailable",
+  service_unavailable: "unavailable",
   snowflake_configuration_missing: "configuration",
   snowflake_account_mismatch: "configuration",
 };
@@ -61,15 +78,25 @@ export function validateAskBody(body) {
 /**
  * @param {unknown} body
  * @returns {{patientId: string, ruleId: string,
- *   action: "request_document" | "escalate"} | null}
+ *   action: "request_document" | "escalate", requestId?: string} | null}
  */
 export function validateReviewTaskBody(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) return null;
-  const { patientId, ruleId, action } = body;
+  const { patientId, ruleId, action, requestId } = body;
   if (typeof patientId !== "string" || !PATIENT_ID.test(patientId)) return null;
   if (typeof ruleId !== "string" || !/^[A-Z0-9-]{1,80}$/.test(ruleId)) return null;
   if (action !== "request_document" && action !== "escalate") return null;
-  return { patientId, ruleId, action };
+  if (requestId !== undefined
+    && (typeof requestId !== "string" || !/^[A-Za-z0-9-]{8,80}$/.test(requestId))) return null;
+  return requestId === undefined ? { patientId, ruleId, action }
+    : { patientId, ruleId, action, requestId };
+}
+
+/** Malformed patient ids never reach Snowflake. A well-formed id that is unknown or not
+ * authorised deliberately renders the same error state (no existence oracle, R5).
+ * @param {unknown} id @returns {boolean} */
+export function isValidPatientId(id) {
+  return typeof id === "string" && PATIENT_ID.test(id);
 }
 
 /** @param {URLSearchParams} params @returns {WorkspaceQuery | null} */

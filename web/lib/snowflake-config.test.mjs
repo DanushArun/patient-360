@@ -3,7 +3,7 @@ import test from 'node:test';
 import { snowflakeConfig } from './snowflake-config.mjs';
 
 const identity = { SAARTHI_SNOWFLAKE_ENABLED: 'true',
-  SNOWFLAKE_ACCOUNT: 'KGTPGHJ-YJ28449', SNOWFLAKE_USER: 'synthetic-user',
+  SNOWFLAKE_ACCOUNT: 'OHCXVXM-OS69400', SNOWFLAKE_USER: 'synthetic-user',
   SNOWFLAKE_PRIVATE_KEY_PATH: '/tmp/synthetic.p8' };
 
 test('test_configuration_when_not_explicitly_enabled_rejects_live_access', () => {
@@ -16,9 +16,34 @@ test('test_configuration_when_not_explicitly_enabled_rejects_live_access', () =>
 
 test('test_configuration_when_complete_uses_app_role_and_default_warehouse', () => {
   assert.deepEqual(snowflakeConfig(identity), {
-    account: 'KGTPGHJ-YJ28449', username: 'synthetic-user',
+    account: 'OHCXVXM-OS69400', username: 'synthetic-user',
+    authenticator: 'SNOWFLAKE_JWT', patPath: undefined,
     privateKeyPath: '/tmp/synthetic.p8', role: 'SAARTHI_APP', warehouse: 'SAARTHI_AI_WH',
   });
+});
+
+test('PAT configuration retains the explicit account guard and app role', () => {
+  const config = snowflakeConfig({ ...identity, SNOWFLAKE_ACCOUNT: ' ohcxvxm-os69400 ',
+    SAARTHI_SNOWFLAKE_ALLOWED_ACCOUNT: ' OHCXVXM-OS69400 ',
+    SNOWFLAKE_PAT_PATH: ' /tmp/synthetic.pat ', SNOWFLAKE_ROLE: 'ACCOUNTADMIN' });
+  assert.equal(config.account, 'OHCXVXM-OS69400');
+  assert.equal(config.authenticator, 'PROGRAMMATIC_ACCESS_TOKEN');
+  assert.equal(config.patPath, '/tmp/synthetic.pat');
+  assert.equal(config.role, 'SAARTHI_APP');
+  assert.throws(() => snowflakeConfig({ ...identity,
+    SAARTHI_SNOWFLAKE_ALLOWED_ACCOUNT: 'KGTPGHJ-YJ28449' }), /snowflake_account_mismatch/);
+});
+
+test('unsupported authentication and malformed credential paths fail before connecting', () => {
+  for (const authenticator of ['OAUTH', 'EXTERNALBROWSER', 'typo', 42]) {
+    assert.throws(() => snowflakeConfig({ ...identity, SNOWFLAKE_AUTHENTICATOR: authenticator }),
+      /snowflake_configuration_missing/);
+  }
+  for (const path of [undefined, '', ' ', 42]) {
+    assert.throws(() => snowflakeConfig({ ...identity,
+      SNOWFLAKE_AUTHENTICATOR: 'PROGRAMMATIC_ACCESS_TOKEN', SNOWFLAKE_PAT_PATH: path }),
+      /snowflake_configuration_missing/);
+  }
 });
 
 test('test_configuration_when_warehouse_supplied_uses_named_warehouse', () => {
@@ -48,7 +73,7 @@ test('test_configuration_when_legacy_admin_flag_set_keeps_app_role', () => {
 });
 
 test('test_configuration_when_account_is_historical_rejects_before_connecting', () => {
-  for (const account of ['OHCXVXM-OS69400', 'fv11738.me-central2.gcp', 'unknown']) {
+  for (const account of ['KGTPGHJ-YJ28449', 'fv11738.me-central2.gcp', 'unknown']) {
     assert.throws(() => snowflakeConfig({ ...identity, SNOWFLAKE_ACCOUNT: account }),
       /snowflake_account_mismatch/);
   }
@@ -56,5 +81,5 @@ test('test_configuration_when_account_is_historical_rejects_before_connecting', 
 
 test('test_configuration_when_account_has_case_and_whitespace_normalizes', () => {
   assert.equal(snowflakeConfig({ ...identity,
-    SNOWFLAKE_ACCOUNT: ' kgtpghj-yj28449 ' }).account, 'KGTPGHJ-YJ28449');
+    SNOWFLAKE_ACCOUNT: ' ohcxvxm-os69400 ' }).account, 'OHCXVXM-OS69400');
 });

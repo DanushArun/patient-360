@@ -15,8 +15,14 @@ visits; patient pages contain readiness, chat, timeline and review history.
 `/navigator/[id]` provides a separate family checklist and scheme view; `/review-queue`
 is the coordinator's operational worklist. Screen existence does not establish complete clinical workflows.
 
-Each request normally connects using the locally configured key-pair identity with primary
-`SAARTHI_APP` and secondary roles disabled. This is a single-operator development
+Each request connects using the locally configured key-pair identity or PAT file with primary
+`SAARTHI_APP` and secondary roles disabled. The role is pinned; `SNOWFLAKE_ROLE`
+cannot override it. Account migrations require `SAARTHI_SNOWFLAKE_ALLOWED_ACCOUNT`
+to match `SNOWFLAKE_ACCOUNT`; omission retains the default `OHCXVXM-OS69400` guard (a typo guard, not a security control).
+For PAT auth set `SNOWFLAKE_PAT_PATH` and optionally
+`SNOWFLAKE_AUTHENTICATOR=PROGRAMMATIC_ACCESS_TOKEN`. Keep token files outside Git.
+Restricted sessions that reject role changes are accepted only after a SQL identity
+check confirms the app role and no secondary roles. This is a single-operator development
 setup using synthetic records, not separate authentication for multiple browser users.
 The per-professional authentication work remains committed on COM-11/COM-22 branches.
 
@@ -29,11 +35,8 @@ Application sessions set a 120-second statement timeout, a 30-second queue
 timeout and the `saarthi_web_prototype` query tag. These are per-statement guards,
 not dollar limits or controls for other clients/background services.
 See [prototype cost controls](../docs/PROTOTYPE-COST-CONTROLS.md) before enabling access.
-Existing local settings are preserved during reconciliation. To use optional Ollama
-inference, follow `../local-ai/README.md` and set `SAARTHI_LLM_PROVIDER=ollama`.
-SQL classifies both providers before inference; the local provider uses bounded
-procedures and validates its typed claims. The default `ASK_SAARTHI` entry point is
-still a thin agent wrapper: the more extensive answer guard is deferred pending fixes.
+Snowflake Cortex is the only model provider. SQL classifies the question before
+inference. The `ASK_SAARTHI` entry point is still a thin agent wrapper: the more extensive answer guard is deferred pending fixes.
 
 ## Verification
 
@@ -51,8 +54,7 @@ Both development commands bind to **127.0.0.1 only**. The current local app uses
 `SAARTHI_APP`, with secondary roles disabled. Restricted-role reads and denial of
 direct patient-table access were verified on OS69400. Fresh patient-bound sessions,
 current-user care-team/consent checks, timeouts and the warehouse monitor remain.
-The older administrator override remains development-only and is not needed for
-these reads. Never enable it on a shared host. Per-user login is still deferred.
+Administrator role overrides are rejected. Per-user login is still deferred.
 
 Use `/` and `/patient/PAT-DC-07` for live SQL records. `/design-preview/PAT-DC-07`
 remains a recorded fixture. `/review-queue` now reads scoped Snowflake readiness
@@ -75,6 +77,15 @@ npm run build
 ../.venv/bin/python -m pytest -q ..
 ../.venv/bin/python ../backend/scripts/check_gate.py --all --strict
 ```
+
+Browser checks need the five synthetic test routes in an isolated checkout outside
+this repository. From the original repository root, run
+`node web/tests/prepare-fixtures.mjs /absolute/path/to/isolated-checkout`.
+The checkout must include `web`, `frontend/contracts` and `frontend/fixtures`.
+In its `web` directory, install dependencies and Chromium (`npm ci` and
+`npx playwright install chromium`), then run `SAARTHI_SNOWFLAKE_ENABLED=false npm run build`
+and `SAARTHI_SNOWFLAKE_ENABLED=false npm run test:e2e`. The normal production build
+deliberately excludes those test routes.
 
 Production builds use Next.js's supported Webpack option because Turbopack's CSS
 worker could not bind its internal port in the current environment. `npm run dev`

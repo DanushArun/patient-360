@@ -1,8 +1,9 @@
 import { withPatientSession, withPatientSessionAndContext, procedureRows, procedureValue } from "./snowflake";
-import { askLocalModel, completeWithOllama } from "./local-ai.mjs";
 import { routeQuestion } from "./question-routing.mjs";
-import { sourceIds } from "./local-ai-artifact.mjs";
+import { sourceIds } from "./source-ids.mjs";
 import { randomUUID } from "node:crypto";
+import { deriveValueState } from "./workspace-patient-facts.mjs";
+import { confirmWriteReceipt } from "./write-receipts.mjs";
 
 // Both providers ask Snowflake to classify before inference. Patient scope
 // comes from the bound request session, never from model-produced selectors.
@@ -19,6 +20,8 @@ export type Gate = {
   derived?: string;
   provenance_note?: string;
   known_as_of?: string;
+  /** Exact verified-assertion page spans for citations that are document assertions. */
+  source_spans?: unknown[];
 };
 
 export type PatientData = {
@@ -38,6 +41,7 @@ export type PatientData = {
 
 export type TimelineEvent = {
   concept: string;
+  event_type?: string | null;
   value: number | null;
   is_derived: boolean;
   value_state?: string;
@@ -123,10 +127,21 @@ export async function loadTaskOwners(patientId: string) {
 
 export async function transitionReviewTask(patientId: string, taskId: string,
   action: string, ownerId: string | null, reason: string, version: number, requestId: string) {
-  return withPatientSession(patientId, async run => procedureValue(await run(
-    "CALL SAARTHI.OPERATIONAL.UPDATE_WEB_REVIEW_TASK(?,?,?,?,?,?)",
-    [taskId, action, ownerId, reason, version, requestId]
-  )));
+  return withPatientSession(patientId, async run => {
+    const receipt = procedureValue(await run(
+      "CALL SAARTHI.OPERATIONAL.UPDATE_WEB_REVIEW_TASK(?,?,?,?,?,?)",
+      [taskId, action, ownerId, reason, version, requestId]
+    ));
+    // The write is only reported saved once the task is read back from Snowflake. A replay
+    // carries no version, so it is confirmed on identity alone.
+    return confirmWriteReceipt({
+      receipt, idKey: "task_id",
+      readBack: async () => procedureRows(await run(
+        "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('tasks',?)", [taskId])),
+      matches: (row) => row.TASK_ID === receipt.task_id && row.IS_EVENT !== true
+        && (receipt.version === undefined || Number(row.ISSUE_VERSION) === receipt.version),
+    });
+  });
 }
 
 export async function loadPatientTimeline(patientId: string): Promise<PatientTimeline> {
@@ -137,19 +152,46 @@ export async function loadPatientTimeline(patientId: string): Promise<PatientTim
     if (!Array.isArray(result.timeline) || typeof result.known_as_of !== "string") {
       throw new Error("timeline_unavailable");
     }
+    const ids = (value: unknown): string[] =>
+      Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+    const text = (value: unknown): string | null =>
+      typeof value === "string" && value.trim() ? value : null;
     const timeline = result.timeline.map((raw): TimelineEvent => {
       const event = parseValue(raw);
       return {
-        concept: String(event.concept ?? "Unlabelled event"),
+        // The SQL coalesces concept, display and code; the event type is the last honest label.
+        concept: text(event.concept) ?? text(event.display) ?? text(event.code)
+          ?? (text(event.event_type) ? String(event.event_type).replace(/_/g, " ") : "Unlabelled event"),
+        event_type: text(event.event_type),
         value: typeof event.value === "number" ? event.value : null,
+        value_text: text(event.value_text),
+        unit: text(event.unit),
+        abnormal_flag: text(event.abnormal_flag),
+        // R3: never default a missing state to a negative claim; derive it from the value.
+        value_state: deriveValueState(event.value_state,
+          typeof event.value === "number" ? event.value : null, event.value_text),
         is_derived: event.is_derived === true,
+        derivation: text(event.derivation),
+        valid_until: text(event.valid_until),
         event_time: String(event.event_time ?? ""),
         source_recorded_at: String(event.source_recorded_at ?? ""),
         ingested_at: String(event.ingested_at ?? ""),
         event_id: String(event.event_id ?? ""),
+        source_event_ids: ids(event.source_event_ids),
+        source_assertion_ids: ids(event.source_assertion_ids),
+        source_document_ids: ids(event.source_document_ids),
+        source_links_observed_at: text(event.source_links_observed_at),
       };
     });
-    return { timeline, known_as_of: result.known_as_of };
+    return {
+      timeline,
+      known_as_of: result.known_as_of,
+      ...(typeof result.provenance_observed_at === "string"
+        ? { provenance_observed_at: result.provenance_observed_at } : {}),
+      ...(typeof result.total_events === "number" ? { total_events: result.total_events } : {}),
+      ...(typeof result.timeline_limit === "number" ? { timeline_limit: result.timeline_limit } : {}),
+      ...(typeof result.truncated === "boolean" ? { truncated: result.truncated } : {}),
+    };
   });
 }
 
@@ -174,6 +216,7 @@ function snapshotGate(row: Record<string, unknown>): Gate {
     throw new Error("readiness_snapshot_invalid_outcome");
   }
   const evidence = parseValue(row.EVIDENCE_IDS);
+  const spans = parseValue(row.SOURCE_SPANS);
   const gate: Gate = {
     gate: String(row.GATE),
     rule_id: String(row.RULE_ID),
@@ -182,6 +225,7 @@ function snapshotGate(row: Record<string, unknown>): Gate {
     reason: typeof row.REASON === "string" ? row.REASON : undefined,
     severity: typeof row.SEVERITY === "string" ? row.SEVERITY : undefined,
     evidence_ids: Array.isArray(evidence) ? evidence.map(String) : [],
+    ...(Array.isArray(spans) ? { source_spans: spans } : {}),
     known_as_of: typeof row.KNOWN_AS_OF === "string" ? row.KNOWN_AS_OF : undefined,
   };
   if (!gate.known_as_of) throw new Error("readiness_snapshot_missing_as_of");
@@ -294,16 +338,11 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 
 export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
   return withPatientSessionAndContext(patientId, async (run) => {
-    let turn: AgentTurn;
-    if (process.env.SAARTHI_LLM_PROVIDER === "ollama") {
-      turn = await askLocalModel(question, patientId, run, completeWithOllama);
-    } else {
-      turn = await routeQuestion(question, run, async () => {
+    const turn: AgentTurn = await routeQuestion(question, run, async () => {
       const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
       if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
       return parseAgentResponse(Object.values(rows[0])[0]);
-      });
-    }
+    });
     try {
       const record = procedureValue(await run("CALL SAARTHI.OPERATIONAL.RECORD_WEB_ANSWER(?,?,PARSE_JSON(?)::ARRAY,?,?)", [
         question, turn.known_as_of, JSON.stringify([...new Set(sourceIds(turn.tool_results ?? []))].slice(0,100)),
@@ -323,16 +362,30 @@ export async function loadEvidenceHistory(patientId: string) {
 }
 
 export async function prepareEvidencePacket(patientId: string, question: string, packetId: string) {
-  return withPatientSession(patientId, async run => procedureValue(await run(
-    "CALL SAARTHI.OPERATIONAL.PREPARE_WEB_PACKET(?,?)", [question, packetId]
-  )));
+  return withPatientSession(patientId, async run => {
+    const receipt = procedureValue(await run(
+      "CALL SAARTHI.OPERATIONAL.PREPARE_WEB_PACKET(?,?)", [question, packetId]
+    ));
+    return confirmWriteReceipt({
+      receipt, idKey: "packet_id",
+      readBack: async () => procedureRows(await run(
+        "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('packets',?)", [String(receipt.packet_id ?? "")])),
+      matches: (row) => row.PACKET_ID === receipt.packet_id,
+    });
+  });
 }
+
+export type ReviewTaskReceipt = {
+  task_id?: string; state?: string; idempotent_replay?: boolean;
+  read_back_confirmed?: true; error?: string;
+};
 
 export async function createReviewTask(
   patientId: string,
   ruleId: string,
-  action: "request_document" | "escalate"
-): Promise<{ task_id?: string; idempotent_replay?: boolean; error?: string }> {
+  action: "request_document" | "escalate",
+  requestId?: string,
+): Promise<ReviewTaskReceipt> {
   return withPatientSessionAndContext(patientId, async (run) => {
     const readiness = await run("CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL, NULL)");
     const readinessResult = parseValue(Object.values(readiness[0] ?? {})[0]);
@@ -347,12 +400,27 @@ export async function createReviewTask(
       ? "Request document" : "Escalate to treating doctor";
     const issueId = `${patientId}:${gate.rule_id || gate.gate}`;
     const reason = `${label} — ${gate.rule_id}: ${gate.reason || gate.outcome}`;
+    // One key per click attempt (the client keeps it across retries of that attempt and mints a
+    // new one after a confirmed save). The old constant `${issue}:${action}` key replayed a
+    // resolved task as "success" forever. De-duplication of still-open tasks is done in SQL.
+    const key = `${issueId}:${action}:${requestId ?? randomUUID()}`;
     const rows = await run(
       "CALL SAARTHI.OPERATIONAL.CREATE_REVIEW_TASK(?, ?, ?, ?)",
-      [issueId, action, reason, `${issueId}:${action}`]
+      [issueId, action, reason, key]
     );
-    return parseValue(Object.values(rows[0] ?? {})[0]) as {
-      task_id?: string; idempotent_replay?: boolean; error?: string;
-    };
+    const receipt = parseValue(Object.values(rows[0] ?? {})[0]) as ReviewTaskReceipt;
+    if (receipt.error) return receipt;
+    let state: string | undefined;
+    const confirmed = await confirmWriteReceipt({
+      receipt: receipt as Record<string, unknown>, idKey: "task_id",
+      readBack: async () => procedureRows(await run(
+        "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('tasks',?)", [ruleId])),
+      matches: (row) => {
+        if (row.TASK_ID !== receipt.task_id || row.IS_EVENT === true) return false;
+        state = typeof row.STATE === "string" ? row.STATE : undefined;
+        return true;
+      },
+    });
+    return { ...confirmed, ...(state ? { state } : {}) } as ReviewTaskReceipt;
   });
 }

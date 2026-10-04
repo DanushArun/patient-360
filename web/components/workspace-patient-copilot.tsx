@@ -28,7 +28,15 @@ import { readStoredTurns, writeStoredTurns } from "@/lib/chat-storage.mjs";
 import { PatientAnswerArtifact } from "@/app/patient/[id]/patient-answer-artifact";
 import { GateCitation, type Turn } from "@/app/patient/[id]/patient-evidence";
 
+// Errors a retry can never fix: the Retry button is withheld for these.
+const NON_RETRYABLE_ERRORS = new Set(["reference_scope_unavailable"]);
+
 const TURN_ERRORS: Record<string, string> = {
+  reference_scope_unavailable:
+    "Reference corpus search is not available. Switch Search in to Patient record.",
+  workspace_data_unavailable: "Workspace data could not be read just now. Please try again.",
+  record_service_unavailable: "The record service could not be reached. Please try again.",
+  service_unavailable: "The service could not be reached. Please try again.",
   invalid_argument: "That question could not be processed. Rephrase it and try again.",
   question_too_long: "That question is too long. Shorten it and try again.",
   no_patient_access: "Patient access is no longer available. Return to the authorized worklist.",
@@ -334,7 +342,7 @@ export function PatientConversation({
           question={turns[index - 1].text} />}
     </div>)}
     {busy && <div className="sa-meta" role="status">Consulting the record…</div>}
-    {last?.error && <button type="button" className="sa-quiet-button"
+    {last?.error && !NON_RETRYABLE_ERRORS.has(last.error) && <button type="button" className="sa-quiet-button"
       onClick={onRetry} disabled={busy}>Retry last question</button>}
     {!!last?.suggested.length && <div className="sa-follow-ons">
       <div className="sa-field-label">Follow on</div>

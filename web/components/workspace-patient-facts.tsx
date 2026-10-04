@@ -6,7 +6,7 @@ import {
   purgesPatientState,
 } from "@/lib/workspace-state.mjs";
 import {
-  factStateLabel,
+  factStateDisplay,
   factValueLabel,
   factsTemporalDescription,
   sourceDocumentHref,
@@ -229,7 +229,7 @@ function LabTableRow({ fact, patientId, knownAsOf, expanded, onToggle }: {
         <span className={styles.derived}>SQL-derived</span>}</td>
       <td>{text(fact.unit, "—")}</td>
       <td><span className={styles.state} data-state={String(fact.value_state ?? "unknown")}>
-        {factStateLabel(fact.value_state)}
+        {factStateDisplay(fact)}
       </span></td>
       <td>{text(fact.event_time, "Not recorded")}</td>
       <td><SourceLinks fact={fact} patientId={patientId} knownAsOf={knownAsOf} /></td>
@@ -251,7 +251,7 @@ function LabMobileRow({ fact, patientId, knownAsOf, expanded, onToggle }: {
     <div className={styles.mobileHeading}>
       <strong>{text(fact.concept, "Concept unavailable")}</strong>
       <span className={styles.state} data-state={String(fact.value_state ?? "unknown")}>
-        {factStateLabel(fact.value_state)}
+        {factStateDisplay(fact)}
       </span></div>
     {fact.is_derived === true && <span className={styles.derived}>SQL-derived</span>}
     <dl className={styles.mobileSummary}>

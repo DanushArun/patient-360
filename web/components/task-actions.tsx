@@ -58,6 +58,12 @@ function handleTaskError(runtime: SaveRuntime, error?: string): void {
     runtime.onSaved();
     return;
   }
+  if (error === "write_readback_unconfirmed" || error === "write_readback_unavailable") {
+    runtime.setMessage("The update was sent but could not be read back, so it may be saved. "
+      + "The request key is retained; retry to confirm. If this persists, the Snowflake read "
+      + "procedures are not at the latest version.");
+    return;
+  }
   runtime.setMessage(
     "The task receipt is unavailable. The request stays available for the same-key retry.",
   );

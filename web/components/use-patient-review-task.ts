@@ -24,6 +24,11 @@ const REVIEW_ERRORS: Record<string, string> = {
   gate_not_actionable: "This check is no longer actionable. Refresh readiness.",
   action_unavailable: "The review service is unavailable. Please retry.",
   write_unconfirmed: "The task receipt could not be confirmed. Retry the same action to check it.",
+  write_readback_unconfirmed: "The request was sent but the task could not be read back, so it may be saved. Reload before retrying; if this persists the Snowflake read procedures are not at the latest version.",
+  write_readback_unavailable: "The request was sent but the read-back failed, so it may be saved. Reload before retrying.",
+  write_receipt_missing: "The service returned no task receipt. Nothing is confirmed; retry the same action.",
+  task_transition_requires_review: "This task transition needs a documented review step first.",
+  no_encounter: "No active encounter was found for this patient, so no task can be filed.",
 };
 
 export function usePatientReviewTask(patientId: string): {
