@@ -12,6 +12,11 @@ async function capture(page: Page, screen: string): Promise<void> {
   await page.screenshot({ path: path.join(evidence, `${screen}.png`), fullPage: true });
 }
 
+// The record's own clock bar. The route-level loading screen also renders a utility bar
+// ("Reading records") until React swaps in the streamed page, so match the record's bar
+// rather than any element with the class.
+const recordClock = (page: Page) => page.locator(".sa-utility-asof", { hasText: "Known as of" });
+
 async function section(page: Page, name: string): Promise<void> {
   await page.getByRole("navigation", { name: "Patient sections" })
     .getByRole("button", { name, exact: true }).click();
@@ -47,7 +52,7 @@ async function captureWorklists(page: Page): Promise<void> {
 
 async function capturePatientRecord(page: Page): Promise<void> {
   await page.goto(workspace);
-  await expect(page.locator(".sa-utility-asof")).toContainText("1 Oct 2026");
+  await expect(recordClock(page)).toContainText("1 Oct 2026");
   await expect(page.getByRole("region", { name: "Overview documents" }))
     .toContainText("CBC report");
   await capture(page, "04-overview");
@@ -123,7 +128,7 @@ async function captureAnswerAndFamily(page: Page): Promise<void> {
 async function captureRecoveryAndReturn(page: Page): Promise<void> {
   await section(page, "Overview");
   await page.getByRole("button", { name: "Recompute readiness", exact: true }).click();
-  await expect(page.locator(".sa-utility-asof")).toContainText("2 Oct 2026");
+  await expect(recordClock(page)).toContainText("2 Oct 2026");
   await expect(page.getByRole("region", { name: "Overview documents" }))
     .toContainText("Superseded");
   await capture(page, "19-updated-overview");

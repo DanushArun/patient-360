@@ -57,6 +57,7 @@
   --measure: 68ch;
   --sidebar-width: 216px;
   --copilot-width: 400px;
+  --copilot-width-wide: 720px;
 
   /* Colour: light appearance. */
   --label: #1b1f23;
@@ -73,6 +74,7 @@
   --accent-hover: #194f8c;
   --accent-label: #ffffff;
   --accent-tint: #e8f0fa;
+  --segment-selected: #ffffff;
   --status-ready: #1e6b3a;
   --status-ready-bg: #e7f3eb;
   --status-blocked: #a8261c;
@@ -112,6 +114,7 @@
     --accent-hover: #8cbbf0;
     --accent-label: #0b1a2b;
     --accent-tint: #1b2a3b;
+    --segment-selected: #3a4148;
     --status-ready: #6cc58a;
     --status-ready-bg: #16301f;
     --status-blocked: #f2897f;

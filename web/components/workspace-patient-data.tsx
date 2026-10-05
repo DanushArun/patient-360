@@ -291,7 +291,10 @@ function DocumentTableRow({ row, selected, onSelect, onSelectGate }: {
   const document = row.document as DocumentRow | null;
   const type = row.kind === "expected" ? "Expected record"
     : String(document?.doc_type ?? "Document type unavailable");
-  return <tr data-selected={selected} data-kind={row.kind}>
+  const docId = row.kind === "received" && document?.doc_id ? String(document.doc_id) : null;
+  return <tr data-selected={selected} data-kind={row.kind}
+    data-copilot-ref={docId ? `document:${docId}` : undefined}
+    data-copilot-label={docId ? `Document ${type}` : undefined}>
     <td data-label="Document">
       {row.kind === "received"
         ? <button type="button" className={styles.selectDocument}

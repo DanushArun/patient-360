@@ -70,7 +70,7 @@
   cursor: pointer;
 }
 .segment[aria-pressed="true"] {
-  background: var(--bg);
+  background: var(--segment-selected);
   color: var(--label);
   font-weight: 600;
   box-shadow: var(--shadow-control);

@@ -4,7 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { CensusChip } from "@/components/sa";
 import type { Chair } from "@/lib/census";
-import { formatVisitDate } from "@/lib/worklist-display.mjs";
+import { formatVisitSlot } from "@/lib/worklist-display.mjs";
 import styles from "./visit-table.module.css";
 
 type SortKey = "name" | "scheduled" | "regimen" | "status" | "headline";
@@ -40,11 +40,13 @@ export function VisitTable({ chairs }: { chairs: Chair[] }): ReactNode {
 }
 
 function VisitTableRows({ chairs }: { chairs: Chair[] }): ReactNode {
-  return <tbody>{chairs.map((chair) => <tr key={chair.encounterId}>
+  return <tbody>{chairs.map((chair) => <tr key={chair.encounterId}
+    data-copilot-ref={`patient:${chair.patientId}`} data-copilot-label={chair.name}>
     <td><Link className={styles.patientLink}
       href={`/patient/${chair.patientId}`} prefetch={false}>
       {chair.name}</Link><small>{chair.patientId}</small></td>
-    <td>{formatVisitDate(chair.scheduled)}<small>{visitTime(chair.scheduled)}</small></td>
+    <td className={styles.slot}><time dateTime={chair.scheduled}
+      title={chair.scheduled}>{formatVisitSlot(chair.scheduled)}</time></td>
     <td>{chair.regimen ?? "Not recorded"}{cycleLabel(chair.cycle)}</td>
     <td><CensusChip status={chair.status} /></td>
     <td>{chair.headline ?? "No issue summary returned"}

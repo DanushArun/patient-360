@@ -222,8 +222,10 @@ function LabTableRow({ fact, patientId, knownAsOf, expanded, onToggle }: {
   fact: LabFact; patientId: string; knownAsOf: string | null;
   expanded: boolean; onToggle: () => void;
 }): ReactNode {
+  const eventId = typeof fact.event_id === "string" ? fact.event_id : null;
   return <>
-    <tr>
+    <tr data-copilot-ref={eventId ? `fact:${eventId}` : undefined}
+      data-copilot-label={eventId ? `${text(fact.concept, "Fact")} ${factValueLabel(fact)}` : undefined}>
       <th scope="row">{text(fact.concept, "Concept unavailable")}</th>
       <td>{factValueLabel(fact)}{fact.is_derived === true &&
         <span className={styles.derived}>SQL-derived</span>}</td>

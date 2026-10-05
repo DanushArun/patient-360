@@ -89,7 +89,8 @@ function ReadinessRow({ gate, preview, onSelectGate, onCompareSources }: {
   onCompareSources?: () => void;
 }): ReactNode {
   const ruleId = gate.rule_id;
-  return <tr>
+  return <tr data-copilot-ref={ruleId ? `check:${ruleId}` : undefined}
+    data-copilot-label={ruleId ? `Check ${ruleId}` : undefined}>
     <td data-label="Issue">
       <strong>{gate.reason ?? gate.gate}</strong>
       <small>{ruleId ?? "Rule ID unavailable"}

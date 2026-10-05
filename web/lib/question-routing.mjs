@@ -26,7 +26,13 @@ function routingFailure(knownAsOf) {
   };
 }
 
-export async function routeQuestion(question, run, answer) {
+/**
+ * @param {(phase: string) => void} [onPhase] reports real progress: "routing" before the
+ *   classifier runs, then "refusing" for a Class A question. The answer callback reports
+ *   its own later phases.
+ */
+export async function routeQuestion(question, run, answer, onPhase = () => {}) {
+  onPhase("routing");
   const clock = await run(
     `SELECT TO_VARCHAR(CURRENT_TIMESTAMP()::TIMESTAMP_NTZ, 'YYYY-MM-DD"T"HH24:MI:SS')`
       + " AS KNOWN_AS_OF",
@@ -44,6 +50,7 @@ export async function routeQuestion(question, run, answer) {
   }
   const classification = parseClassifierResult(rows)?.classification;
   if (classification === "CLASS_A") {
+    onPhase("refusing");
     const refusal = await run('CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFUSAL(?)', [knownAsOf]);
     return readGatewayAnswer(Object.values(refusal[0] ?? {})[0]);
   }

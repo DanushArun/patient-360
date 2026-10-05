@@ -25,6 +25,7 @@ import {
   updateChatContext,
 } from "@/lib/chat-lifecycle.mjs";
 import { readStoredTurns, writeStoredTurns } from "@/lib/chat-storage.mjs";
+import type { ContextReference } from "@/lib/api-contracts.mjs";
 import { PatientAnswerArtifact } from "@/app/patient/[id]/patient-answer-artifact";
 import { GateCitation, type Turn } from "@/app/patient/[id]/patient-evidence";
 
@@ -132,26 +133,55 @@ function writeTurnsSafely(storageKey: string, turns: Turn[]): void {
   }
 }
 
+type AskResult = AgentTurn & { error?: string; purge_patient_state?: boolean };
+
 async function askRecord(
   patientId: string,
   question: string,
   sourceScope: SourceScope,
   signal: AbortSignal,
+  context: ContextReference[] = [],
+  onPhase: (phase: AskPhase) => void = () => {},
 ) {
   const response = await fetch("/api/ask", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ patientId, question, sourceScope }),
+    headers: { "Content-Type": "application/json", Accept: "application/x-ndjson, application/json" },
+    body: JSON.stringify({ patientId, question, sourceScope,
+      ...(context.length ? { context } : {}) }),
     signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
   });
-  const result = await response.json() as AgentTurn & {
-    error?: string;
-    purge_patient_state?: boolean;
-  };
-  return { response, result };
+  if (!response.headers.get("content-type")?.includes("application/x-ndjson") || !response.body) {
+    return { response, result: await response.json() as AskResult };
+  }
+  // Streamed: phase lines as the server performs each gateway step, then one result line.
+  const result = await readAskStream(response.body, onPhase);
+  const failed = "status" in result && typeof result.status === "number";
+  return { response: { ok: !failed } as Pick<Response, "ok">, result };
+}
+
+async function readAskStream(body: ReadableStream<Uint8Array>,
+  onPhase: (phase: AskPhase) => void): Promise<AskResult & { status?: number }> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    buffer += value ? decoder.decode(value, { stream: !done }) : "";
+    const lines = buffer.split("\n");
+    buffer = done ? "" : lines.pop() ?? "";
+    for (const line of lines.filter(Boolean)) {
+      const event = JSON.parse(line) as { phase?: AskPhase; result?: AskResult;
+        error?: string; status?: number; purge_patient_state?: boolean };
+      if (event.phase) onPhase(event.phase);
+      else if (event.result) return event.result;
+      else if (event.error) return event as AskResult & { status?: number };
+    }
+    if (done) throw new Error("malformed_tool_result");
+  }
 }
 
 export type SourceScope = "patient" | "reference";
+export type AskPhase = "access" | "routing" | "refusing" | "reading" | "validating" | "saving";
 
 export function usePatientChat(
   storageKey: string,
@@ -160,14 +190,23 @@ export function usePatientChat(
 ) {
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
+  const [phases, setPhases] = useState<AskPhase[]>([]);
   const runtime = useChatSafety({ patientId, storageKey, setTurns, setQuestion, setBusy });
-  const send = (text: string, scope: SourceScope = "patient", retry = false) =>
-    sendPatientQuestion({ text, scope, retry, busy, runtime });
+  runtime.onPhase = (phase) => setPhases((current) => [...current, phase]);
+  const send = (text: string, scope: SourceScope = "patient", retry = false,
+    context: ContextReference[] = []) => {
+    if (!busy) setPhases([]);
+    return sendPatientQuestion({ text, scope, retry, busy, runtime, context });
+  };
   const retry = (scope: SourceScope) => {
     const text = runtime.lastQuestions.current[scope] || storedQuestion(storageKey);
     if (text) void send(text, scope, true);
   };
-  return { question, setQuestion, busy, send, retry };
+  const stop = () => {
+    invalidateChatRequest({ activeRequest: runtime.activeRequest, sequence: runtime.sequence });
+    setBusy(false);
+  };
+  return { question, setQuestion, busy, send, retry, stop, phases };
 }
 
 type ChatRuntime = {
@@ -180,9 +219,11 @@ type ChatRuntime = {
   activePatient: React.MutableRefObject<string>;
   activeRequest: React.MutableRefObject<AbortController | null>;
   lastQuestions: React.MutableRefObject<Record<SourceScope, string>>;
+  onPhase?: (phase: AskPhase) => void;
 };
 type ChatSubmission = {
   text: string; scope: SourceScope; retry: boolean; busy: boolean; runtime: ChatRuntime;
+  context?: ContextReference[];
 };
 
 function useChatSafety({ patientId, storageKey, setTurns, setQuestion, setBusy }: Pick<
@@ -240,6 +281,7 @@ async function sendPatientQuestion({
   retry,
   busy,
   runtime,
+  context = [],
 }: ChatSubmission): Promise<void> {
   if (!text.trim() || busy || runtime.activeRequest.current) return;
   const version = ++runtime.sequence.current;
@@ -248,7 +290,7 @@ async function sendPatientQuestion({
   runtime.setBusy(true);
   const controller = new AbortController();
   runtime.activeRequest.current = controller;
-  await completePatientQuestion({ text, scope, version, controller, runtime });
+  await completePatientQuestion({ text, scope, version, controller, runtime, context });
 }
 
 function appendQuestion(text: string, scope: SourceScope, runtime: ChatRuntime): void {
@@ -258,11 +300,14 @@ function appendQuestion(text: string, scope: SourceScope, runtime: ChatRuntime):
 
 async function completePatientQuestion(request: {
   text: string; scope: SourceScope; version: number; controller: AbortController;
-  runtime: ChatRuntime;
+  runtime: ChatRuntime; context: ContextReference[];
 }): Promise<void> {
-  const { text, scope, version, controller, runtime } = request;
+  const { text, scope, version, controller, runtime, context } = request;
   try {
-    const { response, result } = await askRecord(runtime.patientId, text, scope, controller.signal);
+    const { response, result } = await askRecord(runtime.patientId, text, scope,
+      controller.signal, context, (phase) => {
+        if (version === runtime.sequence.current) runtime.onPhase?.(phase);
+      });
     if (purgesPatientState(result)) {
       clearTurnsSafely(runtime.patientId);
       announcePatientAccessWithdrawn(runtime.patientId);
@@ -315,7 +360,9 @@ function storedQuestion(storageKey: string): string {
 
 export function PatientConversation({
   patientId, turns, selected, onSelect, busy, onSend, onRetry, sourceScope, patient,
+  showEmptyHint = true,
 }: {
+  showEmptyHint?: boolean;
   patientId: string;
   patient?: PatientData;
   turns: Turn[];
@@ -328,7 +375,7 @@ export function PatientConversation({
 }): ReactNode {
   const last = turns.at(-1)?.role === "assistant" ? turns.at(-1)! : null;
   return <div role="log" aria-label="Patient conversation" aria-live="polite" aria-busy={busy}>
-    {!turns.length && <div className="sa-meta">
+    {!turns.length && showEmptyHint && <div className="sa-meta">
       Ask what is recorded, missing, or conflicting. Clinical decisions are referred to the treating
       practitioner.
     </div>}

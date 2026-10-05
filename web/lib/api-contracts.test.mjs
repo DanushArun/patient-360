@@ -6,6 +6,7 @@ import {
   isSameOrigin,
   readJsonBody,
   validateAskBody,
+  contextPreamble,
   validateReviewTaskBody,
   validateWorkspaceQuery,
 } from "./api-contracts.mjs";
@@ -211,4 +212,26 @@ test('changed consent scope purges retained patient state', () => {
   assert.deepEqual(apiError(new Error('access_scope_changed')), {
     error: 'access_scope_changed', category: 'access', purge_patient_state: true,
   });
+});
+
+test("test_ask_body_accepts_up_to_five_typed_page_references", () => {
+  const context = [{ kind: "check", id: "CLIN-PLT-001" }, { kind: "fact", id: "EVT-DC-04-PLT" }];
+  assert.deepEqual(validateAskBody({ patientId: "PAT-DC-04", question: "Why?", context }),
+    { patientId: "PAT-DC-04", question: "Why?", sourceScope: "patient", context });
+});
+
+test("test_ask_body_rejects_untyped_foreign_or_excess_page_references", () => {
+  const ask = (context) => validateAskBody({ patientId: "PAT-DC-04", question: "Why?", context });
+  assert.equal(ask([{ kind: "patient", id: "PAT-DC-05" }]), null);
+  assert.equal(ask([{ kind: "check", id: "CLIN PLT; DROP" }]), null);
+  assert.equal(ask([{ kind: "fact", id: "E1", value: "82000" }]), null);
+  assert.equal(ask(Array.from({ length: 6 }, (_, i) => ({ kind: "fact", id: `E${i}` }))), null);
+  assert.equal(ask("CLIN-PLT-001"), null);
+});
+
+test("test_context_preamble_is_deterministic_and_names_only_identifiers", () => {
+  assert.equal(contextPreamble([]), "");
+  assert.equal(contextPreamble([{ kind: "check", id: "CLIN-PLT-001" },
+    { kind: "document", id: "DOC-LAB-DC-04" }]),
+  "Items selected on screen: record check CLIN-PLT-001; document DOC-LAB-DC-04.\n\n");
 });

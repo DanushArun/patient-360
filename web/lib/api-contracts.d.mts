@@ -7,9 +7,15 @@ export type ApiFailure = {
 export const MAX_QUESTION_LENGTH: number;
 export const MAX_REQUEST_BODY_BYTES: number;
 export function readJsonBody(request: Request): Promise<unknown>;
+export type ContextReference = {
+  kind: "check" | "fact" | "document" | "task" | "section"; id: string;
+};
+export const MAX_CONTEXT_REFERENCES: number;
 export function validateAskBody(
   body: unknown,
-): { patientId: string; question: string; sourceScope: "patient" | "reference" } | null;
+): { patientId: string; question: string; sourceScope: "patient" | "reference";
+  context?: ContextReference[] } | null;
+export function contextPreamble(references: ContextReference[]): string;
 export function validateReviewTaskBody(
   body: unknown,
 ): {

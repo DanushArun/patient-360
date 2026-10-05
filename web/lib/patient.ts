@@ -349,14 +349,22 @@ export function parseAgentResponse(input: unknown): AgentTurn {
   return turn;
 }
 
-export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
+/** Real request phases, in order, reported to the copilot's progress display. */
+export type AskPhase = "access" | "routing" | "refusing" | "reading" | "validating" | "saving";
+
+export async function askPatient(patientId: string, question: string,
+  onPhase: (phase: AskPhase) => void = () => {}): Promise<AgentTurn> {
+  onPhase("access");
   return withPatientSessionAndContext(patientId, async (run) => {
     const turn: AgentTurn = await routeQuestion(question, run, async (clock: string) => {
+      onPhase("reading");
       const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
       const payload = parseValue(Object.values(rows[0] ?? {})[0]);
       if (payload.classification || payload.error) return readGatewayAnswer(payload);
+      onPhase("validating");
       return guardAnswer(parseAgentResponse(payload), run, clock);
-    });
+    }, (phase: string) => onPhase(phase as AskPhase));
+    onPhase("saving");
     try {
       const record = procedureValue(await run("CALL SAARTHI.OPERATIONAL.RECORD_WEB_ANSWER(?,?,PARSE_JSON(?)::ARRAY,?,?)", [
         question, turn.known_as_of, JSON.stringify([...new Set(

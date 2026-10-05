@@ -110,3 +110,5 @@
     min-width: 760px;
   }
 }
+
+.slot { white-space: nowrap; font-variant-numeric: tabular-nums; }

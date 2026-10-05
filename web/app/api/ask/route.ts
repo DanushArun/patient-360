@@ -1,6 +1,6 @@
-import { askPatient } from "@/lib/patient";
+import { askPatient, type AskPhase } from "@/lib/patient";
 import {
-  apiError, apiErrorStatus, isSameOrigin, readJsonBody, validateAskBody,
+  apiError, apiErrorStatus, contextPreamble, isSameOrigin, readJsonBody, validateAskBody,
 } from "@/lib/api-contracts.mjs";
 
 export async function POST(request: Request) {
@@ -25,10 +25,38 @@ export async function POST(request: Request) {
     const failure = apiError("reference_scope_unavailable");
     return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
+  const question = contextPreamble(body.context ?? []) + body.question;
+  if (request.headers.get("accept")?.includes("application/x-ndjson")) {
+    return streamAnswer(body.patientId, question);
+  }
   try {
-    return Response.json(await askPatient(body.patientId, body.question));
+    return Response.json(await askPatient(body.patientId, question));
   } catch (error) {
     const failure = apiError(error, "agent_unreachable");
     return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
+}
+
+// One JSON object per line: {"phase": ...} as each real gateway step starts, then exactly one
+// {"result": ...} or {"error": ..., "status": ...}. Phases are emitted by the server code that
+// performs the step, so the progress shown is never simulated.
+function streamAnswer(patientId: string, question: string): Response {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (value: object) => controller.enqueue(encoder.encode(`${JSON.stringify(value)}\n`));
+      try {
+        const result = await askPatient(patientId, question, (phase: AskPhase) => send({ phase }));
+        send({ result });
+      } catch (error) {
+        const failure = apiError(error, "agent_unreachable");
+        send({ ...failure, status: apiErrorStatus(failure.error) });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+  return new Response(stream, {
+    headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" },
+  });
 }

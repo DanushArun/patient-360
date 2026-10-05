@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Page, WorkspaceBar, WorkspaceNav } from "@/components/sa";
 import type { RosterPatient } from "@/components/patient-roster";
 import type { Gate, PatientData } from "@/lib/patient";
@@ -11,7 +11,12 @@ import {
   type Turn,
 } from "@/app/patient/[id]/patient-evidence";
 import type { ReviewAction, ReviewFeedback } from "@/components/review-task-feedback";
-import type { SourceScope } from "@/components/workspace-patient-copilot";
+import type { AskPhase, SourceScope } from "@/components/workspace-patient-copilot";
+import type { ContextReference } from "@/lib/api-contracts.mjs";
+import { createPortal } from "react-dom";
+import { useOptionalCopilot } from "@/components/copilot/copilot-provider";
+import { CopilotComposer, CopilotProgress, CopilotStarters } from "@/components/copilot/copilot-parts";
+import copilotStyles from "@/components/copilot/copilot.module.css";
 import { PatientChatInput, PatientConversation } from "@/components/workspace-patient-copilot";
 import { FamilyChecklist } from "@/components/workspace-patient-family";
 import { PatientSectionContent } from "@/components/workspace-patient-views";
@@ -23,8 +28,11 @@ type ChatModel = {
   question: string;
   setQuestion: (value: string) => void;
   busy: boolean;
-  send: (text: string, scope: SourceScope) => Promise<void>;
+  send: (text: string, scope: SourceScope, retry?: boolean,
+    context?: ContextReference[]) => Promise<void>;
   retry: (scope: SourceScope) => void;
+  stop?: () => void;
+  phases?: AskPhase[];
 };
 type ReviewModel = {
   feedback: Record<string, ReviewFeedback>;
@@ -80,6 +88,7 @@ export function PatientWorkspaceScreen({ model }: { model: PatientScreenModel })
       <span>Evaluate the versioned SQL rules against verified evidence.</span></div>}
     <PatientTabs section={model.section} onChange={model.setSection} />
     <PatientWorkspaceBody model={model} />
+    {!model.preview && <DockedPatientConversation model={model} />}
   </Page>;
 }
 
@@ -186,7 +195,6 @@ function PatientSectionMain({ model }: { model: PatientScreenModel }): ReactNode
 
 function PatientContextPanel({ model }: { model: PatientScreenModel }): ReactNode {
   if (model.selectedGate && !model.preview) return <SelectedEvidencePanel model={model} />;
-  if (model.askOpen && !model.preview) return <AskPanel model={model} />;
   return null;
 }
 
@@ -203,27 +211,76 @@ function SelectedEvidencePanel({ model }: { model: PatientScreenModel }): ReactN
   </ContextPanel>;
 }
 
-function AskPanel({ model }: { model: PatientScreenModel }): ReactNode {
-  return <ContextPanel model={model} label="Ask the record" id="ask-record"
-    onClose={model.toggleAsk}>
-    <div className="sa-context-heading"><h2 tabIndex={-1}>Ask the record</h2>
-      <button type="button" className="sa-quiet-button" onClick={model.toggleAsk}>Close</button>
+const PATIENT_STARTERS = ["What's blocking this visit?",
+  "What's missing before the next cycle?", "Do any sources disagree?"];
+
+/** The patient conversation, rendered into the docked copilot (COPILOT-EXPERIENCE §2). The
+ * page keeps owning the conversation state, so patient switching, consent withdrawal and
+ * history clearing behave exactly as before. */
+function DockedPatientConversation({ model }: { model: PatientScreenModel }): ReactNode {
+  const copilot = useOptionalCopilot();
+  const stream = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    stream.current?.scrollTo({ top: stream.current.scrollHeight });
+  }, [model.turns.length, model.chat.busy, model.chat.phases?.length]);
+  if (!copilot?.open || !copilot.slot) return null;
+  const send = (text: string) => {
+    const context = copilot.chips.map(({ kind, id }) => ({ kind, id }));
+    copilot.clearChips();
+    void model.chat.send(text, model.sourceScope, false, context);
+  };
+  return createPortal(<>
+    {copilot.inspector && <PatientInspector model={model} />}
+    <div ref={stream} className={copilotStyles.stream}>
+      {!model.turns.length && !model.chat.busy && <div className={copilotStyles.empty}>
+        <h2>Ask about {model.patient.patientName}&apos;s record</h2>
+        <p>What is recorded, missing or conflicting, with the source for every claim. Clinical
+          decisions are referred to {model.patient.treatingPractitionerName
+            ?? "the treating practitioner"}.</p>
+        <CopilotStarters starters={PATIENT_STARTERS} onPick={send} />
+      </div>}
+      <PatientConversation patientId={model.patient.patientId} patient={model.patient}
+        turns={model.turns} sourceScope={model.sourceScope} showEmptyHint={false}
+        selected={model.selected} onSelect={model.onSelectAnswer} busy={model.chat.busy}
+        onSend={send} onRetry={() => model.chat.retry(model.sourceScope)} />
+      <CopilotProgress phases={model.chat.phases ?? []} busy={model.chat.busy} />
     </div>
-    <SourceScopeSelect scope={model.sourceScope} setScope={model.setSourceScope}
-      disabled={model.chat.busy} />
-    <PatientConversation patientId={model.patient.patientId} patient={model.patient}
-      turns={model.turns}
-      sourceScope={model.sourceScope}
-      selected={model.selected} onSelect={model.onSelectAnswer} busy={model.chat.busy}
-      onSend={(text) => void model.chat.send(text, model.sourceScope)}
-      onRetry={() => model.chat.retry(model.sourceScope)} />
-    <PatientChatInput question={model.chat.question} setQuestion={model.chat.setQuestion}
-      busy={model.chat.busy}
-      onSend={() => void model.chat.send(model.chat.question, model.sourceScope)} />
-    <p className="ct-copilot-disclaimer">
+    <CopilotComposer label="Question about the selected patient"
+      placeholder={`Ask about ${model.patient.patientName}'s record…`}
+      value={model.chat.question} setValue={model.chat.setQuestion} busy={model.chat.busy}
+      onSend={() => send(model.chat.question)} onStop={model.chat.stop}
+      chips={copilot.chips} onDetach={copilot.detach} picking={copilot.picking}
+      onPick={() => copilot.setPicking(!copilot.picking)}
+      leading={<SourceScopeSelect scope={model.sourceScope} setScope={model.setSourceScope}
+        disabled={model.chat.busy} />} />
+    <p className={copilotStyles.disclaimer}>
       Record and coverage facts only. Clinical decisions belong to the treating practitioner.
     </p>
-  </ContextPanel>;
+  </>, copilot.slot);
+}
+
+/** What this conversation has touched (the ChatGPT inspector, as a record audit). */
+function PatientInspector({ model }: { model: PatientScreenModel }): ReactNode {
+  const answers = model.turns.filter((turn) => turn.role === "assistant" && !turn.error);
+  const checks = [...new Set(answers.flatMap((turn) => turn.gates.map((gate) =>
+    gate.rule_id ?? gate.gate)))];
+  const sources = [...new Set(answers.flatMap((turn) => turn.artifact?.claims.flatMap((claim) =>
+    claim.evidence.map((item) => item.id)) ?? []))];
+  const refused = answers.filter((turn) => turn.artifact?.classification === "CLASS_A").length;
+  return <div className={copilotStyles.inspector} aria-label="Conversation context">
+    <section><h3>In scope</h3><ul>
+      <li>{model.patient.patientName} · <code>{model.patient.patientId}</code></li>
+      <li>Consent <code>{model.patient.consentId}</code></li>
+      <li>Known as of {formatRecordDate(model.patient.knownAsOf)}</li></ul></section>
+    <section><h3>Record checks discussed</h3><ul>
+      {checks.length ? checks.map((id) => <li key={id}><code>{id}</code></li>)
+        : <li>None yet</li>}</ul></section>
+    <section><h3>Patient sources cited</h3><ul>
+      {sources.length ? sources.slice(0, 12).map((id) => <li key={id}><code>{id}</code></li>)
+        : <li>None yet</li>}</ul></section>
+    <section><h3>Referred to the treating practitioner</h3><ul>
+      <li>{refused} {refused === 1 ? "question" : "questions"}</li></ul></section>
+  </div>;
 }
 
 function ContextPanel({ model, label, id, onClose, children }: {
@@ -271,7 +328,7 @@ function SourceScopeSelect({ scope, setScope, disabled }: {
   scope: SourceScope; setScope: (scope: SourceScope) => void; disabled: boolean;
 }): ReactNode {
   return <label className="sa-source-scope">Search in
-    <select value={scope} disabled={disabled}
+    <select className={copilotStyles.scopeSelect} value={scope} disabled={disabled}
       onChange={(event) => setScope(event.target.value as SourceScope)}>
       <option value="patient">Patient record</option><option value="reference" disabled>
         References (not available: reference corpus not built)</option>

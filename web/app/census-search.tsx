@@ -130,7 +130,8 @@ function cycleLabel(cycle: number | null): string {
 }
 
 function WorklistCard({ chair }: { chair: Chair }): ReactNode {
-  return <Link href={`/patient/${chair.patientId}`} prefetch={false} className="sa-worklist-card">
+  return <Link href={`/patient/${chair.patientId}`} prefetch={false} className="sa-worklist-card"
+    data-copilot-ref={`patient:${chair.patientId}`} data-copilot-label={chair.name}>
     <strong>{chair.name}</strong>
     <small>{chair.patientId} · {formatDay(chair.scheduled.slice(0, 10))}
       {` · ${visitTime(chair.scheduled)}`}

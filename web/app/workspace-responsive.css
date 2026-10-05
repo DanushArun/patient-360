@@ -10,7 +10,7 @@
     padding-right: 32px;
     padding-left: 32px;
   }
-  .sa-worklist-board { grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 12px; }
+  .sa-worklist-board { gap: 12px; }
   .sa-rule-row { grid-template-columns: minmax(130px, 1fr) auto minmax(150px, 1.3fr) auto; }
   .sa-rule-row > small { display: none; }
 }
@@ -32,7 +32,6 @@
   .ct-roster { display: none; }
   .sa-page, main.mx-auto.max-w-7xl { margin: 0; padding: 0 24px 32px !important; }
   .sa-utility-bar { margin: 0 -24px 24px; padding: 0 24px; }
-  .sa-worklist-board { grid-template-columns: repeat(4, minmax(200px, 1fr)); }
   .sa-workspace-body { grid-template-columns: 1fr; }
   .sa-context-panel { padding: 16px 0 0; border-top: 1px solid var(--sa-rule); border-left: 0; }
   .sa-workspace-body-with-panel .sa-workspace-main { display: none; }

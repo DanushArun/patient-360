@@ -80,3 +80,22 @@ test("test_routing_when_classifier_fails_preserves_sql_clock", async () => {
   const turn = await routeQuestion("What is recorded?", run, async () => ({}));
   assert.equal(turn.known_as_of, "2026-10-04T15:00:00");
 });
+
+test("routing reports real phases in order for a record question", async () => {
+  const phases = [];
+  const run = async () => rows({ classification: "CLASS_B", method: "structure" });
+  await routeQuestion("What is missing?", run, async () => {
+    phases.push("answer");
+    return { text: "record answer", error: null };
+  }, (phase) => phases.push(phase));
+  assert.deepEqual(phases, ["routing", "answer"]);
+});
+
+test("routing a clinical question reports refusal and never reaches the record", async () => {
+  const phases = [];
+  await routeQuestion("Is it safe to give chemotherapy?", clinicalRun, async () => {
+    phases.push("answer");
+    return { text: "must not run" };
+  }, (phase) => phases.push(phase));
+  assert.deepEqual(phases, ["routing", "refusing"]);
+});

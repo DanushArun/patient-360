@@ -67,13 +67,41 @@ const ERROR_CATEGORIES = {
  */
 export function validateAskBody(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) return null;
-  const { patientId, question, sourceScope = "patient" } = body;
+  const { patientId, question, sourceScope = "patient", context } = body;
   if (typeof patientId !== "string" || !PATIENT_ID.test(patientId)) return null;
   if (typeof question !== "string" || !question.trim() || question.length > MAX_QUESTION_LENGTH) {
     return null;
   }
   if (sourceScope !== "patient" && sourceScope !== "reference") return null;
-  return { patientId, question: question.trim(), sourceScope };
+  const references = validateContextReferences(context);
+  if (references === null) return null;
+  return { patientId, question: question.trim(), sourceScope,
+    ...(references.length ? { context: references } : {}) };
+}
+
+// Items a user attached from the screen. Kind and identifier only: values are never sent,
+// and every identifier is re-read under the server-side patient binding. Patients are not a
+// kind here because patient selection is a separate, audited human click (COPILOT-SPEC §0).
+const CONTEXT_KINDS = { check: "record check", fact: "record fact", document: "document",
+  task: "review task", section: "section" };
+const CONTEXT_ID = /^[A-Za-z0-9._:-]{1,80}$/;
+export const MAX_CONTEXT_REFERENCES = 5;
+
+/** @returns {{kind: string, id: string}[] | null} */
+function validateContextReferences(context) {
+  if (context === undefined) return [];
+  if (!Array.isArray(context) || context.length > MAX_CONTEXT_REFERENCES) return null;
+  const valid = context.every((item) => item && typeof item === "object"
+    && Object.keys(item).length === 2 && Object.hasOwn(CONTEXT_KINDS, item.kind)
+    && typeof item.id === "string" && CONTEXT_ID.test(item.id));
+  return valid ? context.map(({ kind, id }) => ({ kind, id })) : null;
+}
+
+/** @param {{kind: string, id: string}[]} references */
+export function contextPreamble(references) {
+  if (!references.length) return "";
+  return `Items selected on screen: ${references
+    .map(({ kind, id }) => `${CONTEXT_KINDS[kind]} ${id}`).join("; ")}.\n\n`;
 }
 
 /**
