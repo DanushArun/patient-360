@@ -1,5 +1,55 @@
 # SAARTHI: judge assessment and deficit elimination
 
+## Current inspection — 5 October 2026
+
+**The live dashboard is not submission-ready.** Fresh Chrome and strict SDK
+checks on the user-confirmed `KGTPGHJ-YJ28449` / `NY64016` show successful
+authentication but blocked warehouse execution. Local patient reads return
+HTTP 502; Chrome shows an empty/unavailable worklist. The preview does not
+establish live functionality.
+
+The account's 3-credit monitor immediately suspends at 90% (2.70 credits);
+reported usage is 2.74. ACCOUNTADMIN metadata confirms zero Cortex Search
+services and three suspended tasks. The deployed validator lacks the
+`access_scope` fingerprint required by the latest web code. Restoring compute
+alone therefore does not establish frontend/backend compatibility.
+
+The latest handoff's **74/100** (25 relevance + 28 technical + 21 completeness)
+is a provisional internal estimate, not an achieved score or a guarantee.
+The [release checklist](submission/RELEASE-GATES-2026-10-05.md) records
+**9 of 20 verified gates**. Several are bounded historical SQL demonstrations;
+the current outage prevents treating them as a continuously available release.
+There is no evidence supporting 100/100 readiness.
+
+Fresh source checks: **684 Python passed / 14 skipped / 36 subtests;
+291 web passed; 41/41 fixture browser tests passed; TypeScript and production
+build passed; all 71 manifest steps resolve; 11-file bundle current**.
+These are engineering checks on synthetic inputs, not live workflow or clinical
+validation. Strict SDK authentication now succeeds using the system certificate
+store; the older TLS diagnosis is not the current reproduced blocker.
+
+| Area | Progress since the 4 October baseline | Remaining acceptance |
+|---|---|---|
+| T1: answer boundary | Guarded SQL fallback, canonical record/rule validation and practitioner packet have dated live receipts | Latest source deployed coherently; native inference and actual web/MCP endpoint coverage |
+| T2: scope and consent | Existing foreign-evidence controls, subsequent revocation and category controls passed in bounded SQL probes | Ten concurrent sessions, concurrent writes and in-flight withdrawal |
+| T3: independent evaluation | 48 development + 48 held-out questions, eight disjoint patients/PDFs, separate renderers and hashes committed | Final verified document gold, final endpoint scoring, citation adjudication, recall and latency |
+| T4: native execution | Seven VQR definitions executed directly as SQL; skill configuration checks pass | Native skill/VQR invocation, positive incremental processing and replay |
+| T5/C3: recovery and workflow | Persisted answer/packet/action, sequential retry, history checks and 41 fixture UI tests | Connected new-ingest → two-pass verification → rule → cited answer → human review/history; live chaos and latency |
+| C1/C2: usable release | Host package, health contract and non-destructive installation runners built | Current host `/api/health` returns 404; restricted live hosting, deployment parity and clean install unproved |
+| R1/R2/R3: impact and adoption | Study/economics runners and operating runbooks prepared | Observed operators, actual attributed consumption and funded judge-period ownership |
+| C4/C5: packaging | Six-slide deck and timed script exist | Refresh final runtime claims/links, reconcile README/status history and record final video |
+
+Immediate order: authorize bounded compute recovery, deploy compatible SQL
+dependencies, prove the real local Chrome workflow, then close Search/native
+execution and hosted-release gaps. Do not reload/reset existing patient tables.
+The team's final deployment is still separate from a working local dashboard.
+
+Full fresh receipts, reproduced failures and recovery acceptance are recorded in
+[the live dashboard inspection](../evidence/qa/LIVE-DASHBOARD-INSPECTION-2026-10-05.md).
+The original baseline below is preserved as a historical checkpoint.
+
+## Historical checkpoint — 4 October 2026
+
 Checkpoint: 4 October 2026, approximately 21:15 IST. This assesses the observed
 working tree and bounded runtime checks, not an imagined completed release.
 The official rubric specifies only 30/40/30. The allocations below are an internal
