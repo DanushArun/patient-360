@@ -149,6 +149,29 @@ VALUES ('ENDO-DEXA-001', 1, 'safety', 'endocrinology', 'oncology', 2,
   'patients on an aromatase inhibitor or bone-modifying agent', 'advisory',
   'NCCN says 12 months for osteopenia on AI therapy; ASCO permits up to 24 months. This build implements the tighter NCCN interval as the safer default for a gate whose failure mode is a missed scan.');
 
+-- v2 narrows disease_scope from 'oncology' to 'breast_cancer'. v1 fired for every
+-- cancer patient, including a male FOLFOX colon patient (PAT-DC-11), contradicting
+-- its own applies_to. Breast cancer is the structured proxy for aromatase-inhibitor
+-- exposure available today. Readiness computed before v2 still resolves to v1.
+MERGE INTO SAARTHI.OPERATIONAL.RULE_CATALOG t
+USING (SELECT 'ENDO-DEXA-001' AS rule_id, 2 AS rule_version) s
+ON t.rule_id = s.rule_id AND t.rule_version = s.rule_version
+WHEN NOT MATCHED THEN INSERT (rule_id, rule_version, gate, specialty, disease_scope, specificity,
+  display_name, description, threshold_json, guideline_ref, applies_to, severity, provenance_note)
+VALUES ('ENDO-DEXA-001', 2, 'safety', 'endocrinology', 'breast_cancer', 2,
+  'Bone density surveillance',
+  'DEXA T-score band determines the surveillance interval: 24 months if normal, 12 months for osteopenia or osteoporosis or on a bone-modifying agent',
+  PARSE_JSON('{"concept":"T_SCORE","strata":[{"when":"t_score>=-1.0","max_age_days":730},{"when":"t_score<-1.0 AND t_score>-2.5","max_age_days":365},{"when":"t_score<=-2.5","max_age_days":365,"additional":"bone_modifying_agent required"},{"when":"on_bone_modifying_agent","max_age_days":365}],"not_evaluated_if":"only QUS available (no T-score)"}'),
+  'NCCN Breast v4.2024; ASCO/OH(CCO) 2022; ESMO 2017',
+  'patients on an aromatase inhibitor or bone-modifying agent', 'advisory',
+  'NCCN says 12 months for osteopenia on AI therapy; ASCO permits up to 24 months. This build implements the tighter NCCN interval as the safer default for a gate whose failure mode is a missed scan. v2 limits the rule to breast cancer, the recorded proxy for aromatase-inhibitor therapy.');
+
+-- Close v1 at the moment v2 takes effect, so out-of-scope patients cannot fall back to it.
+UPDATE SAARTHI.OPERATIONAL.RULE_CATALOG
+   SET effective_to = (SELECT effective_from FROM SAARTHI.OPERATIONAL.RULE_CATALOG
+                        WHERE rule_id = 'ENDO-DEXA-001' AND rule_version = 2)
+ WHERE rule_id = 'ENDO-DEXA-001' AND rule_version = 1 AND effective_to IS NULL;
+
 MERGE INTO SAARTHI.OPERATIONAL.RULE_CATALOG t
 USING (SELECT 'SURG-CLEAR-001' AS rule_id, 1 AS rule_version) s
 ON t.rule_id = s.rule_id AND t.rule_version = s.rule_version
