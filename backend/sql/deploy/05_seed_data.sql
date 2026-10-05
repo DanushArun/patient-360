@@ -73,7 +73,7 @@ MERGE INTO SAARTHI.GOVERNANCE.CONSENT t USING (SELECT 'CON-DEEP-0001' consent_id
 WHEN NOT MATCHED THEN INSERT (consent_id, patient_id, granted_to_facility_id, granted_by, grantor_name,
   purpose_code, data_categories, valid_from, valid_until, status)
 VALUES ('CON-DEEP-0001', 'PAT-DEEP-0001', 'FAC-02', 'patient', 'Meera Iyer',
-  'treatment', ARRAY_CONSTRUCT('clinical','identity'), DATEADD(day, -180, CURRENT_TIMESTAMP()), NULL, 'active');
+  'treatment', ARRAY_CONSTRUCT('clinical','identity','financial'), DATEADD(day, -180, CURRENT_TIMESTAMP()), NULL, 'active');
 
 -- 7 identifiers, 0 ABHA (R4's design centre) - matches data/generator/ledger.py exactly.
 MERGE INTO SAARTHI.CORE.ID_MAP t USING (SELECT 'FAC-01-MRN' k) s ON t.map_id = s.k
