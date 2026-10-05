@@ -3,8 +3,8 @@
 }
 
 .draft h3 {
-  margin: 0 0 14px;
-  font-size: 16px;
+  margin: 0 0 16px;
+  font-size: var(--fs-title-3);
   font-weight: 600;
 }
 
@@ -15,11 +15,11 @@
 
 .draft dt {
   color: var(--sa-ink-muted);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
 }
 
 .draft dd {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
   overflow-wrap: anywhere;
 }
 
@@ -32,7 +32,7 @@
 
 .actions button,
 .actionButton {
-  min-height: 44px;
+  min-height: var(--control-height);
 }
 
 .actionRow {
@@ -42,7 +42,7 @@
 }
 
 .actionRow button {
-  min-height: 44px;
+  min-height: var(--control-height);
   white-space: normal;
 }
 
@@ -61,5 +61,5 @@
 }
 
 .draft dl > div { display: grid; grid-template-columns: 100px minmax(0, 1fr);
-  gap: 12px; padding: 10px 0; border-top: 1px solid #e8e7e4; font-size: 13px; }
+  gap: 12px; padding: 12px 0; border-top: 1px solid var(--separator); font-size: var(--fs-callout); }
 .draft dd { margin: 0; }

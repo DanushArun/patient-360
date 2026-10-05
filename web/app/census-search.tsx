@@ -2,7 +2,9 @@
 
 import { type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CensusChip } from "@/components/sa";
+import { Button, PopUpButton, SearchField, SegmentedControl, Toolbar } from "@/components/ui/controls";
 import { useWorklistState } from "@/components/use-worklist-state";
 import type { Chair } from "@/lib/census";
 import { filterDayCareVisits, getAvailableVisitDates } from "@/lib/daycare-board.mjs";
@@ -62,56 +64,30 @@ type ToolbarModel = {
   resultCount: number;
 };
 
+const NEXT_SEVEN_DAYS = "next7";
+
 function WorklistToolbar({ model }: { model: ToolbarModel }): ReactNode {
-  return <div className={styles.boardControls}>
-    <VisitDateControl model={model} />
-    <ViewControl view={model.view} setView={model.setView} />
-    <SearchControl search={model.search} setSearch={model.setSearch} />
+  const router = useRouter();
+  return <>
+    <Toolbar label="Day-care visit controls" trailing={<>
+      <SearchField label="Search day-care visits" placeholder="Search patients or checks"
+        value={model.search} onChange={model.setSearch} />
+      <Button variant="plain" onClick={() => router.refresh()}>Refresh</Button>
+    </>}>
+      <PopUpButton id="visit-date" label="Visit date" disabled={!model.dates.length}
+        value={model.showNextSevenDays ? NEXT_SEVEN_DAYS : model.selectedDate}
+        options={[{ value: NEXT_SEVEN_DAYS, label: "Next 7 days" },
+          ...model.dates.map((date) => ({ value: date, label: formatDay(date) }))]}
+        onChange={(value) => value === NEXT_SEVEN_DAYS
+          ? model.setShowNextSevenDays(true) : model.setSelectedDate(value)} />
+      <SegmentedControl label="Day care view" value={model.view} onChange={model.setView}
+        options={[{ value: "state", label: "By record state" },
+          { value: "visits", label: "Visits" }]} />
+    </Toolbar>
     <p className={styles.resultCount} role="status" aria-live="polite">
       {model.resultCount} {model.resultCount === 1 ? "visit" : "visits"} shown
     </p>
-  </div>;
-}
-
-function VisitDateControl({ model }: { model: ToolbarModel }): ReactNode {
-  return <div className={styles.dateControls} role="group" aria-label="Visit date range">
-    <label htmlFor="visit-date">Visit date</label>
-    <select id="visit-date" className={styles.dateSelect} disabled={!model.dates.length}
-      value={model.selectedDate} onChange={(event) => {
-        model.setSelectedDate(event.target.value);
-      }}>
-      {model.dates.map((date) => <option key={date} value={date}>{formatDay(date)}</option>)}
-    </select>
-    <button type="button" className={styles.rangeButton}
-      aria-pressed={model.showNextSevenDays} disabled={!model.dates.length}
-      onClick={() => model.setShowNextSevenDays(true)}>Next 7 days</button>
-  </div>;
-}
-
-function ViewControl({ view, setView }: {
-  view: ToolbarModel["view"];
-  setView: ToolbarModel["setView"];
-}): ReactNode {
-  return <div className="sa-view-switch" role="group" aria-label="Day care view">
-    <button type="button" aria-pressed={view === "state"}
-      onClick={() => setView("state")}>By record state</button>
-    <button type="button" aria-pressed={view === "visits"}
-      onClick={() => setView("visits")}>Visits</button>
-  </div>;
-}
-
-function SearchControl({ search, setSearch }: {
-  search: string;
-  setSearch: (value: string) => void;
-}): ReactNode {
-  return <div className={styles.searchControls}>
-    <input aria-label="Search day-care visits" type="search" value={search}
-      onChange={(event) => setSearch(event.target.value)}
-      placeholder="Search patients or recorded checks"
-      className={`sa-search-input ${styles.searchInput}`} />
-    {search && <button type="button" className={styles.clearButton}
-      onClick={() => setSearch("")}>Clear search</button>}
-  </div>;
+  </>;
 }
 
 function EmptyResults({ query, onClear }: { query: string; onClear: () => void }): ReactNode {

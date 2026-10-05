@@ -121,8 +121,7 @@ function NavigatorHeader({ patient, visit }: {
       <div className="text-xs uppercase tracking-wide" style={{ color: "var(--sa-ink-muted)" }}>
         Navigator View
       </div>
-      <Link href="/" style={{ ...buttonStyle, width: "auto", fontSize: 13, minHeight: 32,
-        padding: "2px 12px" }}>Census</Link>
+      <Link href="/" style={{ ...buttonStyle, width: "auto" }}>Census</Link>
     </div>
     <Rule />
   </>;

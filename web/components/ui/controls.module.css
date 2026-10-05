@@ -1,0 +1,130 @@
+/* Standard controls (docs/design/INTERFACE-GUIDELINES.md §5). Every control is
+   --control-height tall and uses the callout text style, so controls on one row align. */
+
+.button,
+.popUp,
+.segmented,
+.search {
+  box-sizing: border-box;
+  height: var(--control-height);
+  font: var(--text-callout);
+  color: var(--label);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.button:hover:not(:disabled) { background: var(--bg-tertiary); }
+.button:active:not(:disabled) { background: var(--separator); }
+.button:disabled { color: var(--label-tertiary); cursor: not-allowed; }
+.button[data-style="plain"] { border-color: transparent; background: transparent; color: var(--accent); }
+.button[data-style="plain"]:hover:not(:disabled) { background: var(--accent-tint); }
+.button[data-style="prominent"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-label);
+  font-weight: 600;
+}
+.button[data-style="prominent"]:hover:not(:disabled) { background: var(--accent-hover); }
+.button[data-size="small"] { height: var(--control-height-small); padding: 0 var(--space-2); }
+
+.popUpField { display: inline-flex; align-items: center; gap: var(--space-2); }
+.popUpField label { font: var(--text-callout); color: var(--label-secondary); }
+.popUp {
+  appearance: none;
+  padding: 0 var(--space-8) 0 var(--space-3);
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-control);
+  background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23646c74' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") no-repeat right var(--space-3) center;
+  cursor: pointer;
+}
+.popUp:disabled { color: var(--label-tertiary); cursor: not-allowed; }
+
+.segmented {
+  display: inline-grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  padding: 2px;
+  border-radius: var(--radius-control);
+  background: var(--bg-tertiary);
+}
+.segment {
+  min-width: 0;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-control-inner);
+  background: transparent;
+  color: var(--label-secondary);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.segment[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--label);
+  font-weight: 600;
+  box-shadow: var(--shadow-control);
+}
+.segment:hover:not([aria-pressed="true"]) { color: var(--label); }
+
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 220px;
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+}
+.search:focus-within { box-shadow: var(--focus-ring); }
+.search svg { flex: none; color: var(--label-tertiary); }
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.search input::placeholder { color: var(--label-tertiary); }
+.search input::-webkit-search-cancel-button { display: none; }
+.clear {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--label-quaternary);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block: var(--space-4);
+}
+.toolbarGroup { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.toolbarTrailing { margin-left: auto; }
+
+@media (max-width: 640px) {
+  .toolbar { align-items: stretch; }
+  .toolbarGroup, .toolbarTrailing { flex: 1 1 100%; margin-left: 0; }
+  .search { flex: 1; min-width: 0; }
+}

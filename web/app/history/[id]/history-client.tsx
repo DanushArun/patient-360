@@ -164,8 +164,7 @@ function TaskHistoryList({ patientId, history, onSaved }: {
 }): ReactNode {
   return <>
     <div className="sa-history-section-head"><h2>Task lifecycle</h2>
-      <Link href={`/patient/${patientId}`} style={{ ...buttonStyle, width: "auto",
-        minHeight: 36, fontSize: 14 }}>Open patient record</Link>
+      <Link href={`/patient/${patientId}`} style={{ ...buttonStyle, width: "auto" }}>Open patient record</Link>
     </div>
     {history.state === "loading" && <div className="sa-loading-lines" role="status">
       <span /><span /><span />

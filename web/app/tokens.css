@@ -1,0 +1,148 @@
+/* SAARTHI design tokens: the single source of every type, space, size, radius and
+   colour value. Rules and rationale: docs/design/INTERFACE-GUIDELINES.md (adapted
+   from Apple HIG, macOS reference platform). Raw hex values live only in this file;
+   web/lib/design-tokens.test.mjs fails the build if they appear anywhere else. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Typeface: system stack first (SF Pro on macOS), Inter as the portable fallback. */
+  --font-text: system-ui, -apple-system, "SF Pro Text", Inter, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* Eight text styles (size / line-height / weight). macOS text-style ratios x1.08. */
+  --text-large-title: 700 28px/34px var(--font-text);
+  --text-title-2: 600 20px/26px var(--font-text);
+  --text-title-3: 600 16px/22px var(--font-text);
+  --text-headline: 600 14px/20px var(--font-text);
+  --text-body: 400 14px/20px var(--font-text);
+  --text-callout: 400 13px/18px var(--font-text);
+  --text-footnote: 400 12px/16px var(--font-text);
+  --text-caption: 500 11px/14px var(--font-text);
+  --text-caption-mono: 500 11px/14px var(--font-mono);
+  --tracking-label: 0.04em;
+  /* The same scale as separate size / line-height values, for rules that set
+     weight or family independently. Never use a size that is not listed here. */
+  --fs-large-title: 28px;
+  --fs-title-2: 20px;
+  --fs-title-3: 16px;
+  --fs-body: 14px;
+  --fs-callout: 13px;
+  --fs-footnote: 12px;
+  --fs-caption: 11px;
+  --lh-large-title: 34px;
+  --lh-title-2: 26px;
+  --lh-title-3: 22px;
+  --lh-body: 20px;
+  --lh-callout: 18px;
+  --lh-footnote: 16px;
+  --lh-caption: 14px;
+
+  /* Space: 4 px grid. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Size and shape. */
+  --control-height: 32px;
+  --control-height-small: 24px;
+  --radius-control: 6px;
+  --radius-control-inner: 4px; /* concentric with a 2 px inset inside a control */
+  --radius-panel: 10px;
+  --radius-pill: 999px;
+  --measure: 68ch;
+  --sidebar-width: 216px;
+  --copilot-width: 400px;
+
+  /* Colour: light appearance. */
+  --label: #1b1f23;
+  --label-secondary: #4b535b;
+  --label-tertiary: #646c74;
+  --label-quaternary: #9aa1a8;
+  --bg: #ffffff;
+  --bg-secondary: #f5f6f7;
+  --bg-tertiary: #eceef0;
+  --bg-elevated: #ffffff;
+  --separator: #e3e6e9;
+  --separator-strong: #c4cad0;
+  --accent: #1f5fa8;
+  --accent-hover: #194f8c;
+  --accent-label: #ffffff;
+  --accent-tint: #e8f0fa;
+  --status-ready: #1e6b3a;
+  --status-ready-bg: #e7f3eb;
+  --status-blocked: #a8261c;
+  --status-blocked-bg: #fbeae8;
+  --status-conflict: #9a4700;
+  --status-conflict-bg: #fcefe2;
+  --status-waiting: #3b5878;
+  --status-waiting-bg: #eaeff5;
+  --status-advisory: #5c6400;
+  --status-advisory-bg: #f2f4dd;
+  --status-neutral: #59616a;
+  --status-neutral-bg: #eef0f2;
+  --evidence-patient: #1a5c8a;
+  --evidence-reference: #5b4b8a;
+  --shadow-elevated: 0 8px 24px rgb(16 24 32 / 0.12), 0 1px 3px rgb(16 24 32 / 0.08);
+  --shadow-control: 0 1px 2px rgb(16 24 32 / 0.12);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  --motion-fast: 120ms;
+  --motion-standard: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --label: #e8eaed;
+    --label-secondary: #b6bcc3;
+    --label-tertiary: #959ca3;
+    --label-quaternary: #5f666d;
+    --bg: #15181b;
+    --bg-secondary: #1c2024;
+    --bg-tertiary: #262b30;
+    --bg-elevated: #21262a;
+    --separator: #2d3338;
+    --separator-strong: #444b52;
+    --accent: #6fa9ec;
+    --accent-hover: #8cbbf0;
+    --accent-label: #0b1a2b;
+    --accent-tint: #1b2a3b;
+    --status-ready: #6cc58a;
+    --status-ready-bg: #16301f;
+    --status-blocked: #f2897f;
+    --status-blocked-bg: #3a1c1a;
+    --status-conflict: #f2a65e;
+    --status-conflict-bg: #3a2714;
+    --status-waiting: #a3bddd;
+    --status-waiting-bg: #1d2a38;
+    --status-advisory: #c8d064;
+    --status-advisory-bg: #2b2e14;
+    --status-neutral: #a6adb4;
+    --status-neutral-bg: #262b30;
+    --evidence-patient: #79b3dc;
+    --evidence-reference: #b2a5dc;
+    --shadow-elevated: 0 8px 24px rgb(0 0 0 / 0.45), 0 1px 3px rgb(0 0 0 / 0.4);
+    --shadow-control: 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+}
+
+/* Touch: HIG minimum hit target is 44 pt on iOS/iPadOS versus 28 pt default on macOS.
+   Phone-width layouts and coarse pointers get touch-sized controls. */
+@media (max-width: 640px), (pointer: coarse) {
+  :root {
+    --control-height: 44px;
+    --control-height-small: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-standard: 0ms;
+  }
+}

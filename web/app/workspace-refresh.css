@@ -1,17 +1,3 @@
-:root {
-  --sa-ink: #202020;
-  --sa-ink-secondary: #555451;
-  --sa-ink-muted: #76746f;
-  --sa-rule: #e8e7e4;
-  --sa-surface-sunken: #f5f4f1;
-  --sa-accent: #2463a6;
-  --sa-sidebar-width: 216px;
-}
-
-body {
-  background: #fff !important;
-  color: var(--sa-ink);
-}
 .sa-page, main.mx-auto.max-w-7xl {
   box-sizing: border-box;
   width: auto;
@@ -29,21 +15,21 @@ body {
   box-sizing: border-box;
   width: var(--sa-sidebar-width);
   min-height: 100vh;
-  padding: 20px 14px 16px;
+  padding: 24px 16px 16px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-  background: #f7f7f5;
+  background: var(--bg-secondary);
   border: 0;
   border-right: 1px solid var(--sa-rule);
   border-radius: 0;
   box-shadow: none;
 }
 .sa-brand {
-  gap: 9px;
-  padding: 0 5px;
-  margin: 0 0 30px;
+  gap: 8px;
+  padding: 0 4px;
+  margin: 0 0 32px;
 }
 .sa-brand img {
   width: 30px;
@@ -52,22 +38,22 @@ body {
 }
 .sa-brand strong {
   color: var(--sa-ink);
-  font-size: 16px;
-  line-height: 20px;
+  font-size: var(--fs-title-3);
+  line-height: var(--lh-body);
   letter-spacing: -.2px;
 }
 .sa-brand small {
   color: var(--sa-ink-muted);
-  font-size: 11px;
-  line-height: 16px;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-footnote);
   letter-spacing: 0;
 }
 .sa-sidebar-heading, .ct-roster-heading {
   padding: 0 8px;
-  margin: 0 0 7px;
+  margin: 0 0 8px;
   color: var(--sa-ink-muted);
-  font-size: 11px;
-  line-height: 17px;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-footnote);
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
@@ -80,21 +66,21 @@ body {
   margin: 0;
 }
 .sa-workspace-link {
-  min-height: 36px;
-  padding: 7px 9px;
-  gap: 9px;
+  min-height: var(--control-height);
+  padding: 8px 8px;
+  gap: 8px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   color: var(--sa-ink-secondary);
-  font-size: 13px;
+  font-size: var(--fs-callout);
   text-decoration: none;
 }
 .sa-workspace-link:hover {
-  background: #eeedea;
+  background: var(--bg-tertiary);
   color: var(--sa-ink);
 }
 .sa-workspace-link-active {
-  background: #eeedea;
+  background: var(--bg-tertiary);
   color: var(--sa-ink);
   font-weight: 600;
   box-shadow: none;
@@ -112,8 +98,8 @@ body {
   flex: 1;
   min-height: 0;
   flex-direction: column;
-  margin: 22px -14px 12px;
-  padding: 0 14px;
+  margin: 24px -16px 12px;
+  padding: 0 16px;
   overflow: hidden;
   border: 0;
   background: transparent;
@@ -125,80 +111,80 @@ body {
 }
 .ct-search {
   min-height: 32px;
-  margin: 0 0 5px;
+  margin: 0 0 4px;
   padding: 0 8px;
   border: 1px solid var(--sa-rule);
-  border-radius: 5px;
-  background: #fff;
+  border-radius: var(--radius-control);
+  background: var(--bg);
   color: var(--sa-ink-muted);
 }
 .ct-search input {
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--fs-footnote);
 }
 .ct-patient-list {
   min-height: 0;
   overflow: auto;
 }
 .ct-patient-option {
-  min-height: 38px;
+  min-height: var(--control-height);
   gap: 8px;
-  padding: 4px 7px;
-  border-radius: 5px;
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
 }
 .ct-patient-option:hover,
 .ct-patient-option.selected {
-  background: #eeedea;
+  background: var(--bg-tertiary);
 }
 .ct-patient-option .ct-avatar {
   width: 24px;
   height: 24px;
-  font-size: 10px;
+  font-size: var(--fs-caption);
 }
 .ct-patient-option strong {
   color: var(--sa-ink-secondary);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
   font-weight: 500;
 }
 .ct-patient-option small {
   color: var(--sa-ink-muted);
-  font-size: 10px;
+  font-size: var(--fs-caption);
 }
 .ct-roster-empty {
   padding: 8px;
   color: var(--sa-ink-muted);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
 }
 .sa-ask-link {
   margin-top: auto !important;
 }
 .sa-workspace-context {
-  min-height: 40px;
+  min-height: var(--control-height);
   margin: 8px 0 0;
-  padding: 10px 8px 0;
+  padding: 12px 8px 0;
   border-top: 1px solid var(--sa-rule);
   color: var(--sa-ink-secondary);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
   letter-spacing: 0;
   text-transform: none;
 }
 .sa-utility-bar {
   display: flex;
-  min-height: 44px;
+  min-height: var(--control-height);
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   margin: 0 -48px 24px;
   padding: 0 48px;
   border-bottom: 1px solid var(--sa-rule);
   color: var(--sa-ink-muted);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--fs-footnote);
+  line-height: var(--lh-callout);
 }
 .sa-utility-bar > div {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   min-width: 0;
 }
 .sa-utility-bar a {

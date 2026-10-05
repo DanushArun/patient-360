@@ -2,19 +2,19 @@
   display: flex;
   min-width: 0;
   align-items: flex-start;
-  gap: 14px;
+  gap: 16px;
 }
 
 .avatar {
   display: grid;
   width: 42px;
-  height: 42px;
+  height: var(--control-height);
   flex: 0 0 42px;
   place-items: center;
   border: 1px solid var(--sa-rule);
   border-radius: 50%;
   color: var(--sa-ink-secondary);
-  background: #f7f7f5;
+  background: var(--bg-secondary);
 }
 
 .identityCopy {
@@ -29,20 +29,20 @@
 }
 
 .nameLine h1 {
-  margin: 0 0 5px;
+  margin: 0 0 4px;
 }
 
 .previewBadge {
   display: inline-flex;
   align-items: center;
   min-height: 22px;
-  margin-bottom: 5px;
-  padding: 2px 7px;
-  border: 1px solid #c9c6bf;
-  border-radius: 3px;
+  margin-bottom: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-control);
   color: var(--sa-ink-secondary);
-  background: #f7f7f5;
-  font-size: 11px;
+  background: var(--bg-secondary);
+  font-size: var(--fs-caption);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -50,29 +50,29 @@
 .patientDetails {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px 14px;
+  gap: 4px 16px;
 }
 
 .patientDetails span + span::before {
-  margin-right: 14px;
+  margin-right: 16px;
   color: var(--sa-ink-muted);
   content: "·";
 }
 
 @media (max-width: 600px) {
   .identity {
-    gap: 10px;
+    gap: 12px;
   }
 
   .avatar {
     width: 36px;
-    height: 36px;
+    height: var(--control-height);
     flex-basis: 36px;
   }
 
   .patientDetails {
     display: grid;
-    gap: 3px;
+    gap: 4px;
   }
 
   .patientDetails span + span::before {

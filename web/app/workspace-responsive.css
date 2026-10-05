@@ -1,14 +1,14 @@
 @media (max-width: 1200px) {
   :root { --sa-sidebar-width: 184px; }
   .sa-page, main.mx-auto.max-w-7xl  {
-    padding-right: 28px !important;
-    padding-left: 28px !important;
+    padding-right: 32px !important;
+    padding-left: 32px !important;
   }
   .sa-utility-bar  {
-    margin-right: -28px;
-    margin-left: -28px;
-    padding-right: 28px;
-    padding-left: 28px;
+    margin-right: -32px;
+    margin-left: -32px;
+    padding-right: 32px;
+    padding-left: 32px;
   }
   .sa-worklist-board { grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 12px; }
   .sa-rule-row { grid-template-columns: minmax(130px, 1fr) auto minmax(150px, 1.3fr) auto; }
@@ -22,7 +22,7 @@
     width: calc(100% + 48px);
     min-height: 0;
     margin: 0 -24px;
-    padding: 10px 24px;
+    padding: 12px 24px;
     border-right: 0;
     border-bottom: 1px solid var(--sa-rule);
   }
@@ -30,20 +30,20 @@
   .sa-workspace-links { flex-direction: row; margin: 0; }
   .sa-workspace-nav > .sa-workspace-link, .sa-workspace-context { display: none; }
   .ct-roster { display: none; }
-  .sa-page, main.mx-auto.max-w-7xl { margin: 0; padding: 0 24px 36px !important; }
-  .sa-utility-bar { margin: 0 -24px 20px; padding: 0 24px; }
+  .sa-page, main.mx-auto.max-w-7xl { margin: 0; padding: 0 24px 32px !important; }
+  .sa-utility-bar { margin: 0 -24px 24px; padding: 0 24px; }
   .sa-worklist-board { grid-template-columns: repeat(4, minmax(200px, 1fr)); }
   .sa-workspace-body { grid-template-columns: 1fr; }
-  .sa-context-panel { padding: 18px 0 0; border-top: 1px solid var(--sa-rule); border-left: 0; }
+  .sa-context-panel { padding: 16px 0 0; border-top: 1px solid var(--sa-rule); border-left: 0; }
   .sa-workspace-body-with-panel .sa-workspace-main { display: none; }
   .sa-workspace-body-with-panel .sa-context-panel {
     position: fixed;
     inset: 0;
     z-index: 50;
     overflow: auto;
-    padding: 22px 18px 32px;
+    padding: 24px 16px 32px;
     border: 0;
-    background: #fff;
+    background: var(--bg);
     width: 100%;
     max-width: none;
     max-height: none;
@@ -53,19 +53,19 @@
   .sa-rule-row p, .sa-rule-row > small { grid-column: 1 / -1; }
 }
 @media (max-width: 600px) {
-  .sa-page, main.mx-auto.max-w-7xl { padding: 0 16px 28px !important; }
+  .sa-page, main.mx-auto.max-w-7xl { padding: 0 16px 32px !important; }
   .sa-workspace-nav { width: calc(100% + 32px); margin: 0 -16px; padding: 8px 16px; }
-  .sa-brand { margin-bottom: 7px; }
+  .sa-brand { margin-bottom: 8px; }
   .sa-workspace-links { overflow-x: auto; }
-  .sa-workspace-link { flex: 0 0 auto; min-height: 34px; padding: 5px 8px; font-size: 12px; }
+  .sa-workspace-link { flex: 0 0 auto; min-height: 34px; padding: 4px 8px; font-size: var(--fs-footnote); }
   .sa-utility-bar  {
-    min-height: 40px;
-    margin: 0 -16px 18px;
+    min-height: var(--control-height);
+    margin: 0 -16px 16px;
     padding: 8px 16px;
-    font-size: 11px;
+    font-size: var(--fs-caption);
     flex-direction: column;
     align-items: flex-start;
-    gap: 3px;
+    gap: 4px;
   }
   .sa-utility-bar > div { flex-wrap: wrap; }
   .sa-utility-bar strong  {
@@ -84,10 +84,10 @@
   .sa-screen-header  {
     align-items: flex-start;
     flex-direction: column;
-    gap: 10px;
-    padding-bottom: 14px;
+    gap: 12px;
+    padding-bottom: 16px;
   }
-  .sa-screen-header h1, .sa-census-title { font-size: 26px; }
+  .sa-screen-header h1, .sa-census-title { font-size: var(--fs-large-title); }
   .sa-worklist-toolbar { align-items: stretch; flex-direction: column; }
   .sa-worklist-toolbar .sa-search-input { max-width: none; margin-left: 0; }
   .sa-worklist-board { display: flex; flex-direction: column; overflow: visible; }
@@ -96,11 +96,11 @@
   .sa-worklist-card > span, .sa-worklist-card > code, .sa-worklist-card > small:last-child  {
     grid-column: 1 / -1;
   }
-  .sa-patient-header { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .ct-patient-identity h2 { font-size: 24px; }
+  .sa-patient-header { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .ct-patient-identity h2 { font-size: var(--fs-large-title); }
   .sa-patient-header-actions { flex-wrap: wrap; }
   .sa-patient-tabs { margin-right: -16px; padding-bottom: 4px; }
-  .sa-patient-tabs button { min-height: 44px; }
+  .sa-patient-tabs button { min-height: var(--control-height); }
   .sa-rule-row { gap: 8px; }
   .sa-context-panel .sa-review-actions { grid-template-columns: 1fr; }
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./tokens.css";
 import "./fonts.css";
 import "./globals.css";
 import "./saarthi.css";

@@ -7,11 +7,11 @@
 .scheduleNote {
   margin: 0 0 8px;
   color: var(--sa-ink-muted);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
 }
 
 .scrollRegion:focus-visible {
-  outline: 3px solid var(--sa-focus, #5d4b32);
+  outline: 3px solid var(--sa-focus);
   outline-offset: 2px;
 }
 
@@ -20,7 +20,7 @@
   min-width: 820px;
   border-collapse: collapse;
   color: var(--sa-ink-secondary);
-  font-size: 13px;
+  font-size: var(--fs-callout);
   line-height: 1.45;
   text-align: left;
 }
@@ -35,23 +35,23 @@
 }
 
 .table th {
-  padding: 10px;
+  padding: 12px;
   border-bottom: 1px solid var(--sa-rule);
   color: var(--sa-ink-muted);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
   font-weight: 500;
   white-space: nowrap;
 }
 
 .table td {
-  padding: 11px 10px;
+  padding: 12px 12px;
   border-bottom: 1px solid var(--sa-rule);
   vertical-align: middle;
 }
 
 .table tbody tr:hover,
 .table tbody tr:focus-within {
-  background: #f4f7f8;
+  background: var(--bg-secondary);
 }
 
 .table td:first-child {
@@ -66,13 +66,13 @@
   display: block;
   margin-top: 2px;
   color: var(--sa-ink-muted);
-  font-size: 11px;
+  font-size: var(--fs-caption);
 }
 
 .patientLink {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: var(--control-height);
   color: var(--sa-ink);
   font-weight: 600;
   text-decoration: none;
@@ -84,15 +84,15 @@
 
 .patientLink:focus-visible,
 .sortButton:focus-visible {
-  border-radius: 2px;
-  outline: 3px solid var(--sa-focus, #5d4b32);
+  border-radius: var(--radius-control);
+  outline: 3px solid var(--sa-focus);
   outline-offset: 2px;
 }
 
 .sortButton {
-  min-height: 44px;
-  margin: -10px;
-  padding: 10px;
+  min-height: var(--control-height);
+  margin: -12px;
+  padding: 12px;
   border: 0;
   background: transparent;
   color: inherit;

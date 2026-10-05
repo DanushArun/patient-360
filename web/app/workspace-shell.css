@@ -34,13 +34,13 @@
 
 .ct-topbar {
   display: flex;
-  min-height: 44px;
+  min-height: var(--control-height);
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid var(--sa-rule);
   color: var(--sa-ink-muted);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
 }
 
 .ct-topbar strong {
@@ -49,12 +49,12 @@
 }
 
 .ct-topbar > span > span {
-  padding: 0 9px;
+  padding: 0 8px;
   color: var(--sa-ink-muted);
 }
 
 .ct-topbar > span:last-child {
-  font-size: 11px;
+  font-size: var(--fs-caption);
 }
 
 .ct-search {
@@ -66,16 +66,16 @@
 .ct-search input {
   flex: 1;
   width: 100%;
-  padding: 5px 0;
+  padding: 4px 0;
   border: 0;
   background: transparent;
 }
 
 .ct-copilot-disclaimer {
   margin: 0;
-  padding: 12px 16px 20px;
+  padding: 12px 16px 24px;
   color: var(--sa-ink-muted);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   line-height: 1.6;
   text-align: center;
 }
@@ -108,8 +108,8 @@
 
 @media (max-width: 600px) {
   .ct-topbar {
-    min-height: 40px;
-    font-size: 11px;
+    min-height: var(--control-height);
+    font-size: var(--fs-caption);
   }
 
   .ct-topbar > span:last-child {
@@ -121,13 +121,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   margin-top: 24px;
-  padding: 20px 0;
+  padding: 24px 0;
   border-top: 1px solid var(--sa-rule);
 }
 
-.sa-preview-entry h2 { margin: 0 0 6px; font-size: 16px; }
+.sa-preview-entry h2 { margin: 0 0 8px; font-size: var(--fs-title-3); }
 .sa-preview-entry p { max-width: 520px; margin: 0; color: var(--sa-ink-muted); }
 .sa-preview-entry a { flex-shrink: 0; }
 

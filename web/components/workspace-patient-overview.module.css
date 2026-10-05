@@ -6,11 +6,11 @@
 .statusLine {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
-  padding: 6px 0 14px;
+  gap: 8px 24px;
+  padding: 8px 0 16px;
   border-bottom: 1px solid var(--sa-rule);
   color: var(--sa-ink-secondary);
-  font-size: 13px;
+  font-size: var(--fs-callout);
 }
 
 .statusLine strong {
@@ -20,20 +20,20 @@
 
 .unavailable,
 .emptyIssues {
-  margin: 8px 0 14px;
+  margin: 8px 0 16px;
   color: var(--sa-ink-secondary);
-  font-size: 13px;
+  font-size: var(--fs-callout);
 }
 
 .issueSection {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .issueSection h2,
 .summarySection h2 {
-  margin: 0 0 7px;
+  margin: 0 0 8px;
   color: var(--sa-ink);
-  font-size: 18px;
+  font-size: var(--fs-title-2);
   font-weight: 600;
   line-height: 1.35;
 }
@@ -46,20 +46,20 @@
 .tableWrap table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-callout);
 }
 
 .tableWrap th {
-  padding: 7px 9px;
+  padding: 8px 8px;
   border: 1px solid var(--sa-rule);
-  background: #f7f7f5;
+  background: var(--bg-secondary);
   color: var(--sa-ink-secondary);
   font-weight: 600;
   text-align: left;
 }
 
 .tableWrap td {
-  padding: 8px 9px;
+  padding: 8px 8px;
   border: 1px solid var(--sa-rule);
   color: var(--sa-ink-secondary);
   vertical-align: top;
@@ -76,16 +76,16 @@
 }
 
 .tableWrap td strong {
-  font-size: 13px;
+  font-size: var(--fs-callout);
   font-weight: 500;
 }
 
 .tableWrap td small,
 .sourceCell code,
 .actionCell small {
-  margin-top: 3px;
+  margin-top: 4px;
   color: var(--sa-ink-muted);
-  font-size: 11px;
+  font-size: var(--fs-caption);
   line-height: 1.4;
 }
 
@@ -94,7 +94,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 3px 6px;
+  gap: 4px 8px;
 }
 
 .sourceCell code {
@@ -104,19 +104,19 @@
 .actionCell {
   display: grid;
   justify-items: start;
-  gap: 3px;
+  gap: 4px;
 }
 
 .actionCell button,
 .summarySection button {
-  min-height: 44px;
+  min-height: var(--control-height);
 }
 
 .actionCell button:disabled,
 .summarySection button:disabled {
   cursor: not-allowed;
   color: var(--sa-ink-muted);
-  background: #f7f7f5;
+  background: var(--bg-secondary);
 }
 
 .summarySection {
@@ -130,10 +130,10 @@
 .summarySection dl > div {
   display: grid;
   grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
-  gap: 10px;
-  padding: 7px 8px;
+  gap: 12px;
+  padding: 8px 8px;
   border-top: 1px solid var(--sa-rule);
-  font-size: 13px;
+  font-size: var(--fs-callout);
 }
 
 .summarySection dt {
@@ -149,9 +149,9 @@
 
 .previewLimit,
 .actionHelp {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   color: var(--sa-ink-muted);
-  font-size: 12px;
+  font-size: var(--fs-footnote);
   line-height: 1.45;
 }
 
@@ -205,7 +205,7 @@
     margin-bottom: 4px;
     color: var(--sa-ink-muted);
     content: attr(data-label);
-    font-size: 11px;
+    font-size: var(--fs-caption);
   }
 
 

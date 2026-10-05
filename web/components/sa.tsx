@@ -3,28 +3,26 @@ import type { CSSProperties, ReactNode } from "react";
 import { ClipboardList, LayoutDashboard, PanelLeft, Users } from "lucide-react";
 import { PatientRoster, type RosterPatient } from "./patient-roster";
 
-export const INK = "#1A1D21";
-export const INK_SECONDARY = "#4A5157";
-export const INK_MUTED = "#656C73";
-export const INK_PASS = "#1E6B3A";
-export const INK_FAIL = "#A8261C";
-export const INK_CONFLICT = "#8A5300";
-export const RULE = "#D8DCDF";
-export const SURFACE_SUNKEN = "#F6F7F8";
+// Colours resolve from app/tokens.css so inline styles follow light and dark.
+export const INK = "var(--label)";
+export const INK_SECONDARY = "var(--label-secondary)";
+export const INK_MUTED = "var(--label-tertiary)";
+export const INK_PASS = "var(--status-ready)";
+export const INK_FAIL = "var(--status-blocked)";
+export const INK_CONFLICT = "var(--status-conflict)";
+export const RULE = "var(--separator)";
+export const SURFACE_SUNKEN = "var(--bg-secondary)";
+
+type Tone = "ready" | "blocked" | "conflict" | "waiting" | "advisory" | "neutral";
+const tone = (name: Tone) => ({
+  ink: `var(--status-${name})`, background: `var(--status-${name}-bg)`,
+});
 
 const STATUS = {
-  pass: { glyph: "✓", word: "Pass", ink: INK_PASS,
-    border: "1px solid transparent", weight: 500, background: "#E7F3EC" },
-  fail: { glyph: "✕", word: "Fail", ink: INK_FAIL,
-    border: "1px solid transparent", weight: 600, background: "#FDE8E7" },
-  not_evaluated: {
-    glyph: "–", word: "Not evaluated", ink: INK_MUTED,
-    border: "1px solid transparent", weight: 400, background: "#F2F2F1",
-  },
-  conflicting: {
-    glyph: "⇄", word: "Conflicting", ink: INK_CONFLICT,
-    border: "1px solid transparent", weight: 500, background: "#FFF0D5",
-  },
+  pass: { glyph: "✓", word: "Pass", weight: 500, ...tone("ready") },
+  fail: { glyph: "✕", word: "Fail", weight: 600, ...tone("blocked") },
+  not_evaluated: { glyph: "○", word: "Not evaluated", weight: 500, ...tone("neutral") },
+  conflicting: { glyph: "⇄", word: "Conflicting", weight: 500, ...tone("conflict") },
 } as const;
 export type Outcome = keyof typeof STATUS;
 
@@ -33,34 +31,39 @@ const CENSUS_LABEL: Record<CensusStatus, string> = {
   blocked: "Blocked", conflict: "Conflict", waiting: "Waiting on evidence",
   advisory: "Ready · advisory", ready: "Ready",
 };
-const CENSUS_OUTCOME: Record<CensusStatus, Outcome> = {
-  blocked: "fail", conflict: "conflicting", waiting: "not_evaluated",
-  advisory: "pass", ready: "pass",
+const CENSUS_STYLE: Record<CensusStatus, { glyph: string; weight: number; tone: Tone }> = {
+  blocked: { glyph: "✕", weight: 600, tone: "blocked" },
+  conflict: { glyph: "⇄", weight: 500, tone: "conflict" },
+  waiting: { glyph: "−", weight: 500, tone: "waiting" },
+  advisory: { glyph: "!", weight: 500, tone: "advisory" },
+  ready: { glyph: "✓", weight: 500, tone: "ready" },
 };
 
-function Chip({ outcome, word }: { outcome: Outcome; word?: string }): ReactNode {
-  const s = STATUS[outcome];
+function Chip({ glyph, word, weight, ink, background }: {
+  glyph: string; word: string; weight: number; ink: string; background: string;
+}): ReactNode {
   return (
-    <span className="sa-status" style={{ color: s.ink, border: s.border, fontWeight: s.weight,
-      background: s.background }}>
-      <span className="sa-status-glyph" aria-hidden="true">{s.glyph}</span>
-      <span>{word ?? s.word}</span>
+    <span className="sa-status" style={{ color: ink, fontWeight: weight, background }}>
+      <span className="sa-status-glyph" aria-hidden="true">{glyph}</span>
+      <span>{word}</span>
     </span>
   );
 }
 
 export const StatusChip = ({ outcome }: { outcome: Outcome }): ReactNode => (
-  <Chip outcome={outcome} />
+  <Chip {...STATUS[outcome]} />
 );
-export const CensusChip = ({ status }: { status: CensusStatus }): ReactNode => (
-  <Chip outcome={CENSUS_OUTCOME[status]} word={CENSUS_LABEL[status]} />
-);
+export const CensusChip = ({ status }: { status: CensusStatus }): ReactNode => {
+  const s = CENSUS_STYLE[status];
+  return <Chip glyph={s.glyph} word={CENSUS_LABEL[status]} weight={s.weight} {...tone(s.tone)} />;
+};
 
 export const buttonStyle: CSSProperties = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
-  minHeight: 44, padding: "8px 12px", fontSize: 14, lineHeight: "20px",
-  fontWeight: 500, color: INK, background: "#FFFFFF",
-  border: "1px solid #E8E7E4", borderRadius: 4, width: "100%",
+  height: "var(--control-height)", padding: "0 var(--space-3)", font: "var(--text-callout)",
+  fontWeight: 500, color: INK, background: "var(--bg)",
+  border: "1px solid var(--separator-strong)", borderRadius: "var(--radius-control)",
+  width: "100%",
 };
 
 export function SaButton({ href, children, weight = 500 }: {

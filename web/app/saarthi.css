@@ -12,12 +12,12 @@
 html, body, .stApp, .stMarkdown, [data-testid="stMarkdownContainer"],
 [data-testid="stWidgetLabel"], .stRadio, .stButton, .stTextInput {
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color: #1A1D21;
+    color: var(--label);
     -webkit-font-smoothing: antialiased;
 }
 html, body, .stMarkdown, [data-testid="stMarkdownContainer"] {
-    font-size: 17px;
-    line-height: 22px;
+    font-size: var(--fs-title-3);
+    line-height: var(--lh-title-3);
     font-weight: 400;
 }
 
@@ -40,141 +40,141 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 
 /* ---- masthead: who is asking, about whom, under what authority, as of when -- */
 .sa-masthead {
-    border-bottom: 1px solid #D8DCDF;
+    border-bottom: 1px solid var(--separator);
     padding-bottom: 12px;
     margin-bottom: 24px;
     display: flex; flex-wrap: wrap; gap: 24px; align-items: baseline;
 }
-.sa-masthead-patient { font-size: 23px; line-height: 29px;
+.sa-masthead-patient { font-size: var(--fs-large-title); line-height: var(--lh-title-2);
                         font-weight: 500; letter-spacing: -0.01em; }
 .sa-field { display: flex; flex-direction: column; gap: 2px; }
-.sa-field-label { font-size: 13px; line-height: 17px; color: #656C73;
+.sa-field-label { font-size: var(--fs-callout); line-height: var(--lh-footnote); color: var(--label-tertiary);
                    text-transform: uppercase; letter-spacing: 0.06em; }
-.sa-field-value { font-size: 15px; line-height: 19px;
-                   color: #4A5157; font-variant-numeric: tabular-nums; }
+.sa-field-value { font-size: var(--fs-body); line-height: var(--lh-callout);
+                   color: var(--label-secondary); font-variant-numeric: tabular-nums; }
 
 /* ---- claim: text, not a card. No shadow - shadow implies a button. ------- */
 .sa-claim {
-    border-top: 1px solid #D8DCDF;
+    border-top: 1px solid var(--separator);
     padding: 24px 0 16px 0;
 }
 .sa-claim:first-of-type { border-top: none; }
-.sa-claim-text { font-size: 17px; line-height: 22px;
+.sa-claim-text { font-size: var(--fs-title-3); line-height: var(--lh-title-3);
                   max-width: 68ch; margin-bottom: 12px; }
 
 /* ---- status chip: glyph + word + border style --------------------------- */
 .sa-status {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 3px 12px; border-radius: 4px;
-    font-size: 15px; line-height: 19px;
+    padding: 4px 12px; border-radius: var(--radius-control);
+    font-size: var(--fs-body); line-height: var(--lh-callout);
     white-space: nowrap;
 }
-.sa-status-glyph { font-size: 15px; line-height: 1; }
+.sa-status-glyph { font-size: var(--fs-body); line-height: 1; }
 
 /* ---- meta line: rule id, version, provenance --------------------------- */
-.sa-meta { font-size: 13px; line-height: 17px; color: #656C73; }
+.sa-meta { font-size: var(--fs-callout); line-height: var(--lh-footnote); color: var(--label-tertiary); }
 .sa-meta code { font-family: "JetBrains Mono", ui-monospace, monospace;
-                 font-size: 12px; color: #656C73; }
+                 font-size: var(--fs-footnote); color: var(--label-tertiary); }
 
 /* provenance_note is shown wherever a threshold is practice consensus rather
    than a guideline requirement. Three thresholds here are consensus. */
-.sa-provenance { font-size: 13px; line-height: 17px;
-                  color: #4A5157; font-style: italic; }
+.sa-provenance { font-size: var(--fs-callout); line-height: var(--lh-footnote);
+                  color: var(--label-secondary); font-style: italic; }
 
 /* ---- action: what to do, addressed to someone -------------------------- */
 .sa-action {
-    font-size: 16px; line-height: 20px;
-    border-left: 2px solid #656C73;
+    font-size: var(--fs-title-3); line-height: var(--lh-body);
+    border-left: 2px solid var(--label-tertiary);
     padding-left: 12px; margin-top: 12px;
-    max-width: 68ch; color: #4A5157;
+    max-width: 68ch; color: var(--label-secondary);
 }
 
 /* ---- evidence margin: persistent, never a modal ------------------------ */
 /* Provenance verification needs claim and source visible SIMULTANEOUSLY; a modal
    that covers the claim defeats the purpose (clinical-ux-evidence.md 4.3). */
 .sa-evidence {
-    background: #F6F7F8;
+    background: var(--bg-secondary);
     padding: 16px;
-    border-radius: 6px;
+    border-radius: var(--radius-control);
     transition: background 120ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 /* R6: patient evidence and reference evidence must never look alike -
    "a guideline clause in the same panel style as a pathology page invites
    reading it as a finding about the patient" (COPILOT-SPEC 2). Three signals:
    left edge colour, surface tint, and an explicit word. */
-.sa-ev-patient   { border-left: 3px solid #1A5C8A; }
-.sa-ev-reference { border-left: 3px solid #5B4B8A; background: #FAF9FC; }
+.sa-ev-patient   { border-left: 3px solid var(--evidence-patient); }
+.sa-ev-reference { border-left: 3px solid var(--evidence-reference); background: var(--bg-secondary); }
 .sa-ev-kind {
-    font-size: 13px; line-height: 17px;
+    font-size: var(--fs-callout); line-height: var(--lh-footnote);
     text-transform: uppercase; letter-spacing: 0.06em;
     margin-bottom: 8px;
 }
-.sa-ev-patient .sa-ev-kind   { color: #1A5C8A; }
-.sa-ev-reference .sa-ev-kind { color: #5B4B8A; }
+.sa-ev-patient .sa-ev-kind   { color: var(--evidence-patient); }
+.sa-ev-reference .sa-ev-kind { color: var(--evidence-reference); }
 .sa-ev-id { font-family: "JetBrains Mono", ui-monospace, monospace;
-             font-size: 12px; color: #4A5157; }
+             font-size: var(--fs-footnote); color: var(--label-secondary); }
 
 /* ---- the three R2 clocks, always all three ----------------------------- */
 .sa-clocks { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
-.sa-clock-label { font-size: 11px; color: #656C73;
+.sa-clock-label { font-size: var(--fs-caption); color: var(--label-tertiary);
                    text-transform: uppercase; letter-spacing: 0.06em; }
-.sa-clock-value { font-size: 13px; color: #4A5157;
+.sa-clock-value { font-size: var(--fs-callout); color: var(--label-secondary);
                    font-variant-numeric: tabular-nums; }
 
 /* ---- derivation trace: the hero moment (demo beat 2) ------------------- */
 /* A computed value presented as if printed is a quiet form of fabrication, so the
    arithmetic is shown and the page is explicitly disclaimed. */
 .sa-derivation {
-    background: #FFFFFF; border: 1px solid #D8DCDF; border-radius: 6px;
+    background: var(--bg); border: 1px solid var(--separator); border-radius: var(--radius-control);
     padding: 16px; margin-top: 12px;
 }
-.sa-derivation-lead { font-size: 15px; font-weight: 600;
-                       color: #1A1D21; margin-bottom: 12px; }
+.sa-derivation-lead { font-size: var(--fs-body); font-weight: 600;
+                       color: var(--label); margin-bottom: 12px; }
 .sa-formula {
     font-family: "JetBrains Mono", ui-monospace, monospace;
-    font-size: 14px; line-height: 24px; color: #1A1D21;
+    font-size: var(--fs-body); line-height: var(--lh-title-3); color: var(--label);
     font-variant-numeric: tabular-nums;
-    background: #F6F7F8; border-radius: 4px;
+    background: var(--bg-secondary); border-radius: var(--radius-control);
     padding: 12px;
     /* pre-wrap, not pre: in the evidence margin `pre` clipped the equation
        mid-expression ("WBC x (neutrophil% +"), truncating the single most
        important string in the product. It must wrap, never scroll away. */
     white-space: pre-wrap; overflow-wrap: anywhere;
 }
-.sa-derivation-note { font-size: 13px; color: #4A5157;
+.sa-derivation-note { font-size: var(--fs-callout); color: var(--label-secondary);
                        margin-top: 12px; }
 
 /* ---- Class A refusal: a formal addressed notice, not a yellow warning --- */
 /* NMC TPG 2020 is a legal boundary. It should read like a referral, because that
    is what it is: this question belongs to a named registered practitioner. */
 .sa-refusal {
-    border: 1px solid #4A5157; border-top: 3px solid #1A1D21;
-    border-radius: 2px; padding: 24px; max-width: 68ch;
+    border: 1px solid var(--label-tertiary); border-top: 3px solid var(--label);
+    border-radius: var(--radius-control); padding: 24px; max-width: 68ch;
 }
-.sa-refusal-kind { font-size: 13px; text-transform: uppercase;
-                    letter-spacing: 0.08em; color: #656C73;
+.sa-refusal-kind { font-size: var(--fs-callout); text-transform: uppercase;
+                    letter-spacing: 0.08em; color: var(--label-tertiary);
                     margin-bottom: 12px; }
-.sa-refusal-message { font-size: 20px;
-                       line-height: 27px; margin-bottom: 16px; }
-.sa-refusal-addressee { border-top: 1px solid #D8DCDF; padding-top: 12px;
-                         font-size: 15px; }
+.sa-refusal-message { font-size: var(--fs-title-2);
+                       line-height: var(--lh-title-2); margin-bottom: 16px; }
+.sa-refusal-addressee { border-top: 1px solid var(--separator); padding-top: 12px;
+                         font-size: var(--fs-body); }
 
 /* ---- limitations: first-class, not a caption --------------------------- */
 /* What the system could NOT establish is the most credible thing on the screen.
    Burying it in grey 12px would be the dishonest choice. */
 .sa-limitation {
-    border-left: 2px dashed #656C73;
+    border-left: 2px dashed var(--label-tertiary);
     padding: 8px 0 8px 12px;
-    font-size: 16px; line-height: 20px;
-    color: #4A5157; max-width: 68ch; margin-bottom: 8px;
+    font-size: var(--fs-title-3); line-height: var(--lh-body);
+    color: var(--label-secondary); max-width: 68ch; margin-bottom: 8px;
 }
 
 /* ---- gate strip (Patient 360) ----------------------------------------- */
 .sa-gate-row {
     display: flex; align-items: baseline; gap: 16px;
-    padding: 12px 0; border-bottom: 1px solid #D8DCDF;
+    padding: 12px 0; border-bottom: 1px solid var(--separator);
 }
-.sa-gate-name { font-size: 17px; font-weight: 600;
+.sa-gate-name { font-size: var(--fs-title-3); font-weight: 600;
                  min-width: 140px; letter-spacing: -0.01em; }
 
 .sa-chat-gates {
@@ -199,7 +199,7 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 }
 .sa-chat-gate-heading .sa-gate-name { min-width: 0; }
 .sa-chat-gate-id { margin-top: 4px; }
-.sa-chat-gate-reason { margin-top: 6px; }
+.sa-chat-gate-reason { margin-top: 8px; }
 .sa-chat-gate-evidence { width: auto !important; margin-top: 8px; }
 
 /* ---- source text with the cited span highlighted ---------------------- */
@@ -209,17 +209,17 @@ span[class*="material-symbols"], span[class*="material-icons"] {
        the alignment between analyte, value, unit and reference range - which is exactly
        where the Indian-format traps live (GM%, /CUMM, lakh commas). Scroll sideways
        rather than reflow a clinical document into something it never was. */
-    font-size: 13px; line-height: 21px; white-space: pre; overflow-x: auto;
-    background: #FFFFFF; border: 1px solid #D8DCDF; border-radius: 4px;
+    font-size: var(--fs-callout); line-height: var(--lh-body); white-space: pre; overflow-x: auto;
+    background: var(--bg); border: 1px solid var(--separator); border-radius: var(--radius-control);
     padding: 16px; max-height: 420px; overflow-y: auto;
-    color: #4A5157;
+    color: var(--label-secondary);
 }
 /* The cited range. Underline + weight carry it, so the highlight is not
    colour-dependent - it survives greyscale and print. */
 .sa-page-text mark {
-    background: #FFF3C4; color: #1A1D21; font-weight: 600;
-    border-bottom: 2px solid #8A5300;
-    padding: 1px 0; border-radius: 2px;
+    background: var(--bg-tertiary); color: var(--label); font-weight: 600;
+    border-bottom: 2px solid var(--status-conflict);
+    padding: 1px 0; border-radius: var(--radius-control);
 }
 .sa-source-page-text {
     white-space: pre-wrap;
@@ -231,36 +231,36 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 }
 
 /* ---- focus: visible, never removed ------------------------------------ */
-:focus-visible { outline: 2px solid #1A5C8A; outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--evidence-patient); outline-offset: 2px; }
 
 /* ---- day-care census: the coordinator's home screen -------------------- */
 /* Urgency is position (sorted blocked-first) and chip shape. Rows are text on
    hairlines, not cards - eleven boxed cards would be the clutter anti-pattern. */
 .sa-census-head { display: flex; flex-wrap: wrap; align-items: baseline;
                    gap: 16px; margin-bottom: 12px; }
-.sa-census-day { font-size: 20px; line-height: 27px;
+.sa-census-day { font-size: var(--fs-title-2); line-height: var(--lh-title-2);
                   font-weight: 500; letter-spacing: -0.01em; }
 .sa-census-counts { display: flex; flex-wrap: wrap; gap: 16px;
-                     font-size: 15px; color: #4A5157; }
-.sa-census-count b { color: #1A1D21; font-weight: 600; }
+                     font-size: var(--fs-body); color: var(--label-secondary); }
+.sa-census-count b { color: var(--label); font-weight: 600; }
 .sa-census-row { display: grid; grid-template-columns: minmax(180px, 2fr) minmax(0, 3fr);
                   gap: 16px; align-items: start; }
-.sa-census-name { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.sa-census-name { font-size: var(--fs-title-3); font-weight: 600; letter-spacing: -0.01em; }
 .sa-census-state { display: flex; flex-direction: column; gap: 4px;
                     align-items: flex-start; }
-.sa-census-reason { font-size: 16px; line-height: 20px;
-                     color: #4A5157; max-width: 68ch; }
+.sa-census-reason { font-size: var(--fs-title-3); line-height: var(--lh-body);
+                     color: var(--label-secondary); max-width: 68ch; }
 .sa-census-reason code { font-family: "JetBrains Mono", ui-monospace, monospace;
-                          font-size: 12px; color: #656C73; }
+                          font-size: var(--fs-footnote); color: var(--label-tertiary); }
 @media (max-width: 640px) { .sa-census-row { grid-template-columns: 1fr; } }
 
 /* ---- family checklist (Navigator View) --------------------------------- */
 .sa-check-item { display: flex; gap: 12px; padding: 12px 0;
-                  border-top: 1px solid #D8DCDF; }
-.sa-check-n { flex: 0 0 24px; height: 24px; border-radius: 12px; text-align: center;
-               line-height: 24px; font-size: 13px; font-weight: 600;
-               border: 1px solid #4A5157; color: #4A5157; }
-.sa-check-text { font-size: 17px; line-height: 22px; max-width: 68ch; }
+                  border-top: 1px solid var(--separator); }
+.sa-check-n { flex: 0 0 24px; height: 24px; border-radius: var(--radius-panel); text-align: center;
+               line-height: var(--lh-title-3); font-size: var(--fs-callout); font-weight: 600;
+               border: 1px solid var(--label-tertiary); color: var(--label-secondary); }
+.sa-check-text { font-size: var(--fs-title-3); line-height: var(--lh-title-3); max-width: 68ch; }
 
 /* ---- Streamlit's own chrome, restyled to the same system --------------- *
  * Everything above styles the sa-* HTML islands this app writes itself.
@@ -275,22 +275,22 @@ span[class*="material-symbols"], span[class*="material-icons"] {
    "text, not a card. No shadow - shadow implies a button" for claims above. */
 [data-testid="stChatMessage"] {
     background: transparent; border: none; box-shadow: none;
-    padding: 16px 0; border-bottom: 1px solid #D8DCDF;
+    padding: 16px 0; border-bottom: 1px solid var(--separator);
     gap: 12px;
 }
 [data-testid="stChatMessage"]:first-of-type { padding-top: 0; }
 [data-testid="stChatMessageAvatarUser"],
 [data-testid="stChatMessageAvatarAssistant"] {
-    background: #F6F7F8 !important; color: #4A5157 !important;
-    border: 1px solid #D8DCDF;
+    background: var(--bg-secondary) !important; color: var(--label-secondary) !important;
+    border: 1px solid var(--separator);
 }
 .sa-chat-avatar {
     width: 34px; height: 34px; flex: 0 0 34px;
     display: grid; place-items: center;
-    border: 1px solid #D8DCDF; border-radius: 4px;
-    background: #F6F7F8; color: #4A5157;
+    border: 1px solid var(--separator); border-radius: var(--radius-control);
+    background: var(--bg-secondary); color: var(--label-secondary);
     font-family: "Material Symbols Rounded";
-    font-size: 20px; font-weight: 400; line-height: 1;
+    font-size: var(--fs-title-2); font-weight: 400; line-height: 1;
     font-feature-settings: "liga";
     -webkit-font-smoothing: antialiased;
 }
@@ -298,51 +298,51 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 /* Chat input: match the measure and type scale, replace the default heavy
    pill border with the same hairline the rest of the app uses. */
 [data-testid="stChatInput"] {
-    border: 1px solid #D8DCDF; border-radius: 8px; box-shadow: none;
-    font-size: 17px;
+    border: 1px solid var(--separator); border-radius: var(--radius-control); box-shadow: none;
+    font-size: var(--fs-title-3);
 }
 [data-testid="stChatInput"]:focus-within {
-    border-color: #1A5C8A; box-shadow: none;
+    border-color: var(--evidence-patient); box-shadow: none;
 }
 
 /* Buttons: one flat, quiet treatment everywhere - suggested-question chips,
    evidence-card selection, and gate actions all reuse this, so a button never
    competes visually with the claim or evidence text next to it. */
 .stButton>button {
-    background: #FFFFFF; color: #1A1D21; border: 1px solid #D8DCDF;
-    border-radius: 6px; font-weight: 500; box-shadow: none;
+    background: var(--bg); color: var(--label); border: 1px solid var(--separator);
+    border-radius: var(--radius-control); font-weight: 500; box-shadow: none;
     transition: border-color 120ms cubic-bezier(0.32, 0.72, 0, 1), background 120ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 .stButton>button:hover {
-    border-color: #1A5C8A; background: #F6F7F8; color: #1A1D21;
+    border-color: var(--evidence-patient); background: var(--bg-secondary); color: var(--label);
 }
-.stButton>button:focus-visible { outline: 2px solid #1A5C8A; outline-offset: 2px; }
+.stButton>button:focus-visible { outline: 2px solid var(--evidence-patient); outline-offset: 2px; }
 /* The single primary action per screen (bind, submit) - filled, everything
    else stays flat so it doesn't compete with it. */
 .stButton>button[kind="primary"] {
-    background: #1A1D21; color: #FFFFFF; border-color: #1A1D21;
+    background: var(--label); color: var(--accent-label); border-color: var(--label);
 }
-.stButton>button[kind="primary"]:hover { background: #4A5157; border-color: #4A5157; }
+.stButton>button[kind="primary"]:hover { background: var(--label-secondary); border-color: var(--label-tertiary); }
 
 /* Popover (patient picker) and expander ("Assistant's reasoning"): same card
    language as .sa-evidence - border, radius, no shadow - so they read as the
    same product instead of a browser form control next to a designed card. */
 [data-testid="stPopoverBody"] {
-    border: 1px solid #D8DCDF; border-radius: 6px; box-shadow: none;
+    border: 1px solid var(--separator); border-radius: var(--radius-control); box-shadow: none;
     padding: 16px;
 }
 [data-testid="stExpander"] {
-    border: 1px solid #D8DCDF; border-radius: 6px; background: #FFFFFF;
+    border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--bg);
 }
 [data-testid="stExpander"] summary {
-    font-size: 15px; font-weight: 500; color: #4A5157;
+    font-size: var(--fs-body); font-weight: 500; color: var(--label-secondary);
 }
 
 /* Sidebar: the demo controls (greyscale audit, connection status, clear
    conversation) get the same type scale and spacing as the main surface. */
 [data-testid="stSidebar"] {
-    background: #F6F7F8; border-right: 1px solid #D8DCDF;
+    background: var(--bg-secondary); border-right: 1px solid var(--separator);
 }
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
-    font-size: 13px; color: #4A5157;
+    font-size: var(--fs-callout); color: var(--label-secondary);
 }

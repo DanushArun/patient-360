@@ -52,16 +52,12 @@ export default async function DayCarePage(): Promise<ReactNode> {
   const chairs = buildCensus(data.rows);
   const asOf = oldestKnownAsOf(data.rows);
   const loadedAt = new Date().toLocaleTimeString('en-IN', { hour12: false });
-  return <main className="mx-auto max-w-7xl px-8 py-10" style={{ color: 'var(--sa-ink)' }}>
+  return <main className="mx-auto max-w-7xl px-8 py-10">
     <WorkspaceNav current="census" patients={data.patients} patientsAvailable={!data.error}
       practitioner={data.practitioner} />
     <WorkspaceBar section="Day care"
       knownAsOf={censusClockLabel(data.error, asOf, loadedAt, data.rows.length)} />
     <DayCareHeader data={data} visits={chairs.length} />
-    {!data.error && <div className="sa-meta mb-4">
-      <span>Visit window · next 7 days</span>{' · '}
-      <a href="/" className="underline">Refresh</a>
-    </div>}
     <CensusSearch censusData={groupVisits(chairs)} error={data.error} />
     {data.error && <RecordedPreviewEntry />}
   </main>;
@@ -70,7 +66,6 @@ export default async function DayCarePage(): Promise<ReactNode> {
 function DayCareHeader({ data, visits }: { data: DayCareData; visits: number }): ReactNode {
   return <header className="sa-screen-header">
     <div>
-      <p className="sa-eyebrow">Care workspace</p>
       <h1>Day care</h1>
       <p id="day-care-status">{data.error ? 'Visit and patient counts unavailable.'
         : `${visits} upcoming visits · ${data.patients.length} accessible patients`}</p>
