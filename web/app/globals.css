@@ -524,10 +524,6 @@ main.mx-auto.max-w-7xl .sa-census-card:hover { border-color: var(--separator); b
 .sa-gate-tile:hover { background: var(--bg-secondary) !important; }.sa-gate-tile-selected { box-shadow: inset 0 3px 0 var(--evidence-patient); background: var(--bg-secondary) !important; }
 .sa-gate-tile .sa-status { margin-top: 12px; }
 
-/* Copilot docks beside the record (COPILOT-EXPERIENCE §2): the page narrows, never hides. */
-@media (min-width: 901px) {
-  html[data-copilot="open"] :is(.sa-page, main.mx-auto.max-w-7xl) { margin-right: var(--copilot-width); }
-  html[data-copilot="wide"] :is(.sa-page, main.mx-auto.max-w-7xl) { margin-right: var(--copilot-width-wide); }
-}
+/* Copilot docking lives in shell.css with the rest of the window layout. */
 html[data-copilot-picking] [data-copilot-ref] { cursor: crosshair; outline: 1px dashed var(--separator-strong); outline-offset: 2px; }
 html[data-copilot-picking] [data-copilot-ref]:hover { outline: 2px solid var(--accent); }

@@ -25,20 +25,25 @@
 
 .panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: var(--window-inset);
+  right: var(--window-inset);
+  bottom: var(--window-inset);
   z-index: 50;
   display: flex;
   flex-direction: column;
   width: var(--copilot-width);
-  border-left: 1px solid var(--separator);
+  overflow: hidden;
+  border-radius: var(--radius-window);
   background: var(--bg-elevated);
+  box-shadow: var(--shadow-window);
   color: var(--label);
-  animation: slideIn var(--motion-standard) var(--ease-standard);
+  animation: slideIn var(--motion-shell) var(--ease-shell);
+  transition: width var(--motion-shell) var(--ease-shell);
 }
 .panel[data-expanded] { width: var(--copilot-width-wide); }
 @keyframes slideIn { from { transform: translateX(var(--space-6)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .panel { animation: fadeIn var(--motion-fast) linear; } }
+@keyframes fadeIn { from { opacity: 0; } }
 
 .header {
   display: flex;
@@ -274,10 +279,10 @@
 }
 
 @media (max-width: 900px) {
-  .panel, .panel[data-expanded] { width: min(100%, var(--copilot-width)); box-shadow: var(--shadow-elevated); }
+  .panel, .panel[data-expanded] { width: min(calc(100% - 2 * var(--window-inset)), var(--copilot-width)); box-shadow: var(--shadow-elevated); }
 }
 @media (max-width: 640px) {
-  .panel, .panel[data-expanded] { width: 100%; border-left: 0; }
+  .panel, .panel[data-expanded] { inset: 0; width: 100%; border-radius: 0; }
   .launcher kbd, .hint { display: none; }
 }
 

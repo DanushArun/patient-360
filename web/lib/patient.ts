@@ -1,3 +1,4 @@
+import { cachedRead, invalidatePatient } from "./read-cache";
 import { withPatientSession, withPatientSessionAndContext, procedureRows, procedureValue } from "./snowflake";
 import { readGatewayAnswer, guardAnswer } from "./guarded-answer.mjs";
 import { routeQuestion } from "./question-routing.mjs";
@@ -95,7 +96,11 @@ function parseValue(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? value as Record<string, unknown> : {};
 }
 
-export async function loadPatientSnapshot(patientId: string): Promise<PatientData> {
+export function loadPatientSnapshot(patientId: string): Promise<PatientData> {
+  return cachedRead(patientId, `snapshot`, () => loadPatientSnapshotUncached(patientId));
+}
+
+async function loadPatientSnapshotUncached(patientId: string): Promise<PatientData> {
   return withPatientSessionAndContext(patientId, async (run, context) => {
     const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('snapshot',NULL)"));
     const gates = rows.map(snapshotGate).sort((a,b) => a.gate.localeCompare(b.gate) || (a.rule_id ?? "").localeCompare(b.rule_id ?? ""));
@@ -112,6 +117,14 @@ export async function loadPatientSnapshot(patientId: string): Promise<PatientDat
 }
 
 export async function refreshPatient(patientId: string): Promise<PatientData> {
+  try {
+    return await refreshPatientUncached(patientId);
+  } finally {
+    invalidatePatient(patientId);
+  }
+}
+
+async function refreshPatientUncached(patientId: string): Promise<PatientData> {
   return withPatientSessionAndContext(patientId, async (run, context) => {
     const result = procedureValue(await run("CALL SAARTHI.OPERATIONAL.REFRESH_BOUND_READINESS()"));
     if (!Array.isArray(result.gates) || typeof result.known_as_of !== "string") throw new Error("readiness_unavailable");
@@ -119,13 +132,26 @@ export async function refreshPatient(patientId: string): Promise<PatientData> {
   });
 }
 
-export async function loadTaskOwners(patientId: string) {
+export function loadTaskOwners(patientId: string) {
+  return cachedRead(patientId, `owners`, () => loadTaskOwnersUncached(patientId));
+}
+
+async function loadTaskOwnersUncached(patientId: string) {
   return withPatientSession(patientId, async run => procedureRows(await run(
     "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('owners',NULL)"
   )).map(row => ({ id: String(row.PRACTITIONER_ID), name: String(row.NAME) })));
 }
 
 export async function transitionReviewTask(patientId: string, taskId: string,
+  action: string, ownerId: string | null, reason: string, version: number, requestId: string) {
+  try {
+    return await transitionReviewTaskUncached(patientId, taskId, action, ownerId, reason, version, requestId);
+  } finally {
+    invalidatePatient(patientId);
+  }
+}
+
+async function transitionReviewTaskUncached(patientId: string, taskId: string,
   action: string, ownerId: string | null, reason: string, version: number, requestId: string) {
   return withPatientSession(patientId, async run => {
     const receipt = procedureValue(await run(
@@ -144,7 +170,11 @@ export async function transitionReviewTask(patientId: string, taskId: string,
   });
 }
 
-export async function loadPatientTimeline(patientId: string): Promise<PatientTimeline> {
+export function loadPatientTimeline(patientId: string): Promise<PatientTimeline> {
+  return cachedRead(patientId, `timeline`, () => loadPatientTimelineUncached(patientId));
+}
+
+async function loadPatientTimelineUncached(patientId: string): Promise<PatientTimeline> {
   return withPatientSession(patientId, async (run) => {
     const rows = await run("CALL SAARTHI.OPERATIONAL.GET_TIMELINE(NULL)");
     const result = parseValue(Object.values(rows[0] ?? {})[0]);
@@ -195,7 +225,11 @@ export async function loadPatientTimeline(patientId: string): Promise<PatientTim
   });
 }
 
-export async function loadReviewTasks(patientId: string, ruleId: string): Promise<ReviewTask[]> {
+export function loadReviewTasks(patientId: string, ruleId: string): Promise<ReviewTask[]> {
+  return cachedRead(patientId, `tasks:${ruleId}`, () => loadReviewTasksUncached(patientId, ruleId));
+}
+
+async function loadReviewTasksUncached(patientId: string, ruleId: string): Promise<ReviewTask[]> {
   return withPatientSession(patientId, async (run) => {
     const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('tasks',?)", [ruleId]));
     return rows.map((row) => ({
@@ -354,6 +388,15 @@ export type AskPhase = "access" | "routing" | "refusing" | "reading" | "validati
 
 export async function askPatient(patientId: string, question: string,
   onPhase: (phase: AskPhase) => void = () => {}): Promise<AgentTurn> {
+  try {
+    return await askPatientUncached(patientId, question, onPhase);
+  } finally {
+    invalidatePatient(patientId);
+  }
+}
+
+async function askPatientUncached(patientId: string, question: string,
+  onPhase: (phase: AskPhase) => void = () => {}): Promise<AgentTurn> {
   onPhase("access");
   return withPatientSessionAndContext(patientId, async (run) => {
     const turn: AgentTurn = await routeQuestion(question, run, async (clock: string) => {
@@ -378,7 +421,11 @@ export async function askPatient(patientId: string, question: string,
   });
 }
 
-export async function loadEvidenceHistory(patientId: string) {
+export function loadEvidenceHistory(patientId: string) {
+  return cachedRead(patientId, `evidence`, () => loadEvidenceHistoryUncached(patientId));
+}
+
+async function loadEvidenceHistoryUncached(patientId: string) {
   return withPatientSession(patientId, async run => ({
     answers: procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('answers',NULL)")),
     packets: procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('packets',NULL)")),
@@ -386,6 +433,14 @@ export async function loadEvidenceHistory(patientId: string) {
 }
 
 export async function prepareEvidencePacket(patientId: string, question: string, packetId: string) {
+  try {
+    return await prepareEvidencePacketUncached(patientId, question, packetId);
+  } finally {
+    invalidatePatient(patientId);
+  }
+}
+
+async function prepareEvidencePacketUncached(patientId: string, question: string, packetId: string) {
   return withPatientSession(patientId, async run => {
     const receipt = procedureValue(await run(
       "CALL SAARTHI.OPERATIONAL.PREPARE_WEB_PACKET(?,?)", [question, packetId]
@@ -405,6 +460,19 @@ export type ReviewTaskReceipt = {
 };
 
 export async function createReviewTask(
+  patientId: string,
+  ruleId: string,
+  action: "request_document" | "escalate",
+  requestId?: string,
+): Promise<ReviewTaskReceipt> {
+  try {
+    return await createReviewTaskUncached(patientId, ruleId, action, requestId);
+  } finally {
+    invalidatePatient(patientId);
+  }
+}
+
+async function createReviewTaskUncached(
   patientId: string,
   ruleId: string,
   action: "request_document" | "escalate",

@@ -13,6 +13,7 @@ function session({ useError, role = 'SAARTHI_APP', secondary = '{"roles":"","val
   identityError, consentError, destroyError,
   consentResult = { access_scope: 'a'.repeat(64), claims: [], known_as_of: '2026-10-05T00:00:00' }
 } = {}) {
+  delete globalThis.__saarthiPool;
   const statements = [];
   let destroyed = 0;
   let checks = 0;
@@ -48,7 +49,8 @@ function session({ useError, role = 'SAARTHI_APP', secondary = '{"roles":"","val
     return deps[specifier];
   }, module, module.exports);
   return { query: module.exports.query, patient: module.exports.withPatientSession,
-    statements, destroyed: () => destroyed };
+    statements, destroyed: () => destroyed,
+    closeIdle: module.exports.closeIdleConnections };
 }
 
 test('patient response is withheld when consent is withdrawn during its operation', async () => {
@@ -85,12 +87,15 @@ test('patient response returns only after fresh consent verification succeeds', 
   assert.deepEqual(await s.patient('PAT-DC-04', async () => ({ privateRecord: 82000 })),
     { privateRecord: 82000 });
   assert.ok(s.statements.some(sql => sql.includes('VALIDATE_ANSWER')));
+  assert.equal(s.destroyed(), 0, 'a clean, released session returns to the pool');
+  await s.closeIdle();
   assert.equal(s.destroyed(), 1);
 });
 
 test('session cleanup failure is reported instead of returning a successful patient response',
   async () => {
-    const s = session({ destroyError: new Error('session close failed') });
+    const s = session({ destroyError: new Error('session close failed'),
+      consentError: [null, new Error('dependency timeout')] });
     await assert.rejects(s.patient('PAT-DC-04', async () => ({ privateRecord: 82000 })),
       /session close failed/);
   });
@@ -108,6 +113,7 @@ test('restricted session may continue only after SQL confirms app role and no se
   await s.query('SELECT patient_data');
   assert.ok(s.statements.some(sql => sql.includes('CURRENT_SECONDARY_ROLES')));
   assert.equal(s.statements.at(-1), 'SELECT patient_data');
+  await s.closeIdle();
   assert.equal(s.destroyed(), 1);
 });
 
@@ -147,4 +153,22 @@ test('patient response is withheld when scope fingerprint is missing', async () 
   const s = session({ consentResult: { claims: [], known_as_of: '2026-10-05T00:00:00' } });
   await assert.rejects(s.patient('PAT-DC-04', async () => ({ privateRecord: 82000 })),
     /consent_check_unavailable/);
+});
+
+test('a pooled session is reused with no new connect, and never carries a binding between requests', async () => {
+  const s = session();
+  await s.patient('PAT-DC-04', async () => 1);
+  const setup = s.statements.filter(sql => sql.includes('CURRENT_SECONDARY_ROLES')).length;
+  await s.patient('PAT-DC-05', async () => 2);
+  assert.equal(s.statements.filter(sql => sql.includes('CURRENT_SECONDARY_ROLES')).length, setup,
+    'identity verification is not repeated on a reused session');
+  assert.equal(s.statements.filter(sql => sql.includes('BIND_PATIENT')).length, 2);
+  assert.equal(s.statements.filter(sql => sql.includes('RELEASE_PATIENT_BINDING')).length, 2);
+  assert.equal(s.destroyed(), 0);
+});
+
+test('a session whose request failed is destroyed, not pooled', async () => {
+  const s = session();
+  await assert.rejects(s.patient('PAT-DC-04', async () => { throw new Error('boom'); }), /boom/);
+  assert.equal(s.destroyed(), 1);
 });

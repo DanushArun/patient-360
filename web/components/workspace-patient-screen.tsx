@@ -21,7 +21,7 @@ import { PatientChatInput, PatientConversation } from "@/components/workspace-pa
 import { FamilyChecklist } from "@/components/workspace-patient-family";
 import { PatientSectionContent } from "@/components/workspace-patient-views";
 import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
-import { UserRound } from "lucide-react";
+import { RefreshCw, UserRound } from "lucide-react";
 import styles from "./workspace-patient-screen.module.css";
 
 type ChatModel = {
@@ -76,9 +76,11 @@ export function PatientWorkspaceScreen({ model }: { model: PatientScreenModel })
         title={model.patient.knownAsOf ?? "Timestamp unavailable"}>
         Known as of {formatRecordDate(model.patient.knownAsOf)}
       </time>
-    } actions={!model.preview && <button type="button" className="sa-quiet-button"
+    } actions={!model.preview && <button type="button" className="sa-quiet-button sa-refresh-button"
       disabled={model.refreshState === "refreshing"}
-      onClick={() => void model.refreshReadiness()}>Refresh record</button>} />
+      data-refreshing={model.refreshState === "refreshing" || undefined}
+      onClick={() => void model.refreshReadiness()}>
+      <RefreshCw size={14} aria-hidden /> Refresh record</button>} />
     <PatientHeader patient={model.patient} preview={model.preview} onAsk={model.toggleAsk} />
     <RefreshStatus model={model} />
     {!model.preview && <div className="sa-recompute-toolbar"><button type="button"

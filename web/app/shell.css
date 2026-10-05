@@ -1,0 +1,118 @@
+/* SAARTHI window shell (INTERFACE-GUIDELINES §3, "Window"). Loaded last.
+   The sidebar rests on the canvas; the page is a raised, rounded card above it. Collapsing
+   slides the card over the sidebar, so the sidebar reads as sitting behind the page.
+
+   Layering: the page must not form a stacking context (no z-index, transform, filter or
+   opacity on it). The fixed sidebar then uses z-index -1 and paints beneath the page
+   card's background even though it is a child of the page element. */
+
+/* Only the root may carry the canvas colour. A body background paints in the root
+   stacking context above z-index -1 children and would hide the sidebar. */
+html { background: var(--bg-canvas) !important; }
+body { background: transparent !important; }
+
+/* Hit-testing follows painting: the sidebar at z-index -1 sits beneath the body box, so the
+   body would swallow every click on it. The body lets pointer events through; its children
+   (the page, the copilot, overlays) take them back. */
+body { pointer-events: none; }
+body > * { pointer-events: auto; }
+
+/* The utility bar's clock truncates instead of pushing actions off the card. */
+.sa-utility-actions { min-width: 0; flex-shrink: 1; }
+.sa-utility-asof { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (min-width: 761px) {
+  .sa-workspace-nav {
+    z-index: -1;
+    background: transparent !important;
+    border-right: 0 !important;
+    transform-origin: left center;
+  }
+
+  .sa-page, main.mx-auto.max-w-7xl {
+    box-sizing: border-box;
+    min-height: calc(100vh - 2 * var(--window-inset));
+    margin: var(--window-inset) var(--window-inset) var(--window-inset)
+      var(--sa-sidebar-width) !important;
+    border-radius: var(--radius-window);
+    background: var(--bg);
+    box-shadow: var(--shadow-window);
+  }
+  /* The utility bar is the card's top edge: its rule stops at the rounded corners. */
+  .sa-utility-bar { border-radius: var(--radius-window) var(--radius-window) 0 0; }
+
+  html[data-sidebar="collapsed"] :is(.sa-page, main.mx-auto.max-w-7xl) {
+    margin-left: var(--window-inset) !important;
+  }
+  html[data-sidebar="collapsed"] .sa-workspace-nav {
+    opacity: 0;
+    transform: translateX(calc(-1 * var(--space-4))) scale(0.98);
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  /* Motion only after first paint, so a remembered collapsed state never animates on load. */
+  html[data-shell-ready] :is(.sa-page, main.mx-auto.max-w-7xl) {
+    transition: margin var(--motion-shell) var(--ease-shell);
+  }
+  html[data-shell-ready] .sa-workspace-nav {
+    transition: opacity var(--motion-shell) var(--ease-shell),
+      transform var(--motion-shell) var(--ease-shell),
+      visibility 0s linear var(--motion-shell);
+  }
+  html[data-shell-ready]:not([data-sidebar="collapsed"]) .sa-workspace-nav {
+    transition-delay: 0s;
+  }
+}
+
+/* Narrow windows (HIG Sidebars: hide the sidebar automatically when the window narrows).
+   Between 761 and 880 px the page card takes the full width; showing the sidebar overlays
+   it above the card instead of squeezing the record. */
+@media (min-width: 761px) and (max-width: 880px) {
+  :is(.sa-page, main.mx-auto.max-w-7xl) { margin-left: var(--window-inset) !important; }
+  html:not([data-sidebar="open"]) .sa-workspace-nav {
+    opacity: 0;
+    transform: translateX(calc(-1 * var(--space-4))) scale(0.98);
+    pointer-events: none;
+    visibility: hidden;
+  }
+  html[data-sidebar="open"] .sa-workspace-nav {
+    z-index: 40;
+    top: var(--window-inset);
+    bottom: var(--window-inset);
+    left: var(--window-inset);
+    min-height: 0;
+    border-radius: var(--radius-window);
+    background: var(--bg-canvas) !important;
+    box-shadow: var(--shadow-elevated);
+  }
+}
+
+/* Docked copilot: an inset card on the canvas, matching the page card. */
+@media (min-width: 901px) {
+  html[data-copilot="open"] :is(.sa-page, main.mx-auto.max-w-7xl) {
+    margin-right: calc(var(--copilot-width) + 2 * var(--window-inset)) !important;
+  }
+  html[data-copilot="wide"] :is(.sa-page, main.mx-auto.max-w-7xl) {
+    margin-right: calc(var(--copilot-width-wide) + 2 * var(--window-inset)) !important;
+  }
+  html[data-shell-ready] :is(.sa-page, main.mx-auto.max-w-7xl) {
+    transition: margin var(--motion-shell) var(--ease-shell);
+  }
+}
+
+.sa-sidebar-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  margin-left: calc(-1 * var(--space-2));
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--label-secondary);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.sa-sidebar-toggle:hover { background: var(--bg-tertiary); color: var(--label); }
+@media (max-width: 760px) { .sa-sidebar-toggle { display: none; } }

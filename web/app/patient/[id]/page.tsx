@@ -23,7 +23,7 @@ export default async function PatientPage({ params }: PageProps<"/patient/[id]">
   } catch {
     return <Page>
       <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
-        <div className="sa-masthead-patient">SAARTHI</div>
+        <div className="sa-masthead-patient">Saarthi</div>
         <div className="sa-field"><span className="sa-field-label">Patient</span>
           <span className="sa-field-value">{id}</span></div>
       </div>

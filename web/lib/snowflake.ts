@@ -6,7 +6,11 @@ import { isValidPatientId } from "./api-contracts.mjs";
 
 snowflake.configure(snowflakeDriverConfig);
 
-// NOT cached as a module singleton, deliberately. BIND_PATIENT and every agent
+// NOT cached as a shared module singleton, deliberately. Connections ARE pooled, but each
+// lease is exclusive to one request, and a connection returns to the pool only after
+// RELEASE_PATIENT_BINDING succeeded and the work finished cleanly (otherwise it is destroyed).
+// Opening + verifying a session costs ~2s; the exclusive lease keeps the one-binding-per-
+// session guarantee below intact. BIND_PATIENT and every agent
 // tool resolve their subject from PATIENT_BINDING keyed on CURRENT_SESSION() -
 // exactly the same server-side design as the Streamlit app (frontend/streamlit_app.py).
 // A cached connection shared across every Next.js request means every visitor
@@ -71,6 +75,35 @@ async function openConnection(): Promise<snowflake.Connection> {
   }
 }
 
+const IDLE_MAX = 8;
+const IDLE_TTL_MS = 4 * 60_000;
+type IdleConnection = { conn: snowflake.Connection; at: number };
+// globalThis: Next bundles each route separately, and each bundle would otherwise get its own pool.
+const pool = ((globalThis as { __saarthiPool?: IdleConnection[] }).__saarthiPool ??= []);
+
+async function acquireConnection(): Promise<snowflake.Connection> {
+  while (pool.length) {
+    const idle = pool.pop()!;
+    const up = typeof idle.conn.isUp !== "function" || idle.conn.isUp();
+    if (up && Date.now() - idle.at < IDLE_TTL_MS) return idle.conn;
+    void destroyConnection(idle.conn).catch(() => undefined);
+  }
+  return openConnection();
+}
+
+/** Return a verified, binding-free connection to the pool, or close it when the pool is full. */
+function releaseConnection(conn: snowflake.Connection): Promise<void> {
+  if (pool.length >= IDLE_MAX) return destroyConnection(conn);
+  pool.push({ conn, at: Date.now() });
+  return Promise.resolve();
+}
+
+/** Close every pooled connection (shutdown and tests). */
+export async function closeIdleConnections(): Promise<void> {
+  const idle = pool.splice(0);
+  await Promise.all(idle.map(({ conn }) => destroyConnection(conn)));
+}
+
 function destroyConnection(conn: snowflake.Connection): Promise<void> {
   return new Promise((resolve, reject) => {
     conn.destroy((error) => {
@@ -85,11 +118,14 @@ export async function query<T = Record<string, unknown>>(
   sqlText: string,
   binds: (string | number | null)[] = []
 ): Promise<T[]> {
-  const conn = await openConnection();
+  const conn = await acquireConnection();
   try {
-    return await execOn<T>(conn, sqlText, binds);
-  } finally {
-    await destroyConnection(conn);
+    const rows = await execOn<T>(conn, sqlText, binds);
+    await releaseConnection(conn);
+    return rows;
+  } catch (error) {
+    await destroyConnection(conn).catch(() => undefined);
+    throw error;
   }
 }
 
@@ -116,11 +152,14 @@ function execOn<T = Record<string, unknown>>(
 export async function withReadSession<T>(
   fn: (run: (sql: string) => Promise<Record<string, unknown>[]>) => Promise<T>
 ): Promise<T> {
-  const conn = await openConnection();
+  const conn = await acquireConnection();
   try {
-    return await fn((sql) => execOn(conn, sql));
-  } finally {
-    await destroyConnection(conn);
+    const result = await fn((sql) => execOn(conn, sql));
+    await releaseConnection(conn);
+    return result;
+  } catch (error) {
+    await destroyConnection(conn).catch(() => undefined);
+    throw error;
   }
 }
 
@@ -159,8 +198,9 @@ export async function withPatientSession<T>(
 ): Promise<T> {
   // Malformed ids are a client error and never reach Snowflake (F-04/F-05).
   if (!isValidPatientId(patientId)) throw new Error("invalid_argument");
-  const conn = await openConnection();
+  const conn = await acquireConnection();
   const run = (sql: string, binds: (string | number | null)[] = []) => execOn(conn, sql, binds);
+  let clean = false;
   try {
     const bindRows = await run("CALL SAARTHI.OPERATIONAL.BIND_PATIENT(?)", [patientId]);
     const bindCell = Object.values(bindRows[0] ?? {})[0];
@@ -172,14 +212,18 @@ export async function withPatientSession<T>(
     if (await verifyPatientAccess(run) !== accessScope) {
       throw new Error("access_scope_changed");
     }
+    clean = true;
     return result;
   } finally {
+    let released = false;
     try {
       await run(
         "CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()"
       );
+      released = true;
     } finally {
-      await destroyConnection(conn);
+      // Only a clean request whose binding was released goes back to the pool.
+      await (clean && released ? releaseConnection(conn) : destroyConnection(conn));
     }
   }
 }

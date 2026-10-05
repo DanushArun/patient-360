@@ -77,7 +77,7 @@ test('components and scripts carry no raw colours or touch-size controls', () =>
 
 test('tokens define both appearances for every colour', () => {
   const tokens = readFileSync(path.join(web, 'app/tokens.css'), 'utf8');
-  const [light, dark] = tokens.split('@media (prefers-color-scheme: dark)');
+  const [light, dark] = tokens.split(':root.dark {');
   const names = (block) => new Set([...block.matchAll(/--([a-z0-9-]+):\s*#/g)].map((m) => m[1]));
   assert.deepEqual([...names(light)].filter((name) => !names(dark).has(name)), []);
 });

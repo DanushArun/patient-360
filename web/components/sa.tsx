@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { ClipboardList, LayoutDashboard, PanelLeft, Users } from "lucide-react";
 import { PatientRoster, type RosterPatient } from "./patient-roster";
+import { SidebarToggle } from "./ui/sidebar-toggle";
 
 // Colours resolve from app/tokens.css so inline styles follow light and dark.
 export const INK = "var(--label)";
@@ -91,7 +92,7 @@ export function WorkspaceNav({
   current, patients, patientsAvailable = true, patientId, practitioner,
   preview = false, onAsk, onReferences,
 }: WorkspaceNavProps = {}): ReactNode {
-  return <nav className="sa-workspace-nav" aria-label="SAARTHI workspace">
+  return <nav id="saarthi-sidebar" className="sa-workspace-nav" aria-label="Saarthi workspace">
     <WorkspaceBrand />
     <div className="sa-sidebar-heading">Workspace</div>
     <WorkspaceLinks current={current} />
@@ -110,9 +111,9 @@ export function WorkspaceNav({
 }
 
 function WorkspaceBrand(): ReactNode {
-  return <Link href="/" className="sa-brand" aria-label="SAARTHI home">
+  return <Link href="/" className="sa-brand" aria-label="Saarthi home">
     <img src="/saarthi-mark.png" width="32" height="32" alt="" />
-    <span><strong>SAARTHI</strong><small>Care workspace</small></span>
+    <span><strong>Saarthi</strong><small>Care workspace</small></span>
   </Link>;
 }
 
@@ -147,7 +148,7 @@ export function WorkspaceBar({ section, knownAsOf, actions }: {
   section: string; knownAsOf: ReactNode; actions?: ReactNode;
 }): ReactNode {
   return <div className="sa-utility-bar">
-    <div><Link href="/">Care workspace</Link><span aria-hidden="true">/</span>
+    <div><SidebarToggle /><Link href="/">Care workspace</Link><span aria-hidden="true">/</span>
       <strong>{section}</strong></div>
     <div className="sa-utility-actions">
       <span className="sa-utility-asof">{knownAsOf}</span>{actions}

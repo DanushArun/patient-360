@@ -160,7 +160,7 @@ function SourceTimeline({ authorizations, letters, observedAt }: {
           letters={letters} field="event" />
         <TimelineRow label="Recorded by source" authorizations={authorizations}
           letters={letters} field="recorded" />
-        <TimelineRow label="Received by SAARTHI" authorizations={authorizations}
+        <TimelineRow label="Received by Saarthi" authorizations={authorizations}
           letters={letters} field="ingested" />
         <tr><th scope="row">Comparison read observed</th>
           <td>{observedAt ? formatRecordDate(observedAt) : "Observation time not returned"}</td>

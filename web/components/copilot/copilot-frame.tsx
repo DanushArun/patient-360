@@ -20,8 +20,8 @@ export function CopilotFrame(): ReactNode {
   if (pathname.startsWith("/design-preview")) return null;
   return <>
     {!copilot.open && <button type="button" className={styles.launcher}
-      onClick={() => copilot.setOpen(true)} aria-label="Open SAARTHI copilot">
-      <Sparkles size={16} aria-hidden /> Ask SAARTHI <kbd>⌘K</kbd>
+      onClick={() => copilot.setOpen(true)} aria-label="Open Saarthi copilot">
+      <Sparkles size={16} aria-hidden /> Ask Saarthi <kbd>⌘K</kbd>
     </button>}
     {copilot.open && <CopilotPanel />}
     <CopilotPicker />
@@ -31,7 +31,7 @@ export function CopilotFrame(): ReactNode {
 function CopilotPanel(): ReactNode {
   const copilot = useCopilot();
   return <aside data-copilot-panel data-copilot-ignore className={styles.panel}
-    data-expanded={copilot.expanded || undefined} aria-label="SAARTHI copilot">
+    data-expanded={copilot.expanded || undefined} aria-label="Saarthi copilot">
     <header className={styles.header}>
       <div className={styles.scope}>
         <strong>{copilot.patient ? copilot.patient.patientName : "My day-care patients"}</strong>

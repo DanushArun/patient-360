@@ -1,4 +1,5 @@
 import { procedureValue, withPatientSession } from "@/lib/snowflake";
+import { cachedRead } from "@/lib/read-cache";
 import { apiError, apiErrorStatus, validateWorkspaceQuery } from "@/lib/api-contracts.mjs";
 import { normalizeWorkspaceRows } from "@/lib/workspace-data.mjs";
 
@@ -15,7 +16,9 @@ export async function GET(
   if (!query) return Response.json(apiError("invalid_argument"), { status: 400 });
   try {
     const { id } = await context.params;
-    return Response.json(await withPatientSession(id, (run) => readView(run, query)));
+    const name = `workspace:${new URL(request.url).searchParams.toString()}`;
+    return Response.json(await cachedRead(id, name,
+      () => withPatientSession(id, (run) => readView(run, query))));
   } catch (error) {
     const failure = apiError(error, "workspace_data_unavailable");
     // Missing financial consent withholds this read only; clinical access to the patient stands.

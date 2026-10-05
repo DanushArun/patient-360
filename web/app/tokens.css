@@ -4,7 +4,7 @@
    web/lib/design-tokens.test.mjs fails the build if they appear anywhere else. */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* Typeface: system stack first (SF Pro on macOS), Inter as the portable fallback. */
   --font-text: system-ui, -apple-system, "SF Pro Text", Inter, "Segoe UI", Roboto, sans-serif;
@@ -52,7 +52,9 @@
   --control-height-small: 24px;
   --radius-control: 6px;
   --radius-control-inner: 4px; /* concentric with a 2 px inset inside a control */
-  --radius-panel: 10px;
+  --radius-panel: 12px;
+  --radius-window: 16px; /* the page card and docked panels */
+  --window-inset: 8px;  /* canvas visible around the page card */
   --radius-pill: 999px;
   --measure: 68ch;
   --sidebar-width: 216px;
@@ -68,12 +70,13 @@
   --bg-secondary: #f5f6f7;
   --bg-tertiary: #eceef0;
   --bg-elevated: #ffffff;
-  --separator: #e3e6e9;
+  --bg-canvas: #f2f2f4;  /* window background behind the page card; the sidebar sits on it */
+  --separator: #e8e8ec;
   --separator-strong: #c4cad0;
-  --accent: #1f5fa8;
-  --accent-hover: #194f8c;
+  --accent: #0066cc;
+  --accent-hover: #0055b0;
   --accent-label: #ffffff;
-  --accent-tint: #e8f0fa;
+  --accent-tint: #e8f1fc;
   --segment-selected: #ffffff;
   --status-ready: #1e6b3a;
   --status-ready-bg: #e7f3eb;
@@ -91,15 +94,19 @@
   --evidence-reference: #5b4b8a;
   --shadow-elevated: 0 8px 24px rgb(16 24 32 / 0.12), 0 1px 3px rgb(16 24 32 / 0.08);
   --shadow-control: 0 1px 2px rgb(16 24 32 / 0.12);
+  --shadow-window: 0 0 0 1px rgb(16 24 40 / 0.05), 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 
   --motion-fast: 120ms;
   --motion-standard: 200ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-shell: 340ms;
+  --ease-shell: cubic-bezier(0.32, 0.72, 0, 1); /* fast start, soft settle */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
+/* Dark appearance is opt-in (html.dark). Light is the product default. */
+:root.dark {
+    color-scheme: dark;
     --label: #e8eaed;
     --label-secondary: #b6bcc3;
     --label-tertiary: #959ca3;
@@ -131,7 +138,8 @@
     --evidence-reference: #b2a5dc;
     --shadow-elevated: 0 8px 24px rgb(0 0 0 / 0.45), 0 1px 3px rgb(0 0 0 / 0.4);
     --shadow-control: 0 1px 2px rgb(0 0 0 / 0.5);
-  }
+    --bg-canvas: #0f1113;
+    --shadow-window: 0 0 0 1px rgb(255 255 255 / 0.06), 0 8px 24px rgb(0 0 0 / 0.4);
 }
 
 /* Touch: HIG minimum hit target is 44 pt on iOS/iPadOS versus 28 pt default on macOS.

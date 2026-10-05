@@ -47,7 +47,8 @@ Eight text styles replace every ad-hoc size. They follow the macOS built-in text
 - **Spacing scale** (4 px grid): `--space-1` 4 · `--space-2` 8 · `--space-3` 12 · `--space-4` 16 · `--space-6` 24 · `--space-8` 32 · `--space-12` 48. No other spacing values.
 - **Control height**: `--control-height` **32 px** for every button, field, pop-up and segmented control. `--control-height-small` 24 px is only for compact inline actions inside table rows. Controls on the same row always share one height and the callout text style.
 - **Touch**: at phone width (≤640 px) or with a coarse pointer, the same tokens become **44 px** and 32 px (HIG minimum hit target: 44 pt on iOS and iPadOS versus 28 pt default on macOS). Components never set their own touch sizes; they inherit them from the token.
-- **Corner radius**: `--radius-control` 6 px · `--radius-panel` 10 px · `--radius-pill` 999 px. No other radii.
+- **Corner radius**: `--radius-control` 6 px · `--radius-panel` 12 px · `--radius-window` 16 px (the page card and the docked copilot) · `--radius-pill` 999 px. No other radii.
+- **Window**: the sidebar rests on the canvas (`--bg-canvas`). The page is a raised white card, inset by `--window-inset` 8 px, with `--radius-window` corners and `--shadow-window`. The toggle at the top-left of the card slides the card over the sidebar (`--motion-shell` 340 ms, `--ease-shell`), so the sidebar reads as sitting behind the page. Between 761 and 880 px the sidebar hides automatically and opens as an overlay (HIG Sidebars). Motion is removed under reduced motion.
 - **Page gutter**: `--space-8` on desktop, `--space-4` below 640 px.
 - **Reading width**: prose stops at `--measure` (68ch). Tables can use the full width.
 - **Grouping**: separate related groups with space first, a hairline separator second and a container third. Don't nest bordered boxes inside bordered boxes.
@@ -79,7 +80,7 @@ Components use semantic tokens only. A raw hex value appears nowhere except `tok
 | Advisory | ! mark | Advisory | `--status-advisory` |
 | Not evaluated | ○ ring | Not evaluated | `--status-neutral` |
 
-- **Dark mode.** Every token has a dark value. The app follows the system setting, with no in-app toggle (HIG Dark Mode).
+- **Appearance.** Light is the product default, a deliberate product decision (5 Oct 2026) for a calm clinical workspace. Every token keeps a dark value under `html.dark`, so dark can be offered later without new colours.
 - **Contrast.** Text-on-surface pairs reach 4.5:1 or better. Small text aims for 7:1.
 
 ## 5. Components

@@ -19,7 +19,7 @@ export default async function NavigatorPage({ params }: { params: Promise<{ id: 
   } catch {
     return <Page>
       <div className="sa-masthead" style={{ borderBottom: "none", marginBottom: 4 }}>
-        <div className="sa-masthead-patient">SAARTHI · Navigator</div>
+        <div className="sa-masthead-patient">Saarthi · Navigator</div>
       </div>
       <Rule />
       <div className="sa-limitation">This patient record could not be opened.
