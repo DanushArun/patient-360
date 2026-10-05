@@ -22,7 +22,7 @@ export function snowflakeConfig(env = process.env) {
   const patPath = typeof env.SNOWFLAKE_PAT_PATH === 'string' ? env.SNOWFLAKE_PAT_PATH.trim() : undefined;
   const privateKeyPath = typeof env.SNOWFLAKE_PRIVATE_KEY_PATH === 'string' ? env.SNOWFLAKE_PRIVATE_KEY_PATH.trim() : undefined;
   const privateKey = typeof env.SNOWFLAKE_PRIVATE_KEY === 'string'
-    ? env.SNOWFLAKE_PRIVATE_KEY.trim() : undefined;
+    ? env.SNOWFLAKE_PRIVATE_KEY.trim().replace(/\\n/g, '\n') : undefined;
   if (privateKey && privateKeyPath) throw new Error('snowflake_configuration_missing');
   if (env.SNOWFLAKE_AUTHENTICATOR !== undefined && typeof env.SNOWFLAKE_AUTHENTICATOR !== 'string') {
     throw new Error('snowflake_configuration_missing');
