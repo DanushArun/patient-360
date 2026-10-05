@@ -205,6 +205,8 @@ export async function withPatientSessionAndContext<T>(
       cycleNumber: typeof rows[0].CYCLE_NUMBER === "number" ? rows[0].CYCLE_NUMBER : null,
       regimen: typeof rows[0].REGIMEN_DISPLAY === "string" ? rows[0].REGIMEN_DISPLAY : null,
       practitionerName: String(rows[0].PRACTITIONER_NAME ?? ""),
+      treatingPractitionerName: typeof rows[0].TREATING_PRACTITIONER_NAME === "string"
+        ? rows[0].TREATING_PRACTITIONER_NAME : null,
     });
   });
 }
@@ -219,6 +221,7 @@ export interface PatientBinding {
   cycleNumber: number | null;
   regimen: string | null;
   practitionerName: string;
+  treatingPractitionerName: string | null;
 }
 
 /** Typed envelope from the fixed-view owner procedures; never silently return [] on failure. */

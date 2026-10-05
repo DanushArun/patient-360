@@ -296,7 +296,17 @@ WITH next_visit AS (
               (SELECT b.consent_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING b
                 WHERE b.session_id = CURRENT_SESSION() AND b.released_at IS NULL
                 ORDER BY b.bound_at DESC LIMIT 1) AS consent_id,
-              pr.name AS practitioner_name
+              pr.name AS practitioner_name,
+              (SELECT treating.name
+                 FROM SAARTHI.GOVERNANCE.CARE_TEAM ct
+                 JOIN SAARTHI.GOVERNANCE.PRACTITIONER treating
+                   ON treating.practitioner_id = ct.practitioner_id
+                WHERE ct.patient_id = :v_patient_id AND ct.role_type = 'treating'
+                  AND treating.active = TRUE AND NULLIF(TRIM(treating.name),'') IS NOT NULL
+                  AND ct.active_from <= CURRENT_DATE()
+                  AND (ct.active_to IS NULL OR ct.active_to >= CURRENT_DATE())
+                ORDER BY ct.active_from DESC, treating.practitioner_id LIMIT 1)
+                AS treating_practitioner_name
          FROM SAARTHI.CORE.PATIENT p
          JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr
            ON pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
