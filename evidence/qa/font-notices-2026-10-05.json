@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-10-05",
+  "notices": [
+    {
+      "file": "web/public/fonts/LICENSE-Inter.txt",
+      "source_url": "https://raw.githubusercontent.com/rsms/inter/master/LICENSE.txt",
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    {
+      "file": "web/public/fonts/LICENSE-JetBrainsMono.txt",
+      "source_url": "https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/OFL.txt",
+      "sha256": "a76abf002c49097d146e86740a3105a5d00450b1592e820a1109a8c5680cd697"
+    },
+    {
+      "file": "web/public/fonts/LICENSE-MaterialSymbols.txt",
+      "source_url": "https://raw.githubusercontent.com/google/material-design-icons/master/LICENSE",
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+    }
+  ],
+  "embedded_ttf_licence": "SIL OFL 1.1 confirmed in six local TTF name tables",
+  "versions": {
+    "Inter": "4.000",
+    "JetBrains Mono": "2.304"
+  },
+  "material_symbols_binary_origin": "not independently matched",
+  "host_package_files": 167
+}

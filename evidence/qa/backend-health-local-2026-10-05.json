@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "proof_type": "localhost_production_build",
+  "request": "GET /api/health",
+  "release_revision_configured": false,
+  "http_status": 503,
+  "cache_control": "no-store",
+  "response": {
+    "status": "unavailable",
+    "service": "saarthi-web-backend"
+  },
+  "snowflake_called": false,
+  "hosted_backend_verified": false
+}

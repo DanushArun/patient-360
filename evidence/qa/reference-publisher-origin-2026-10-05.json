@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-10-05",
+  "status": "PARTIAL",
+  "matched": 5,
+  "total": 7,
+  "receipts": [
+    {
+      "filename": "aiims_rishikesh_standard_treatment_guidelines.pdf",
+      "source_url": "https://gmscl.gujarat.gov.in/Images/pdf/standard-treatment-guidelines.pdf",
+      "sha256": "bf5f562d0b6fba773e99a8fc23ea53f916c70781aa62174d1567d00132fe01c1",
+      "bytes": 2245645,
+      "status": "PASS"
+    },
+    {
+      "filename": "icmr_breast_cancer_consensus_2016.pdf",
+      "source_url": "https://www.icmr.gov.in/icmrobject/custom_data/pdf/resource-guidelines/Breast_Cancer.pdf",
+      "sha256": "a17b70025de98015cbdf41edc911eca384fff1aad07eecf6e80266f72b153c77",
+      "bytes": 6157744,
+      "status": "PASS"
+    },
+    {
+      "filename": "icmr_stw_breast_cancer.pdf",
+      "source_url": "https://www.icmr.gov.in/icmrobject/uploads/STWs/1726568905_breast_cancer.pdf",
+      "sha256": "87d1be39fc1b6ecc8a97f13b263da083f85ce830f851cfd66e3b53f6a704a3eb",
+      "bytes": 354369,
+      "status": "PASS"
+    },
+    {
+      "filename": "icmr_type2_diabetes_guidelines_2018.pdf",
+      "source_url": "https://www.icmr.gov.in/icmrobject/custom_data/pdf/resource-guidelines/ICMR_GuidelinesType2diabetes2018_0.pdf",
+      "sha256": "d2dfa8e147e9f047bf11ff7b956a20ed67a034bda36cdf8d22ff4ff113d49d57",
+      "bytes": 10196373,
+      "status": "PASS"
+    },
+    {
+      "filename": "ncg_breast_cancer_guidelines_2019.pdf",
+      "source_url": "https://www.ncgindia.org/assets/ncg-guidelines-2019/ncg-guidelines-for-breast-cancer-2019.pdf",
+      "sha256": "6f270ea7df42a5655bcc97e71a193e95668ff7e8fe8bfd5cdfd0471c8832c226",
+      "bytes": 1144279,
+      "status": "PASS"
+    }
+  ],
+  "remaining": [
+    {
+      "filename": "fda_herceptin_trastuzumab_label_2024.pdf",
+      "source_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/103792s5354lbl.pdf",
+      "status": "BLOCKED",
+      "reason": "Official indexed label matches reference ID; direct download 404."
+    },
+    {
+      "filename": "pmjay_health_benefit_package_2.2_manual.pdf",
+      "status": "BLOCKED",
+      "reason": "Earlier official URL returned HTML, not a byte-matched PDF."
+    }
+  ],
+  "limitations": [
+    "Publisher origin is distinct from redistribution permission.",
+    "Current clinical applicability and effective dates are not established."
+  ]
+}

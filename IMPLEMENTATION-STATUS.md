@@ -1,4 +1,36 @@
+> **5 October, latest execution checkpoint:** [full release gates](docs/submission/RELEASE-GATES-2026-10-05.md)
+> track 9/20 verified (45%); this is completion tracking, not a judging score.
+> Restricted permissions are applied. Live authorized/foreign claim and consent-withdrawal
+> probes passed. Answer, practitioner packet and retried action each have one persisted row.
+> Guarded ASK works on NY64016 with bounded SQL recovery. Native agent remains trial-blocked.
+> Public hosting is a credential-free recorded preview; live backend credentials remain absent.
+> Latest checks: 684 Python passed, 14 skipped, 36 subtests; 291 web; 41 distinct fixture E2E.
+> Eight recovery checks passed, seven overlapping the prior 40-test suite.
+> Independent evaluation v2: 48 development/48 held-out questions, 8 PDFs/patients,
+> disjoint renderers; 8 held-out missing/conflict cases. Final system scores are not measured.
+> The SQL-ID freezer, pre-AI loader and metering collector are built; execution is separate.
+> RULE citations passed the live app-role validator; receipt history and UI recovery passed.
+> Seven VQR definitions ran as direct SQL; native skill invocation remains unverified.
+> Finalized deck and timed script are in docs/submission. Final evaluation, full concurrent
+> isolation, new-ingest golden loop, observed economics and video remain open. Portal untouched.
+> Bounded SQL context is implemented with one frozen clock and separate corpora.
+> Private helpers compiled; integrated context/inference runtime still needs funded execution.
+> Backend health now requires a restricted SQL receipt and release identity. Local 503/no-store
+> behavior passed; hosted 200/readiness is unverified. Five reference origins byte-matched.
+> This checkpoint overrides conflicting current-state statements in the dated history below.
+
 # SAARTHI — Implementation Status
+
+**Latest checkpoint, 4 October 2026, 21:13 IST:** the user confirmed submission account
+`KGTPGHJ-YJ28449` (`NY64016`). Earlier account labels below describe their dated runs,
+not the current submission target. The answer validator was updated and exercised on
+NY64016; the web guard and SQL-derived refusal clock pass local tests. Current local
+verification: 418 Python tests, 267 web tests, TypeScript and production build pass.
+The agent JSON instruction is not deployed; full web Q&A, document entailment,
+independent evaluation and hosting remain unverified. See
+[the bounded runtime evidence](evidence/qa/ANSWER-BOUNDARY-2026-10-04.md).
+This checkpoint overrides conflicting current-account and validator-wiring statements
+in the historical reconciliation below, without transferring its old metrics.
 
 **Reconciled 4 October 2026 (FIX-ROUND-5).** This file has three parts: (A) the current state, keyed by Snowflake
 account; (B) the dated log of 1-4 Oct checkpoints (OS69400, current account); (C) the 20-23 Sept snapshot on JN89282,

@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-10-04T17:09:08.827155+00:00",
+  "base_revision": "6db4347afd6be9bc4062aab5797439018ab58389",
+  "working_tree": true,
+  "status": "FAIL",
+  "probes": {},
+  "events": [],
+  "error_type": "NonRetryableTlsError",
+  "error": "250003: Hit non-retryable SSL error, HTTPSConnectionPool(host='kgtpghj-yj28449.snowflakecomputing.com', port=443): Max retries exceeded with url: /session/v1/login-request?request_id=1c4c9cbd-19ce-475a-b826-b56e8c1b248d&warehouse=SAARTHI_AI_WH&roleName=SAARTHI_APP&request_guid=cf461059-5c75-445f-8df"
+}

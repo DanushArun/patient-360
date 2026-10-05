@@ -49,7 +49,7 @@ repo**.
 
 | File | Pages | Publisher (from filename and PDF metadata) | Licence / terms |
 |---|---|---|---|
-| `aiims_rishikesh_standard_treatment_guidelines.pdf` | 431 | AIIMS Rishikesh, Standard Treatment Guidelines | not verified in repo (Indian public institution publication) |
+| `aiims_rishikesh_standard_treatment_guidelines.pdf` | 431 | Government of Gujarat, Standard Treatment Guidelines, First Edition 2013 (title-page attribution; filename misleading) | not verified in repo |
 | `fda_herceptin_trastuzumab_label_2024.pdf` | 38 | US FDA prescribing information (trastuzumab) | not verified in repo (US regulatory label) |
 | `icmr_breast_cancer_consensus_2016.pdf` | 42 | ICMR | not verified in repo |
 | `icmr_stw_breast_cancer.pdf` | 1 | ICMR Standard Treatment Workflow, breast cancer | not verified in repo |
@@ -70,7 +70,7 @@ facts used for synthetic engineering tests, not clinical guidance.
 | `apollo-department-register.docx` (repo root, tracked) | A "public source register" of Apollo Hospitals departments prepared for the team (reviewed 8 Sept 2026); states it is not Apollo's official document | Third-party-derived text; no licence recorded. Not used as system data. Recommend removing from the submitted tree or recording its sources |
 | `dashboard-design/`, `planning/dashboard-release/evidence/` | Design screenshots and storyboards of the synthetic dashboard | Team-produced images of synthetic data |
 | `web/public/carethread-mark.svg` | Small logo mark | Origin not recorded in repo; presumed team-made, to be confirmed |
-| Fonts `web/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | **No licence files in the repo.** These families are publicly distributed under open font licences (Inter and JetBrains Mono under SIL OFL 1.1; Material Symbols under Apache 2.0), stated from general knowledge, **not verified in repo**. SF Pro is deliberately not used |
+| Fonts `web/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | Publisher licence notices added under `web/public/fonts/`; Inter/JetBrains notices also under `frontend/static/`. Local TTF name tables confirm SIL OFL 1.1 (Inter 4.000, JetBrains Mono 2.304). Google documents Material Symbols as Apache 2.0. Checked 5 Oct 2026; binary publisher identity for the WOFF2 remains unverified |
 
 ## 5. Third-party software
 
@@ -129,5 +129,29 @@ Snowflake under Snowflake's terms. No external model API and no local model is u
 ## 6. Open items for the team
 
 1. Decide on `real-patient-dipali.md` (redact or remove) and the Apollo `.docx` (remove or document sources).
-2. Add download URL, retrieval date and licence per reference PDF.
-3. Confirm font licence files and the logo origin.
+2. Reference origin: five PDFs now byte-match publisher downloads. FDA/NHA byte origin, effective dates and redistribution terms remain unverified; see `data/reference/catalog.json`.
+3. Confirm logo origin. Font notices are included and preserved by the hosted packager.
+
+## 5 October publisher-origin receipts
+
+Five of seven reference PDFs match SHA256 of newly downloaded public publisher copies:
+Gujarat GMSCL, ICMR breast consensus, ICMR breast workflow, ICMR diabetes and NCG breast.
+URLs, sizes and hashes: `evidence/qa/reference-publisher-origin-2026-10-05.json`.
+The Gujarat PDF also matches the AIIMS Rishikesh institutional mirror; publisher attribution
+remains Gujarat. The ICMR workflow prints July/2020, now recorded as its publication period.
+None of these byte matches establishes present clinical applicability or an effective date.
+FDA's indexed 2024 label has Reference ID 5399895, but its direct URL returned 404.
+The earlier NHA URL returned HTML. Those two origins remain unverified.
+
+Font notice sources checked 5 October 2026:
+- https://github.com/rsms/inter/blob/master/LICENSE.txt
+- https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt
+- https://github.com/google/material-design-icons/blob/master/LICENSE
+- https://developers.google.com/fonts/docs/material_symbols
+
+Each notice was downloaded unchanged from its publisher repository. TTF embedded name
+records identify Inter 4.000 and JetBrains Mono 2.304 and explicitly state SIL OFL 1.1.
+Material Symbols WOFF2 byte origin has not been independently matched. The official Google
+guide states Apache 2.0 for the family; the repository notice is included without claiming
+a binary-version match. The hosted package now contains 167 allowlisted files including
+these three notices; credentials and build outputs remain excluded.

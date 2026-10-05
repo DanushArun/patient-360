@@ -1,0 +1,575 @@
+{
+  "recorded_at": "2026-10-04T17:14:24.679854+00:00",
+  "base_revision": "6db4347afd6be9bc4062aab5797439018ab58389",
+  "working_tree": true,
+  "status": "PASS",
+  "evidence_type": "SIMULATED",
+  "metrics": {
+    "manual": {
+      "reviews": 30,
+      "median_seconds": 259.9843916951034,
+      "reviews_per_hour": 13.130344861998703,
+      "correct": 29,
+      "contradictions_caught": 8,
+      "contradictions": 10,
+      "catch_rate": 0.8
+    },
+    "assisted": {
+      "reviews": 30,
+      "median_seconds": 123.37402330101428,
+      "reviews_per_hour": 27.345378058618152,
+      "correct": 28,
+      "contradictions_caught": 9,
+      "contradictions": 10,
+      "catch_rate": 0.9
+    },
+    "median_reduction_percent": 52.545603796976735,
+    "paired_median_seconds_saved": 130.56498004323743
+  },
+  "economics": {
+    "status": "unmeasured",
+    "reason": "consumption evidence not supplied"
+  },
+  "observations": [
+    {
+      "case_id": "SIM-0000",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 225.91376466801495,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0000",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 223.5009630363755,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0001",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 111.74294436534933,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0001",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 210.4892017487306,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0002",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 165.58710349451587,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0002",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 92.19612828386104,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0003",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 122.42790874444928,
+      "correct": true,
+      "contradiction": true,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0003",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 312.5671654718831,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0004",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 175.95324817964453,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0004",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 75.66962778366613,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0005",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 113.79507551935406,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0005",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 379.08140169280165,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0006",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 461.5204232015335,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0006",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 150.0815576354592,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0007",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 124.49173911473575,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0007",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 226.71679356014226,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0008",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 241.9397531535078,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0008",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 80.41950616366707,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0009",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 175.68520428028722,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0009",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 351.45608466100316,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0010",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 203.50716607958373,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0010",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 100.33016294972299,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0011",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 151.50962583054837,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0011",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 273.9631917456237,
+      "correct": false,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0012",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 359.52273982077554,
+      "correct": true,
+      "contradiction": true,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0012",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 143.09607948282792,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0013",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 141.56640660624603,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0013",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 177.0039528004084,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0014",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 264.3326525886619,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0014",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 96.0635087092292,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0015",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 116.2148734499022,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0015",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 387.74046518957203,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0016",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 255.6361308015449,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0016",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 107.61436420117653,
+      "correct": false,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0017",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 110.60045787628472,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0017",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 279.7376612890649,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0018",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 288.9662768062665,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0018",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 150.08657753556298,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0019",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 152.0709530042362,
+      "correct": false,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0019",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 165.8392077305809,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0020",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 140.5492508351478,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0020",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 111.36209918357973,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0021",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 219.4223124015764,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0021",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 349.253724463563,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0022",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 213.64865371233336,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0022",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 87.5234175551503,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0023",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 118.38358266679754,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0023",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 366.2405264750935,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0024",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 290.65919501125944,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0024",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 159.36064698677123,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0025",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 118.92940726503288,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0025",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 374.8686047773867,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0026",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 221.42471379297797,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0026",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 163.25118971110527,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0027",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 179.04942799294616,
+      "correct": true,
+      "contradiction": true,
+      "caught": true
+    },
+    {
+      "case_id": "SIM-0027",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 389.54755898556573,
+      "correct": true,
+      "contradiction": true,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0028",
+      "arm": "manual",
+      "order": 0,
+      "seconds": 233.69715140510098,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0028",
+      "arm": "assisted",
+      "order": 1,
+      "seconds": 124.32013785757927,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0029",
+      "arm": "assisted",
+      "order": 0,
+      "seconds": 128.7132458371258,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    },
+    {
+      "case_id": "SIM-0029",
+      "arm": "manual",
+      "order": 1,
+      "seconds": 237.85812721633985,
+      "correct": true,
+      "contradiction": false,
+      "caught": false
+    }
+  ]
+}

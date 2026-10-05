@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-10-05T01:52:56.459197+00:00",
+  "base_revision": "6db4347afd6be9bc4062aab5797439018ab58389",
+  "working_tree": true,
+  "status": "PASS",
+  "proof_type": "offline_configuration",
+  "configuration": {
+    "scope": "offline source configuration only",
+    "tools": [
+      "GetPatientFacts",
+      "GetReadiness",
+      "SearchPatientDocuments",
+      "SearchReferenceDocuments",
+      "CohortQuery",
+      "GetTimeline",
+      "GetChanges",
+      "CreateReviewTask"
+    ],
+    "model": "claude-opus-5",
+    "skills": [
+      "clinical-question-routing",
+      "evidence-retrieval",
+      "risk-stratification",
+      "evidence-reconciliation"
+    ],
+    "agent_sql_sha256": "22b20472e47a8aa024546d6b5562d238a45364dbb54af9a2618102e42d46b28c",
+    "native_execution": "requires funded-account verification",
+    "mcp_sql_binding_continuity": "requires live proof; unbound calls must deny"
+  }
+}
