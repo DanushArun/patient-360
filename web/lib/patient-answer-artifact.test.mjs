@@ -37,6 +37,22 @@ function citationTurn() {
   } };
 }
 
+test("test_structured_citation_when_rendered_exposes_source_clocks_and_sql_quote", () => {
+  const turn = citationTurn();
+  turn.artifact.claims[0] = {
+    text: "Recorded SQL row: annual_limit 500000", claim_type: "textual",
+    evidence: [{ kind: "structured", id: "ROW-COVERAGE--COV-1",
+      table: "SAARTHI.CORE.COVERAGE", event_time: "2025-09-26",
+      source_recorded_at: "not_received", ingested_at: "not_received" }],
+  };
+  const markup = renderToStaticMarkup(React.createElement(loadArtifact(), {
+    turn, patientId: "PAT-1",
+  }));
+  assert.ok(["View cited SQL record", "SAARTHI.CORE.COVERAGE", "2025-09-26",
+    "Source recorded at: not_received", "Ingested at: not_received",
+    "Recorded SQL row: annual_limit 500000"].every(text => markup.includes(text)));
+});
+
 test("test_citation_link_when_answer_opens_source_keeps_cutoff_and_ask_return", () => {
   const component = loadArtifact();
   const markup = renderToStaticMarkup(React.createElement(component, {
@@ -111,4 +127,34 @@ test("test_turn_error_when_artifact_is_unavailable_shows_recoverable_failure", (
 
   assert.match(markup, /role="alert"/);
   assert.match(markup, /Answer unavailable: answer_unavailable/);
+});
+
+test('test_reference_citation_when_rendered_distinguishes_guidance_from_patient_record', () => {
+  const turn = citationTurn();
+  turn.artifact.claims[0].evidence = [{ kind: 'reference_clause', id: 'REF-1',
+    doc_id: 'REF-DOC-1', page_index: 0, publisher: 'Government of Gujarat',
+    document_title: 'Standard Treatment Guidelines', version: '2013',
+    jurisdiction: 'IN', effective_date: 'not_received' }];
+  const markup = renderToStaticMarkup(React.createElement(loadArtifact(), {
+    turn, patientId: 'PAT-1',
+  }));
+  assert.ok(markup.includes('Reference quotation') && markup.includes('Government of Gujarat')
+    && markup.includes('Standard Treatment Guidelines') && markup.includes('2013')
+    && markup.includes('Effective date: not_received') && !markup.includes('Structured record'));
+});
+
+test('test_rule_claim_when_rendered_keeps_version_and_practice_qualification_visible', () => {
+  const turn = citationTurn();
+  turn.artifact.claims[0] = { text: 'SQL record check CLIN-PLT-001 version 1: fail.',
+    claim_type: 'textual', rule_id: 'CLIN-PLT-001', rule_version: 1, outcome: 'fail',
+    provenance_note: 'Practice consensus; protocol overrides are not modelled.',
+    evidence: [{ kind: 'structured', id: 'RULE--ENC-1--CLIN-PLT-001--1',
+      table: 'SAARTHI.OPERATIONAL.RULE_CATALOG', event_time: 'not_received',
+      source_recorded_at: 'not_received', derived: 'GET_READINESS; source IDs [EVT-1]' }] };
+  const markup = renderToStaticMarkup(React.createElement(loadArtifact(), {
+    turn, patientId: 'PAT-1',
+  }));
+  assert.ok(markup.includes('Rule: CLIN-PLT-001 · version 1')
+    && markup.includes('Practice consensus; protocol overrides are not modelled.')
+    && markup.includes('GET_READINESS; source IDs [EVT-1]'));
 });

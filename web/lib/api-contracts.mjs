@@ -25,6 +25,7 @@ const ERROR_CATEGORIES = {
   request_too_large: "invalid",
   no_patient_access: "access",
   access_withdrawn: "access",
+  access_scope_changed: "access",
   binding_mismatch: "access",
   consent_not_valid: "access",
   no_patient_bound: "access",

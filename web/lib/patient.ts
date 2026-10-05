@@ -1,13 +1,13 @@
 import { withPatientSession, withPatientSessionAndContext, procedureRows, procedureValue } from "./snowflake";
+import { readGatewayAnswer, guardAnswer } from "./guarded-answer.mjs";
 import { routeQuestion } from "./question-routing.mjs";
-import { sourceIds } from "./source-ids.mjs";
 import { randomUUID } from "node:crypto";
 import { deriveValueState } from "./workspace-patient-facts.mjs";
 import { confirmWriteReceipt } from "./write-receipts.mjs";
 
 // Both providers ask Snowflake to classify before inference. Patient scope
 // comes from the bound request session, never from model-produced selectors.
-// ASK_SAARTHI is currently a thin entry point; its unmerged guard is deferred.
+// Candidate prose stays server-side; only the SQL validator's canonical claims leave this module.
 
 export type Gate = {
   gate: string;
@@ -268,12 +268,25 @@ export type AnswerClaim = {
   text: string;
   claim_type: "numeric" | "date" | "status" | "textual";
   asserted_value?: number | string | null;
+  rule_id?: string;
+  rule_version?: number;
+  outcome?: "pass" | "fail" | "not_evaluated" | "conflicting";
+  provenance_note?: string;
   evidence: {
-    kind: "structured" | "document_span";
+    kind: "structured" | "document_span" | "reference_clause";
     id: string;
     doc_id?: string;
+    table?: string;
+    event_time?: string;
+    source_recorded_at?: string;
+    ingested_at?: string;
     page_index?: number;
     derived?: string;
+    publisher?: string;
+    document_title?: string;
+    version?: string;
+    effective_date?: string;
+    jurisdiction?: string;
   }[];
 };
 
@@ -338,14 +351,17 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 
 export async function askPatient(patientId: string, question: string): Promise<AgentTurn> {
   return withPatientSessionAndContext(patientId, async (run) => {
-    const turn: AgentTurn = await routeQuestion(question, run, async () => {
+    const turn: AgentTurn = await routeQuestion(question, run, async (clock: string) => {
       const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
-      if (!rows[0]) return { ...parseAgentResponse(null), error: "agent_unreachable" };
-      return parseAgentResponse(Object.values(rows[0])[0]);
+      const payload = parseValue(Object.values(rows[0] ?? {})[0]);
+      if (payload.classification || payload.error) return readGatewayAnswer(payload);
+      return guardAnswer(parseAgentResponse(payload), run, clock);
     });
     try {
       const record = procedureValue(await run("CALL SAARTHI.OPERATIONAL.RECORD_WEB_ANSWER(?,?,PARSE_JSON(?)::ARRAY,?,?)", [
-        question, turn.known_as_of, JSON.stringify([...new Set(sourceIds(turn.tool_results ?? []))].slice(0,100)),
+        question, turn.known_as_of, JSON.stringify([...new Set(
+          turn.artifact?.claims.flatMap((claim) => claim.evidence.map((item) => item.id)) ?? [],
+        )].slice(0, 100)),
         randomUUID(), turn.error ? "error" : "recorded",
       ]));
       turn.run_id = String(record.run_id); turn.history_saved = true;

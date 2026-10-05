@@ -21,6 +21,9 @@ export function snowflakeConfig(env = process.env) {
   }
   const patPath = typeof env.SNOWFLAKE_PAT_PATH === 'string' ? env.SNOWFLAKE_PAT_PATH.trim() : undefined;
   const privateKeyPath = typeof env.SNOWFLAKE_PRIVATE_KEY_PATH === 'string' ? env.SNOWFLAKE_PRIVATE_KEY_PATH.trim() : undefined;
+  const privateKey = typeof env.SNOWFLAKE_PRIVATE_KEY === 'string'
+    ? env.SNOWFLAKE_PRIVATE_KEY.trim() : undefined;
+  if (privateKey && privateKeyPath) throw new Error('snowflake_configuration_missing');
   if (env.SNOWFLAKE_AUTHENTICATOR !== undefined && typeof env.SNOWFLAKE_AUTHENTICATOR !== 'string') {
     throw new Error('snowflake_configuration_missing');
   }
@@ -29,7 +32,7 @@ export function snowflakeConfig(env = process.env) {
   if (authenticator === 'PROGRAMMATIC_ACCESS_TOKEN' && !patPath) {
     throw new Error('snowflake_configuration_missing');
   }
-  if (authenticator === 'SNOWFLAKE_JWT' && !privateKeyPath) {
+  if (authenticator === 'SNOWFLAKE_JWT' && !privateKeyPath && !privateKey) {
     throw new Error('snowflake_configuration_missing');
   }
   if (!['PROGRAMMATIC_ACCESS_TOKEN', 'SNOWFLAKE_JWT'].includes(authenticator)) {
@@ -41,6 +44,7 @@ export function snowflakeConfig(env = process.env) {
     authenticator,
     patPath,
     privateKeyPath,
+    ...(privateKey ? { privateKey } : {}),
     role: 'SAARTHI_APP',
     warehouse: env.SNOWFLAKE_WAREHOUSE?.trim() || 'SAARTHI_AI_WH',
   };

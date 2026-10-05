@@ -206,3 +206,9 @@ test("round 2 error codes are catalogued with stable statuses", async () => {
     assert.equal(apiErrorStatus(code), 409);
   }
 });
+
+test('changed consent scope purges retained patient state', () => {
+  assert.deepEqual(apiError(new Error('access_scope_changed')), {
+    error: 'access_scope_changed', category: 'access', purge_patient_state: true,
+  });
+});

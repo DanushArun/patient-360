@@ -20,17 +20,44 @@ function sourceHref(patientId: string, knownAsOf: string, source: Evidence): str
     + `${encodeURIComponent(source.doc_id)}?${query}`;
 }
 
-function Citation({ source, index, patientId, knownAsOf, sourceScope }: {
+function ReferenceMetadata({ source }: { source: Evidence }): ReactNode {
+  return <div className="sa-meta">
+    <div>{source.publisher} · {source.document_title} · {source.version}</div>
+    <div>Effective date: {source.effective_date} · Jurisdiction: {source.jurisdiction}</div>
+    <div>Reference guidance; does not establish a finding about this patient.</div>
+  </div>;
+}
+
+function StructuredSource({ source, recordedText }: {
+  source: Evidence; recordedText: string;
+}): ReactNode {
+  return <details className="sa-meta">
+    <summary>View cited SQL record</summary>
+    <div>Table: {source.table ?? "not_received"}</div>
+    <div>Event time: {source.event_time ?? "not_received"}</div>
+    <div>Source recorded at: {source.source_recorded_at ?? "not_received"}</div>
+    <div>Ingested at: {source.ingested_at ?? "not_received"}</div>
+    {source.derived && <div>SQL derivation: {source.derived}</div>}
+    <p>{recordedText}</p>
+  </details>;
+}
+
+function Citation({ source, recordedText, index, patientId, knownAsOf, sourceScope }: {
   source: Evidence; index: number; patientId: string; knownAsOf: string | null;
+  recordedText: string;
   sourceScope?: "patient" | "reference";
 }): ReactNode {
   const href = knownAsOf && sourceScope !== "reference"
     ? sourceHref(patientId, knownAsOf, source) : null;
   const documentType = sourceScope === "reference" ? "Reference document" : "Patient document";
-  const type = source.kind === "document_span" ? documentType : "Structured record";
-  return <li className="space-y-1">
+  const type = source.kind === "reference_clause" ? "Reference quotation"
+    : source.kind === "document_span" ? documentType : "Structured record";
+  return <li className="space-y-1" data-source-kind={source.kind}>
     <div><strong>[{index + 1}]</strong> {type} · {source.id}</div>
-    {source.kind === "document_span" && Number.isInteger(source.page_index)
+    {source.kind === "structured"
+      && <StructuredSource source={source} recordedText={recordedText} />}
+    {source.kind === "reference_clause" && <ReferenceMetadata source={source} />}
+    {source.kind !== "structured" && Number.isInteger(source.page_index)
       && <div className="sa-meta">Page {Number(source.page_index) + 1}</div>}
     {source.kind === "document_span" && Number.isInteger(source.char_start)
       && Number.isInteger(source.char_end)
@@ -51,6 +78,10 @@ function Claim({ claim, citationOffset }: {
   return <li className="space-y-2">
     <p>{claim.text}</p>
     <div className="sa-meta">Claim type: {claim.claim_type}</div>
+    {claim.rule_id && Number.isInteger(claim.rule_version) && <div className="sa-meta">
+      Rule: {claim.rule_id} · version {claim.rule_version}
+    </div>}
+    {claim.provenance_note && <div className="sa-limitation">{claim.provenance_note}</div>}
     {claim.asserted_value !== undefined && claim.asserted_value !== null
       && <div className="sa-meta">Recorded value: {String(claim.asserted_value)}</div>}
     <div className="sa-meta">{claim.evidence.length
@@ -100,12 +131,14 @@ function CitationIndex({ claims, patientId, knownAsOf, sourceScope }: {
   claims: AnswerClaim[]; patientId: string; knownAsOf: string | null;
   sourceScope?: "patient" | "reference";
 }): ReactNode {
-  const sources = claims.flatMap((claim) => claim.evidence);
+  const sources = claims.flatMap((claim) => claim.evidence.map(source =>
+    ({ source, recordedText: claim.text })));
   if (!sources.length) return null;
   return <section className="sa-citation-index" aria-label="Citation index">
     <h3>Citation index</h3>
-    <ol>{sources.map((source, index) => <Citation key={`${source.id}-${index}`}
+    <ol>{sources.map(({ source, recordedText }, index) => <Citation key={`${source.id}-${index}`}
       source={source as Evidence} index={index} patientId={patientId}
+      recordedText={recordedText}
       knownAsOf={knownAsOf} sourceScope={sourceScope} />)}</ol>
   </section>;
 }

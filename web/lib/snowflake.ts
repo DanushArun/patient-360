@@ -23,7 +23,7 @@ async function openConnection(): Promise<snowflake.Connection> {
       }
     : {
         authenticator: "SNOWFLAKE_JWT" as const,
-        privateKey: readFileSync(config.privateKeyPath!, "utf8"),
+        privateKey: config.privateKey ?? readFileSync(config.privateKeyPath!, "utf8"),
       };
   const conn = snowflake.createConnection({
     account: config.account,
@@ -61,18 +61,23 @@ async function openConnection(): Promise<snowflake.Connection> {
       throw new Error("snowflake_session_scope_unverified");
     }
     await execOn(conn,
-      "ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = 120, " +
+      "ALTER SESSION SET TIMEZONE = 'UTC', STATEMENT_TIMEOUT_IN_SECONDS = 120, " +
       "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30, QUERY_TAG = 'saarthi_web_prototype'"
     );
     return conn;
   } catch (error) {
-    destroyConnection(conn);
+    await destroyConnection(conn);
     throw error;
   }
 }
 
-function destroyConnection(conn: snowflake.Connection) {
-  conn.destroy(() => {});
+function destroyConnection(conn: snowflake.Connection): Promise<void> {
+  return new Promise((resolve, reject) => {
+    conn.destroy((error) => {
+      if (error) reject(error);
+      else resolve();
+    });
+  });
 }
 
 /** One-off query: opens, runs, closes. Use for stateless reads (census, etc). */
@@ -84,7 +89,7 @@ export async function query<T = Record<string, unknown>>(
   try {
     return await execOn<T>(conn, sqlText, binds);
   } finally {
-    destroyConnection(conn);
+    await destroyConnection(conn);
   }
 }
 
@@ -115,7 +120,7 @@ export async function withReadSession<T>(
   try {
     return await fn((sql) => execOn(conn, sql));
   } finally {
-    destroyConnection(conn);
+    await destroyConnection(conn);
   }
 }
 
@@ -125,9 +130,32 @@ export async function withReadSession<T>(
  * releases the binding and closes the connection when done, so a crashed
  * request can't leave a binding (or a Snowflake session) dangling.
  */
+type PatientQuery = (
+  sql: string, binds?: (string | number | null)[]
+) => Promise<Record<string, unknown>[]>;
+
+async function verifyPatientAccess(run: PatientQuery): Promise<string> {
+  const rows = await run("CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),NULL)");
+  const cell = Object.values(rows[0] ?? {})[0];
+  const checked = typeof cell === "string" ? JSON.parse(cell) : cell;
+  if (!checked || typeof checked !== "object") throw new Error("consent_check_unavailable");
+  if (checked.error) {
+    const denied = ["access_withdrawn", "no_patient_bound", "no_patient_access"];
+    throw new Error(denied.includes(checked.error) ? checked.error : "consent_check_unavailable");
+  }
+  if (rows.length !== 1 || typeof checked.access_scope !== 'string'
+      || !/^[a-f0-9]{64}$/.test(checked.access_scope) || typeof checked.known_as_of !== "string"
+      || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(checked.known_as_of)
+      || !Number.isFinite(Date.parse(checked.known_as_of + "Z"))
+      || !Array.isArray(checked.claims) || checked.claims.length !== 0) {
+    throw new Error("consent_check_unavailable");
+  }
+  return checked.access_scope;
+}
+
 export async function withPatientSession<T>(
   patientId: string,
-  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>) => Promise<T>
+  fn: (run: PatientQuery) => Promise<T>
 ): Promise<T> {
   // Malformed ids are a client error and never reach Snowflake (F-04/F-05).
   if (!isValidPatientId(patientId)) throw new Error("invalid_argument");
@@ -139,14 +167,19 @@ export async function withPatientSession<T>(
     const bindResult = typeof bindCell === "string" ? JSON.parse(bindCell) : bindCell;
     if (!bindResult || typeof bindResult !== "object") throw new Error("binding_unavailable");
     if (bindResult.error) throw new Error(`bind failed: ${bindResult.error}`);
-    return await fn(run);
+    const accessScope = await verifyPatientAccess(run);
+    const result = await fn(run);
+    if (await verifyPatientAccess(run) !== accessScope) {
+      throw new Error("access_scope_changed");
+    }
+    return result;
   } finally {
     try {
       await run(
         "CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()"
       );
     } finally {
-      destroyConnection(conn);
+      await destroyConnection(conn);
     }
   }
 }

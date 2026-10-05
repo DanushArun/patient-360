@@ -14,7 +14,7 @@ const root = await mkdtemp(path.join(tmpdir(), 'saarthi-e2e-'));
 const copy = path.join(root, 'web');
 // Never copy dependencies, build output, local logs or any environment/credential file.
 const skip = new Set(['node_modules', '.next', 'test-results', 'playwright-report',
-  'snowflake.log', 'tsconfig.tsbuildinfo']);
+  '.snowflake', 'snowflake.log', 'tsconfig.tsbuildinfo']);
 const excluded = (name) => skip.has(name) || name.startsWith('.env');
 let status = 1;
 try {

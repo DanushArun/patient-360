@@ -83,3 +83,14 @@ test('test_configuration_when_account_has_case_and_whitespace_normalizes', () =>
   assert.equal(snowflakeConfig({ ...identity,
     SNOWFLAKE_ACCOUNT: ' ohcxvxm-os69400 ' }).account, 'OHCXVXM-OS69400');
 });
+
+test('test_configuration_when_hosted_key_supplied_accepts_server_secret', () => {
+  const config = snowflakeConfig({ ...identity, SNOWFLAKE_PRIVATE_KEY_PATH: undefined,
+    SNOWFLAKE_PRIVATE_KEY: 'synthetic-private-key' });
+  assert.equal(config.privateKey, 'synthetic-private-key');
+});
+
+test('test_configuration_when_two_key_sources_supplied_rejects_ambiguity', () => {
+  assert.throws(() => snowflakeConfig({ ...identity, SNOWFLAKE_PRIVATE_KEY: 'other-key' }),
+    /snowflake_configuration_missing/);
+});

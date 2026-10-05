@@ -22,7 +22,19 @@ type RouteTracker = {
   assertNoUnexpected: () => void;
 };
 
-async function installRecoveryRoutes(page: Page, failRecompute = false): Promise<RouteTracker> {
+type RecoveryAttempts = {
+  nextFactAttempt: () => number;
+  nextCreateAttempt: () => number;
+  hasCreatedTask: () => boolean;
+  markTaskCreated: () => void;
+  hasRecomputed: () => boolean;
+  markRecomputed: () => void;
+  failRecompute: boolean;
+  dropAfterCommit: boolean;
+};
+
+async function installRecoveryRoutes(page: Page, failRecompute = false,
+  dropAfterCommit = false): Promise<RouteTracker> {
   const unexpected: string[] = [];
   const requests: RouteTracker["requests"] = [];
   let factAttempts = 0;
@@ -35,7 +47,7 @@ async function installRecoveryRoutes(page: Page, failRecompute = false): Promise
     const body = (request.postDataJSON() ?? {}) as Record<string, unknown>;
     requests.push({ method: request.method(), path: url.pathname,
       view: url.searchParams.get("view"), body });
-    const response = await routeResponse(route, url, body, {
+    const response = await routeResponse(route, url, {
       nextFactAttempt: () => ++factAttempts,
       nextCreateAttempt: () => ++createAttempts,
       hasCreatedTask: () => taskCreated,
@@ -43,6 +55,7 @@ async function installRecoveryRoutes(page: Page, failRecompute = false): Promise
       hasRecomputed: () => recomputeRequested,
       markRecomputed: () => { recomputeRequested = true; },
       failRecompute,
+      dropAfterCommit,
     });
     if (response) return;
     unexpected.push(`${request.method()} ${url.pathname}${url.search}`);
@@ -51,28 +64,12 @@ async function installRecoveryRoutes(page: Page, failRecompute = false): Promise
   return { requests, assertNoUnexpected: () => expect(unexpected).toEqual([]) };
 }
 
-async function routeResponse(
-  route: Route,
-  url: URL,
-  body: Record<string, unknown>,
-  attempts: {
-    nextFactAttempt: () => number;
-    nextCreateAttempt: () => number;
-    hasCreatedTask: () => boolean;
-    markTaskCreated: () => void;
-    hasRecomputed: () => boolean;
-    markRecomputed: () => void;
-    failRecompute: boolean;
-  },
-): Promise<true | null> {
+async function routeResponse(route: Route, url: URL,
+  attempts: RecoveryAttempts): Promise<true | null> {
+  if (await writeResponse(route, url, attempts)) return true;
   const patientPath = `/api/patient/${patientId}`;
   if (url.pathname === patientPath && route.request().method() === "GET") {
     return fulfill(route, attempts.hasRecomputed() ? refreshedPatient : patient);
-  }
-  if (url.pathname === patientPath && route.request().method() === "POST") {
-    if (attempts.failRecompute) return fulfill(route, { error: "readiness_refresh_unavailable" }, 503);
-    attempts.markRecomputed();
-    return fulfill(route, postRefreshPatient);
   }
   if (url.pathname === `${patientPath}/review-tasks`) {
     const tasks = attempts.hasCreatedTask() ? [closedTask] : [];
@@ -92,8 +89,24 @@ async function routeResponse(
       known_as_of: url.searchParams.get("known_as_of") });
   }
   if (url.pathname === `${patientPath}/timeline`) return fulfill(route, timelineFixture);
+  return null;
+}
+
+async function writeResponse(route: Route, url: URL,
+  attempts: RecoveryAttempts): Promise<true | null> {
+  if (route.request().method() !== "POST") return null;
+  if (url.pathname === `/api/patient/${patientId}`) {
+    if (attempts.failRecompute) return fulfill(route, { error: "readiness_refresh_unavailable" }, 503);
+    attempts.markRecomputed();
+    return fulfill(route, postRefreshPatient);
+  }
   if (url.pathname === "/api/review-task" && route.request().method() === "POST") {
     if (attempts.nextCreateAttempt() === 1) {
+      if (attempts.dropAfterCommit) {
+        attempts.markTaskCreated();
+        await route.abort('connectionreset');
+        return true;
+      }
       return fulfill(route, { error: "action_unavailable" }, 503);
     }
     attempts.markTaskCreated();
@@ -149,6 +162,30 @@ const timelineFixture = {
     source_recorded_at: "2026-09-23T12:00:00", ingested_at: "2026-09-23T12:01:00",
     event_id: "EVT-PENDING" }],
 };
+
+test("test_task_when_committed_response_drops_recovers_same_request_after_reload",
+  async ({ page }) => {
+  const tracker = await installRecoveryRoutes(page, false, true);
+  await page.goto(routePath);
+  await page.getByRole("button", { name: "View check" }).first().click();
+  await page.getByRole("button", { name: "Request document" }).click();
+  await page.getByRole("button", { name: "Create document request" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Task status not confirmed" }))
+    .toBeVisible();
+  const original = tracker.requests.find(row => row.path === '/api/review-task')?.body.requestId;
+  await page.reload();
+  await expect(page.getByRole("heading", { name: patient.patientName })).toBeVisible();
+  await page.getByRole("button", { name: "View check" }).first().click();
+  await page.getByRole("button", { name: "Request document" }).click();
+  await page.getByRole("button", { name: "Create document request" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Task already filed" }))
+    .toContainText(taskId);
+  const submissions = tracker.requests.filter(row => row.path === '/api/review-task');
+  expect(submissions.map(row => row.body.requestId)).toEqual([original, original]);
+  tracker.assertNoUnexpected();
+  const screenshot = process.env.SAARTHI_CHAOS_SCREENSHOT;
+  if (screenshot) await page.screenshot({ path: screenshot, fullPage: true });
+});
 
 test("test_facts_retry_when_first_read_fails_shows_returned_clock_semantics", async ({ page }) => {
   const tracker = await openWorkspace(page, "Facts");

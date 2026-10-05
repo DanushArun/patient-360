@@ -1,3 +1,5 @@
+import { readGatewayAnswer } from './guarded-answer.mjs';
+
 function parseClassifierResult(rows) {
   const row = Array.isArray(rows) ? rows[0] : null;
   const value = Object.values(row ?? {})[0];
@@ -11,42 +13,40 @@ function parseClassifierResult(rows) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 
-function routingFailure() {
+/** @param {string} knownAsOf @returns {object} */
+function routingFailure(knownAsOf) {
   return {
     text: "I couldn't safely route that question. Ask what is documented, missing, or conflicting in the record.",
     thinking: "",
     tools: [],
     suggested: [],
     gates: [],
-    known_as_of: null,
+    known_as_of: knownAsOf,
     error: "classification_unavailable",
   };
 }
 
-function clinicalRefusal() {
-  return {
-    artifact: { classification: "CLASS_A", claims: [], limitations: [],
-      overall_status: "refused", known_as_of: null },
-    text: "This question requires the treating practitioner's judgment. I can list documented " +
-      "findings, missing records, or conflicting sources if you ask about the record.",
-    thinking: "",
-    tools: [],
-    suggested: [],
-    gates: [],
-    known_as_of: null,
-    error: null,
-  };
-}
-
 export async function routeQuestion(question, run, answer) {
+  const clock = await run(
+    `SELECT TO_VARCHAR(CURRENT_TIMESTAMP()::TIMESTAMP_NTZ, 'YYYY-MM-DD"T"HH24:MI:SS')`
+      + " AS KNOWN_AS_OF",
+  );
+  const knownAsOf = clock[0]?.KNOWN_AS_OF;
+  if (typeof knownAsOf !== "string"
+      || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(knownAsOf)) {
+    throw new Error("answer_clock_unavailable");
+  }
   let rows;
   try {
     rows = await run("CALL SAARTHI.OPERATIONAL.CLASSIFY_QUESTION(?)", [question]);
   } catch {
-    return routingFailure();
+    return routingFailure(knownAsOf);
   }
   const classification = parseClassifierResult(rows)?.classification;
-  if (classification === "CLASS_A") return clinicalRefusal();
-  if (classification !== "CLASS_B") return routingFailure();
-  return answer();
+  if (classification === "CLASS_A") {
+    const refusal = await run('CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFUSAL(?)', [knownAsOf]);
+    return readGatewayAnswer(Object.values(refusal[0] ?? {})[0]);
+  }
+  if (classification !== "CLASS_B") return routingFailure(knownAsOf);
+  return answer(knownAsOf);
 }
