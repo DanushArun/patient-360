@@ -48,6 +48,7 @@ AS
 $$
 DECLARE
     v_known_as_of TIMESTAMP_NTZ DEFAULT NULL;
+    v_snapshot TIMESTAMP_TZ;
     v_scheduled   TIMESTAMP_NTZ DEFAULT NULL;
     v_out         ARRAY DEFAULT ARRAY_CONSTRUCT();
 
@@ -59,6 +60,7 @@ DECLARE
     v_operator     VARCHAR;
     v_threshold    FLOAT;
     v_max_age_days FLOAT;
+    v_expected_unit VARCHAR;
 
     v_evt_value    FLOAT;
     v_evt_id       VARCHAR;
@@ -77,30 +79,36 @@ DECLARE
     v_her2_targeted  BOOLEAN;
     v_surgical       BOOLEAN;
 
-    -- Binds, in order: scope_known, surgical, breast, her2_targeted.
+    -- Binds: cutoff twice, scope_known, surgical, breast, her2_targeted.
     c_rules CURSOR FOR
         SELECT rule_id, rule_version, gate, severity,
                threshold_json:concept::VARCHAR   AS concept,
                threshold_json:operator::VARCHAR  AS operator,
                threshold_json:value::FLOAT       AS threshold_value,
-               threshold_json:max_age_days::FLOAT AS max_age_days
+               threshold_json:max_age_days::FLOAT AS max_age_days,
+               threshold_json:unit::VARCHAR AS expected_unit
           FROM SAARTHI.OPERATIONAL.RULE_CATALOG
          WHERE threshold_json:concept IS NOT NULL     -- only the "simple threshold" shape
+           AND effective_from <= ?
+           AND (effective_to IS NULL OR effective_to > ?)
            AND (disease_scope IS NULL
                 OR NOT ?
                 OR (disease_scope = 'oncology' AND (rule_id <> 'SURG-CLEAR-001' OR ?))
                 OR (disease_scope = 'breast_cancer' AND ?)
                 OR (disease_scope = 'trastuzumab' AND ?))
+         QUALIFY ROW_NUMBER() OVER (PARTITION BY rule_id ORDER BY rule_version DESC) = 1
          ORDER BY specificity DESC;
 BEGIN
     v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:p_known_as_of), CURRENT_TIMESTAMP());
+    v_snapshot := TRY_TO_TIMESTAMP_TZ(
+        TO_VARCHAR(v_known_as_of,'YYYY-MM-DD"T"HH24:MI:SS.FF9') || '+00:00');
     -- Freshness is measured against the encounter the evidence has to be fresh FOR.
     -- With no encounter, the only defensible anchor is the moment being asked
     -- about. A NULL anchor made every age NULL, every "age > max" comparison
     -- NULL, and every freshness rule fall through to its pass branch with a
     -- NULL reason - a silent pass on evidence of unknown age (R3), verified live.
     v_scheduled := COALESCE(
-        (SELECT scheduled_time FROM SAARTHI.CORE.ENCOUNTER WHERE encounter_id = :p_encounter_id),
+        (SELECT scheduled_time FROM SAARTHI.CORE.ENCOUNTER AT(TIMESTAMP => :v_snapshot) WHERE encounter_id = :p_encounter_id),
         v_known_as_of);
 
     -- Rule applicability, from RULE_CATALOG.disease_scope. A rule that does not
@@ -108,15 +116,15 @@ BEGIN
     -- FOLFOX patient is noise that trains clinicians to ignore the strip.
     -- When nothing about the patient's disease or regimen is on record, every
     -- rule applies - unknown scope is not the same as "does not apply" (R3).
-    v_has_plan := (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.TREATMENT_PLAN WHERE patient_id = :p_patient_id);
-    v_breast := (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.CLINICAL_EVENT
+    v_has_plan := (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.TREATMENT_PLAN AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id);
+    v_breast := (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                   WHERE patient_id = :p_patient_id AND event_type = 'diagnosis' AND code LIKE 'C50%');
-    v_scope_known := v_has_plan OR (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.CLINICAL_EVENT
+    v_scope_known := v_has_plan OR (SELECT COUNT(*) > 0 FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                   WHERE patient_id = :p_patient_id AND event_type = 'diagnosis');
     -- applies_to for SURV-LVEF-*: "trastuzumab and other HER2-targeted agents".
     -- Read from the most recent plan only - a superseded regimen no longer applies.
     v_her2_targeted := (SELECT COUNT(*) > 0 FROM (
-        SELECT regimen_display FROM SAARTHI.CORE.TREATMENT_PLAN WHERE patient_id = :p_patient_id
+        SELECT regimen_display FROM SAARTHI.CORE.TREATMENT_PLAN AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id
          QUALIFY ROW_NUMBER() OVER (ORDER BY version DESC, decided_at DESC NULLS LAST) = 1) latest
         WHERE latest.regimen_display ILIKE ANY ('%trastuzumab%', '%pertuzumab%', '%T-DM1%', '%trastuzumab emtansine%'));
     -- applies_to for SURG-CLEAR-001: "patients with a surgical interruption
@@ -124,8 +132,10 @@ BEGIN
     v_surgical := (SELECT COUNT(*) > 0 FROM SAARTHI.DOCUMENTS.DOCUMENT
                     WHERE patient_id = :p_patient_id AND doc_type = 'surgical_note');
 
-    OPEN c_rules USING (v_scope_known, v_surgical, v_breast, v_her2_targeted);
-    FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days;
+    OPEN c_rules USING (v_known_as_of, v_known_as_of,
+        v_scope_known, v_surgical, v_breast, v_her2_targeted);
+    FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days,
+        v_expected_unit;
 
     WHILE (v_rule_id IS NOT NULL) DO
         v_found := FALSE;
@@ -134,7 +144,11 @@ BEGIN
         v_derivation := NULL;
         v_age_days := NULL;
 
-        SELECT he.value_num, he.event_id, he.derivation, DATEDIFF('day', he.event_time, :v_scheduled)
+        SELECT CASE WHEN he.plausibility_state = 'present'
+                AND (:v_expected_unit IS NULL OR he.unit = :v_expected_unit
+                     OR (:v_expected_unit = '/uL' AND he.unit IN ('/cumm','/CUMM')))
+               THEN he.value_num END,
+               he.event_id, he.derivation, DATEDIFF('day', he.event_time, :v_scheduled)
           INTO :v_evt_value, :v_evt_id, :v_derivation, :v_age_days
           FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS he
          WHERE he.patient_id = :p_patient_id
@@ -143,7 +157,7 @@ BEGIN
          ORDER BY he.event_time DESC
          LIMIT 1;
 
-        IF (v_evt_id IS NOT NULL) THEN
+        IF (v_evt_id IS NOT NULL AND v_evt_value IS NOT NULL) THEN
             v_found := TRUE;
 
             IF (v_rule_id = 'ENDO-DEXA-001') THEN
@@ -225,12 +239,13 @@ BEGIN
             v_out := ARRAY_APPEND(v_out, OBJECT_CONSTRUCT(
                 'gate', v_gate, 'rule_id', v_rule_id, 'rule_version', v_rule_version,
                 'outcome', 'not_evaluated', 'severity', v_severity,
-                'reason', 'no ' || v_concept || ' evidence found as of ' || TO_VARCHAR(v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS'),
+                'reason', 'no usable ' || v_concept || ' evidence found as of ' || TO_VARCHAR(v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS'),
                 'evidence_ids', ARRAY_CONSTRUCT(),
                 'known_as_of', TO_VARCHAR(v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS')));
         END IF;
 
-        FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days;
+        FETCH c_rules INTO v_rule_id, v_rule_version, v_gate, v_severity, v_concept, v_operator, v_threshold, v_max_age_days,
+        v_expected_unit;
     END WHILE;
     CLOSE c_rules;
 
@@ -247,14 +262,18 @@ BEGIN
         SELECT rule_id, rule_version, gate, severity
           FROM SAARTHI.OPERATIONAL.RULE_CATALOG
          WHERE threshold_json:concept IS NULL
+           AND effective_from <= ?
+           AND (effective_to IS NULL OR effective_to > ?)
            AND (disease_scope IS NULL
                 OR NOT ?
                 OR (disease_scope = 'oncology' AND (rule_id <> 'SURG-CLEAR-001' OR ?))
                 OR (disease_scope = 'breast_cancer' AND ?)
                 OR (disease_scope = 'trastuzumab' AND ?))
+         QUALIFY ROW_NUMBER() OVER (PARTITION BY rule_id ORDER BY rule_version DESC) = 1
          ORDER BY specificity DESC;
 
-    OPEN c_special USING (v_scope_known, v_surgical, v_breast, v_her2_targeted);
+    OPEN c_special USING (v_known_as_of, v_known_as_of,
+        v_scope_known, v_surgical, v_breast, v_her2_targeted);
     FETCH c_special INTO v_rule_id, v_rule_version, v_gate, v_severity;
 
     WHILE (v_rule_id IS NOT NULL) DO
@@ -263,9 +282,9 @@ BEGIN
         v_ev      := ARRAY_CONSTRUCT();
 
         IF (v_rule_id = 'ID-LINK-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(map_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.ID_MAP
+            v_ev := (SELECT COALESCE(ARRAY_AGG(map_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.ID_MAP AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id AND link_status IN ('abha_linked','manually_verified'));
-            LET v_linked NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.ID_MAP WHERE patient_id = :p_patient_id AND link_status IN ('abha_linked','manually_verified'));
+            LET v_linked NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.ID_MAP AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND link_status IN ('abha_linked','manually_verified'));
             IF (v_linked >= 1) THEN
                 v_outcome := 'pass';
                 v_reason  := v_linked::VARCHAR || ' verified identifier link(s) present (abha_linked or manually_verified)';
@@ -274,9 +293,9 @@ BEGIN
                 v_reason  := 'no verified identifier links on file - abha_linked or manually_verified required';
             END IF;
         ELSEIF (v_rule_id = 'ID-QUAR-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(map_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.ID_MAP
+            v_ev := (SELECT COALESCE(ARRAY_AGG(map_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.ID_MAP AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id AND link_status = 'quarantined');
-            LET v_quar NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.ID_MAP WHERE patient_id = :p_patient_id AND link_status = 'quarantined');
+            LET v_quar NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.ID_MAP AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND link_status = 'quarantined');
             IF (v_quar = 0) THEN
                 v_outcome := 'pass';
                 v_reason  := 'no quarantined identity matches on record';
@@ -285,10 +304,10 @@ BEGIN
                 v_reason  := v_quar::VARCHAR || ' quarantined identity match(es) - manual reconciliation required, no evidence contributes until resolved (R4)';
             END IF;
         ELSEIF (v_rule_id = 'DOC-PATH-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.CLINICAL_EVENT
+            v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id AND event_type = 'pathology');
-            LET v_final_path NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND event_type = 'pathology' AND status = 'final');
-            LET v_pending_path NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND event_type = 'pathology' AND status IN ('preliminary','pending'));
+            LET v_final_path NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND event_type = 'pathology' AND status = 'final');
+            LET v_pending_path NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND event_type = 'pathology' AND status IN ('preliminary','pending'));
             IF (v_final_path >= 1) THEN
                 v_outcome := 'pass';
                 v_reason  := v_final_path::VARCHAR || ' pathology report(s) in final status';
@@ -300,14 +319,14 @@ BEGIN
                 v_reason  := 'no pathology reports on record';
             END IF;
         ELSEIF (v_rule_id = 'DOC-DISC-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.CLINICAL_EVENT
+            v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id
                         AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC'));
             -- discordant_across_specimens is not a failure - both readings surface
             -- as evidence, and a human reconciles per SPEC §12. Only same-specimen
             -- disagreement is a real conflict. This evaluator checks HER2 as the
             -- canonical case; a fuller sweep would enumerate every concept.
-            LET v_her2_specimens NUMBER := (SELECT COUNT(DISTINCT specimen_id) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC') AND specimen_id IS NOT NULL);
+            LET v_her2_specimens NUMBER := (SELECT COUNT(DISTINCT specimen_id) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC') AND specimen_id IS NOT NULL);
             IF (v_her2_specimens > 1) THEN
                 v_outcome := 'pass';
                 v_reason  := 'HER2 read on ' || v_her2_specimens::VARCHAR || ' distinct specimens - discordant_across_specimens: both readings surfaced, never auto-resolved';
@@ -316,14 +335,14 @@ BEGIN
                 v_reason  := 'no cross-source discordance detected';
             END IF;
         ELSEIF (v_rule_id = 'DOC-HER2-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.CLINICAL_EVENT
+            v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id
                         AND concept_id IN (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name IN ('HER2_IHC','HER2_FISH')));
             -- HER2 state machine: ihc IN (0,1,3) -> final; ihc=2 -> FISH reflex.
             -- Latest specimen is authoritative when specimens differ (final resection
             -- outranks outside biopsy in real practice). value_text pattern is like
             -- 'grade=III ihc=2+'.
-            LET v_latest_ihc VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC') ORDER BY event_time DESC LIMIT 1);
+            LET v_latest_ihc VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC') ORDER BY event_time DESC LIMIT 1);
             IF (v_latest_ihc IS NULL) THEN
                 v_outcome := 'fail';
                 v_reason  := 'no HER2 IHC recorded';
@@ -335,8 +354,8 @@ BEGIN
                 --   groups 2-4 (discordant ratio/copies)               -> needs
                 --            concurrent IHC review; not final, never guessed.
                 -- value_text carries 'ratio=2.6 copies=5.8'.
-                LET v_ihc_time TIMESTAMP_NTZ := (SELECT MAX(event_time) FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC'));
-                LET v_fish VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND status = 'final' AND event_time >= :v_ihc_time AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_FISH') ORDER BY event_time DESC LIMIT 1);
+                LET v_ihc_time TIMESTAMP_NTZ := (SELECT MAX(event_time) FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_IHC'));
+                LET v_fish VARCHAR := (SELECT value_text FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND status = 'final' AND event_time >= :v_ihc_time AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'HER2_FISH') ORDER BY event_time DESC LIMIT 1);
                 LET v_ratio  FLOAT := TRY_TO_DOUBLE(REGEXP_SUBSTR(:v_fish, 'ratio=([0-9.]+)', 1, 1, 'e', 1));
                 LET v_copies FLOAT := TRY_TO_DOUBLE(REGEXP_SUBSTR(:v_fish, 'copies=([0-9.]+)', 1, 1, 'e', 1));
                 IF (v_fish IS NULL) THEN
@@ -360,10 +379,10 @@ BEGIN
                 v_reason  := 'HER2 status final from IHC alone: ' || v_latest_ihc;
             END IF;
         ELSEIF (v_rule_id = 'COV-LIMIT-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(coverage_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.COVERAGE
+            v_ev := (SELECT COALESCE(ARRAY_AGG(coverage_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.COVERAGE AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id);
-            LET v_cov_used FLOAT := (SELECT used_amount FROM SAARTHI.CORE.COVERAGE WHERE patient_id = :p_patient_id ORDER BY priority ASC NULLS LAST LIMIT 1);
-            LET v_cov_limit FLOAT := (SELECT annual_limit FROM SAARTHI.CORE.COVERAGE WHERE patient_id = :p_patient_id ORDER BY priority ASC NULLS LAST LIMIT 1);
+            LET v_cov_used FLOAT := (SELECT used_amount FROM SAARTHI.CORE.COVERAGE AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id ORDER BY priority ASC NULLS LAST LIMIT 1);
+            LET v_cov_limit FLOAT := (SELECT annual_limit FROM SAARTHI.CORE.COVERAGE AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id ORDER BY priority ASC NULLS LAST LIMIT 1);
             IF (v_cov_limit IS NULL) THEN
                 v_outcome := 'not_evaluated';
                 v_reason  := 'no COVERAGE row on file for patient';
@@ -375,12 +394,12 @@ BEGIN
                 v_reason  := 'used ' || v_cov_used::VARCHAR || ' meets or exceeds annual limit ' || v_cov_limit::VARCHAR;
             END IF;
         ELSEIF (v_rule_id = 'COV-AUTH-001') THEN
-            v_ev := (SELECT COALESCE(ARRAY_AGG(auth_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.AUTHORIZATION
+            v_ev := (SELECT COALESCE(ARRAY_AGG(auth_id), ARRAY_CONSTRUCT()) FROM SAARTHI.CORE.AUTHORIZATION AT(TIMESTAMP => :v_snapshot)
                       WHERE patient_id = :p_patient_id
                         AND (encounter_id = :p_encounter_id OR encounter_id IS NULL)
-                        AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()));
-            LET v_pa_status VARCHAR := (SELECT status FROM SAARTHI.CORE.AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
-            LET v_pa_letter VARCHAR := (SELECT letter_status FROM SAARTHI.CORE.AUTHORIZATION WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP()) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
+                        AND (expires_at IS NULL OR expires_at > :v_known_as_of));
+            LET v_pa_status VARCHAR := (SELECT status FROM SAARTHI.CORE.AUTHORIZATION AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > :v_known_as_of) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
+            LET v_pa_letter VARCHAR := (SELECT letter_status FROM SAARTHI.CORE.AUTHORIZATION AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND (encounter_id = :p_encounter_id OR encounter_id IS NULL) AND (expires_at IS NULL OR expires_at > :v_known_as_of) ORDER BY decided_at DESC NULLS LAST, requested_at DESC NULLS LAST LIMIT 1);
             IF (v_pa_status IS NULL) THEN
                 v_outcome := 'not_evaluated';
                 v_reason  := 'no pre-authorisation record for this patient/encounter';
@@ -402,21 +421,24 @@ BEGIN
             END IF;
         ELSEIF (v_rule_id = 'CLIN-CRCL-001') THEN
             v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM (
-                       SELECT event_id FROM SAARTHI.CORE.CLINICAL_EVENT
+                       SELECT event_id FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                         WHERE patient_id = :p_patient_id AND status = 'final'
                           AND concept_id IN (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name IN ('CREATININE','WEIGHT'))
                         QUALIFY ROW_NUMBER() OVER (PARTITION BY concept_id ORDER BY event_time DESC) = 1));
             -- Cockcroft-Gault: CrCl = ((140 - age) * weight_kg * (0.85 if female else 1)) / (72 * creatinine)
-            LET v_creat  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'CREATININE') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
-            LET v_weight FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'WEIGHT') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
-            LET v_age    FLOAT := (SELECT DATEDIFF('year', dob, CURRENT_DATE()) FROM SAARTHI.CORE.PATIENT WHERE patient_id = :p_patient_id);
-            LET v_female BOOLEAN := (SELECT gender = 'female' FROM SAARTHI.CORE.PATIENT WHERE patient_id = :p_patient_id);
-            IF (v_creat IS NULL OR v_weight IS NULL OR v_age IS NULL) THEN
+            LET v_creat  FLOAT := (SELECT CASE WHEN unit = 'mg/dL' AND value_num > 0 THEN value_num END FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'CREATININE') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_weight FLOAT := (SELECT CASE WHEN unit = 'kg' AND value_num > 0 THEN value_num END FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'WEIGHT') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_age    FLOAT := (SELECT DATEDIFF('year', dob, :v_known_as_of::DATE)
+                - IFF(TO_CHAR(:v_known_as_of::DATE,'MMDD') < TO_CHAR(dob,'MMDD'),1,0) FROM SAARTHI.CORE.PATIENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id);
+            LET v_female BOOLEAN := (SELECT CASE gender WHEN 'female' THEN TRUE WHEN 'male' THEN FALSE END FROM SAARTHI.CORE.PATIENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id);
+            IF (v_creat IS NULL OR v_weight IS NULL OR v_age IS NULL
+                OR v_age < 0 OR v_age >= 140 OR v_female IS NULL) THEN
                 v_outcome := 'not_evaluated';
-                v_reason  := 'CrCl requires creatinine + weight + age; missing: ' ||
+                v_reason  := 'CrCl requires valid units, creatinine, weight, age and recorded sex; missing: ' ||
                              IFF(v_creat IS NULL, 'creatinine ', '') ||
                              IFF(v_weight IS NULL, 'weight ', '') ||
-                             IFF(v_age IS NULL, 'age ', '');
+                             IFF(v_age IS NULL OR v_age < 0 OR v_age >= 140, 'age ', '') ||
+                             IFF(v_female IS NULL, 'recorded sex ', '');
             ELSE
                 LET v_crcl FLOAT := ((140 - v_age) * v_weight * IFF(v_female, 0.85, 1.0)) / (72 * v_creat);
                 -- Safest-agent threshold (60 mL/min - cisplatin/methotrexate). If CrCl
@@ -437,7 +459,7 @@ BEGIN
             END IF;
         ELSEIF (v_rule_id = 'CLIN-BILI-001') THEN
             v_ev := (SELECT COALESCE(ARRAY_AGG(event_id), ARRAY_CONSTRUCT()) FROM (
-                       SELECT event_id FROM SAARTHI.CORE.CLINICAL_EVENT
+                       SELECT event_id FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot)
                         WHERE patient_id = :p_patient_id AND status = 'final'
                           AND concept_id IN (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name IN ('BILIRUBIN','AST'))
                         QUALIFY ROW_NUMBER() OVER (PARTITION BY concept_id ORDER BY event_time DESC) = 1));
@@ -445,8 +467,8 @@ BEGIN
             -- as the safety-first default because it is the strictest absolute limit
             -- across the three agents named in the rule (docetaxel is x-ULN; doxorubicin
             -- is absolute mg/dL). AST also read for informational context.
-            LET v_bili FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'BILIRUBIN') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
-            LET v_ast  FLOAT := (SELECT value_num FROM SAARTHI.CORE.CLINICAL_EVENT WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'AST') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_bili FLOAT := (SELECT CASE WHEN unit = 'mg/dL' AND value_num >= 0 THEN value_num END FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'BILIRUBIN') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
+            LET v_ast  FLOAT := (SELECT CASE WHEN unit IN ('U/L','IU/L') AND value_num >= 0 THEN value_num END FROM SAARTHI.CORE.CLINICAL_EVENT AT(TIMESTAMP => :v_snapshot) WHERE patient_id = :p_patient_id AND concept_id = (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'AST') AND status = 'final' ORDER BY event_time DESC LIMIT 1);
             IF (v_bili IS NULL) THEN
                 v_outcome := 'not_evaluated';
                 v_reason  := 'per-agent bilirubin rule requires a bilirubin measurement';
@@ -494,18 +516,18 @@ BEGIN
                                 ROW_NUMBER() OVER (ORDER BY event_time ASC, event_id ASC)  AS rn_first,
                                 ROW_NUMBER() OVER (ORDER BY event_time DESC, event_id DESC) AS rn_last
                            FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS
-                          WHERE patient_id = :p_patient_id AND concept_name = 'LVEF')
+                          WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' AND ingested_at <= :v_known_as_of)
                         WHERE rn_first = 1 OR rn_last = 1
                         ORDER BY event_id));
             -- Delta rule: hold if (baseline - current) >= 16, OR (current < 50 AND drop >= 10).
             -- Needs at least two LVEF measurements to compute a delta.
-            LET v_lvef_readings NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF');
+            LET v_lvef_readings NUMBER := (SELECT COUNT(*) FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' AND ingested_at <= :v_known_as_of);
             IF (v_lvef_readings < 2) THEN
                 v_outcome := 'not_evaluated';
                 v_reason  := 'delta rule requires baseline + current LVEF, only ' || v_lvef_readings::VARCHAR || ' measurement(s) on record';
             ELSE
-                LET v_baseline FLOAT := (SELECT value_num FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' ORDER BY event_time ASC LIMIT 1);
-                LET v_current  FLOAT := (SELECT value_num FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' ORDER BY event_time DESC LIMIT 1);
+                LET v_baseline FLOAT := (SELECT value_num FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' AND ingested_at <= :v_known_as_of ORDER BY event_time ASC LIMIT 1);
+                LET v_current  FLOAT := (SELECT value_num FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE patient_id = :p_patient_id AND concept_name = 'LVEF' AND ingested_at <= :v_known_as_of ORDER BY event_time DESC LIMIT 1);
                 LET v_drop FLOAT := v_baseline - v_current;
                 IF (v_drop >= 16) THEN
                     v_outcome := 'fail';

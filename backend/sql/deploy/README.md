@@ -16,10 +16,10 @@ After step 08 restart the web server (it must not serve code built before the pr
 | File | Size |
 |------|------|
 | 00_preflight.sql | 3 KB |
-| 01_web_procedures.sql | 70 KB |
-| 02_gates_and_scheme_table.sql | 52 KB |
-| 03_tool_procedures.sql | 80 KB |
-| 04_tasks_and_grants.sql | 39 KB |
+| 01_web_procedures.sql | 79 KB |
+| 02_gates_and_scheme_table.sql | 55 KB |
+| 03_tool_procedures.sql | 127 KB |
+| 04_tasks_and_grants.sql | 40 KB |
 | 05_seed_data.sql | 43 KB |
 | 06_cohort_and_documents.sql | 42 KB |
 | 07_governance_row_access.sql | 6 KB |

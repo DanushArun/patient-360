@@ -6,6 +6,108 @@ USE SECONDARY ROLES NONE;
 USE DATABASE SAARTHI;
 USE WAREHOUSE SAARTHI_AI_WH;
 
+-- ===== BEGIN dynamic_tables/01_harmonized_events.sql =====
+-- =============================================================================
+-- STEP 15a - DT_HARMONIZED_EVENTS (pulled forward - the vertical slice needs it)
+-- =============================================================================
+-- SPEC.md §13, WORK-PLAN.md Day 4-5. The single most load-bearing Dynamic
+-- Table. NO AI FUNCTIONS HERE - a DT requires deterministic refresh; AI steps
+-- live in Tasks (step 16).
+--
+-- This build implements ANC derivation and registered conversions, preserving
+-- canonical values without double conversion. CrCl is evaluated by evaluate_gates,
+-- not materialized here. Missing required inputs yield not_evaluated.
+CREATE OR REPLACE DYNAMIC TABLE SAARTHI.CORE.DT_HARMONIZED_EVENTS
+  TARGET_LAG = '1 minute'
+  WAREHOUSE = SAARTHI_AI_WH
+AS
+WITH converted AS (
+    SELECT ce.*, co.canonical_name AS concept_name,
+           ur.canonical_unit, ur.plausible_min, ur.plausible_max,
+           CASE WHEN ur.canonical_unit IS NULL THEN ce.value_num
+                WHEN ce.unit = ur.canonical_unit THEN ce.value_num
+                WHEN ce.unit = ur.source_unit_pattern AND ur.conversion_factor > 0
+                  THEN ce.value_num * ur.conversion_factor
+                ELSE NULL END AS normalized_value
+      FROM SAARTHI.CORE.CLINICAL_EVENT ce
+      LEFT JOIN SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY co ON co.concept_id = ce.concept_id
+      LEFT JOIN SAARTHI.OPERATIONAL.UNIT_REGISTRY ur
+        ON ur.concept_id = ce.concept_id AND ur.source_unit_pattern = ce.original_unit
+),
+normalized AS (
+    SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
+           normalized_value AS value_num, value_text, abnormal_flag,
+           CASE WHEN value_num IS NOT NULL AND normalized_value IS NULL THEN 'unreadable'
+                WHEN plausible_min IS NOT NULL AND normalized_value < plausible_min
+                  THEN 'unreadable'
+                WHEN plausible_max IS NOT NULL AND normalized_value > plausible_max
+                  THEN 'unreadable'
+                ELSE 'present' END AS plausibility_state,
+           event_time, source_recorded_at, ingested_at, valid_until, specimen_id,
+           COALESCE(canonical_unit,unit) AS unit
+      FROM converted
+),
+anc_derived AS (
+    -- ANC = WBC x (neutrophil% + band%) / 100, computed only when the lab
+    -- reported a differential and no direct ANC row exists (WORK-PLAN.md
+    -- Day 4-5 acceptance test: WBC 6000, neutrophils 35% -> ANC 2100).
+    SELECT
+        wbc.event_id || '-ANC-DERIVED' AS event_id,
+        wbc.patient_id, wbc.encounter_id, 'lab' AS event_type,
+        (SELECT concept_id FROM SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY WHERE canonical_name = 'ANC') AS concept_id,
+        'ANC' AS concept_name,
+        wbc.value_num * (neut.value_num) / 100 AS value_num,
+        NULL AS value_text,
+        NULL AS abnormal_flag,
+        'present' AS plausibility_state,
+        wbc.event_time,
+        CASE WHEN wbc.source_recorded_at > neut.source_recorded_at
+             THEN wbc.source_recorded_at ELSE neut.source_recorded_at END AS source_recorded_at,
+        CASE WHEN wbc.ingested_at > neut.ingested_at
+             THEN wbc.ingested_at ELSE neut.ingested_at END AS ingested_at,
+        wbc.valid_until, wbc.specimen_id, wbc.unit
+    FROM normalized wbc
+    JOIN normalized neut
+      ON neut.patient_id = wbc.patient_id
+     AND neut.encounter_id = wbc.encounter_id
+     AND neut.specimen_id = wbc.specimen_id
+     AND neut.event_time   = wbc.event_time
+     AND neut.concept_name = 'NEUTROPHIL_PCT'
+    WHERE wbc.concept_name = 'WBC'
+      AND wbc.plausibility_state = 'present' AND neut.plausibility_state = 'present'
+      AND wbc.value_num > 0 AND neut.value_num BETWEEN 0 AND 100
+      AND wbc.unit IN ('/uL','/cumm','/CUMM') AND neut.unit = '%'
+      AND wbc.source_recorded_at IS NOT NULL AND neut.source_recorded_at IS NOT NULL
+      AND wbc.ingested_at IS NOT NULL AND neut.ingested_at IS NOT NULL
+      AND 1 = (SELECT COUNT(*) FROM normalized differential
+                WHERE differential.patient_id = wbc.patient_id
+                  AND differential.encounter_id = wbc.encounter_id
+                  AND differential.specimen_id = wbc.specimen_id
+                  AND differential.event_time = wbc.event_time
+                  AND differential.concept_name = 'NEUTROPHIL_PCT')
+      AND NOT EXISTS (
+            SELECT 1 FROM normalized anc
+             WHERE anc.patient_id = wbc.patient_id
+               AND anc.encounter_id = wbc.encounter_id
+               AND anc.specimen_id = wbc.specimen_id
+               AND anc.event_time = wbc.event_time AND anc.concept_name = 'ANC'
+          )
+)
+SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
+       value_num, value_text, abnormal_flag, plausibility_state,
+       FALSE AS is_derived,
+       NULL AS derivation,
+       event_time, source_recorded_at, ingested_at, valid_until, specimen_id, unit
+FROM normalized
+UNION ALL
+SELECT event_id, patient_id, encounter_id, event_type, concept_id, concept_name,
+       value_num, value_text, abnormal_flag, plausibility_state,
+       TRUE AS is_derived,
+       'ANC computed as WBC x neutrophil% / 100' AS derivation,
+       event_time, source_recorded_at, ingested_at, valid_until, specimen_id, unit
+FROM anc_derived;
+-- ===== END dynamic_tables/01_harmonized_events.sql =====
+
 -- ===== BEGIN procedures/web_reads.sql =====
 -- Bounded web reads. No table grants or shared patient sessions; CURRENT_USER is authoritative.
 CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE(VIEW_NAME VARCHAR, HORIZON_DAYS INTEGER)
@@ -31,6 +133,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 )
@@ -54,6 +160,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 ), selected_visit AS (
@@ -95,6 +205,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 ), task_subjects AS (
@@ -138,6 +252,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 )
@@ -253,6 +371,17 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
+LET v_categories ARRAY := (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+                          WHERE consent_id = :v_consent_id);
+IF (VIEW_NAME IN ('context','snapshot','tasks','answers','packets','document','documents')
+    AND (NOT COALESCE(ARRAY_CONTAINS('identity'::VARIANT,:v_categories),FALSE)
+      OR NOT COALESCE(ARRAY_CONTAINS('clinical'::VARIANT,:v_categories),FALSE)
+      OR (VIEW_NAME != 'context'
+        AND NOT COALESCE(ARRAY_CONTAINS('financial'::VARIANT,:v_categories),FALSE)))) THEN
+  RETURN OBJECT_CONSTRUCT('error','consent_not_valid',
+    'detail','This combined view requires consent for every included data category.',
+    'known_as_of',:v_known_as_of_s);
+END IF;
 IF (VIEW_NAME = 'context') THEN
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
 -- Same visit as the 'snapshot' gates: the next upcoming daycare visit, else the most
@@ -508,18 +637,17 @@ IF (v_requested IS NOT NULL) THEN
     RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',:v_known_as_of_s);
   END IF;
 END IF;
--- Clinical consent is not financial consent (preamble note 1).
--- Fail closed: a NULL data_categories (or a missing consent row) makes ARRAY_CONTAINS NULL,
--- and IF (NOT NULL) is skipped. COALESCE to FALSE so NULL means "no financial grant".
-IF (v_domain = 'coverage' AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT,
-    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id)), FALSE) = FALSE) THEN
+LET v_required_category VARCHAR := CASE :v_domain
+  WHEN 'demographics' THEN 'identity' WHEN 'identity' THEN 'identity'
+  WHEN 'coverage' THEN 'financial' ELSE 'clinical' END;
+IF (NOT COALESCE(ARRAY_CONTAINS(:v_required_category::VARIANT,:v_categories),FALSE)) THEN
   RETURN OBJECT_CONSTRUCT('error','consent_not_valid','known_as_of',:v_known_as_of_s);
 END IF;
 IF (v_domain = 'labs') THEN
   v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
   v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
       'event_id', h.event_id, 'concept', h.concept_name, 'value', h.value_num,
-      'value_text', h.value_text, 'unit', ce.unit, 'abnormal_flag', h.abnormal_flag,
+      'value_text', h.value_text, 'unit', h.unit, 'abnormal_flag', h.abnormal_flag,
       -- SHARED RULE (identical to 06_get_timeline.sql; contract-tested).
       'value_state', CASE
           WHEN h.plausibility_state <> 'present' THEN h.plausibility_state
@@ -957,6 +1085,7 @@ DECLARE KNOWN_AS_OF VARCHAR DEFAULT NULL;
 v_known_as_of TIMESTAMP_NTZ; v_known_as_of_s VARCHAR; v_binding_id VARCHAR;
 v_patient_id VARCHAR; v_practitioner VARCHAR; v_care_team_id VARCHAR; v_consent_id VARCHAR;
 v_class VARIANT; v_ids ARRAY; v_id VARCHAR; v_status VARCHAR;
+v_pointer_claims ARRAY; v_checked_pointers VARIANT; v_extra_ids ARRAY;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -1043,12 +1172,39 @@ SELECT COALESCE(ARRAY_AGG(DISTINCT id),ARRAY_CONSTRUCT()) INTO :v_ids FROM (
  WHERE d.patient_id=:v_patient_id AND d.scope='patient' AND d.status='active' AND d.ingested_at<=:v_known_as_of
  AND a.verification_status='verified' AND ARRAY_CONTAINS(a.assertion_id::VARIANT,:EVIDENCE_IDS)
 );
+SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT('text','Recorded source pointer',
+    'claim_type','textual','evidence',ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
+        'id',id,'kind',kind)))),ARRAY_CONSTRUCT()) INTO :v_pointer_claims
+FROM (
+    SELECT DISTINCT i.value::VARCHAR AS id,'structured' AS kind
+      FROM TABLE(FLATTEN(input=>:EVIDENCE_IDS)) i
+     WHERE STARTSWITH(i.value::VARCHAR,'ROW-') OR STARTSWITH(i.value::VARCHAR,'RULE--')
+    UNION
+    SELECT DISTINCT c.chunk_id AS id,'reference_clause' AS kind
+      FROM TABLE(FLATTEN(input=>:EVIDENCE_IDS)) i
+      JOIN SAARTHI.DOCUMENTS.DOC_CHUNK c ON c.chunk_id=i.value::VARCHAR
+     WHERE c.doc_scope='reference' AND c.patient_id IS NULL
+);
+IF (ARRAY_SIZE(v_pointer_claims)>0) THEN
+    v_checked_pointers := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(:v_pointer_claims,
+        TO_VARCHAR(:v_known_as_of,'YYYY-MM-DD"T"HH24:MI:SS')));
+    IF (v_checked_pointers:error IS NOT NULL) THEN RETURN v_checked_pointers; END IF;
+    SELECT COALESCE(ARRAY_AGG(DISTINCT e.value:id::VARCHAR),ARRAY_CONSTRUCT())
+      INTO :v_extra_ids
+      FROM TABLE(FLATTEN(input=>:v_checked_pointers:claims)) c,
+           LATERAL FLATTEN(input=>c.value:evidence) e;
+    v_ids := ARRAY_DISTINCT(ARRAY_CAT(v_ids,v_extra_ids));
+END IF;
 v_status := CASE WHEN v_class:classification::VARCHAR='CLASS_A' THEN 'refused' WHEN ANSWER_STATE='error' THEN 'error' ELSE 'recorded' END;
 IF (EXISTS (SELECT 1 FROM SAARTHI.EVIDENCE.ANSWER_RUN WHERE run_id=:RUN_REF AND (patient_id!=:v_patient_id OR practitioner_id!=:v_practitioner))) THEN RETURN OBJECT_CONSTRUCT('error','invalid_argument'); END IF;
 MERGE INTO SAARTHI.EVIDENCE.ANSWER_RUN t USING (SELECT :RUN_REF AS id) s ON t.run_id=s.id
 WHEN NOT MATCHED THEN INSERT(run_id,question_class,practitioner_id,patient_id,consent_id,known_as_of,answer_status,evidence_ids,model_version,validation_results)
 VALUES(s.id,IFF(:v_class:classification::VARCHAR='CLASS_A','A','B'),:v_practitioner,:v_patient_id,:v_consent_id,:v_known_as_of,:v_status,:v_ids,'web-source-pointers@1',OBJECT_CONSTRUCT('pointers_scope_checked',TRUE,'answer_text_retained',FALSE,'does_not_attest_model_prose',TRUE));
-RETURN OBJECT_CONSTRUCT('run_id',RUN_REF,'status',v_status);
+RETURN (SELECT OBJECT_CONSTRUCT('run_id',run_id,'status',answer_status,
+    'known_as_of',TO_VARCHAR(known_as_of,'YYYY-MM-DD"T"HH24:MI:SS'))
+    FROM SAARTHI.EVIDENCE.ANSWER_RUN
+    WHERE run_id=:RUN_REF AND patient_id=:v_patient_id
+      AND practitioner_id=:v_practitioner);
 END;
 $$;
 
@@ -1151,7 +1307,16 @@ FROM TABLE(FLATTEN(input=>:v_gates:gates)) g,LATERAL FLATTEN(input=>g.value:evid
 MERGE INTO SAARTHI.EVIDENCE.EVIDENCE_PACKET t USING (SELECT :PACKET_REF AS id) s ON t.packet_id=s.id
 WHEN NOT MATCHED THEN INSERT(packet_id,patient_id,question,created_by_practitioner_id,evidence_ids,gate_snapshot,consent_id,delivered_to_practitioner_id,delivered_at)
 VALUES(s.id,:v_patient_id,:QUESTION,:v_practitioner,:v_ids,:v_gates,:v_consent_id,:v_recipient,NULL);
-RETURN OBJECT_CONSTRUCT('packet_id',PACKET_REF,'practitioner_name',v_name,'status','prepared','known_as_of',v_gates:known_as_of,'delivered',FALSE);
+RETURN (SELECT OBJECT_CONSTRUCT('packet_id',ep.packet_id,'practitioner_name',p.name,
+    'practitioner',OBJECT_CONSTRUCT('practitioner_id',p.practitioner_id,'name',p.name,
+        'nmc_registration_no',p.nmc_registration_no),
+    'status',IFF(ep.delivered_at IS NULL,'prepared','delivered'),
+    'known_as_of',ep.gate_snapshot:known_as_of,'gate_snapshot',ep.gate_snapshot,
+    'evidence_ids',ep.evidence_ids,'delivered',ep.delivered_at IS NOT NULL)
+    FROM SAARTHI.EVIDENCE.EVIDENCE_PACKET ep
+    JOIN SAARTHI.GOVERNANCE.PRACTITIONER p ON p.practitioner_id=ep.delivered_to_practitioner_id
+    WHERE ep.packet_id=:PACKET_REF AND ep.patient_id=:v_patient_id
+      AND ep.created_by_practitioner_id=:v_practitioner);
 END;
 $$;
 -- ===== END procedures/web_evidence.sql =====

@@ -51,9 +51,7 @@ BEGIN
         LET v_doc_id VARCHAR := GET_PATH(:v_hit, 'doc_id')::VARCHAR;
         LET v_page_index INTEGER := GET_PATH(:v_hit, 'page_index')::INTEGER;
 
-        -- Reference corpus carries no RAP (no patient scope to enforce), so
-        -- the chunk text itself is authoritative here - unlike the patient
-        -- path, there is no governed table to re-fetch through.
+        -- Search returns pointers; source text is re-fetched from the reference corpus.
         LET v_text VARCHAR := NULL;
         SELECT dp.text INTO :v_text FROM SAARTHI.DOCUMENTS.DOC_PAGE dp
           JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
@@ -64,7 +62,7 @@ BEGIN
 
         IF (v_text IS NOT NULL) THEN
         v_out := ARRAY_APPEND(v_out, OBJECT_CONSTRUCT(
-            'kind', 'reference_clause', 'doc_id', v_doc_id, 'page_index', v_page_index,
+            'kind', 'reference_clause', 'id', GET_PATH(:v_hit, 'chunk_id'), 'doc_id', v_doc_id, 'page_index', v_page_index,
             'jurisdiction', GET_PATH(:v_hit, 'jurisdiction'), 'effective_date', GET_PATH(:v_hit, 'effective_date'),
             'text', v_text));
         END IF;

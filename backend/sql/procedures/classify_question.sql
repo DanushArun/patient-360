@@ -47,7 +47,7 @@ BEGIN
         OR v_q RLIKE '.*\\bwhat( is|''s)? wrong (in|with) (this |the )?(patient''s )?record\\b.*'
         OR v_q RLIKE '.*\\b(how many|list|show me|status of|changed since)\\b.*'
         OR v_q RLIKE '.*\\b(contradict(ions?)?|conflicts?|disagreements?)\\b.*'
-        OR v_q RLIKE '.*\\b(expired|remaining|received|final|pending|documented|on file)\\b.*'
+        OR v_q RLIKE '.*\\b(expired|remaining|received|final|pending|documented|recorded|on file)\\b.*'
     ) THEN
         v_class := 'CLASS_B';
         v_method := 'structure';
@@ -72,5 +72,9 @@ BEGIN
     END IF;
 
     RETURN OBJECT_CONSTRUCT('classification', v_class, 'method', v_method);
+EXCEPTION
+    WHEN OTHER THEN
+        v_method := 'dependency_unavailable';
+        RETURN OBJECT_CONSTRUCT('classification','CLASS_A','method',v_method);
 END;
 $$;

@@ -22,6 +22,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 )
@@ -45,6 +49,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 ), selected_visit AS (
@@ -86,6 +94,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 ), task_subjects AS (
@@ -129,6 +141,10 @@ WITH patient_scope AS (
         AND c.valid_from <= CURRENT_TIMESTAMP()
         AND (c.valid_until IS NULL OR c.valid_until >= CURRENT_TIMESTAMP())
         AND c.purpose_code IN ('treatment', 'coordination')
+        AND COALESCE(ARRAY_CONTAINS('identity'::VARIANT, c.data_categories), FALSE)
+        AND (:VIEW_NAME = 'patients' OR (
+          COALESCE(ARRAY_CONTAINS('clinical'::VARIANT, c.data_categories), FALSE)
+          AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT, c.data_categories), FALSE)))
         AND (c.granted_to_facility_id = pr.facility_id OR c.granted_to_org_id = f.org_id)
     )
 )
@@ -244,6 +260,17 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
+LET v_categories ARRAY := (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+                          WHERE consent_id = :v_consent_id);
+IF (VIEW_NAME IN ('context','snapshot','tasks','answers','packets','document','documents')
+    AND (NOT COALESCE(ARRAY_CONTAINS('identity'::VARIANT,:v_categories),FALSE)
+      OR NOT COALESCE(ARRAY_CONTAINS('clinical'::VARIANT,:v_categories),FALSE)
+      OR (VIEW_NAME != 'context'
+        AND NOT COALESCE(ARRAY_CONTAINS('financial'::VARIANT,:v_categories),FALSE)))) THEN
+  RETURN OBJECT_CONSTRUCT('error','consent_not_valid',
+    'detail','This combined view requires consent for every included data category.',
+    'known_as_of',:v_known_as_of_s);
+END IF;
 IF (VIEW_NAME = 'context') THEN
 SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(*)), ARRAY_CONSTRUCT()) INTO :v_rows FROM (
 -- Same visit as the 'snapshot' gates: the next upcoming daycare visit, else the most
@@ -499,18 +526,17 @@ IF (v_requested IS NOT NULL) THEN
     RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',:v_known_as_of_s);
   END IF;
 END IF;
--- Clinical consent is not financial consent (preamble note 1).
--- Fail closed: a NULL data_categories (or a missing consent row) makes ARRAY_CONTAINS NULL,
--- and IF (NOT NULL) is skipped. COALESCE to FALSE so NULL means "no financial grant".
-IF (v_domain = 'coverage' AND COALESCE(ARRAY_CONTAINS('financial'::VARIANT,
-    (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id)), FALSE) = FALSE) THEN
+LET v_required_category VARCHAR := CASE :v_domain
+  WHEN 'demographics' THEN 'identity' WHEN 'identity' THEN 'identity'
+  WHEN 'coverage' THEN 'financial' ELSE 'clinical' END;
+IF (NOT COALESCE(ARRAY_CONTAINS(:v_required_category::VARIANT,:v_categories),FALSE)) THEN
   RETURN OBJECT_CONSTRUCT('error','consent_not_valid','known_as_of',:v_known_as_of_s);
 END IF;
 IF (v_domain = 'labs') THEN
   v_known_as_of_s := TO_VARCHAR(:v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS');
   v_facts := (SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT_KEEP_NULL(
       'event_id', h.event_id, 'concept', h.concept_name, 'value', h.value_num,
-      'value_text', h.value_text, 'unit', ce.unit, 'abnormal_flag', h.abnormal_flag,
+      'value_text', h.value_text, 'unit', h.unit, 'abnormal_flag', h.abnormal_flag,
       -- SHARED RULE (identical to 06_get_timeline.sql; contract-tested).
       'value_state', CASE
           WHEN h.plausibility_state <> 'present' THEN h.plausibility_state

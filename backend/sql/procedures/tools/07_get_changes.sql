@@ -5,7 +5,7 @@
 -- no tool path before this. Diffs two known_as_of states for the bound
 -- patient: new events since from_ts, and values that differ between the two
 -- cutoffs for the same concept.
-CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.get_changes(FROM_TS VARCHAR, TO_TS VARCHAR)
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.get_changes(FROM_TS VARCHAR, TO_TS VARCHAR DEFAULT NULL)
   RETURNS VARIANT
   LANGUAGE SQL
   COMMENT = 'Contract 2 tool 7. Diffs two known_as_of states for the BOUND patient. Takes no patient selector.'
@@ -25,13 +25,16 @@ DECLARE
     v_care_team_id VARCHAR;
     v_changes      ARRAY;
 BEGIN
+    v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:TO_TS),CURRENT_TIMESTAMP());
+    v_known_as_of_s := TO_VARCHAR(v_known_as_of,'YYYY-MM-DD"T"HH24:MI:SS');
     v_from := TRY_TO_TIMESTAMP_NTZ(:FROM_TS);
-    v_to := COALESCE(TRY_TO_TIMESTAMP_NTZ(:TO_TS), CURRENT_TIMESTAMP());
-    IF (v_from IS NULL) THEN
-        RETURN OBJECT_CONSTRUCT('error', 'invalid_argument');
+    v_to := v_known_as_of;
+    IF (v_from IS NULL OR (TO_TS IS NOT NULL AND TRY_TO_TIMESTAMP_NTZ(:TO_TS) IS NULL)
+        OR v_from>v_to OR v_to>CURRENT_TIMESTAMP()::TIMESTAMP_NTZ) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',v_known_as_of_s);
     END IF;
 
-    KNOWN_AS_OF := :TO_TS;
+    KNOWN_AS_OF := v_known_as_of_s;
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
     v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF), CURRENT_TIMESTAMP());
@@ -106,6 +109,11 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
+    IF (NOT COALESCE(ARRAY_CONTAINS('clinical'::VARIANT,
+        (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+         WHERE consent_id=:v_consent_id)),FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error','clinical_consent_required','known_as_of',v_known_as_of_s);
+    END IF;
     v_to := :v_known_as_of;
 
     -- Events visible at TO_TS but not at FROM_TS - genuinely new knowledge,

@@ -67,15 +67,17 @@ def _grants() -> tuple[str, str]:
     marker = "-- Agent + MCP server access."
     i = text.index(marker)
     main = f"-- ===== BEGIN governance/03_grants.sql (section) =====\n{text[:i].rstrip()}\n-- ===== END governance/03_grants.sql (section) =====\n"
-    comment = text[i:text.index("GRANT USAGE ON AGENT")].rstrip()
+    comment = text[i:text.index("REVOKE USAGE ON AGENT")].rstrip()
     guarded = [f"-- ===== BEGIN governance/03_grants.sql (agent/mcp, guarded) =====\n{comment}\n"
                "-- N4-01: the bundle does not create the agent or the MCP server. A missing object must not stop\n"
                "-- Run all; the block returns 'skipped ...' (read the result) and the grant is re-run after the object exists.\n"]
     for kind, name in (("AGENT", "SAARTHI_AGENT"), ("MCP SERVER", "SAARTHI_MCP")):
+        verb, direction = ("REVOKE", "FROM") if kind == "AGENT" else ("GRANT", "TO")
         guarded.append(
             "EXECUTE IMMEDIATE $$\nBEGIN\n"
-            f"    GRANT USAGE ON {kind} SAARTHI.OPERATIONAL.{name} TO ROLE SAARTHI_APP;\n"
-            f"    RETURN 'granted: {name}';\nEXCEPTION\n    WHEN OTHER THEN\n"
+            f"    {verb} USAGE ON {kind} SAARTHI.OPERATIONAL.{name} "
+            f"{direction} ROLE SAARTHI_APP;\n"
+            f"    RETURN '{verb.lower()}: {name}';\nEXCEPTION\n    WHEN OTHER THEN\n"
             f"        RETURN 'skipped {name} (object absent or not grantable): ' || SQLERRM;\nEND;\n$$;\n")
     guarded.append("-- ===== END governance/03_grants.sql (agent/mcp, guarded) =====\n")
     return main, "\n".join(guarded)
@@ -353,7 +355,12 @@ def steps() -> list[tuple[str, str, list[str]]]:
                  "REFRESH_BOUND_READINESS", "RECORD_WEB_ANSWER", "PREPARE_WEB_PACKET"]
     tool_names = ["get_patient_facts", "get_readiness", "search_patient_documents", "get_timeline",
                   "get_changes", "create_review_task", "bind_patient", "evaluate_gates",
-                  "EXTRACT_ONE_DOCUMENT", "validate_answer"]
+                  "EXTRACT_ONE_DOCUMENT", "validate_answer", "ASK_SAARTHI",
+                  "ANSWER_GATEWAY_CANDIDATES", "ANSWER_GATEWAY_REFERENCE", "ANSWER_GATEWAY_RECORD",
+                  "ANSWER_GATEWAY_RULE",
+                  "ANSWER_GATEWAY_RESOLVE_IDS",
+                  "ANSWER_GATEWAY_REFUSAL", "ANSWER_GATEWAY_FINALIZE",
+                  "ANSWER_GATEWAY_RECORD_FALLBACK"]
     rec_proc, rec_task = _split_at("tasks/reconcile_evidence.sql", "CREATE OR REPLACE TASK")
     orch_proc, orch_task = _split_at("tasks/orchestrator.sql", "CREATE OR REPLACE TASK")
     parse_proc, _parse_task = _split_at("tasks/parse_documents.sql", "-- EXECUTE AS USER: chunk_documents_proc")
@@ -361,7 +368,8 @@ def steps() -> list[tuple[str, str, list[str]]]:
     return [
         ("00_preflight.sql", "pre-flight checks (read-only; suspends the task graph root)", [PREFLIGHT]),
         ("01_web_procedures.sql", "web read, workflow and evidence procedures",
-         [_file("procedures/web_reads.sql"), _file("procedures/web_workflows.sql"),
+         [_file("dynamic_tables/01_harmonized_events.sql"),
+          _file("procedures/web_reads.sql"), _file("procedures/web_workflows.sql"),
           _file("procedures/web_evidence.sql"), _verify_procs(web_names)]),
         ("02_gates_and_scheme_table.sql", "gate evaluation, binding, scheme eligibility dynamic table",
          [_file("procedures/evaluate_gates.sql"), _file("procedures/bind_patient.sql"),
@@ -375,7 +383,20 @@ def steps() -> list[tuple[str, str, list[str]]]:
           _file("procedures/tools/03_search_patient_documents.sql"),
           _file("procedures/tools/06_get_timeline.sql"), _file("procedures/tools/07_get_changes.sql"),
           _file("procedures/tools/08_create_review_task.sql"),
-          _file("procedures/extract_one_document.sql"), _file("procedures/validate_answer.sql"),
+          _file("procedures/extract_one_document.sql"),
+          _file("procedures/answer_gateway_rule.sql"),
+          _file("procedures/answer_gateway_record.sql"),
+          _file("procedures/answer_gateway_reference.sql"),
+          _file("procedures/validate_answer.sql"),
+          _file("procedures/answer_gateway_candidates.sql"),
+          _file("procedures/answer_gateway_resolve.sql"),
+          _file("procedures/answer_gateway_refusal.sql"),
+          _file("procedures/answer_gateway_finalize.sql"),
+          _file("procedures/answer_gateway_record_fallback.sql"),
+          _file("procedures/answer_gateway_context_pack.sql"),
+          _file("procedures/answer_gateway_context_section.sql"),
+          _file("procedures/answer_gateway_context.sql"),
+          _file("procedures/answer_gateway_infer.sql"), _file("agent/ask_saarthi.sql"),
           _verify_procs(tool_names)]),
         ("04_tasks_and_grants.sql",
          "suspend task root, procedures, GRANTS FIRST, then tasks re-created SUSPENDED",

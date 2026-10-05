@@ -31,8 +31,12 @@ CREATE OR REPLACE SEMANTIC VIEW SAARTHI.OPERATIONAL.SAARTHI_SEMANTIC_VIEW
     encounter.is_complication AS IFF(encounter.gap_type = 'clinical_complication', 1, 0),
     readiness.is_not_evaluated AS IFF(readiness.outcome = 'not_evaluated', 1, 0),
     readiness.is_failed AS IFF(readiness.outcome = 'fail', 1, 0),
-    review_issue.is_open AS IFF(review_issue.state = 'open', 1, 0),
-    authorization.is_conflicting AS IFF(authorization.status = 'conflicting', 1, 0),
+    review_issue.is_open_blocker AS IFF(review_issue.state='open'
+        AND review_issue.severity='blocker',1,0),
+    authorization.is_conflicting AS IFF(authorization.status='conflicting'
+        OR (authorization.status IN ('pending','approved','denied','expired')
+        AND authorization.letter_status IN ('pending','approved','denied','expired')
+        AND authorization.status<>authorization.letter_status),1,0),
     authorization.is_curable_denial AS IFF(authorization.status = 'denied' AND authorization.denial_is_curable, 1, 0),
     scheme_eligibility.is_eligible AS IFF(scheme_eligibility.eligibility_status = 'eligible', 1, 0)
   )
@@ -47,6 +51,7 @@ CREATE OR REPLACE SEMANTIC VIEW SAARTHI.OPERATIONAL.SAARTHI_SEMANTIC_VIEW
     readiness.severity AS readiness.severity,
     review_issue.issue_gate AS review_issue.gate,
     review_issue.issue_state AS review_issue.state COMMENT = 'open, evidence_received, closed or escalated',
+    review_issue.issue_severity AS review_issue.severity,
     authorization.auth_status AS authorization.status COMMENT = 'pending, approved, denied, partial, expired or conflicting',
     authorization.letter_status AS authorization.letter_status,
     authorization.scheme AS authorization.scheme,
@@ -59,7 +64,8 @@ CREATE OR REPLACE SEMANTIC VIEW SAARTHI.OPERATIONAL.SAARTHI_SEMANTIC_VIEW
     encounter.complication_count AS SUM(encounter.is_complication) COMMENT = 'Encounters with a clinical complication gap',
     readiness.not_evaluated_gate_count AS SUM(readiness.is_not_evaluated) COMMENT = 'Gates with evidence missing (not a pass)',
     readiness.failed_gate_count AS SUM(readiness.is_failed) COMMENT = 'Gates that failed',
-    review_issue.open_blocker_count AS SUM(review_issue.is_open) COMMENT = 'Open review issues',
+    review_issue.open_blocker_count AS SUM(review_issue.is_open_blocker)
+        COMMENT = 'Open review issues with blocker severity',
     authorization.conflicting_authorization_count AS SUM(authorization.is_conflicting) COMMENT = 'Authorisations where table and letter disagree',
     authorization.curable_denial_count AS SUM(authorization.is_curable_denial) COMMENT = 'Denied authorisations flagged procedurally curable',
     scheme_eligibility.eligible_scheme_count AS SUM(scheme_eligibility.is_eligible) COMMENT = 'Patient-scheme pairs with status eligible'
@@ -73,11 +79,17 @@ CREATE OR REPLACE SEMANTIC VIEW SAARTHI.OPERATIONAL.SAARTHI_SEMANTIC_VIEW
     ),
     vq_open_blockers_per_gate AS (
       QUESTION 'How many open blockers per gate?'
-      SQL 'SELECT gate, COUNT(*) AS open_blockers FROM SAARTHI.OPERATIONAL.REVIEW_ISSUE WHERE state = ''open'' GROUP BY gate ORDER BY open_blockers DESC'
+      SQL 'SELECT gate, COUNT(*) AS open_blockers FROM SAARTHI.OPERATIONAL.REVIEW_ISSUE
+        WHERE state = ''open'' AND severity = ''blocker''
+        GROUP BY gate ORDER BY open_blockers DESC'
     ),
     vq_conflicting_authorisation AS (
       QUESTION 'Which patients have conflicting authorisation status?'
-      SQL 'SELECT patient_id, scheme, status, letter_status FROM SAARTHI.CORE.AUTHORIZATION WHERE status = ''conflicting'' ORDER BY patient_id'
+      SQL 'SELECT patient_id, scheme, status, letter_status FROM SAARTHI.CORE.AUTHORIZATION
+        WHERE status = ''conflicting'' OR (status IN (''pending'',''approved'',''denied'',''expired'')
+          AND letter_status IN (''pending'',''approved'',''denied'',''expired'')
+          AND status <> letter_status)
+        ORDER BY patient_id'
     ),
     vq_failed_gates_per_gate AS (
       QUESTION 'How many gates failed, by gate?'

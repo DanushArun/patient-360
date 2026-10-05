@@ -82,7 +82,7 @@ class DocumentSqlContractTests(unittest.TestCase):
         for clause in ["v_ev_verif!='verified'", "v_ev_doc_ingested>v_known_as_of",
                        "v_ev_end>LENGTH(v_ev_source)", "SUBSTR(v_ev_source,v_ev_start+1,v_ev_end-v_ev_start)",
                        "NOT COALESCE(IS_ARRAY(v_evidence),FALSE)",
-                       "OBJECT_INSERT(v_claim,'evidence',v_canonical_evidence,TRUE)",
+                       "'evidence',v_canonical_evidence)",
                        "TRY_TO_BOOLEAN(GET_PATH(:v_filter_result, 'value')::VARCHAR),FALSE)"]:
             self.assertIn(clause,sql)
 

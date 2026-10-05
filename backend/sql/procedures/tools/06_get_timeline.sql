@@ -95,6 +95,11 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
+    IF (NOT COALESCE(ARRAY_CONTAINS('clinical'::VARIANT,
+        (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+         WHERE consent_id=:v_consent_id)),FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error','clinical_consent_required','known_as_of',v_known_as_of_s);
+    END IF;
 
     -- Every field the Timeline tab renders comes from here (CR1-01). Qualitative results
     -- (HER2 IHC, pathology) carry value_text, not value_num; a value that failed the
@@ -131,7 +136,7 @@ BEGIN
                  'source_links_observed_at', :v_known_as_of_s))
                WITHIN GROUP (ORDER BY t.event_time)
           FROM (
-            SELECT h.*, ce.unit, ce.status AS source_status, ce.display, ce.code, l.assertion_ids, l.doc_ids
+            SELECT h.*, ce.status AS source_status, ce.display, ce.code, l.assertion_ids, l.doc_ids
               FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS h
               LEFT JOIN SAARTHI.CORE.CLINICAL_EVENT ce ON ce.event_id = h.event_id
               LEFT JOIN (SELECT el.target_id, ARRAY_AGG(DISTINCT a.assertion_id) AS assertion_ids,

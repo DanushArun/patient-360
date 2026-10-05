@@ -25,6 +25,8 @@ DECLARE
     v_consent_id     VARCHAR;
     v_encounter_id   VARCHAR;
     v_gates          VARIANT;
+    v_cited          ARRAY;
+    v_categories     ARRAY;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -121,8 +123,20 @@ BEGIN
     END IF;
 
     v_gates := (CALL SAARTHI.OPERATIONAL.evaluate_gates(:v_patient_id, :v_encounter_id, :v_known_as_of_s));
+    SELECT data_categories INTO :v_categories FROM SAARTHI.GOVERNANCE.CONSENT
+     WHERE consent_id=:v_consent_id;
+    SELECT COALESCE(ARRAY_AGG(OBJECT_INSERT(value,'citation_id','RULE--'
+        || :v_encounter_id || '--' || value:rule_id::VARCHAR || '--'
+        || value:rule_version::VARCHAR,TRUE)),ARRAY_CONSTRUCT()) INTO :v_cited
+      FROM TABLE(FLATTEN(INPUT=>:v_gates:gates))
+     WHERE ARRAY_CONTAINS(TO_VARIANT(CASE value:gate::VARCHAR
+        WHEN 'coverage' THEN 'financial' WHEN 'identity' THEN 'identity'
+        ELSE 'clinical' END),:v_categories);
 
-    RETURN OBJECT_CONSTRUCT('gates', v_gates:gates, 'binding_id', v_binding_id,
+    RETURN OBJECT_CONSTRUCT('gates', v_cited, 'binding_id', v_binding_id,
                              'consent_id', v_consent_id, 'known_as_of', v_known_as_of_s);
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','readiness_snapshot_unavailable',
+                            'known_as_of',:v_known_as_of_s);
 END;
 $$;

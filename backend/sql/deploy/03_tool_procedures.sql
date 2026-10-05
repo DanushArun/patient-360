@@ -33,6 +33,7 @@ DECLARE
     v_consent_id     VARCHAR;
     v_data_categories ARRAY;
     v_result         VARIANT;
+    v_snapshot       TIMESTAMP_TZ;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -113,15 +114,22 @@ BEGIN
     -- thereby valid for financial data. The coverage domain additionally
     -- requires 'financial' in CONSENT.data_categories.
     v_data_categories := (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT WHERE consent_id = :v_consent_id);
-    IF (:DOMAIN = 'coverage' AND NOT ARRAY_CONTAINS('financial'::VARIANT, :v_data_categories)) THEN
+    LET v_required_category VARCHAR := CASE :DOMAIN
+        WHEN 'coverage' THEN 'financial'
+        WHEN 'demographics' THEN 'identity' WHEN 'identity' THEN 'identity'
+        ELSE 'clinical' END;
+    IF (NOT COALESCE(ARRAY_CONTAINS(TO_VARIANT(v_required_category),
+        :v_data_categories),FALSE)) THEN
         RETURN OBJECT_CONSTRUCT('error', 'consent_not_valid', 'known_as_of', :v_known_as_of_s);
     END IF;
 
+    v_snapshot := TRY_TO_TIMESTAMP_TZ(v_known_as_of_s || '+00:00');
     CASE (:DOMAIN)
         WHEN 'demographics' THEN
-            v_result := (SELECT OBJECT_CONSTRUCT('patient_id', patient_id, 'name', name, 'dob', dob,
+            v_result := (SELECT OBJECT_CONSTRUCT('evidence_id','ROW-PATIENT--'||patient_id,'patient_id', patient_id, 'name', name, 'dob', dob,
                             'gender', gender, 'district', district, 'state', state, 'primary_language', primary_language)
-                          FROM SAARTHI.CORE.PATIENT WHERE patient_id = :v_patient_id);
+                          FROM SAARTHI.CORE.PATIENT AT(TIMESTAMP => :v_snapshot)
+                         WHERE patient_id = :v_patient_id);
         WHEN 'labs' THEN
             -- value_text alongside value_num: a qualitative result (HER2 IHC
             -- "grade=III ihc=2+", a FISH ratio/copy pair) has no value_num at
@@ -130,33 +138,40 @@ BEGIN
             -- found live asking about a HER2 FISH result the record actually
             -- has.
             v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('concept', concept_name, 'value', value_num,
-                            'value_text', value_text,
+                            'value_text', value_text, 'unit', unit,
                             'is_derived', is_derived, 'derivation', derivation,
                             'event_time', event_time, 'source_recorded_at', source_recorded_at,
                             'ingested_at', ingested_at, 'event_id', event_id))
                           FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS
                           WHERE patient_id = :v_patient_id AND ingested_at <= :v_known_as_of);
         WHEN 'coverage' THEN
-            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('payer_name', payer_name, 'annual_limit', annual_limit,
+            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('evidence_id','ROW-COVERAGE--'||coverage_id,'payer_name', payer_name, 'annual_limit', annual_limit,
                             'used_amount', used_amount, 'is_family_floater', is_family_floater))
-                          FROM SAARTHI.CORE.COVERAGE WHERE patient_id = :v_patient_id);
+                          FROM SAARTHI.CORE.COVERAGE AT(TIMESTAMP => :v_snapshot)
+                         WHERE patient_id = :v_patient_id);
         WHEN 'treatment_plan' THEN
-            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('version', version, 'regimen_display', regimen_display,
+            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('evidence_id','ROW-PLAN--'||plan_id,'version', version, 'regimen_display', regimen_display,
                             'intent', intent, 'decided_at', decided_at)) WITHIN GROUP (ORDER BY version DESC)
-                          FROM SAARTHI.CORE.TREATMENT_PLAN WHERE patient_id = :v_patient_id);
+                          FROM SAARTHI.CORE.TREATMENT_PLAN AT(TIMESTAMP => :v_snapshot)
+                         WHERE patient_id = :v_patient_id);
         WHEN 'encounters' THEN
-            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('encounter_id', encounter_id, 'cycle_number', cycle_number,
+            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('evidence_id','ROW-ENCOUNTER--'||encounter_id,'encounter_id', encounter_id, 'cycle_number', cycle_number,
                             'event_time', event_time, 'gap_type', gap_type)) WITHIN GROUP (ORDER BY event_time)
-                          FROM SAARTHI.CORE.ENCOUNTER WHERE patient_id = :v_patient_id);
+                          FROM SAARTHI.CORE.ENCOUNTER AT(TIMESTAMP => :v_snapshot)
+                         WHERE patient_id = :v_patient_id);
         WHEN 'identity' THEN
-            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('source_system', source_system, 'link_status', link_status))
-                          FROM SAARTHI.CORE.ID_MAP WHERE patient_id = :v_patient_id);
+            v_result := (SELECT ARRAY_AGG(OBJECT_CONSTRUCT('evidence_id','ROW-IDENTITY--'||map_id,'source_system', source_system, 'link_status', link_status))
+                          FROM SAARTHI.CORE.ID_MAP AT(TIMESTAMP => :v_snapshot)
+                         WHERE patient_id = :v_patient_id
+                           AND link_status IN ('abha_linked','manually_verified'));
         ELSE
             RETURN OBJECT_CONSTRUCT('error', 'invalid_argument', 'known_as_of', :v_known_as_of_s);
     END CASE;
 
     RETURN OBJECT_CONSTRUCT('domain', DOMAIN, 'facts', COALESCE(v_result, ARRAY_CONSTRUCT()),
                              'binding_id', v_binding_id, 'known_as_of', v_known_as_of_s);
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','record_snapshot_unavailable','known_as_of',v_known_as_of_s);
 END;
 $$;
 -- ===== END procedures/tools/01_get_patient_facts.sql =====
@@ -189,6 +204,8 @@ DECLARE
     v_consent_id     VARCHAR;
     v_encounter_id   VARCHAR;
     v_gates          VARIANT;
+    v_cited          ARRAY;
+    v_categories     ARRAY;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -285,9 +302,21 @@ BEGIN
     END IF;
 
     v_gates := (CALL SAARTHI.OPERATIONAL.evaluate_gates(:v_patient_id, :v_encounter_id, :v_known_as_of_s));
+    SELECT data_categories INTO :v_categories FROM SAARTHI.GOVERNANCE.CONSENT
+     WHERE consent_id=:v_consent_id;
+    SELECT COALESCE(ARRAY_AGG(OBJECT_INSERT(value,'citation_id','RULE--'
+        || :v_encounter_id || '--' || value:rule_id::VARCHAR || '--'
+        || value:rule_version::VARCHAR,TRUE)),ARRAY_CONSTRUCT()) INTO :v_cited
+      FROM TABLE(FLATTEN(INPUT=>:v_gates:gates))
+     WHERE ARRAY_CONTAINS(TO_VARIANT(CASE value:gate::VARCHAR
+        WHEN 'coverage' THEN 'financial' WHEN 'identity' THEN 'identity'
+        ELSE 'clinical' END),:v_categories);
 
-    RETURN OBJECT_CONSTRUCT('gates', v_gates:gates, 'binding_id', v_binding_id,
+    RETURN OBJECT_CONSTRUCT('gates', v_cited, 'binding_id', v_binding_id,
                              'consent_id', v_consent_id, 'known_as_of', v_known_as_of_s);
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','readiness_snapshot_unavailable',
+                            'known_as_of',:v_known_as_of_s);
 END;
 $$;
 -- ===== END procedures/tools/02_get_readiness.sql =====
@@ -431,7 +460,18 @@ BEGIN
           JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
          WHERE dp.doc_id=:v_doc_id AND dp.page_index=:v_page_index
            AND d.patient_id=:v_patient_id AND d.scope='patient' AND d.status='active'
-           AND d.ingested_at<=:v_known_as_of;
+           AND d.ingested_at<=:v_known_as_of
+           AND COALESCE(ARRAY_CONTAINS(TO_VARIANT(
+               CASE d.doc_type WHEN 'authorization_letter' THEN 'financial'
+               WHEN 'claim_document' THEN 'financial'
+                       WHEN 'lab_report' THEN 'clinical' WHEN 'pathology_report' THEN 'clinical'
+                       WHEN 'imaging_report' THEN 'clinical' WHEN 'discharge_summary' THEN 'clinical'
+                       WHEN 'prescription' THEN 'clinical' WHEN 'referral_letter' THEN 'clinical'
+                       WHEN 'surgical_note' THEN 'clinical' WHEN 'consent_form' THEN 'identity'
+                       WHEN 'cbc_report' THEN 'clinical' WHEN 'discharge_note' THEN 'clinical'
+                       ELSE NULL END),
+               (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+                WHERE consent_id=:v_consent_id)),FALSE);
 
         IF (v_text IS NOT NULL) THEN
             -- Retrieval is page-level context. Only the verified assertion
@@ -562,6 +602,11 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
+    IF (NOT COALESCE(ARRAY_CONTAINS('clinical'::VARIANT,
+        (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+         WHERE consent_id=:v_consent_id)),FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error','clinical_consent_required','known_as_of',v_known_as_of_s);
+    END IF;
 
     -- Every field the Timeline tab renders comes from here (CR1-01). Qualitative results
     -- (HER2 IHC, pathology) carry value_text, not value_num; a value that failed the
@@ -598,7 +643,7 @@ BEGIN
                  'source_links_observed_at', :v_known_as_of_s))
                WITHIN GROUP (ORDER BY t.event_time)
           FROM (
-            SELECT h.*, ce.unit, ce.status AS source_status, ce.display, ce.code, l.assertion_ids, l.doc_ids
+            SELECT h.*, ce.status AS source_status, ce.display, ce.code, l.assertion_ids, l.doc_ids
               FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS h
               LEFT JOIN SAARTHI.CORE.CLINICAL_EVENT ce ON ce.event_id = h.event_id
               LEFT JOIN (SELECT el.target_id, ARRAY_AGG(DISTINCT a.assertion_id) AS assertion_ids,
@@ -640,7 +685,7 @@ $$;
 -- no tool path before this. Diffs two known_as_of states for the bound
 -- patient: new events since from_ts, and values that differ between the two
 -- cutoffs for the same concept.
-CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.get_changes(FROM_TS VARCHAR, TO_TS VARCHAR)
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.get_changes(FROM_TS VARCHAR, TO_TS VARCHAR DEFAULT NULL)
   RETURNS VARIANT
   LANGUAGE SQL
   COMMENT = 'Contract 2 tool 7. Diffs two known_as_of states for the BOUND patient. Takes no patient selector.'
@@ -660,13 +705,16 @@ DECLARE
     v_care_team_id VARCHAR;
     v_changes      ARRAY;
 BEGIN
+    v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:TO_TS),CURRENT_TIMESTAMP());
+    v_known_as_of_s := TO_VARCHAR(v_known_as_of,'YYYY-MM-DD"T"HH24:MI:SS');
     v_from := TRY_TO_TIMESTAMP_NTZ(:FROM_TS);
-    v_to := COALESCE(TRY_TO_TIMESTAMP_NTZ(:TO_TS), CURRENT_TIMESTAMP());
-    IF (v_from IS NULL) THEN
-        RETURN OBJECT_CONSTRUCT('error', 'invalid_argument');
+    v_to := v_known_as_of;
+    IF (v_from IS NULL OR (TO_TS IS NOT NULL AND TRY_TO_TIMESTAMP_NTZ(:TO_TS) IS NULL)
+        OR v_from>v_to OR v_to>CURRENT_TIMESTAMP()::TIMESTAMP_NTZ) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',v_known_as_of_s);
     END IF;
 
-    KNOWN_AS_OF := :TO_TS;
+    KNOWN_AS_OF := v_known_as_of_s;
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
     v_known_as_of := COALESCE(TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF), CURRENT_TIMESTAMP());
@@ -741,6 +789,11 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
+    IF (NOT COALESCE(ARRAY_CONTAINS('clinical'::VARIANT,
+        (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+         WHERE consent_id=:v_consent_id)),FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error','clinical_consent_required','known_as_of',v_known_as_of_s);
+    END IF;
     v_to := :v_known_as_of;
 
     -- Events visible at TO_TS but not at FROM_TS - genuinely new knowledge,
@@ -1107,19 +1160,277 @@ END;
 $$;
 -- ===== END procedures/extract_one_document.sql =====
 
+-- ===== BEGIN procedures/answer_gateway_rule.sql =====
+-- Internal adapter for versioned SQL record checks; never accepts model conclusions.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RULE(
+    CLAIM VARIANT, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_id VARCHAR DEFAULT CLAIM:evidence[0]:id::VARCHAR;
+    v_encounter VARCHAR DEFAULT SPLIT_PART(v_id,'--',2);
+    v_rule VARCHAR DEFAULT SPLIT_PART(v_id,'--',3);
+    v_version INTEGER DEFAULT TRY_TO_NUMBER(SPLIT_PART(v_id,'--',4));
+    v_readiness VARIANT;
+    v_matches ARRAY;
+    v_gate VARIANT;
+    v_category VARCHAR;
+    v_allowed BOOLEAN;
+    v_note VARCHAR;
+BEGIN
+    IF (CLAIM:claim_type::VARCHAR!='textual' OR ARRAY_SIZE(SPLIT(v_id,'--'))!=4
+        OR NOT REGEXP_LIKE(v_id,'RULE--[A-Za-z0-9_-]+--[A-Za-z0-9_-]+--[1-9][0-9]*')) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_rule_identifier');
+    END IF;
+    v_readiness := (CALL SAARTHI.OPERATIONAL.GET_READINESS(:v_encounter,:KNOWN_AS_OF));
+    IF (v_readiness:error IS NOT NULL) THEN RETURN v_readiness; END IF;
+    SELECT ARRAY_AGG(value) INTO :v_matches FROM TABLE(FLATTEN(INPUT=>:v_readiness:gates))
+     WHERE value:rule_id::VARCHAR=:v_rule AND value:rule_version::INTEGER=:v_version;
+    IF (COALESCE(ARRAY_SIZE(v_matches),0)!=1) THEN
+        RETURN OBJECT_CONSTRUCT('error','rule_not_available');
+    END IF;
+    v_gate := GET(v_matches,0);
+    v_category := CASE v_gate:gate::VARCHAR
+        WHEN 'coverage' THEN 'financial' WHEN 'identity' THEN 'identity'
+        ELSE 'clinical' END;
+    SELECT ARRAY_CONTAINS(TO_VARIANT(:v_category),data_categories) INTO :v_allowed
+      FROM SAARTHI.GOVERNANCE.CONSENT
+     WHERE consent_id=:v_readiness:consent_id::VARCHAR AND status='active'
+       AND valid_from<=CURRENT_TIMESTAMP()
+       AND (valid_until IS NULL OR valid_until>=CURRENT_TIMESTAMP());
+    IF (NOT COALESCE(v_allowed,FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error','rule_category_consent_required');
+    END IF;
+    SELECT COALESCE(provenance_note,'Rule provenance note not_received') INTO :v_note
+      FROM SAARTHI.OPERATIONAL.RULE_CATALOG
+     WHERE rule_id=:v_rule AND rule_version=:v_version;
+    IF (v_note IS NULL OR v_gate:outcome::VARCHAR NOT IN
+        ('pass','fail','not_evaluated','conflicting')) THEN
+        RETURN OBJECT_CONSTRUCT('error','rule_not_available');
+    END IF;
+    RETURN OBJECT_CONSTRUCT('claim',OBJECT_CONSTRUCT(
+        'text','SQL record check ' || v_rule || ' version ' || TO_VARCHAR(v_version)
+            || ': ' || v_gate:outcome::VARCHAR || '. This is not treatment clearance.',
+        'claim_type','textual','gate',v_gate:gate,'outcome',v_gate:outcome,
+        'rule_id',v_rule,'rule_version',v_version,'provenance_note',v_note,
+        'evidence',ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
+            'kind','structured','id',v_id,'table','SAARTHI.OPERATIONAL.RULE_CATALOG',
+            'event_time','not_received','source_recorded_at','not_received',
+            'ingested_at','not_received',
+            'derived','GET_READINESS at ' || KNOWN_AS_OF || '; source IDs '
+                || TO_JSON(v_gate:evidence_ids)))),
+        'limitations',ARRAY_CONSTRUCT(
+            'Rule source clocks are not_received; the displayed version is explicit.',
+            'A rule outcome describes recorded evidence, never a clinical decision.'));
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','rule_dependency_unavailable');
+END;
+$$;
+-- ===== END procedures/answer_gateway_rule.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_record.sql =====
+-- Internal canonical row quotations; caller scope is resolved by VALIDATE_ANSWER.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RECORD(
+    CLAIM VARIANT, KNOWN_AS_OF VARCHAR, SCOPE_CONTEXT VARIANT)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_domain VARCHAR DEFAULT SPLIT_PART(CLAIM:evidence[0]:id::VARCHAR,'--',1);
+    v_key VARCHAR DEFAULT SPLIT_PART(CLAIM:evidence[0]:id::VARCHAR,'--',2);
+    v_patient VARCHAR DEFAULT SCOPE_CONTEXT:patient_id::VARCHAR;
+    v_clock TIMESTAMP_TZ DEFAULT TRY_TO_TIMESTAMP_TZ(KNOWN_AS_OF || '+00:00');
+    v_rows ARRAY;
+    v_row VARIANT;
+    v_claim VARIANT;
+BEGIN
+    IF (v_domain='RULE') THEN
+        v_claim := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RULE(:CLAIM,:KNOWN_AS_OF));
+        RETURN v_claim;
+    END IF;
+    IF (v_clock IS NULL OR v_patient IS NULL OR CLAIM:claim_type::VARCHAR!='textual') THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_record_claim');
+    END IF;
+    LET v_required_category VARCHAR := CASE v_domain
+        WHEN 'ROW-COVERAGE' THEN 'financial'
+        WHEN 'ROW-PATIENT' THEN 'identity' WHEN 'ROW-IDENTITY' THEN 'identity'
+        ELSE 'clinical' END;
+    IF (NOT COALESCE(ARRAY_CONTAINS(TO_VARIANT(v_required_category),
+        SCOPE_CONTEXT:categories::ARRAY),FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error',IFF(v_required_category='financial',
+            'financial_consent_required','record_category_consent_required'));
+    END IF;
+    CASE (v_domain)
+        WHEN 'ROW-PATIENT' THEN
+            SELECT ARRAY_AGG(OBJECT_CONSTRUCT('table','SAARTHI.CORE.PATIENT',
+                'facts',OBJECT_CONSTRUCT(
+                    'patient_id',COALESCE(TO_VARIANT(patient_id),TO_VARIANT('not_received')),
+                    'name',COALESCE(TO_VARIANT(name),TO_VARIANT('not_received')),
+                    'dob',COALESCE(TO_VARIANT(dob),TO_VARIANT('not_received')),
+                    'gender',COALESCE(TO_VARIANT(gender),TO_VARIANT('not_received')),
+                    'district',COALESCE(TO_VARIANT(district),TO_VARIANT('not_received')),
+                    'state',COALESCE(TO_VARIANT(state),TO_VARIANT('not_received')),
+                    'primary_language',COALESCE(TO_VARIANT(primary_language),
+                        TO_VARIANT('not_received'))),
+                'event_time',COALESCE(TO_VARCHAR(created_at),'not_received'),
+                'source_recorded_at','not_received',
+                'ingested_at','not_received'))
+              INTO :v_rows FROM SAARTHI.CORE.PATIENT AT(TIMESTAMP => :v_clock)
+             WHERE patient_id=:v_patient AND patient_id=:v_key;
+        WHEN 'ROW-COVERAGE' THEN
+            SELECT ARRAY_AGG(OBJECT_CONSTRUCT('table','SAARTHI.CORE.COVERAGE',
+                'facts',OBJECT_CONSTRUCT(
+                    'payer_name',COALESCE(TO_VARIANT(payer_name),TO_VARIANT('not_received')),
+                    'annual_limit',COALESCE(TO_VARIANT(annual_limit),TO_VARIANT('not_received')),
+                    'used_amount',COALESCE(TO_VARIANT(used_amount),TO_VARIANT('not_received')),
+                    'is_family_floater',COALESCE(TO_VARIANT(is_family_floater),
+                        TO_VARIANT('not_received')),
+                    'effective_from',COALESCE(TO_VARIANT(effective_from),
+                        TO_VARIANT('not_received')),
+                    'effective_to',COALESCE(TO_VARIANT(effective_to),TO_VARIANT('not_received'))),
+                'event_time',COALESCE(TO_VARCHAR(effective_from),'not_received'),
+                'source_recorded_at','not_received',
+                'ingested_at','not_received'))
+              INTO :v_rows FROM SAARTHI.CORE.COVERAGE AT(TIMESTAMP => :v_clock)
+             WHERE patient_id=:v_patient AND coverage_id=:v_key;
+        WHEN 'ROW-PLAN' THEN
+            SELECT ARRAY_AGG(OBJECT_CONSTRUCT('table','SAARTHI.CORE.TREATMENT_PLAN',
+                'facts',OBJECT_CONSTRUCT(
+                    'version',COALESCE(TO_VARIANT(version),TO_VARIANT('not_received')),
+                    'regimen_display',COALESCE(TO_VARIANT(regimen_display),
+                        TO_VARIANT('not_received')),
+                    'intent',COALESCE(TO_VARIANT(intent),TO_VARIANT('not_received')),
+                    'decided_at',COALESCE(TO_VARIANT(decided_at),TO_VARIANT('not_received'))),
+                'event_time',COALESCE(TO_VARCHAR(decided_at),'not_received'),
+                'source_recorded_at','not_received',
+                'ingested_at','not_received'))
+              INTO :v_rows FROM SAARTHI.CORE.TREATMENT_PLAN AT(TIMESTAMP => :v_clock)
+             WHERE patient_id=:v_patient AND plan_id=:v_key;
+        WHEN 'ROW-ENCOUNTER' THEN
+            SELECT ARRAY_AGG(OBJECT_CONSTRUCT('table','SAARTHI.CORE.ENCOUNTER',
+                'facts',OBJECT_CONSTRUCT(
+                    'encounter_id',COALESCE(TO_VARIANT(encounter_id),TO_VARIANT('not_received')),
+                    'cycle_number',COALESCE(TO_VARIANT(cycle_number),TO_VARIANT('not_received')),
+                    'event_time',COALESCE(TO_VARIANT(event_time),TO_VARIANT('not_received')),
+                    'gap_type',COALESCE(TO_VARIANT(gap_type),TO_VARIANT('not_received')),
+                    'status',COALESCE(TO_VARIANT(status),TO_VARIANT('not_received'))),
+                'event_time',COALESCE(TO_VARCHAR(event_time),'not_received'),
+                'source_recorded_at','not_received',
+                'ingested_at',COALESCE(TO_VARCHAR(ingested_at),'not_received')))
+              INTO :v_rows FROM SAARTHI.CORE.ENCOUNTER AT(TIMESTAMP => :v_clock)
+             WHERE patient_id=:v_patient AND encounter_id=:v_key;
+        WHEN 'ROW-IDENTITY' THEN
+            SELECT ARRAY_AGG(OBJECT_CONSTRUCT('table','SAARTHI.CORE.ID_MAP',
+                'facts',OBJECT_CONSTRUCT(
+                    'source_system',COALESCE(TO_VARIANT(source_system),TO_VARIANT('not_received')),
+                    'link_status',COALESCE(TO_VARIANT(link_status),TO_VARIANT('not_received')),
+                    'linked_at',COALESCE(TO_VARIANT(linked_at),TO_VARIANT('not_received'))),
+                'event_time',COALESCE(TO_VARCHAR(linked_at),'not_received'),
+                'source_recorded_at','not_received',
+                'ingested_at','not_received'))
+              INTO :v_rows FROM SAARTHI.CORE.ID_MAP AT(TIMESTAMP => :v_clock)
+             WHERE patient_id=:v_patient AND map_id=:v_key
+               AND link_status IN ('abha_linked','manually_verified');
+        ELSE RETURN OBJECT_CONSTRUCT('error','invalid_record_identifier');
+    END CASE;
+    IF (COALESCE(ARRAY_SIZE(v_rows),0)!=1) THEN
+        RETURN OBJECT_CONSTRUCT('error','record_not_available');
+    END IF;
+    v_row := GET(v_rows,0);
+    v_claim := OBJECT_CONSTRUCT('text','Recorded SQL row: ' || TO_JSON(v_row:facts),
+        'claim_type','textual','evidence',ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
+            'kind','structured','id',CLAIM:evidence[0]:id,'table',v_row:table,
+            'event_time',v_row:event_time,'source_recorded_at',v_row:source_recorded_at,
+            'ingested_at',v_row:ingested_at)));
+    RETURN OBJECT_CONSTRUCT('claim',v_claim,'limitations',ARRAY_CONSTRUCT(
+        'Source clocks absent from the originating row remain not_received.',
+        'SQL row is quoted at the requested database snapshot; it is not clinical clearance.'));
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','record_snapshot_unavailable');
+END;
+$$;
+-- ===== END procedures/answer_gateway_record.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_reference.sql =====
+-- Internal canonical quotation resolver. No application-role grant.
+-- Publisher metadata describes the checked local PDF; origin is not byte-verified.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFERENCE(
+    REF_ID VARCHAR, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_matches ARRAY;
+    v_clock TIMESTAMP_NTZ DEFAULT TRY_TO_TIMESTAMP_NTZ(KNOWN_AS_OF);
+BEGIN
+    IF (v_clock IS NULL) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_reference_cutoff');
+    END IF;
+    SELECT ARRAY_AGG(OBJECT_CONSTRUCT(
+        'text','Reference source passage: ' || LEFT(c.text,4000),
+        'claim_type','textual','evidence',ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
+            'kind','reference_clause','id',c.chunk_id,'doc_id',d.doc_id,
+            'page_index',c.page_index,'publisher',r.publisher,'document_title',r.title,
+            'version',r.version,'jurisdiction',COALESCE(d.jurisdiction,'not_received'),
+            'effective_date',COALESCE(TO_CHAR(d.effective_date,'YYYY-MM-DD'),'not_received')))))
+      INTO :v_matches
+      FROM SAARTHI.DOCUMENTS.DOC_CHUNK c
+      JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=c.doc_id
+      JOIN SAARTHI.DOCUMENTS.DOC_PAGE dp
+        ON dp.doc_id=d.doc_id AND dp.page_index=c.page_index
+      JOIN (SELECT column1 file_hash,column2 source_path,column3 publisher,
+                   column4 title,column5 version FROM VALUES
+        ('bf5f562d0b6fba773e99a8fc23ea53f916c70781aa62174d1567d00132fe01c1',
+         'aiims_rishikesh_standard_treatment_guidelines.pdf',
+         'Government of Gujarat',
+         'Standard Treatment Guidelines: A Manual for Medical Therapeutics',
+         'First Edition, 2013'),
+        ('859f45ac6425f98a51576f2d1e74d0570d29a971a6fdc74321ec73a9bf71d867',
+         'fda_herceptin_trastuzumab_label_2024.pdf',
+         'U.S. Food and Drug Administration',
+         'HERCEPTIN (trastuzumab) prescribing information',
+         '06/2024; Reference ID 5399895'),
+        ('a17b70025de98015cbdf41edc911eca384fff1aad07eecf6e80266f72b153c77',
+         'icmr_breast_cancer_consensus_2016.pdf',
+         'Indian Council of Medical Research',
+         'Consensus Document for Management of Breast Cancer',
+         '2016'),
+        ('87d1be39fc1b6ecc8a97f13b263da083f85ce830f851cfd66e3b53f6a704a3eb',
+         'icmr_stw_breast_cancer.pdf',
+         'Indian Council of Medical Research',
+         'Standard Treatment Workflow for Breast Cancer',
+         'Edition not independently confirmed'),
+        ('d2dfa8e147e9f047bf11ff7b956a20ed67a034bda36cdf8d22ff4ff113d49d57',
+         'icmr_type2_diabetes_guidelines_2018.pdf',
+         'Indian Council of Medical Research',
+         'Guidelines for Management of Type 2 Diabetes',
+         '2018'),
+        ('6f270ea7df42a5655bcc97e71a193e95668ff7e8fe8bfd5cdfd0471c8832c226',
+         'ncg_breast_cancer_guidelines_2019.pdf',
+         'National Cancer Grid',
+         'Breast Cancer Management Guidelines',
+         '2019'),
+        ('9bd399d781f57d7ae0009aa157697f78ca8a0b7507dc895d1eb56962fd1eaf61',
+         'pmjay_health_benefit_package_2.2_manual.pdf',
+         'National Health Authority',
+         'National Health Benefit Package 2.2 User Guidelines',
+         'November 2021')
+      ) r ON d.file_hash=r.file_hash AND d.source_path=r.source_path
+     WHERE c.chunk_id=:REF_ID AND c.doc_scope='reference' AND c.patient_id IS NULL
+       AND d.scope='reference' AND d.patient_id IS NULL AND d.status='active'
+       AND d.ingested_at<=:v_clock AND LENGTH(TRIM(c.text))>0
+       AND CONTAINS(dp.text,c.text)
+       AND (d.effective_date IS NULL OR d.effective_date<=TO_DATE(:v_clock));
+    IF (COALESCE(ARRAY_SIZE(v_matches),0)!=1) THEN
+        RETURN OBJECT_CONSTRUCT('error','unverified_reference');
+    END IF;
+    RETURN OBJECT_CONSTRUCT('claim',GET(v_matches,0),'limitations',ARRAY_CONSTRUCT(
+        'Reference quotation is not a patient finding or treatment recommendation.',
+        'Official origin, current edition and local applicability are not independently verified.',
+        'Publication period is not an effective date; unknown effective dates are not_received.'));
+END;
+$$;
+-- ===== END procedures/answer_gateway_reference.sql =====
+
 -- ===== BEGIN procedures/validate_answer.sql =====
--- =============================================================================
--- STEP 14 - validate_answer (internal - never exposed to the agent)
--- =============================================================================
--- SPEC.md §7. Six checks. Check 6 validates evidence <-> reality, not just
--- claim <-> evidence - without it, a misread lab value produces a perfectly
--- cited and clinically wrong answer. AI_FILTER failure fails closed: strip,
--- never pass by default.
---
--- Input shape: {"claims": [{"text":..., "claim_type":..., "asserted_value":...,
---   "evidence": [{"kind":"structured"|"document_span", "id":...}]}]}
--- Structured evidence id is a DT_HARMONIZED_EVENTS.event_id.
--- document_span evidence id is an ASSERTION.assertion_id.
 CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.validate_answer(
     CLAIMS VARIANT, KNOWN_AS_OF VARCHAR DEFAULT NULL)
   RETURNS VARIANT
@@ -1215,11 +1526,11 @@ BEGIN
                                 'known_as_of', :v_known_as_of_s);
     END IF;
 -- <<< SAARTHI PREAMBLE v1 END
-
+    LET v_data_categories ARRAY := (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+        WHERE consent_id=:v_consent_id);
     IF (NOT COALESCE(IS_ARRAY(CLAIMS),FALSE) OR ARRAY_SIZE(CLAIMS)>16) THEN
         RETURN OBJECT_CONSTRUCT('error','invalid_claims','known_as_of',v_known_as_of_s);
     END IF;
-
     v_n_claims := ARRAY_SIZE(:CLAIMS);
     WHILE (v_ci < v_n_claims) DO
         LET v_claim VARIANT := GET(:CLAIMS, :v_ci);
@@ -1232,25 +1543,64 @@ BEGIN
         LET v_claim_ok BOOLEAN := TRUE;
         LET v_strip_reason VARCHAR := NULL;
         LET v_canonical_evidence ARRAY := ARRAY_CONSTRUCT();
-
-        IF (NOT COALESCE(IS_ARRAY(v_evidence),FALSE) OR COALESCE(v_n_ev,0)=0) THEN
+        LET v_canonical_claim VARIANT := NULL;
+        IF (NOT COALESCE(IS_ARRAY(v_evidence),FALSE) OR COALESCE(v_n_ev,0)!=1) THEN
             v_claim_ok := FALSE;
-            v_strip_reason := 'check1_existence: no evidence attached';
+            v_strip_reason := 'check1_existence: exactly one factual source is required';
         END IF;
-
+        IF (v_text IS NULL OR LENGTH(v_text)=0 OR v_claim_type IS NULL
+            OR v_claim_type NOT IN ('numeric','date','status','textual')
+            OR (v_claim_type!='textual' AND (v_asserted IS NULL
+                OR IS_NULL_VALUE(v_asserted)))) THEN
+            v_claim_ok := FALSE;
+        END IF;
         WHILE (v_ei < v_n_ev AND v_claim_ok) DO
             LET v_ev VARIANT := GET(:v_evidence, :v_ei);
             LET v_kind VARCHAR := GET_PATH(:v_ev, 'kind')::VARCHAR;
             LET v_ev_id VARCHAR := GET_PATH(:v_ev, 'id')::VARCHAR;
-
-            IF (v_kind = 'structured') THEN
+            IF (v_kind='structured' AND
+                (STARTSWITH(v_ev_id,'ROW-') OR STARTSWITH(v_ev_id,'RULE--'))) THEN
+                LET v_record VARIANT;
+                LET v_categories ARRAY := (SELECT data_categories
+                    FROM SAARTHI.GOVERNANCE.CONSENT
+                    WHERE consent_id=:v_consent_id);
+                CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RECORD(:v_claim,:v_known_as_of_s,
+                    OBJECT_CONSTRUCT('patient_id',:v_patient_id,'categories',:v_categories))
+                    INTO :v_record;
+                IF (v_record:error IS NOT NULL) THEN
+                    v_claim_ok := FALSE; v_strip_reason := v_record:error::VARCHAR;
+                ELSE
+                    v_text := v_record:claim:text::VARCHAR;
+                    v_canonical_claim := v_record:claim;
+                    v_asserted := NULL;
+                    v_canonical_evidence := v_record:claim:evidence::ARRAY;
+                    v_limitations := ARRAY_CAT(v_limitations,v_record:limitations::ARRAY);
+                END IF;
+            ELSEIF (v_kind='structured' AND NOT COALESCE(ARRAY_CONTAINS(
+                'clinical'::VARIANT,:v_data_categories),FALSE)) THEN
+                v_claim_ok := FALSE; v_strip_reason := 'clinical_consent_required';
+            ELSEIF (v_kind = 'structured') THEN
                 LET v_ev_patient VARCHAR := NULL;
                 LET v_ev_ingested TIMESTAMP_NTZ := NULL;
                 LET v_ev_num FLOAT := NULL;
                 LET v_ev_txt VARCHAR := NULL;
-                SELECT patient_id, ingested_at, value_num, value_text
-                  INTO :v_ev_patient, :v_ev_ingested, :v_ev_num, :v_ev_txt
-                  FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS WHERE event_id = :v_ev_id;
+                LET v_ev_concept VARCHAR := NULL;
+                LET v_ev_time TIMESTAMP_NTZ := NULL;
+                LET v_ev_recorded TIMESTAMP_NTZ := NULL;
+                LET v_ev_derived BOOLEAN := FALSE;
+                LET v_ev_state VARCHAR := NULL;
+                LET v_ev_unit VARCHAR := NULL;
+                LET v_ev_negated BOOLEAN := NULL;
+                SELECT h.patient_id,h.ingested_at,h.value_num,h.value_text,h.concept_name,
+                       h.event_time,h.source_recorded_at,h.is_derived,h.plausibility_state,
+                       h.unit,ce.negation
+                  INTO :v_ev_patient,:v_ev_ingested,:v_ev_num,:v_ev_txt,:v_ev_concept,
+                       :v_ev_time,:v_ev_recorded,:v_ev_derived,:v_ev_state,
+                       :v_ev_unit,:v_ev_negated
+                  FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS h
+                  LEFT JOIN SAARTHI.CORE.CLINICAL_EVENT ce
+                    ON ce.event_id=h.event_id AND ce.patient_id=h.patient_id
+                 WHERE h.event_id=:v_ev_id;
                 IF (v_ev_patient IS NULL) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check1_existence: ' || v_ev_id || ' does not resolve';
                     LET v_sec_event_id VARCHAR := UUID_STRING();
@@ -1263,12 +1613,15 @@ BEGIN
                     LET v_sec_detail2 VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'cross_patient_evidence');
                     INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT (event_id, practitioner_id, event_type, detail)
                     SELECT :v_sec_event_id2, NULL, 'validator_strip', :v_sec_detail2;
+                ELSEIF (v_n_ev!=1 OR v_ev_derived OR v_ev_state!='present'
+                    OR v_ev_state IS NULL OR v_ev_concept IS NULL OR v_ev_negated IS NULL
+                    OR v_ev_time IS NULL OR v_ev_recorded IS NULL
+                    OR v_ev_ingested IS NULL OR (v_ev_num IS NULL AND v_ev_txt IS NULL)) THEN
+                    v_claim_ok := FALSE;
+                    v_strip_reason := 'structured source cannot be safely rendered';
                 ELSEIF (v_ev_ingested > v_known_as_of) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check3_temporality: evidence ingested after known_as_of';
                 ELSEIF (v_claim_type = 'numeric' AND v_asserted IS NOT NULL) THEN
-                    -- Check 5. Type match for numeric claims. 1% relative tolerance is
-                    -- a calibration decision (SPEC says "within tolerance" without a
-                    -- number) - documented in REMAINING-WORK.md §6, not a spec citation.
                     IF (v_ev_num IS NULL) THEN
                         v_claim_ok := FALSE;
                         v_strip_reason := 'check5_type_match: numeric claim but evidence has no value_num';
@@ -1289,8 +1642,24 @@ BEGIN
                         v_strip_reason := 'check5_type_match: date mismatch';
                     END IF;
                 END IF;
+                IF (v_claim_ok) THEN
+                    v_text := 'Recorded ' || v_ev_concept || ': '
+                        || IFF(v_ev_negated,'explicitly negative; ','')
+                        || COALESCE(v_ev_num::VARCHAR,v_ev_txt)
+                        || IFF(v_ev_num IS NOT NULL AND v_ev_unit IS NOT NULL,
+                            ' ' || v_ev_unit,'')
+                        || ' (event time ' || TO_VARCHAR(v_ev_time,
+                            'YYYY-MM-DD"T"HH24:MI:SS') || ').';
+                    v_claim_type := 'textual';
+                    v_asserted := NULL;
+                END IF;
                 v_canonical_evidence := ARRAY_APPEND(v_canonical_evidence,
-                    OBJECT_CONSTRUCT('kind','structured','id',v_ev_id));
+                    OBJECT_CONSTRUCT('kind','structured','id',v_ev_id,
+                        'table','SAARTHI.CORE.DT_HARMONIZED_EVENTS',
+                        'event_time',TO_VARCHAR(v_ev_time,'YYYY-MM-DD"T"HH24:MI:SS'),
+                        'source_recorded_at',TO_VARCHAR(v_ev_recorded,
+                            'YYYY-MM-DD"T"HH24:MI:SS'),
+                        'ingested_at',TO_VARCHAR(v_ev_ingested,'YYYY-MM-DD"T"HH24:MI:SS')));
             ELSEIF (v_kind = 'document_span') THEN
                 LET v_ev_verif VARCHAR := NULL;
                 LET v_ev_doc_patient VARCHAR := NULL;
@@ -1309,14 +1678,24 @@ BEGIN
                   FROM SAARTHI.EVIDENCE.ASSERTION a
                   JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id = a.doc_id
                   JOIN SAARTHI.DOCUMENTS.DOC_PAGE dp ON dp.doc_id=a.doc_id AND dp.page_index=a.page_index
-                 WHERE a.assertion_id = :v_ev_id AND d.scope='patient' AND d.status='active';
+                 WHERE a.assertion_id = :v_ev_id AND d.scope='patient' AND d.status='active'
+                   AND COALESCE(ARRAY_CONTAINS(TO_VARIANT(
+                       CASE d.doc_type WHEN 'authorization_letter' THEN 'financial'
+                       WHEN 'claim_document' THEN 'financial'
+                       WHEN 'lab_report' THEN 'clinical' WHEN 'pathology_report' THEN 'clinical'
+                       WHEN 'imaging_report' THEN 'clinical' WHEN 'discharge_summary' THEN 'clinical'
+                       WHEN 'prescription' THEN 'clinical' WHEN 'referral_letter' THEN 'clinical'
+                       WHEN 'surgical_note' THEN 'clinical' WHEN 'consent_form' THEN 'identity'
+                       WHEN 'cbc_report' THEN 'clinical' WHEN 'discharge_note' THEN 'clinical'
+                       ELSE NULL END),
+                       :v_data_categories),FALSE);
                 IF (v_ev_verif IS NULL) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check1_existence: ' || v_ev_id || ' does not resolve';
                     LET v_sec_event_id3 VARCHAR := UUID_STRING();
                     LET v_sec_detail3 VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'fabricated_evidence_id');
                     INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT (event_id, practitioner_id, event_type, detail)
                     SELECT :v_sec_event_id3, NULL, 'validator_strip', :v_sec_detail3;
-                ELSEIF (v_ev_doc_patient IS NOT NULL AND v_ev_doc_patient != v_patient_id) THEN
+                ELSEIF (v_ev_doc_patient IS NULL OR v_ev_doc_patient != v_patient_id) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check2_scope: evidence belongs to a different patient';
                     LET v_sec_event_id4 VARCHAR := UUID_STRING();
                     LET v_sec_detail4 VARIANT := OBJECT_CONSTRUCT('claim', :v_text, 'evidence_id', :v_ev_id, 'reason', 'cross_patient_evidence');
@@ -1328,24 +1707,18 @@ BEGIN
                     OR v_ev_end<=v_ev_start OR v_ev_source IS NULL OR v_ev_end>LENGTH(v_ev_source)) THEN
                     v_claim_ok := FALSE; v_strip_reason := 'check1_existence: exact source span unavailable';
                 ELSEIF (v_ev_verif!='verified') THEN
-                    -- Check 6. The most important check: evidence <-> reality,
-                    -- not just claim <-> evidence. Downgrade, do not silently strip.
                     v_claim_ok := FALSE;
                     v_strip_reason := 'check6_trustworthiness: assertion is ' || v_ev_verif || ', value not asserted';
                     v_limitations := ARRAY_APPEND(v_limitations,
                         'A value was read but could not be verified on a second pass (' || v_ev_verif || '). Confirm against the original report.');
                 ELSEIF (v_ev_missing IS NULL OR v_ev_missing NOT IN ('present','explicitly_negative')
                     OR v_ev_value IS NULL) THEN
-                    -- Pending/unreadable observations are not an asserted value.
                     v_claim_ok := FALSE; v_strip_reason := 'check6_trustworthiness: no assertable result';
                 ELSE
-                    -- Check 5 first (cheap type match against ASSERTION.value), then
-                    -- Check 4 last (AI_FILTER polarity — the only AI call in this proc).
-                    -- SPEC §7 order was 1..6; runtime order optimises for cost: all cheap
                     -- SQL checks precede the AI call so a claim strippable by structure
                     -- never fires AI_FILTER.
                     IF (v_claim_type = 'numeric' AND v_asserted IS NOT NULL) THEN
-                        LET v_ev_num_ds FLOAT := TRY_TO_NUMBER(v_ev_value);
+                        LET v_ev_num_ds FLOAT := TRY_TO_DOUBLE(v_ev_value);
                         IF (v_ev_num_ds IS NULL) THEN
                             v_claim_ok := FALSE;
                             v_strip_reason := 'check5_type_match: numeric claim but ASSERTION.value is not numeric';
@@ -1366,22 +1739,17 @@ BEGIN
                             v_strip_reason := 'check5_type_match: date mismatch';
                         END IF;
                     END IF;
-
                     IF (v_claim_ok) THEN
-                        -- Check 4 — polarity via AI_FILTER (SPEC §7 line 630, F8-verified).
-                        -- Fail-closed: any error returned by AI_FILTER strips the claim
-                        -- (AGENTS.md §3 #10). return_error_details=TRUE gives {value,error}
-                        -- so we distinguish "confirmed false" from "call errored".
                         LET v_passage VARCHAR := NULL;
                         v_passage := SUBSTR(v_ev_source,v_ev_start+1,v_ev_end-v_ev_start);
-
                         IF (v_passage IS NOT NULL) THEN
                             LET v_filter_result VARIANT := (
                                 SELECT AI_FILTER(
                                   PROMPT('Does this passage confirm that {0}? Passage: {1}',
                                          :v_text, :v_passage),
                                   TRUE));
-                            IF (GET_PATH(:v_filter_result, 'error') IS NOT NULL) THEN
+                            IF (GET_PATH(:v_filter_result, 'error') IS NOT NULL
+                                AND NOT IS_NULL_VALUE(GET_PATH(:v_filter_result, 'error'))) THEN
                                 v_claim_ok := FALSE;
                                 v_strip_reason := 'check4_polarity: AI_FILTER error (' ||
                                                   GET_PATH(:v_filter_result, 'error')::VARCHAR ||
@@ -1390,35 +1758,74 @@ BEGIN
                                 v_claim_ok := FALSE;
                                 v_strip_reason := 'check4_polarity: passage does not confirm claim';
                             END IF;
+                            IF (v_claim_ok) THEN
+                                v_text := 'Verified source passage: ' || v_passage;
+                                IF (v_claim_type='numeric') THEN
+                                    v_asserted := TO_VARIANT(TRY_TO_DOUBLE(v_ev_value));
+                                ELSEIF (v_claim_type='date') THEN
+                                    v_asserted := TO_VARIANT(
+                                        TO_CHAR(TRY_TO_DATE(v_ev_value),'YYYY-MM-DD'));
+                                ELSEIF (v_claim_type='status') THEN
+                                    v_asserted := TO_VARIANT(v_ev_value);
+                                END IF;
+                            END IF;
                         ELSE
                             v_claim_ok := FALSE;
                             v_strip_reason := 'check1_existence: source passage unavailable';
                         END IF;
                     END IF;
                 END IF;
-                -- Never return model-supplied positions or a forged document URL.
                 v_canonical_evidence := ARRAY_APPEND(v_canonical_evidence,
-                    OBJECT_CONSTRUCT('kind','document_span','id',v_ev_id,'assertion_id',v_ev_id,
+                    OBJECT_CONSTRUCT('kind','document_span','id',v_ev_id,
                       'doc_id',v_ev_doc_id,'page_index',v_ev_page,
-                      'char_start',v_ev_start,'char_end',v_ev_end));
+                      'char_start',v_ev_start,'char_end',v_ev_end,
+                      'verification_status',v_ev_verif));
+            ELSEIF (v_kind='reference_clause' AND v_claim_type='textual') THEN
+                LET v_ref VARIANT;
+                CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFERENCE(
+                    :v_ev_id,:v_known_as_of_s) INTO :v_ref;
+                IF (v_ref:error IS NOT NULL) THEN
+                    v_claim_ok := FALSE; v_strip_reason := 'unverified_reference';
+                ELSE
+                    v_text := v_ref:claim:text::VARCHAR;
+                    v_asserted := NULL;
+                    v_canonical_evidence := v_ref:claim:evidence::ARRAY;
+                    v_limitations := ARRAY_CAT(v_limitations,v_ref:limitations::ARRAY);
+                END IF;
             ELSE
                 v_claim_ok := FALSE; v_strip_reason := 'check5_type_match: unrecognised evidence kind';
             END IF;
             v_ei := v_ei + 1;
         END WHILE;
-
         IF (v_claim_ok) THEN
-            v_validated := ARRAY_APPEND(v_validated, OBJECT_INSERT(v_claim,'evidence',v_canonical_evidence,TRUE));
+            v_validated := ARRAY_APPEND(v_validated, OBJECT_CONSTRUCT(
+                'text',v_text,'claim_type',v_claim_type,'asserted_value',v_asserted,
+                'gate',v_canonical_claim:gate,'outcome',v_canonical_claim:outcome,
+                'rule_id',v_canonical_claim:rule_id,'rule_version',v_canonical_claim:rule_version,
+                'provenance_note',v_canonical_claim:provenance_note,
+                'evidence',v_canonical_evidence));
         ELSE
-            v_limitations := ARRAY_APPEND(v_limitations, COALESCE(v_strip_reason, 'stripped') || ' :: "' || v_text || '"');
+            LET v_strip_event_id VARCHAR := UUID_STRING();
+            LET v_strip_detail VARIANT := OBJECT_CONSTRUCT('reason',
+                SPLIT_PART(COALESCE(v_strip_reason,'invalid_claim'),':',1));
+            INSERT INTO SAARTHI.GOVERNANCE.SECURITY_EVENT
+                (event_id,practitioner_id,event_type,detail)
+            SELECT :v_strip_event_id,:v_practitioner,'validator_strip',:v_strip_detail;
+            v_limitations := ARRAY_APPEND(v_limitations,
+                'A candidate claim could not be verified and was omitted.');
         END IF;
         v_ci := v_ci + 1;
     END WHILE;
-
-    RETURN OBJECT_CONSTRUCT(
+    LET v_versions VARIANT := (SELECT COALESCE(OBJECT_AGG(rule_id,version),OBJECT_CONSTRUCT())
+        FROM (SELECT value:rule_id::VARCHAR AS rule_id,
+        TO_VARIANT(MAX(value:rule_version::INTEGER)) AS version
+        FROM TABLE(FLATTEN(INPUT=>:v_validated)) WHERE value:rule_id IS NOT NULL GROUP BY 1));
+    RETURN OBJECT_CONSTRUCT('rule_versions',v_versions,
+        'access_scope',SHA2(v_binding_id || '|' || v_consent_id || '|' || v_patient_id
+            || '|' || COALESCE(TO_JSON(v_data_categories),'null'),256),
         'claims', v_validated,
         'limitations', v_limitations,
-        'overall_status', CASE WHEN ARRAY_SIZE(v_validated) = 0 THEN 'refused'
+        'overall_status', CASE WHEN ARRAY_SIZE(v_validated) = 0 THEN 'partial'
                                 WHEN ARRAY_SIZE(v_limitations) > 0 THEN 'partial'
                                 ELSE 'supported' END,
         'known_as_of', TO_VARCHAR(v_known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS'));
@@ -1426,7 +1833,479 @@ END;
 $$;
 -- ===== END procedures/validate_answer.sql =====
 
+-- ===== BEGIN procedures/answer_gateway_candidates.sql =====
+-- Parses only DATA_AGENT_RUN text blocks; thinking/tool payloads never become answer prose.
+-- Response shape: docs.snowflake.com/en/sql-reference/functions/data_agent_run-snowflake-cortex
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CANDIDATES(PAYLOAD VARIANT)
+RETURNS VARIANT LANGUAGE JAVASCRIPT EXECUTE AS OWNER AS
+$$
+/** @param {unknown} value @returns {boolean} */
+function object(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+/** @param {object} value @param {string[]} allowed @returns {boolean} */
+function keys(value, allowed) {
+    return Object.keys(value).every(key => allowed.includes(key));
+}
+/** @param {unknown} evidence @returns {object} */
+function citation(evidence) {
+    if (!object(evidence) || !keys(evidence, ['kind','id'])
+        || !['structured', 'document_span', 'reference_clause'].includes(evidence.kind)
+        || typeof evidence.id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(evidence.id)) {
+        throw new Error('invalid_candidate');
+    }
+    return {kind: evidence.kind, id: evidence.id};
+}
+/** @param {unknown} claim @returns {object} */
+function typedClaim(claim) {
+    if (!object(claim) || !keys(claim, ['text','claim_type','asserted_value','evidence'])
+        || typeof claim.text !== 'string' || !claim.text.trim()
+        || claim.text.length > 4000
+        || !['numeric','date','status','textual'].includes(claim.claim_type)
+        || !Array.isArray(claim.evidence) || claim.evidence.length !== 1) {
+        throw new Error('invalid_candidate');
+    }
+    if (claim.asserted_value !== undefined && claim.asserted_value !== null
+        && !['string','number'].includes(typeof claim.asserted_value)) {
+        throw new Error('invalid_candidate');
+    }
+    if (claim.claim_type === 'numeric' && (typeof claim.asserted_value !== 'number'
+        || !Number.isFinite(claim.asserted_value))) throw new Error('invalid_candidate');
+    if (['date','status'].includes(claim.claim_type)
+        && (typeof claim.asserted_value !== 'string' || !claim.asserted_value.trim())) {
+        throw new Error('invalid_candidate');
+    }
+    if (claim.claim_type === 'date' && (!/^\d{4}-\d{2}-\d{2}$/.test(claim.asserted_value)
+        || !Number.isFinite(Date.parse(claim.asserted_value))
+        || new Date(claim.asserted_value).toISOString().slice(0,10) !== claim.asserted_value)) {
+        throw new Error('invalid_candidate');
+    }
+    const result = {text: claim.text, claim_type: claim.claim_type,
+        evidence: claim.evidence.map(citation)};
+    if (result.evidence[0].kind === 'reference_clause' && claim.claim_type !== 'textual') {
+        throw new Error('invalid_candidate');
+    }
+    if (claim.claim_type !== 'textual') result.asserted_value = claim.asserted_value;
+    return result;
+}
+/** @param {unknown} payload @returns {object} */
+function parse(payload) {
+    if (!object(payload) || !Array.isArray(payload.content)) return {error: 'invalid_candidate'};
+    const text = payload.content.filter(item => object(item) && item.type === 'text'
+        && typeof item.text === 'string').map(item => item.text).join('\n').trim();
+    if (text.length > 64000) return {error: 'invalid_candidate'};
+    const json = text.replace(/^```(?:json)?\s*|\s*```$/g, '');
+    if (json.startsWith('{') || json.startsWith('[') || text.startsWith('```')) {
+        const proposed = JSON.parse(json);
+        if (!object(proposed) || !keys(proposed, ['claims'])
+            || !Array.isArray(proposed.claims) || proposed.claims.length > 16) {
+            return {error: 'invalid_candidate'};
+        }
+        return {mode: 'typed', claims: proposed.claims.map(typedClaim)};
+    }
+    const tokens = text.match(/[A-Za-z0-9_-]+/g) || [];
+    const prefixed = /^(?:CE|EVT|AST|AS|ASSERT)-[A-Za-z0-9_-]+$/;
+    const rowId = /^ROW-(?:PATIENT|COVERAGE|PLAN|ENCOUNTER|IDENTITY)--[A-Za-z0-9_-]+$/;
+    const ruleId = /^RULE--[A-Za-z0-9_-]+--[A-Za-z0-9_-]+--[1-9][0-9]*$/;
+    const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+    const ids = [...new Set(tokens.filter(id => id.length <= 128
+        && (prefixed.test(id) || uuid.test(id) || rowId.test(id) || ruleId.test(id))))];
+    return ids.length > 128 ? {error: 'invalid_candidate'} : {mode: 'legacy', ids: ids};
+}
+try { return parse(PAYLOAD); }
+catch (error) {
+    if (!(error instanceof Error)) throw error;
+    return {error: 'invalid_candidate'};
+}
+$$;
+-- ===== END procedures/answer_gateway_candidates.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_resolve.sql =====
+-- Legacy compatibility uses literal identifiers only; no prose is parsed as a medical fact.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RESOLVE_IDS(
+    IDS ARRAY, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_access VARIANT;
+    v_patient VARCHAR;
+    v_claims ARRAY;
+BEGIN
+    v_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),:KNOWN_AS_OF));
+    IF (v_access:error IS NOT NULL) THEN RETURN v_access; END IF;
+    SELECT patient_id INTO :v_patient FROM SAARTHI.GOVERNANCE.PATIENT_BINDING
+     WHERE session_id=CURRENT_SESSION() AND released_at IS NULL ORDER BY bound_at DESC LIMIT 1;
+    IF (IDS IS NULL OR ARRAY_SIZE(IDS)>128) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_candidate','known_as_of',KNOWN_AS_OF);
+    END IF;
+    SELECT COALESCE(ARRAY_AGG(claim) WITHIN GROUP (ORDER BY id),ARRAY_CONSTRUCT()) INTO :v_claims
+    FROM (SELECT DISTINCT h.event_id AS id,OBJECT_CONSTRUCT('text','Recorded source',
+        'claim_type','textual','evidence',ARRAY_CONSTRUCT(
+            OBJECT_CONSTRUCT('kind','structured','id',h.event_id))) AS claim
+      FROM TABLE(FLATTEN(input=>:IDS)) i JOIN SAARTHI.CORE.DT_HARMONIZED_EVENTS h
+        ON h.event_id=i.value::VARCHAR
+     WHERE h.patient_id=:v_patient AND h.ingested_at<=TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF)
+    UNION ALL
+    SELECT DISTINCT a.assertion_id AS id,OBJECT_CONSTRUCT('text','Source passage: "'
+        || SUBSTR(dp.text,a.char_start+1,a.char_end-a.char_start) || '"',
+        'claim_type','textual','evidence',ARRAY_CONSTRUCT(
+            OBJECT_CONSTRUCT('kind','document_span','id',a.assertion_id))) AS claim
+      FROM TABLE(FLATTEN(input=>:IDS)) i JOIN SAARTHI.EVIDENCE.ASSERTION a
+        ON a.assertion_id=i.value::VARCHAR
+      JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=a.doc_id
+      JOIN SAARTHI.DOCUMENTS.DOC_PAGE dp ON dp.doc_id=a.doc_id AND dp.page_index=a.page_index
+     WHERE d.patient_id=:v_patient AND d.scope='patient' AND d.status='active'
+       AND d.ingested_at<=TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF)
+       AND a.verification_status='verified'
+       AND a.missingness_state IN ('present','explicitly_negative')
+       AND a.char_start>=0 AND a.char_end>a.char_start AND a.char_end<=LENGTH(dp.text)
+       AND a.char_end-a.char_start<=4000
+    UNION ALL
+    SELECT DISTINCT i.value::VARCHAR AS id,OBJECT_CONSTRUCT('text','Recorded SQL source',
+        'claim_type','textual','evidence',ARRAY_CONSTRUCT(
+            OBJECT_CONSTRUCT('kind','structured','id',i.value::VARCHAR))) AS claim
+      FROM TABLE(FLATTEN(input=>:IDS)) i
+     WHERE REGEXP_LIKE(i.value::VARCHAR,
+        '(ROW-(PATIENT|COVERAGE|PLAN|ENCOUNTER|IDENTITY)--[A-Za-z0-9_-]+'
+        || '|RULE--[A-Za-z0-9_-]+--[A-Za-z0-9_-]+--[1-9][0-9]*)')
+    UNION ALL
+    SELECT DISTINCT c.chunk_id AS id,OBJECT_CONSTRUCT('text','Reference source passage',
+        'claim_type','textual','evidence',ARRAY_CONSTRUCT(
+            OBJECT_CONSTRUCT('kind','reference_clause','id',c.chunk_id))) AS claim
+      FROM TABLE(FLATTEN(input=>:IDS)) i
+      JOIN SAARTHI.DOCUMENTS.DOC_CHUNK c ON c.chunk_id=i.value::VARCHAR
+     WHERE c.doc_scope='reference' AND c.patient_id IS NULL);
+    RETURN OBJECT_CONSTRUCT('claims',ARRAY_SLICE(v_claims,0,16));
+END;
+$$;
+-- ===== END procedures/answer_gateway_resolve.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_refusal.sql =====
+-- Offers preparation only. Packet creation and delivery are separate explicit operations.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFUSAL(KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_access VARIANT;
+    v_recipient VARIANT;
+BEGIN
+    v_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),:KNOWN_AS_OF));
+    IF (v_access:error IS NOT NULL) THEN RETURN v_access; END IF;
+    SELECT OBJECT_CONSTRUCT('practitioner_id',p.practitioner_id,'name',p.name,
+        'nmc_registration_no',p.nmc_registration_no) INTO :v_recipient
+      FROM SAARTHI.GOVERNANCE.CARE_TEAM ct
+      JOIN SAARTHI.GOVERNANCE.PRACTITIONER p ON p.practitioner_id=ct.practitioner_id
+     WHERE ct.patient_id=(SELECT patient_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING
+         WHERE session_id=CURRENT_SESSION() AND released_at IS NULL
+         ORDER BY bound_at DESC LIMIT 1)
+       AND ct.role_type='treating' AND p.active=TRUE
+       AND ct.active_from<=CURRENT_DATE()
+       AND (ct.active_to IS NULL OR ct.active_to>=CURRENT_DATE())
+       AND NULLIF(TRIM(p.name),'') IS NOT NULL
+       AND NULLIF(TRIM(p.nmc_registration_no),'') IS NOT NULL
+     ORDER BY ct.active_from DESC,p.practitioner_id LIMIT 1;
+    IF (v_recipient IS NULL) THEN
+        RETURN OBJECT_CONSTRUCT('error','treating_practitioner_unavailable',
+            'known_as_of',KNOWN_AS_OF);
+    END IF;
+    RETURN OBJECT_CONSTRUCT('classification','CLASS_A','claims',ARRAY_CONSTRUCT(),
+        'limitations',ARRAY_CONSTRUCT(),'overall_status','refused','known_as_of',KNOWN_AS_OF,
+        'refusal',OBJECT_CONSTRUCT('reason_code','class_a_clinical_judgment',
+            'message','Clinical judgment requires the named treating practitioner.',
+            'practitioner',v_recipient,'evidence_packet_offered',TRUE));
+END;
+$$;
+-- ===== END procedures/answer_gateway_refusal.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_finalize.sql =====
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_FINALIZE(
+    PAYLOAD VARIANT, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_candidate VARIANT;
+    v_checked VARIANT;
+    v_legacy BOOLEAN;
+    v_claims VARIANT;
+    v_limitations ARRAY;
+BEGIN
+    v_candidate := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CANDIDATES(:PAYLOAD));
+    IF (v_candidate:error IS NOT NULL) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_candidate','known_as_of',KNOWN_AS_OF);
+    END IF;
+    v_legacy := v_candidate:mode::VARCHAR='legacy';
+    IF (v_legacy) THEN
+        v_candidate := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RESOLVE_IDS(
+            :v_candidate:ids::ARRAY,:KNOWN_AS_OF));
+        IF (v_candidate:error IS NOT NULL) THEN RETURN v_candidate; END IF;
+    END IF;
+    v_claims := v_candidate:claims;
+    v_checked := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(:v_claims,:KNOWN_AS_OF));
+    IF (v_checked:error IS NOT NULL) THEN RETURN v_checked; END IF;
+    v_limitations := v_checked:limitations::ARRAY;
+    IF (v_legacy OR ARRAY_SIZE(v_checked:claims)=0) THEN
+        v_limitations := ARRAY_APPEND(v_limitations,
+            'Only verified cited source records are shown; no narrative conclusion was accepted.');
+    END IF;
+    RETURN OBJECT_CONSTRUCT('classification','CLASS_B','claims',v_checked:claims,
+        'rule_versions',COALESCE(v_checked:rule_versions,OBJECT_CONSTRUCT()),
+        'limitations',v_limitations,'known_as_of',KNOWN_AS_OF,
+        'overall_status',IFF(v_legacy,'partial',v_checked:overall_status::VARCHAR));
+END;
+$$;
+-- ===== END procedures/answer_gateway_finalize.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_record_fallback.sql =====
+-- Bounded record lookup for an unavailable agent. No narrative or clinical conclusions.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RECORD_FALLBACK(
+    QUESTION VARCHAR, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_access VARIANT;
+    v_patient VARCHAR;
+    v_ids VARCHAR;
+    v_answer VARIANT;
+    v_payload VARIANT;
+BEGIN
+    v_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),:KNOWN_AS_OF));
+    IF (v_access:error IS NOT NULL) THEN RETURN v_access; END IF;
+    SELECT patient_id INTO :v_patient FROM SAARTHI.GOVERNANCE.PATIENT_BINDING
+     WHERE session_id=CURRENT_SESSION() AND released_at IS NULL ORDER BY bound_at DESC LIMIT 1;
+    SELECT COALESCE(LISTAGG(event_id,' '),'') INTO :v_ids FROM (
+        SELECT event_id FROM SAARTHI.CORE.DT_HARMONIZED_EVENTS
+         WHERE patient_id=:v_patient AND ingested_at<=TRY_TO_TIMESTAMP_NTZ(:KNOWN_AS_OF)
+           AND ((concept_name='PLT' AND REGEXP_LIKE(:QUESTION,'(^|.*[^a-z])(platelets?|plt)([^a-z].*|$)','i'))
+             OR (concept_name='ANC' AND REGEXP_LIKE(:QUESTION,'(^|.*[^a-z])(absolute neutrophil count|anc)([^a-z].*|$)','i'))
+             OR (concept_name='WBC' AND REGEXP_LIKE(:QUESTION,'(^|.*[^a-z])(white blood cell count|wbc)([^a-z].*|$)','i')))
+         QUALIFY ROW_NUMBER() OVER (PARTITION BY concept_name ORDER BY event_time DESC,
+             source_recorded_at DESC,ingested_at DESC,event_id)=1);
+    v_payload := OBJECT_CONSTRUCT('content',ARRAY_CONSTRUCT(
+        OBJECT_CONSTRUCT('type','text','text',v_ids)));
+    v_answer := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_FINALIZE(:v_payload,:KNOWN_AS_OF));
+    IF (v_answer:error IS NOT NULL) THEN RETURN v_answer; END IF;
+    RETURN OBJECT_INSERT(v_answer,'limitations',ARRAY_APPEND(v_answer:limitations::ARRAY,
+        'The agent dependency was unavailable. Only explicit SQL lab record lookups are shown.'),TRUE);
+END;
+$$;
+-- ===== END procedures/answer_gateway_record_fallback.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_context_pack.sql =====
+-- Bounded presentation of SQL tool outputs; no clinical calculations or model judgments.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CONTEXT_PACK(
+    PACKET VARIANT, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE JAVASCRIPT EXECUTE AS OWNER AS
+$$
+var truncated = false;
+function bound(value, depth) {
+    if (depth > 8) {
+        truncated = true;
+        return {state: 'unreadable'};
+    }
+    if (typeof value === 'string') {
+        if (value.length > 2000) truncated = true;
+        return value.slice(0, 2000);
+    }
+    if (Array.isArray(value)) {
+        if (value.length > 20) truncated = true;
+        return value.slice(0, 20).map(function(item) { return bound(item, depth + 1); });
+    }
+    if (value && typeof value === 'object') {
+        var result = Object.create(null);
+        var keys = Object.keys(value);
+        if (keys.length > 32) truncated = true;
+        keys.slice(0, 32).forEach(function(key) { result[key] = bound(value[key], depth + 1); });
+        return result;
+    }
+    return value;
+}
+function tool(name) {
+    var value = PACKET && PACKET[name];
+    if (!value || typeof value !== 'object') return {state: 'not_received'};
+    if (value.error) return {state: 'unavailable'};
+    return bound(value, 0);
+}
+var result = {
+    schema_version: 'saarthi.context.v1', known_as_of: KNOWN_AS_OF,
+    access_scope: PACKET && PACKET.access_scope,
+    record_facts: {
+        labs: tool('labs'), coverage: tool('coverage'), demographics: tool('demographics'),
+        treatment_plan: tool('treatment_plan'), encounters: tool('encounters'),
+        identity: tool('identity')
+    },
+    readiness: tool('readiness'), patient_documents: tool('patient_documents'),
+    reference_documents: tool('reference_documents'), limitations: []
+};
+if (truncated) result.limitations.push('Context shortened; use exact evidence IDs for validation.');
+if (JSON.stringify(result).length > 64000) {
+    return {error: 'context_size_limit', known_as_of: KNOWN_AS_OF};
+}
+return result;
+$$;
+-- ===== END procedures/answer_gateway_context_pack.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_context_section.sql =====
+-- Each optional context dependency fails independently, without exposing error details.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CONTEXT_SECTION(
+    SECTION VARCHAR, QUESTION VARCHAR, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE v_result VARIANT;
+BEGIN
+    IF (SECTION IN ('labs','coverage','identity','demographics','treatment_plan','encounters')) THEN
+        v_result := (CALL SAARTHI.OPERATIONAL.GET_PATIENT_FACTS(:SECTION,:KNOWN_AS_OF));
+    ELSEIF (SECTION='readiness') THEN
+        v_result := (CALL SAARTHI.OPERATIONAL.GET_READINESS(NULL,:KNOWN_AS_OF));
+    ELSEIF (SECTION='patient_documents') THEN
+        v_result := (CALL SAARTHI.OPERATIONAL.SEARCH_PATIENT_DOCUMENTS(
+            LEFT(:QUESTION,1000),:KNOWN_AS_OF));
+    ELSEIF (SECTION='reference_documents') THEN
+        v_result := (CALL SAARTHI.OPERATIONAL.SEARCH_REFERENCE_DOCUMENTS(
+            LEFT(:QUESTION,1000),NULL,NULL));
+    ELSE
+        RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',KNOWN_AS_OF);
+    END IF;
+    RETURN v_result;
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','section_dependency_unavailable','known_as_of',KNOWN_AS_OF);
+END;
+$$;
+-- ===== END procedures/answer_gateway_context_section.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_context.sql =====
+-- Collect on the gateway's bound session; corpora retain separate named result lists.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CONTEXT(
+    QUESTION VARCHAR, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_sections ARRAY DEFAULT ARRAY_CONSTRUCT('labs','coverage','identity','demographics',
+        'treatment_plan','encounters','readiness','patient_documents','reference_documents');
+    v_index INTEGER DEFAULT 0;
+    v_name VARCHAR; v_section VARIANT; v_packet VARIANT; v_context VARIANT;
+    v_latest_labs ARRAY; v_access VARIANT; v_clock VARCHAR;
+BEGIN
+    v_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),:KNOWN_AS_OF));
+    IF (v_access:error IS NOT NULL) THEN RETURN v_access; END IF;
+    v_clock := v_access:known_as_of::VARCHAR;
+    v_packet := OBJECT_CONSTRUCT('access_scope',v_access:access_scope);
+    WHILE (v_index<ARRAY_SIZE(v_sections)) DO
+        v_name := v_sections[v_index]::VARCHAR;
+        v_section := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CONTEXT_SECTION(
+            :v_name,:QUESTION,:v_clock));
+        IF (v_name='labs' AND v_section:error IS NULL) THEN
+            SELECT COALESCE(ARRAY_AGG(value),ARRAY_CONSTRUCT()) INTO :v_latest_labs FROM (
+                SELECT value,ROW_NUMBER() OVER (PARTITION BY value:concept::VARCHAR
+                    ORDER BY value:event_time::TIMESTAMP_NTZ DESC NULLS LAST,
+                    value:ingested_at::TIMESTAMP_NTZ DESC NULLS LAST,value:event_id::VARCHAR DESC)
+                    AS record_rank FROM TABLE(FLATTEN(INPUT=>:v_section:facts))
+            ) WHERE record_rank=1;
+            v_section := OBJECT_INSERT(v_section,'facts',v_latest_labs,TRUE);
+        END IF;
+        v_packet := OBJECT_INSERT(v_packet,v_name,v_section,TRUE);
+        v_index := v_index+1;
+    END WHILE;
+    v_context := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CONTEXT_PACK(:v_packet,:v_clock));
+    RETURN v_context;
+EXCEPTION WHEN STATEMENT_ERROR THEN
+    RETURN OBJECT_CONSTRUCT('error','context_dependency_unavailable',
+        'known_as_of',COALESCE(v_clock,KNOWN_AS_OF));
+END;
+$$;
+-- ===== END procedures/answer_gateway_context.sql =====
+
+-- ===== BEGIN procedures/answer_gateway_infer.sql =====
+-- Private inference adapter; callers must authorize and classify before invoking it.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ANSWER_GATEWAY_INFER(
+    QUESTION VARCHAR, KNOWN_AS_OF VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_payload VARCHAR;
+    v_context VARIANT;
+    v_access VARIANT;
+    v_result VARCHAR;
+    v_candidate VARIANT;
+    v_answer VARIANT;
+BEGIN
+    v_context := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_CONTEXT(:QUESTION,:KNOWN_AS_OF));
+    IF (v_context:error IS NOT NULL) THEN RETURN v_context; END IF;
+    v_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),NULL));
+    IF (v_access:error IS NOT NULL) THEN RETURN v_access; END IF;
+    IF (v_access:access_scope IS DISTINCT FROM v_context:access_scope) THEN
+        RETURN OBJECT_CONSTRUCT('error','access_scope_changed','known_as_of',KNOWN_AS_OF);
+    END IF;
+    v_payload := TO_JSON(OBJECT_CONSTRUCT('messages',ARRAY_CONSTRUCT(
+        OBJECT_CONSTRUCT('role','user','content',ARRAY_CONSTRUCT(
+            OBJECT_CONSTRUCT('type','text','text',QUESTION
+                || '\nSQL_CONTEXT: ' || TO_JSON(v_context)
+                || '\nReturn only JSON with claims. Use provided exact evidence IDs. '
+                || 'Claims: text,claim_type,evidence[{kind,id}],asserted_value for typed values. '
+                || 'Dates: YYYY-MM-DD. No clinical judgments. Empty: claims=[].'))))));
+    BEGIN
+        v_result := (SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+            'SAARTHI.OPERATIONAL.SAARTHI_AGENT',:v_payload));
+    EXCEPTION
+        WHEN OTHER THEN v_result := '{"error":"agent_dependency_unavailable"}';
+    END;
+    IF (TRY_PARSE_JSON(v_result):code::VARCHAR='399504'
+        OR TRY_PARSE_JSON(v_result):error::VARCHAR='agent_dependency_unavailable') THEN
+        v_answer := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_RECORD_FALLBACK(
+            :QUESTION,:KNOWN_AS_OF));
+        RETURN v_answer;
+    END IF;
+    v_candidate := COALESCE(TRY_PARSE_JSON(v_result),OBJECT_CONSTRUCT(
+        'content',ARRAY_CONSTRUCT(OBJECT_CONSTRUCT('type','text','text',v_result))));
+    v_answer := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_FINALIZE(
+        :v_candidate,:KNOWN_AS_OF));
+    RETURN v_answer;
+END;
+$$;
+-- ===== END procedures/answer_gateway_infer.sql =====
+
+-- ===== BEGIN agent/ask_saarthi.sql =====
+-- Sole answer gateway; final consent-scope verification also protects direct MCP callers.
+CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.ASK_SAARTHI(QUESTION VARCHAR)
+RETURNS VARIANT LANGUAGE SQL EXECUTE AS OWNER AS
+$$
+DECLARE
+    v_clock VARCHAR;
+    v_access VARIANT;
+    v_final_access VARIANT;
+    v_class VARIANT;
+    v_answer VARIANT;
+BEGIN
+    v_clock := TO_VARCHAR(CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,'YYYY-MM-DD"T"HH24:MI:SS');
+    IF (QUESTION IS NULL OR LENGTH(TRIM(QUESTION))=0 OR LENGTH(QUESTION)>4000) THEN
+        RETURN OBJECT_CONSTRUCT('error','invalid_argument','known_as_of',v_clock);
+    END IF;
+    v_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),:v_clock));
+    IF (v_access:error IS NOT NULL) THEN RETURN v_access; END IF;
+    IF (NOT COALESCE(REGEXP_LIKE(v_access:access_scope::VARCHAR,'^[a-f0-9]{64}$'),FALSE)) THEN
+        RETURN OBJECT_CONSTRUCT('error','answer_gateway_unavailable','known_as_of',v_clock);
+    END IF;
+    v_class := (CALL SAARTHI.OPERATIONAL.CLASSIFY_QUESTION(:QUESTION));
+    IF (COALESCE(v_class:classification::VARCHAR,'') NOT IN ('CLASS_A','CLASS_B')) THEN
+        RETURN OBJECT_CONSTRUCT('error','classification_unavailable','known_as_of',v_clock);
+    END IF;
+    IF (v_class:classification::VARCHAR='CLASS_A') THEN
+        v_answer := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFUSAL(:v_clock));
+    ELSE
+        v_answer := (CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_INFER(:QUESTION,:v_clock));
+    END IF;
+    v_final_access := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(ARRAY_CONSTRUCT(),NULL));
+    IF (v_final_access:error IS NOT NULL) THEN RETURN v_final_access; END IF;
+    IF (v_final_access:access_scope IS DISTINCT FROM v_access:access_scope) THEN
+        RETURN OBJECT_CONSTRUCT('error','access_scope_changed','known_as_of',v_clock);
+    END IF;
+    RETURN v_answer;
+EXCEPTION WHEN OTHER THEN
+    RETURN OBJECT_CONSTRUCT('error','answer_gateway_unavailable','known_as_of',v_clock);
+END;
+$$;
+-- ===== END agent/ask_saarthi.sql =====
+
 -- VERIFY: expect one row per name, CREATED just now.
 SELECT procedure_name, created FROM SAARTHI.INFORMATION_SCHEMA.PROCEDURES
- WHERE procedure_schema = 'OPERATIONAL' AND procedure_name IN ('GET_PATIENT_FACTS', 'GET_READINESS', 'SEARCH_PATIENT_DOCUMENTS', 'GET_TIMELINE', 'GET_CHANGES', 'CREATE_REVIEW_TASK', 'BIND_PATIENT', 'EVALUATE_GATES', 'EXTRACT_ONE_DOCUMENT', 'VALIDATE_ANSWER')
- ORDER BY 1;  -- expect 10 rows
+ WHERE procedure_schema = 'OPERATIONAL' AND procedure_name IN ('GET_PATIENT_FACTS', 'GET_READINESS', 'SEARCH_PATIENT_DOCUMENTS', 'GET_TIMELINE', 'GET_CHANGES', 'CREATE_REVIEW_TASK', 'BIND_PATIENT', 'EVALUATE_GATES', 'EXTRACT_ONE_DOCUMENT', 'VALIDATE_ANSWER', 'ASK_SAARTHI', 'ANSWER_GATEWAY_CANDIDATES', 'ANSWER_GATEWAY_REFERENCE', 'ANSWER_GATEWAY_RECORD', 'ANSWER_GATEWAY_RULE', 'ANSWER_GATEWAY_RESOLVE_IDS', 'ANSWER_GATEWAY_REFUSAL', 'ANSWER_GATEWAY_FINALIZE', 'ANSWER_GATEWAY_RECORD_FALLBACK')
+ ORDER BY 1;  -- expect 19 rows

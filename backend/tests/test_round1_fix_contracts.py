@@ -59,7 +59,7 @@ class ConsentFailsClosed(unittest.TestCase):
     def test_no_bare_not_array_contains_on_financial_consent(self):
         reads = sql("procedures/web_reads.sql")
         self.assertNotRegex(reads, r"NOT ARRAY_CONTAINS\('financial'")
-        self.assertEqual(reads.count("COALESCE(ARRAY_CONTAINS('financial'::VARIANT"), 3)
+        self.assertNotRegex(reads, r"(?<!COALESCE\()ARRAY_CONTAINS\('financial'")
 
     def test_schemes_view_withholds_patient_figures_without_financial_consent(self):
         reads = sql("procedures/web_reads.sql")

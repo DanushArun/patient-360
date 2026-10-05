@@ -5,6 +5,7 @@ DECLARE KNOWN_AS_OF VARCHAR DEFAULT NULL;
 v_known_as_of TIMESTAMP_NTZ; v_known_as_of_s VARCHAR; v_binding_id VARCHAR;
 v_patient_id VARCHAR; v_practitioner VARCHAR; v_care_team_id VARCHAR; v_consent_id VARCHAR;
 v_class VARIANT; v_ids ARRAY; v_id VARCHAR; v_status VARCHAR;
+v_pointer_claims ARRAY; v_checked_pointers VARIANT; v_extra_ids ARRAY;
 BEGIN
 -- >>> SAARTHI PREAMBLE v1 BEGIN
     -- 0 -- KNOWN_AS_OF. Resolved before anything can fail, so every error carries it.
@@ -91,12 +92,39 @@ SELECT COALESCE(ARRAY_AGG(DISTINCT id),ARRAY_CONSTRUCT()) INTO :v_ids FROM (
  WHERE d.patient_id=:v_patient_id AND d.scope='patient' AND d.status='active' AND d.ingested_at<=:v_known_as_of
  AND a.verification_status='verified' AND ARRAY_CONTAINS(a.assertion_id::VARIANT,:EVIDENCE_IDS)
 );
+SELECT COALESCE(ARRAY_AGG(OBJECT_CONSTRUCT('text','Recorded source pointer',
+    'claim_type','textual','evidence',ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
+        'id',id,'kind',kind)))),ARRAY_CONSTRUCT()) INTO :v_pointer_claims
+FROM (
+    SELECT DISTINCT i.value::VARCHAR AS id,'structured' AS kind
+      FROM TABLE(FLATTEN(input=>:EVIDENCE_IDS)) i
+     WHERE STARTSWITH(i.value::VARCHAR,'ROW-') OR STARTSWITH(i.value::VARCHAR,'RULE--')
+    UNION
+    SELECT DISTINCT c.chunk_id AS id,'reference_clause' AS kind
+      FROM TABLE(FLATTEN(input=>:EVIDENCE_IDS)) i
+      JOIN SAARTHI.DOCUMENTS.DOC_CHUNK c ON c.chunk_id=i.value::VARCHAR
+     WHERE c.doc_scope='reference' AND c.patient_id IS NULL
+);
+IF (ARRAY_SIZE(v_pointer_claims)>0) THEN
+    v_checked_pointers := (CALL SAARTHI.OPERATIONAL.VALIDATE_ANSWER(:v_pointer_claims,
+        TO_VARCHAR(:v_known_as_of,'YYYY-MM-DD"T"HH24:MI:SS')));
+    IF (v_checked_pointers:error IS NOT NULL) THEN RETURN v_checked_pointers; END IF;
+    SELECT COALESCE(ARRAY_AGG(DISTINCT e.value:id::VARCHAR),ARRAY_CONSTRUCT())
+      INTO :v_extra_ids
+      FROM TABLE(FLATTEN(input=>:v_checked_pointers:claims)) c,
+           LATERAL FLATTEN(input=>c.value:evidence) e;
+    v_ids := ARRAY_DISTINCT(ARRAY_CAT(v_ids,v_extra_ids));
+END IF;
 v_status := CASE WHEN v_class:classification::VARCHAR='CLASS_A' THEN 'refused' WHEN ANSWER_STATE='error' THEN 'error' ELSE 'recorded' END;
 IF (EXISTS (SELECT 1 FROM SAARTHI.EVIDENCE.ANSWER_RUN WHERE run_id=:RUN_REF AND (patient_id!=:v_patient_id OR practitioner_id!=:v_practitioner))) THEN RETURN OBJECT_CONSTRUCT('error','invalid_argument'); END IF;
 MERGE INTO SAARTHI.EVIDENCE.ANSWER_RUN t USING (SELECT :RUN_REF AS id) s ON t.run_id=s.id
 WHEN NOT MATCHED THEN INSERT(run_id,question_class,practitioner_id,patient_id,consent_id,known_as_of,answer_status,evidence_ids,model_version,validation_results)
 VALUES(s.id,IFF(:v_class:classification::VARCHAR='CLASS_A','A','B'),:v_practitioner,:v_patient_id,:v_consent_id,:v_known_as_of,:v_status,:v_ids,'web-source-pointers@1',OBJECT_CONSTRUCT('pointers_scope_checked',TRUE,'answer_text_retained',FALSE,'does_not_attest_model_prose',TRUE));
-RETURN OBJECT_CONSTRUCT('run_id',RUN_REF,'status',v_status);
+RETURN (SELECT OBJECT_CONSTRUCT('run_id',run_id,'status',answer_status,
+    'known_as_of',TO_VARCHAR(known_as_of,'YYYY-MM-DD"T"HH24:MI:SS'))
+    FROM SAARTHI.EVIDENCE.ANSWER_RUN
+    WHERE run_id=:RUN_REF AND patient_id=:v_patient_id
+      AND practitioner_id=:v_practitioner);
 END;
 $$;
 
@@ -199,6 +227,15 @@ FROM TABLE(FLATTEN(input=>:v_gates:gates)) g,LATERAL FLATTEN(input=>g.value:evid
 MERGE INTO SAARTHI.EVIDENCE.EVIDENCE_PACKET t USING (SELECT :PACKET_REF AS id) s ON t.packet_id=s.id
 WHEN NOT MATCHED THEN INSERT(packet_id,patient_id,question,created_by_practitioner_id,evidence_ids,gate_snapshot,consent_id,delivered_to_practitioner_id,delivered_at)
 VALUES(s.id,:v_patient_id,:QUESTION,:v_practitioner,:v_ids,:v_gates,:v_consent_id,:v_recipient,NULL);
-RETURN OBJECT_CONSTRUCT('packet_id',PACKET_REF,'practitioner_name',v_name,'status','prepared','known_as_of',v_gates:known_as_of,'delivered',FALSE);
+RETURN (SELECT OBJECT_CONSTRUCT('packet_id',ep.packet_id,'practitioner_name',p.name,
+    'practitioner',OBJECT_CONSTRUCT('practitioner_id',p.practitioner_id,'name',p.name,
+        'nmc_registration_no',p.nmc_registration_no),
+    'status',IFF(ep.delivered_at IS NULL,'prepared','delivered'),
+    'known_as_of',ep.gate_snapshot:known_as_of,'gate_snapshot',ep.gate_snapshot,
+    'evidence_ids',ep.evidence_ids,'delivered',ep.delivered_at IS NOT NULL)
+    FROM SAARTHI.EVIDENCE.EVIDENCE_PACKET ep
+    JOIN SAARTHI.GOVERNANCE.PRACTITIONER p ON p.practitioner_id=ep.delivered_to_practitioner_id
+    WHERE ep.packet_id=:PACKET_REF AND ep.patient_id=:v_patient_id
+      AND ep.created_by_practitioner_id=:v_practitioner);
 END;
 $$;

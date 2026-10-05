@@ -50,7 +50,7 @@ class DeployBundle(unittest.TestCase):
 
     def test_n4_01_grants_precede_tasks_and_suspend_is_executed_and_guarded(self):
         text = self._sql("04_tasks_and_grants.sql")
-        self.assertLess(text.index("GRANT USAGE ON ALL PROCEDURES"), text.index("CREATE OR REPLACE TASK"))
+        self.assertLess(text.index("GRANT USAGE ON PROCEDURE SAARTHI.OPERATIONAL.ASK_SAARTHI"), text.index("CREATE OR REPLACE TASK"))
         self.assertLess(text.index("ALTER TASK IF EXISTS SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS SUSPEND"),
                         text.index("CREATE OR REPLACE TASK"))
         self.assertIn("ALTER TASK IF EXISTS SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS SUSPEND",

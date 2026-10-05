@@ -136,7 +136,18 @@ BEGIN
           JOIN SAARTHI.DOCUMENTS.DOCUMENT d ON d.doc_id=dp.doc_id
          WHERE dp.doc_id=:v_doc_id AND dp.page_index=:v_page_index
            AND d.patient_id=:v_patient_id AND d.scope='patient' AND d.status='active'
-           AND d.ingested_at<=:v_known_as_of;
+           AND d.ingested_at<=:v_known_as_of
+           AND COALESCE(ARRAY_CONTAINS(TO_VARIANT(
+               CASE d.doc_type WHEN 'authorization_letter' THEN 'financial'
+               WHEN 'claim_document' THEN 'financial'
+                       WHEN 'lab_report' THEN 'clinical' WHEN 'pathology_report' THEN 'clinical'
+                       WHEN 'imaging_report' THEN 'clinical' WHEN 'discharge_summary' THEN 'clinical'
+                       WHEN 'prescription' THEN 'clinical' WHEN 'referral_letter' THEN 'clinical'
+                       WHEN 'surgical_note' THEN 'clinical' WHEN 'consent_form' THEN 'identity'
+                       WHEN 'cbc_report' THEN 'clinical' WHEN 'discharge_note' THEN 'clinical'
+                       ELSE NULL END),
+               (SELECT data_categories FROM SAARTHI.GOVERNANCE.CONSENT
+                WHERE consent_id=:v_consent_id)),FALSE);
 
         IF (v_text IS NOT NULL) THEN
             -- Retrieval is page-level context. Only the verified assertion

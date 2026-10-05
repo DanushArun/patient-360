@@ -57,10 +57,10 @@ def test_setup_loads_skills_before_agent_and_agent_references_skill_folders_not_
     assert "SKILL.md\"" not in agent.split("tools:")[0].split("skills:")[-1]
 
 
-def test_validate_answer_is_not_wired_into_ask_saarthi_so_status_must_say_so():
-    assert "validate_answer" not in read("backend/sql/agent/ask_saarthi.sql").lower()
-    status = read("IMPLEMENTATION-STATUS.md")
-    assert "not called by `ASK_SAARTHI`" in status
+def test_answer_gateway_validates_before_and_after_inference():
+    gateway = read("backend/sql/agent/ask_saarthi.sql")
+    finalizer = read("backend/sql/procedures/answer_gateway_finalize.sql")
+    assert "VALIDATE_ANSWER" in gateway and "VALIDATE_ANSWER" in finalizer
 
 
 def test_deterministic_routing_baseline_counts_are_reproducible_and_fail_closed():
