@@ -1,0 +1,8 @@
+snowflake-connector-python==4.8.0
+python-dotenv
+jsonschema
+pytest
+
+PyYAML
+requests
+pyarrow>=14.0.1,<24

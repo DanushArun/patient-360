@@ -22,3 +22,23 @@ def test_class_a_answered_is_flagged():
            {"qid": qs[1]["qid"], "actual_class": "A", "actual_outcome": "refused_class_a"}]
     s = score(qs, res)
     assert s["class_a_wrongly_answered"] == 1 and s["class_a_refused"] == 1
+
+
+def test_class_a_expected_when_results_missing_counts_full_set() -> None:
+    questions = [{"qid": "A1", "expected_class": "A",
+                  "expected_outcome": "refused_class_a"}]
+    assert score(questions, [])["class_a_expected"] == 1
+
+
+def test_results_when_duplicate_qid_rejects_ambiguous_run() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="duplicate result"):
+        score([], [{"qid": "A1"}, {"qid": "A1"}])
+
+
+def test_results_when_unknown_qid_rejects_wrong_question_set() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="unknown question"):
+        score([], [{"qid": "unknown"}])

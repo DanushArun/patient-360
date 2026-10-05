@@ -1,0 +1,13 @@
+{
+  "dev": "245272a1529ddec5d0d1f3335cd92e4c2f0e637466df4c213b40d86bbde3f3b7",
+  "heldout": "e248d224cee79a752e36ac21b782044df9480aed12d09bee8910a4c06e541e57",
+  "structured_gold": "e58b4accf4a61427ef3c89f6dcc555b86dfbabc02a2cf6347b714234c1c2c6f2",
+  "document_selectors": "dadfa54714a65fd68762e91908ef99957bd17bce7810e565e74c53708e5f95e9",
+  "manifest": "05b9b2a692371b82b177d4b9ab71a2f453edeb527679a0c1d35d06715e189e32",
+  "status": "PRE_AI",
+  "patients": 8,
+  "questions": 80,
+  "layout_partition": "actual separate renderers; not renamed layout labels",
+  "source_sha256": "626b68092a7a62d346820a877c7e760304faae1951d03d54a43d04a168dd3260",
+  "final_gold_dependency": "four heldout document IDs require verified extraction"
+}

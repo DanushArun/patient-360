@@ -1,0 +1,4 @@
+{"asserted_value": 184823, "concept": "PLT", "doc_id": "DOC-EVAL-HELDOUT-01", "patient_id": "PAT-EVAL-HELDOUT-01", "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-10", "required_verification_status": "verified"}
+{"asserted_value": 185523, "concept": "PLT", "doc_id": "DOC-EVAL-HELDOUT-02", "patient_id": "PAT-EVAL-HELDOUT-02", "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-10", "required_verification_status": "verified"}
+{"asserted_value": 186223, "concept": "PLT", "doc_id": "DOC-EVAL-HELDOUT-03", "patient_id": "PAT-EVAL-HELDOUT-03", "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-10", "required_verification_status": "verified"}
+{"asserted_value": 186923, "concept": "PLT", "doc_id": "DOC-EVAL-HELDOUT-04", "patient_id": "PAT-EVAL-HELDOUT-04", "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-10", "required_verification_status": "verified"}

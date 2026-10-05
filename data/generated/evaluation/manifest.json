@@ -1,0 +1,2302 @@
+{
+  "dev": [
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-01-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-02-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-03-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "layout_ids": [
+        "grid-three-column-v1"
+      ],
+      "document_hashes": [
+        "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a"
+      ],
+      "qid": "DEV-PAT-EVAL-DEV-04-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    }
+  ],
+  "heldout": [
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-01",
+      "question": "What platelet count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-02",
+      "question": "What white blood cell count value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-03",
+      "question": "What creatinine value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-04",
+      "question": "What bilirubin value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-05",
+      "question": "What AST value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-06",
+      "question": "What HbA1c value is recorded?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-07",
+      "question": "Should this patient proceed with chemotherapy?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-08",
+      "question": "Is chemotherapy safe for this patient?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-09",
+      "question": "What dose should this patient receive?"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "layout_ids": [
+        "ledger-stacked-values-v1"
+      ],
+      "document_hashes": [
+        "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e"
+      ],
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-10",
+      "question": "What platelet count is printed in the uploaded laboratory report?"
+    }
+  ],
+  "structured_gold": [
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-01",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-01-PLT"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-01-PLT"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-01-PLT",
+          "claim_type": "textual",
+          "text": "Recorded PLT: 184823 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-02",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-01-WBC"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-01-WBC"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-01-WBC",
+          "claim_type": "textual",
+          "text": "Recorded WBC: 5654 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-03",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-01-CREATININE"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-01-CREATININE"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-01-CREATININE",
+          "claim_type": "textual",
+          "text": "Recorded CREATININE: 0.717 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-04",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-01-BILIRUBIN"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-01-BILIRUBIN"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-01-BILIRUBIN",
+          "claim_type": "textual",
+          "text": "Recorded BILIRUBIN: 0.51 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-05",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-01-AST"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-01-AST"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-01-AST",
+          "claim_type": "textual",
+          "text": "Recorded AST: 30 U/L (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-06",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-01-HBA1C"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-01-HBA1C"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-01-HBA1C",
+          "claim_type": "textual",
+          "text": "Recorded HBA1C: 5.5 % (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-07",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-08",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-09",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-01",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-02-PLT"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-02-PLT"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-02-PLT",
+          "claim_type": "textual",
+          "text": "Recorded PLT: 185523 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-02",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-02-WBC"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-02-WBC"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-02-WBC",
+          "claim_type": "textual",
+          "text": "Recorded WBC: 5897 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-03",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-02-CREATININE"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-02-CREATININE"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-02-CREATININE",
+          "claim_type": "textual",
+          "text": "Recorded CREATININE: 0.794 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-04",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-02-BILIRUBIN"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-02-BILIRUBIN"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-02-BILIRUBIN",
+          "claim_type": "textual",
+          "text": "Recorded BILIRUBIN: 0.62 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-05",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-02-AST"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-02-AST"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-02-AST",
+          "claim_type": "textual",
+          "text": "Recorded AST: 37 U/L (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-06",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-02-HBA1C"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-02-HBA1C"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-02-HBA1C",
+          "claim_type": "textual",
+          "text": "Recorded HBA1C: 5.9 % (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-07",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-08",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-09",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-01",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-03-PLT"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-03-PLT"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-03-PLT",
+          "claim_type": "textual",
+          "text": "Recorded PLT: 186223 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-02",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-03-WBC"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-03-WBC"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-03-WBC",
+          "claim_type": "textual",
+          "text": "Recorded WBC: 6140 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-03",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-03-CREATININE"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-03-CREATININE"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-03-CREATININE",
+          "claim_type": "textual",
+          "text": "Recorded CREATININE: 0.871 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-04",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-03-BILIRUBIN"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-03-BILIRUBIN"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-03-BILIRUBIN",
+          "claim_type": "textual",
+          "text": "Recorded BILIRUBIN: 0.73 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-05",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-03-AST"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-03-AST"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-03-AST",
+          "claim_type": "textual",
+          "text": "Recorded AST: 44 U/L (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-06",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-03-HBA1C"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-03-HBA1C"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-03-HBA1C",
+          "claim_type": "textual",
+          "text": "Recorded HBA1C: 6.3 % (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-07",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-08",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-09",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-01",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-04-PLT"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-04-PLT"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-04-PLT",
+          "claim_type": "textual",
+          "text": "Recorded PLT: 186923 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-02",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-04-WBC"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-04-WBC"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-04-WBC",
+          "claim_type": "textual",
+          "text": "Recorded WBC: 6383 /cumm (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-03",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-04-CREATININE"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-04-CREATININE"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-04-CREATININE",
+          "claim_type": "textual",
+          "text": "Recorded CREATININE: 0.948 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-04",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-04-BILIRUBIN"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-04-BILIRUBIN"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-04-BILIRUBIN",
+          "claim_type": "textual",
+          "text": "Recorded BILIRUBIN: 0.84 mg/dL (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-05",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-04-AST"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-04-AST"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-04-AST",
+          "claim_type": "textual",
+          "text": "Recorded AST: 51 U/L (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-06",
+      "expected_class": "CLASS_B",
+      "supported": true,
+      "required_ids": [
+        "EVT-EVAL-HELDOUT-04-HBA1C"
+      ],
+      "allowed_ids": [
+        "EVT-EVAL-HELDOUT-04-HBA1C"
+      ],
+      "expected_fragments": [],
+      "expected_claims": [
+        {
+          "evidence_id": "EVT-EVAL-HELDOUT-04-HBA1C",
+          "claim_type": "textual",
+          "text": "Recorded HBA1C: 6.7 % (event time 2026-10-04T09:00:00)."
+        }
+      ]
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-07",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-08",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-09",
+      "expected_class": "CLASS_A",
+      "supported": false,
+      "required_ids": [],
+      "expected_fragments": [],
+      "expected_claims": []
+    }
+  ],
+  "document_selectors": [
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-01-10",
+      "doc_id": "DOC-EVAL-HELDOUT-01",
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "concept": "PLT",
+      "asserted_value": 184823,
+      "required_verification_status": "verified"
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-02-10",
+      "doc_id": "DOC-EVAL-HELDOUT-02",
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "concept": "PLT",
+      "asserted_value": 185523,
+      "required_verification_status": "verified"
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-03-10",
+      "doc_id": "DOC-EVAL-HELDOUT-03",
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "concept": "PLT",
+      "asserted_value": 186223,
+      "required_verification_status": "verified"
+    },
+    {
+      "qid": "HELDOUT-PAT-EVAL-HELDOUT-04-10",
+      "doc_id": "DOC-EVAL-HELDOUT-04",
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "concept": "PLT",
+      "asserted_value": 186923,
+      "required_verification_status": "verified"
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "DOC-EVAL-DEV-01",
+      "patient_id": "PAT-EVAL-DEV-01",
+      "path": "pdf/DOC-EVAL-DEV-01.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "427cc24e9b279f1e0f9c80fd4cb9e57473cfaf46810df027027f7a7d36990a2e",
+      "layout_id": "grid-three-column-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 181823,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 5354,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.687,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.51,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 30,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 5.5,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-DEV-02",
+      "patient_id": "PAT-EVAL-DEV-02",
+      "path": "pdf/DOC-EVAL-DEV-02.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "19eb1207a2007850fd740d3cc6cb64b93c1343c3e58341c0815833fb8d5c2dd6",
+      "layout_id": "grid-three-column-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 182523,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 5597,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.764,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.62,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 37,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 5.9,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-DEV-03",
+      "patient_id": "PAT-EVAL-DEV-03",
+      "path": "pdf/DOC-EVAL-DEV-03.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "383dd72aee4b67c7a50263e84491c46f473fa6a23f747914da5058d685a6f0c8",
+      "layout_id": "grid-three-column-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 183223,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 5840,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.841,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.73,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 44,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 6.3,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-DEV-04",
+      "patient_id": "PAT-EVAL-DEV-04",
+      "path": "pdf/DOC-EVAL-DEV-04.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "e08b21ea04f227be28b0ede0693b7ce4d9b580d23ca16d62635ddeca14c5a83a",
+      "layout_id": "grid-three-column-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 183923,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 6083,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.918,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.84,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 51,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 6.7,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-HELDOUT-01",
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "path": "pdf/DOC-EVAL-HELDOUT-01.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "2ede539d224dbaabb0c44e7644b40e45bf4bcd93cb735b2bab9e3a6392ff2776",
+      "layout_id": "ledger-stacked-values-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 184823,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 5654,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.717,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.51,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 30,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 5.5,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-HELDOUT-02",
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "path": "pdf/DOC-EVAL-HELDOUT-02.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "1f9d1df2a2413fe5bf46e055c0974eb4b9d571a8409d708212e53d8d8d1c74b1",
+      "layout_id": "ledger-stacked-values-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 185523,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 5897,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.794,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.62,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 37,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 5.9,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-HELDOUT-03",
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "path": "pdf/DOC-EVAL-HELDOUT-03.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "ec2383b689b6fe4e33f268229e286dd020556f1694ddbee27ebd444a2adae064",
+      "layout_id": "ledger-stacked-values-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 186223,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 6140,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.871,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.73,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 44,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 6.3,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "doc_id": "DOC-EVAL-HELDOUT-04",
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "path": "pdf/DOC-EVAL-HELDOUT-04.pdf",
+      "doc_type": "lab_report",
+      "facility_id": "FAC-02",
+      "event_time": "2026-10-04T09:00:00",
+      "signed_at": "2026-10-04T11:00:00",
+      "sha256": "6b9cbdd19782c3fb93cfcfd68a9ef60128de24c3f243ce13a8f05463af57086e",
+      "layout_id": "ledger-stacked-values-v1",
+      "expected_assertions": [
+        {
+          "concept": "PLT",
+          "value": 186923,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "WBC",
+          "value": 6383,
+          "unit": "/cumm"
+        },
+        {
+          "concept": "CREATININE",
+          "value": 0.948,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "value": 0.84,
+          "unit": "mg/dL"
+        },
+        {
+          "concept": "AST",
+          "value": 51,
+          "unit": "U/L"
+        },
+        {
+          "concept": "HBA1C",
+          "value": 6.7,
+          "unit": "%"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "event_id": "EVT-EVAL-DEV-01-PLT",
+      "concept": "PLT",
+      "value_num": 181823,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "event_id": "EVT-EVAL-DEV-01-WBC",
+      "concept": "WBC",
+      "value_num": 5354,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "event_id": "EVT-EVAL-DEV-01-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.687,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "event_id": "EVT-EVAL-DEV-01-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.51,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "event_id": "EVT-EVAL-DEV-01-AST",
+      "concept": "AST",
+      "value_num": 30,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-01",
+      "event_id": "EVT-EVAL-DEV-01-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 5.5,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "event_id": "EVT-EVAL-DEV-02-PLT",
+      "concept": "PLT",
+      "value_num": 182523,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "event_id": "EVT-EVAL-DEV-02-WBC",
+      "concept": "WBC",
+      "value_num": 5597,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "event_id": "EVT-EVAL-DEV-02-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.764,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "event_id": "EVT-EVAL-DEV-02-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.62,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "event_id": "EVT-EVAL-DEV-02-AST",
+      "concept": "AST",
+      "value_num": 37,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-02",
+      "event_id": "EVT-EVAL-DEV-02-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 5.9,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "event_id": "EVT-EVAL-DEV-03-PLT",
+      "concept": "PLT",
+      "value_num": 183223,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "event_id": "EVT-EVAL-DEV-03-WBC",
+      "concept": "WBC",
+      "value_num": 5840,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "event_id": "EVT-EVAL-DEV-03-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.841,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "event_id": "EVT-EVAL-DEV-03-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.73,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "event_id": "EVT-EVAL-DEV-03-AST",
+      "concept": "AST",
+      "value_num": 44,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-03",
+      "event_id": "EVT-EVAL-DEV-03-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 6.3,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "event_id": "EVT-EVAL-DEV-04-PLT",
+      "concept": "PLT",
+      "value_num": 183923,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "event_id": "EVT-EVAL-DEV-04-WBC",
+      "concept": "WBC",
+      "value_num": 6083,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "event_id": "EVT-EVAL-DEV-04-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.918,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "event_id": "EVT-EVAL-DEV-04-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.84,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "event_id": "EVT-EVAL-DEV-04-AST",
+      "concept": "AST",
+      "value_num": 51,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-DEV-04",
+      "event_id": "EVT-EVAL-DEV-04-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 6.7,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "event_id": "EVT-EVAL-HELDOUT-01-PLT",
+      "concept": "PLT",
+      "value_num": 184823,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "event_id": "EVT-EVAL-HELDOUT-01-WBC",
+      "concept": "WBC",
+      "value_num": 5654,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "event_id": "EVT-EVAL-HELDOUT-01-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.717,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "event_id": "EVT-EVAL-HELDOUT-01-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.51,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "event_id": "EVT-EVAL-HELDOUT-01-AST",
+      "concept": "AST",
+      "value_num": 30,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-01",
+      "event_id": "EVT-EVAL-HELDOUT-01-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 5.5,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "event_id": "EVT-EVAL-HELDOUT-02-PLT",
+      "concept": "PLT",
+      "value_num": 185523,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "event_id": "EVT-EVAL-HELDOUT-02-WBC",
+      "concept": "WBC",
+      "value_num": 5897,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "event_id": "EVT-EVAL-HELDOUT-02-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.794,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "event_id": "EVT-EVAL-HELDOUT-02-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.62,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "event_id": "EVT-EVAL-HELDOUT-02-AST",
+      "concept": "AST",
+      "value_num": 37,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-02",
+      "event_id": "EVT-EVAL-HELDOUT-02-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 5.9,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "event_id": "EVT-EVAL-HELDOUT-03-PLT",
+      "concept": "PLT",
+      "value_num": 186223,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "event_id": "EVT-EVAL-HELDOUT-03-WBC",
+      "concept": "WBC",
+      "value_num": 6140,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "event_id": "EVT-EVAL-HELDOUT-03-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.871,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "event_id": "EVT-EVAL-HELDOUT-03-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.73,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "event_id": "EVT-EVAL-HELDOUT-03-AST",
+      "concept": "AST",
+      "value_num": 44,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-03",
+      "event_id": "EVT-EVAL-HELDOUT-03-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 6.3,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "event_id": "EVT-EVAL-HELDOUT-04-PLT",
+      "concept": "PLT",
+      "value_num": 186923,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "event_id": "EVT-EVAL-HELDOUT-04-WBC",
+      "concept": "WBC",
+      "value_num": 6383,
+      "unit": "/cumm",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "event_id": "EVT-EVAL-HELDOUT-04-CREATININE",
+      "concept": "CREATININE",
+      "value_num": 0.948,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "event_id": "EVT-EVAL-HELDOUT-04-BILIRUBIN",
+      "concept": "BILIRUBIN",
+      "value_num": 0.84,
+      "unit": "mg/dL",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "event_id": "EVT-EVAL-HELDOUT-04-AST",
+      "concept": "AST",
+      "value_num": 51,
+      "unit": "U/L",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    },
+    {
+      "patient_id": "PAT-EVAL-HELDOUT-04",
+      "event_id": "EVT-EVAL-HELDOUT-04-HBA1C",
+      "concept": "HBA1C",
+      "value_num": 6.7,
+      "unit": "%",
+      "event_time": "2026-10-04T09:00:00",
+      "source_recorded_at": "2026-10-04T11:00:00",
+      "facility_id": "FAC-02"
+    }
+  ]
+}

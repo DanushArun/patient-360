@@ -1,188 +1,160 @@
 #!/usr/bin/env python3
-"""SAARTHI MCP client - drives SAARTHI_MCP over the Snowflake-managed REST
-endpoint using a PAT.
+"""Verify and call only the guarded Snowflake MCP procedure.
 
-This is the client side of what an external agent (Claude Desktop, Cursor,
-another Snowflake CoWork agent) would do. It uses only `requests` and the
-JSON-RPC 2.0 grammar that MCP mandates; no MCP SDK needed. Everything the
-script does is auditable in ~150 lines.
-
-Usage:
-    MCP_PAT="<mcp_pat>" python backend/scripts/mcp_client.py health
-    MCP_PAT="<mcp_pat>" python backend/scripts/mcp_client.py list-tools
-    MCP_PAT="<mcp_pat>" python backend/scripts/mcp_client.py call "What is missing before Thursday?"
-
-The PAT must be a Programmatic Access Token whose ROLE_RESTRICTION is
-SAARTHI_MCP_CLIENT (see backend/sql/governance/04_pat_provisioning.sql).
-Anything more privileged is a policy violation - fail closed rather than
-downgrade the check.
-
-Design notes:
-    - Endpoint hostname uses hyphens (IFTDBGM-EA72552), not underscores.
-      Snowflake rejects underscored hostnames for MCP servers.
-    - Auth header is Bearer, with the mandatory
-      X-Snowflake-Authorization-Token-Type: PROGRAMMATIC_ACCESS_TOKEN
-      companion header. Without the companion header Snowflake treats the
-      PAT as an OAuth session token and rejects it.
-    - Uses the streamable-HTTP MCP transport (single POST, single JSON-RPC
-      response). No SSE, no long-poll. The server sends the whole answer
-      in one payload; large agent responses can exceed 200 KB.
-    - Fails closed on any non-2xx response - prints the server body verbatim
-      so protocol errors are inspectable, never masked.
+Set SAARTHI_MCP_HOST to the target account's hyphenated Snowflake hostname and
+MCP_PAT to a role-restricted token. Commands: health, list-tools, call QUESTION.
+An MCP transport session does not prove SQL patient-binding continuity. A call
+without an authorized human-selected SQL binding must return no_patient_bound.
 """
 from __future__ import annotations
 
+import argparse
+from dataclasses import dataclass, field
 import json
 import os
-import sys
+import re
 import uuid
 from typing import Any
 
 import requests
 
-ACCOUNT_HOST = os.environ.get(
-    "SAARTHI_MCP_HOST",
-    "IFTDBGM-EA72552.snowflakecomputing.com",
-)
-MCP_URL = (
-    f"https://{ACCOUNT_HOST}"
-    "/api/v2/databases/SAARTHI/schemas/OPERATIONAL/mcp-servers/SAARTHI_MCP"
-)
+PROTOCOL = '2025-11-25'
 
 
-def _headers(pat: str) -> dict[str, str]:
-    return {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json",
-        "Accept": "application/json, text/event-stream",
-        "X-Snowflake-Authorization-Token-Type": "PROGRAMMATIC_ACCESS_TOKEN",
-    }
+def rpc(method: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {'jsonrpc': '2.0', 'id': str(uuid.uuid4()),
+            'method': method, 'params': params or {}}
 
 
-def _rpc(method: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-    return {
-        "jsonrpc": "2.0",
-        "id": str(uuid.uuid4()),
-        "method": method,
-        "params": params or {},
-    }
+def tool_call(question: str) -> dict[str, Any]:
+    if not question.strip() or len(question) > 4000:
+        raise ValueError('question must contain 1 to 4000 characters')
+    return rpc('tools/call', {'name': 'ask_saarthi', 'arguments': {'QUESTION': question}})
 
 
-def _post(pat: str, payload: dict[str, Any]) -> dict[str, Any]:
-    resp = requests.post(MCP_URL, headers=_headers(pat), json=payload, timeout=120)
-    if resp.status_code >= 300:
-        # Fail closed and loud - never soften an auth or protocol error.
-        print(f"HTTP {resp.status_code} from {MCP_URL}", file=sys.stderr)
-        print(resp.text, file=sys.stderr)
-        sys.exit(2)
-    # Snowflake MCP may return either JSON or an SSE stream depending on the
-    # tool. Parse both defensively.
-    ctype = resp.headers.get("content-type", "")
-    if "text/event-stream" in ctype:
-        # Collect all `data:` lines and merge JSON payloads.
-        merged: dict[str, Any] = {}
-        for line in resp.text.splitlines():
-            if line.startswith("data:"):
-                try:
-                    chunk = json.loads(line[5:].strip())
-                except json.JSONDecodeError:
-                    continue
-                merged.update(chunk)
-        return merged
-    return resp.json()
+def require_guarded_tools(tools: list[dict]) -> None:
+    if (not isinstance(tools, list) or len(tools) != 1 or not isinstance(tools[0], dict)
+            or tools[0].get('name') != 'ask_saarthi'):
+        raise ValueError('expected exactly one guarded ask_saarthi tool')
+    schema = tools[0].get('inputSchema', {})
+    if not isinstance(schema, dict) or not isinstance(schema.get('properties'), dict):
+        raise ValueError('guarded tool schema must contain an object properties map')
+    properties = schema['properties']
+    question = properties.get('QUESTION')
+    if (schema.get('type') != 'object' or schema.get('required') != ['QUESTION']
+            or set(properties) != {'QUESTION'} or not isinstance(question, dict)
+            or question.get('type') != 'string'
+            or schema.get('additionalProperties') is not False):
+        raise ValueError('guarded tool schema differs from the approved question-only contract')
 
 
-def health(pat: str) -> None:
-    """Ping the endpoint and confirm the server responds. Uses `initialize`,
-    which the MCP spec requires to be the first call in any session."""
-    result = _post(
-        pat,
-        _rpc(
-            "initialize",
-            {
-                "protocolVersion": "2025-11-25",
-                "capabilities": {},
-                "clientInfo": {"name": "saarthi-mcp-client", "version": "0.1.0"},
-            },
-        ),
-    )
-    print(json.dumps(result, indent=2))
+def stream_messages(body: str) -> list[dict]:
+    messages = []
+    for event in body.replace('\r\n', '\n').split('\n\n'):
+        data = '\n'.join(line[5:].lstrip() for line in event.splitlines()
+                         if line.startswith('data:'))
+        if not data:
+            continue
+        try:
+            messages.append(json.loads(data))
+        except json.JSONDecodeError as error:
+            raise ValueError('malformed MCP event data') from error
+    return messages
 
 
-def list_tools(pat: str) -> None:
-    """Enumerate the tools exposed by the MCP server. We expect exactly one:
-    saarthi_agent (CORTEX_AGENT_RUN → SAARTHI.OPERATIONAL.SAARTHI_AGENT)."""
-    # Initialize first, per protocol.
-    _post(pat, _rpc("initialize", {
-        "protocolVersion": "2025-11-25",
-        "capabilities": {},
-        "clientInfo": {"name": "saarthi-mcp-client", "version": "0.1.0"},
-    }))
-    result = _post(pat, _rpc("tools/list"))
-    tools = result.get("result", {}).get("tools", [])
-    print(f"Discovered {len(tools)} tool(s):")
-    for t in tools:
-        print(f"  - {t.get('name')}: {t.get('description', '')[:120]}")
-    if len(tools) != 1 or tools[0].get("name") not in ("saarthi_agent", "SAARTHI_AGENT"):
-        print(
-            "WARNING: expected exactly 1 tool named saarthi_agent. "
-            "Anything else means the MCP spec drifted from saarthi_mcp.sql.",
-            file=sys.stderr,
-        )
-        sys.exit(3)
+def decode_response(body: str, content_type: str, request_id: str) -> dict:
+    try:
+        messages = (stream_messages(body) if 'text/event-stream' in content_type
+                    else [json.loads(body)])
+    except json.JSONDecodeError as error:
+        raise ValueError('malformed MCP JSON response') from error
+    matches = [item for item in messages if isinstance(item, dict)
+               and item.get('id') == request_id]
+    if len(matches) != 1 or matches[0].get('jsonrpc') != '2.0':
+        raise ValueError('missing or duplicate matching MCP response')
+    result = matches[0]
+    if 'error' in result:
+        error = result['error']
+        code = error.get('code', 'unknown') if isinstance(error, dict) else 'malformed'
+        raise ValueError(f'MCP RPC error {code}')
+    if not isinstance(result.get('result'), dict):
+        raise ValueError('MCP response result must be an object')
+    if result['result'].get('isError') is True:
+        raise ValueError('MCP guarded tool execution failed')
+    return result
 
 
-def call(pat: str, question: str) -> None:
-    """Invoke saarthi_agent with a natural-language question. The MCP server
-    forwards to SAARTHI_AGENT, which routes through its 8 generic tools
-    and enforces the classify_question / validate_answer discipline."""
-    _post(pat, _rpc("initialize", {
-        "protocolVersion": "2025-11-25",
-        "capabilities": {},
-        "clientInfo": {"name": "saarthi-mcp-client", "version": "0.1.0"},
-    }))
-    result = _post(
-        pat,
-        _rpc(
-            "tools/call",
-            {
-                "name": "saarthi_agent",
-                "arguments": {"text": question},
-            },
-        ),
-    )
-    print(json.dumps(result, indent=2))
+@dataclass
+class Client:
+    host: str
+    token: str = field(repr=False)
+    session: requests.Session = field(default_factory=requests.Session, repr=False)
+    session_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not re.fullmatch(r'[A-Za-z0-9-]+\.snowflakecomputing\.com', self.host):
+            raise ValueError('explicit hyphenated Snowflake account hostname required')
+        if not self.token:
+            raise ValueError('MCP_PAT is required')
+
+    def post(self, payload: dict) -> dict:
+        headers = {'Authorization': f'Bearer {self.token}',
+                   'X-Snowflake-Authorization-Token-Type': 'PROGRAMMATIC_ACCESS_TOKEN',
+                   'Content-Type': 'application/json',
+                   'Accept': 'application/json, text/event-stream'}
+        if self.session_id:
+            headers.update({'Mcp-Session-Id': self.session_id, 'MCP-Protocol-Version': PROTOCOL})
+        url = (f'https://{self.host}/api/v2/databases/SAARTHI/schemas/OPERATIONAL/'
+               'mcp-servers/SAARTHI_MCP')
+        response = self.session.post(url, headers=headers, json=payload,
+                                     timeout=(20, 120), allow_redirects=False)
+        try:
+            if response.status_code not in (200, 202, 204):
+                raise ValueError(f'MCP HTTP {response.status_code}; response body withheld')
+            if response.headers.get('Mcp-Session-Id'):
+                self.session_id = response.headers['Mcp-Session-Id']
+            if 'id' not in payload:
+                return {}
+            return decode_response(response.text, response.headers.get('content-type', ''),
+                                   payload['id'])
+        finally:
+            response.close()
+
+    def initialize(self) -> dict:
+        result = self.post(rpc('initialize', {'protocolVersion': PROTOCOL, 'capabilities': {},
+                           'clientInfo': {'name': 'saarthi-guarded-client', 'version': '1.0.0'}}))
+        if result['result'].get('protocolVersion') != PROTOCOL:
+            raise ValueError('unsupported negotiated MCP protocol')
+        self.post({'jsonrpc': '2.0', 'method': 'notifications/initialized'})
+        return result
+
+    def discover(self) -> dict:
+        result = self.post(rpc('tools/list'))
+        require_guarded_tools(result['result'].get('tools', []))
+        return result
 
 
-def main() -> None:
-    pat = os.environ.get("MCP_PAT")
-    if not pat:
-        print(
-            "MCP_PAT env var is required. Store the PAT via `cortex secret "
-            "store mcp_pat` and inject inline: `MCP_PAT=\"<mcp_pat>\" python ...`",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    if len(sys.argv) < 2:
-        print(__doc__)
-        sys.exit(1)
-
-    cmd = sys.argv[1]
-    if cmd == "health":
-        health(pat)
-    elif cmd == "list-tools":
-        list_tools(pat)
-    elif cmd == "call":
-        if len(sys.argv) < 3:
-            print("Usage: mcp_client.py call \"<question>\"", file=sys.stderr)
-            sys.exit(1)
-        call(pat, " ".join(sys.argv[2:]))
-    else:
-        print(f"Unknown command: {cmd}", file=sys.stderr)
-        print(__doc__)
-        sys.exit(1)
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('command', choices=['health', 'list-tools', 'call'])
+    parser.add_argument('question', nargs='*')
+    args = parser.parse_args()
+    try:
+        client = Client(os.environ.get('SAARTHI_MCP_HOST', ''), os.environ.get('MCP_PAT', ''))
+        try:
+            result = client.initialize()
+            if args.command != 'health':
+                result = client.discover()
+            if args.command == 'call':
+                result = client.post(tool_call(' '.join(args.question)))
+            print(json.dumps({'status': 'PASS', 'response': result}, indent=2))
+        finally:
+            client.session.close()
+    except (ValueError, requests.RequestException) as error:
+        print(json.dumps({'status': 'FAIL', 'error_type': type(error).__name__}))
+        return 1
+    return 0
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    raise SystemExit(main())

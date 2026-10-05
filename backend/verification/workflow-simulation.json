@@ -1,0 +1,13 @@
+{
+  "seed": 20261004,
+  "cases": 30,
+  "sigma": 0.25,
+  "manual_median_s": 240,
+  "assisted_median_s": 120,
+  "manual_conflict_overhead_s": 90,
+  "assisted_conflict_overhead_s": 30,
+  "manual_correct_rate": 0.9,
+  "assisted_correct_rate": 0.95,
+  "manual_catch_rate": 0.8,
+  "assisted_catch_rate": 0.95
+}

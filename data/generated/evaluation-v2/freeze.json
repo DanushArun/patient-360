@@ -1,0 +1,15 @@
+{
+  "dev": "57df7413a77492a0a9781941e257923c8ea15672f934529b594c33005473e35d",
+  "heldout": "63c954b247608fdf194f0470f7cb65dc64e4325d9b5ee0c9a8b2eec6761faf25",
+  "structured_gold": "639fa78e9a1dcdc93a2b07209884a5c013b1190776cbd82ffb8bd5501e448f1e",
+  "document_selectors": "dadfa54714a65fd68762e91908ef99957bd17bce7810e565e74c53708e5f95e9",
+  "manifest": "185655e775bfa8450d29e2a3eaf7cd638039922fba9f04ca477296698331a7d0",
+  "status": "PRE_AI",
+  "patients": 8,
+  "questions": 96,
+  "missing_conflict_heldout": 8,
+  "workflow_fixture_version": "missing-and-conflict-v1",
+  "layout_partition": "actual separate renderers; not renamed layout labels",
+  "source_sha256": "626b68092a7a62d346820a877c7e760304faae1951d03d54a43d04a168dd3260",
+  "final_gold_dependency": "four heldout document IDs require verified extraction"
+}
