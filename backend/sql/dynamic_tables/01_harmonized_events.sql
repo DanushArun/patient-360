@@ -61,7 +61,10 @@ anc_derived AS (
     JOIN normalized neut
       ON neut.patient_id = wbc.patient_id
      AND neut.encounter_id = wbc.encounter_id
-     AND neut.specimen_id = wbc.specimen_id
+     -- Null-safe: structured CBC feeds often carry no specimen_id, and NULL = NULL
+     -- would silently drop every derivation. The COUNT = 1 guard below still
+     -- refuses to pick between two differentials for the same draw.
+     AND neut.specimen_id IS NOT DISTINCT FROM wbc.specimen_id
      AND neut.event_time   = wbc.event_time
      AND neut.concept_name = 'NEUTROPHIL_PCT'
     WHERE wbc.concept_name = 'WBC'
@@ -73,14 +76,14 @@ anc_derived AS (
       AND 1 = (SELECT COUNT(*) FROM normalized differential
                 WHERE differential.patient_id = wbc.patient_id
                   AND differential.encounter_id = wbc.encounter_id
-                  AND differential.specimen_id = wbc.specimen_id
+                  AND differential.specimen_id IS NOT DISTINCT FROM wbc.specimen_id
                   AND differential.event_time = wbc.event_time
                   AND differential.concept_name = 'NEUTROPHIL_PCT')
       AND NOT EXISTS (
             SELECT 1 FROM normalized anc
              WHERE anc.patient_id = wbc.patient_id
                AND anc.encounter_id = wbc.encounter_id
-               AND anc.specimen_id = wbc.specimen_id
+               AND anc.specimen_id IS NOT DISTINCT FROM wbc.specimen_id
                AND anc.event_time = wbc.event_time AND anc.concept_name = 'ANC'
           )
 )

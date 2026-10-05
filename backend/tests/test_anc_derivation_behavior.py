@@ -29,6 +29,27 @@ def test_anc_when_inputs_match_derives_record_value() -> None:
     assert [row[6] for row in result] == [2100]
 
 
+def test_anc_when_specimen_unrecorded_on_both_inputs_derives_record_value() -> None:
+    # Live day-care CBC rows carry no specimen_id; NULL = NULL must not drop the pair.
+    wbc, neut = list(lab('W1', 'P1', 'WBC', 4600)), list(lab('N1', 'P1', 'NEUTROPHIL_PCT', 48))
+    wbc[14] = neut[14] = None
+    assert [row[6] for row in derive([tuple(wbc), tuple(neut)])] == [2208]
+
+
+def test_anc_when_only_one_input_has_specimen_does_not_join() -> None:
+    neut = list(lab('N1', 'P1', 'NEUTROPHIL_PCT', 48))
+    neut[14] = None
+    assert derive([lab('W1', 'P1', 'WBC', 4600), tuple(neut)]) == []
+
+
+def test_anc_when_unrecorded_specimen_has_two_differentials_does_not_choose_one() -> None:
+    rows = [list(lab('W1', 'P1', 'WBC', 6000)), list(lab('N1', 'P1', 'NEUTROPHIL_PCT', 35)),
+            list(lab('N2', 'P1', 'NEUTROPHIL_PCT', 45))]
+    for row in rows:
+        row[14] = None
+    assert derive([tuple(row) for row in rows]) == []
+
+
 def test_anc_when_patients_differ_does_not_join() -> None:
     assert derive([lab('W1', 'P1', 'WBC', 6000),
                    lab('N1', 'P2', 'NEUTROPHIL_PCT', 35)]) == []
