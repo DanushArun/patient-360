@@ -108,7 +108,7 @@ export function WorkspaceNav({
 
 function WorkspaceBrand(): ReactNode {
   return <Link href="/" className="sa-brand" aria-label="SAARTHI home">
-    <img src="/carethread-mark.svg" width="32" height="32" alt="" />
+    <img src="/saarthi-mark.png" width="32" height="32" alt="" />
     <span><strong>SAARTHI</strong><small>Care workspace</small></span>
   </Link>;
 }

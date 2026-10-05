@@ -69,7 +69,7 @@ facts used for synthetic engineering tests, not clinical guidance.
 |---|---|---|
 | `apollo-department-register.docx` (repo root, tracked) | A "public source register" of Apollo Hospitals departments prepared for the team (reviewed 8 Sept 2026); states it is not Apollo's official document | Third-party-derived text; no licence recorded. Not used as system data. Recommend removing from the submitted tree or recording its sources |
 | `dashboard-design/`, `planning/dashboard-release/evidence/` | Design screenshots and storyboards of the synthetic dashboard | Team-produced images of synthetic data |
-| `web/public/carethread-mark.svg` | Small logo mark | Origin not recorded in repo; presumed team-made, to be confirmed |
+| `web/public/saarthi-mark.png`, `web/app/icon.png`, `web/app/apple-icon.png`, `web/app/favicon.ico` | SAARTHI heart-and-stethoscope logo (sidebar mark, browser-tab and Apple touch icons) | Supplied by the team on 5 Oct 2026 as a PNG; how it was produced and its licence are not recorded in the repo, to be confirmed by the team. Replaces the earlier `carethread-mark.svg` |
 | Fonts `web/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | Publisher licence notices added under `web/public/fonts/`; Inter/JetBrains notices also under `frontend/static/`. Local TTF name tables confirm SIL OFL 1.1 (Inter 4.000, JetBrains Mono 2.304). Google documents Material Symbols as Apache 2.0. Checked 5 Oct 2026; binary publisher identity for the WOFF2 remains unverified |
 
 ## 5. Third-party software
