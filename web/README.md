@@ -34,7 +34,7 @@ remain unavailable rather than silently substituting fixture data.
 Application sessions set a 120-second statement timeout, a 30-second queue
 timeout and the `saarthi_web_prototype` query tag. These are per-statement guards,
 not dollar limits or controls for other clients/background services.
-See [prototype cost controls](../docs/PROTOTYPE-COST-CONTROLS.md) before enabling access.
+See [prototype cost controls](../docs/platform/PROTOTYPE-COST-CONTROLS.md) before enabling access.
 Snowflake Cortex is the only model provider. SQL classifies the question before
 inference. The `ASK_SAARTHI` entry point is still a thin agent wrapper: the more extensive answer guard is deferred pending fixes.
 
@@ -66,7 +66,7 @@ frontend does not require another Snowflake deployment or enabled schedules.
 Return live access to `false` for offline design work.
 
 Local verification passed: **49 web tests, TypeScript and the production build**.
-Live checks and their limits are recorded in [the cost/test log](../docs/PROTOTYPE-COST-CONTROLS.md).
+Live checks and their limits are recorded in [the cost/test log](../docs/platform/PROTOTYPE-COST-CONTROLS.md).
 
 ### Local checks
 
@@ -141,5 +141,5 @@ changing a clinical rule result or a complete validated cited answer on screen.
 Hosting, per-user access, the full answer guard and final permission/session tests
 remain open. Judge Console is not part of this frontend scope.
 
-See `../docs/WORKSPACE-RECONCILIATION-2026-09-30.md` and
-`../docs/WORKSPACE-BASELINE-2026-09-30.md` for preservation decisions and verification.
+See `../docs/history/WORKSPACE-RECONCILIATION-2026-09-30.md` and
+`../docs/history/WORKSPACE-BASELINE-2026-09-30.md` for preservation decisions and verification.

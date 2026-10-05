@@ -84,7 +84,7 @@ validator citations are implemented locally. The optional Snowflake-only HTTP
 transport is off by default and tested with fake responses. A/B/C scoring reads
 saved outputs only; it does not call a model. SQL source regressions are not live
 SQL compilation. Do not mark these integration tasks complete until the
-[release gates](../docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md) pass. A four-call
+[release gates](../docs/testing/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md) pass. A four-call
 compatibility test now has an approved $1 total budget (3 October); metadata,
 current access and cost checks must pass before any model call. The approval
 does not include role/grant changes or deployment. Formula/threshold changes

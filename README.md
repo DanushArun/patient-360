@@ -15,8 +15,8 @@
 5. `cd .. && ./venv/bin/python -m pytest -q` (backend and SQL-contract tests, 405 passed / 14 skipped expected)
 6. `SAARTHI_SNOWFLAKE_ENABLED=false npm run dev` in `web/`, then open `http://127.0.0.1:3000/design-preview/PAT-DC-07`:
    a **recorded fixture snapshot**, labelled as such. Live routes fail closed instead of substituting fixture data.
-7. Read, in this order: [`docs/PLATFORM-FINDINGS.md`](docs/PLATFORM-FINDINGS.md) (dated platform findings with query IDs),
-   [`docs/FAILURE-AND-FIX-INDEX.md`](docs/FAILURE-AND-FIX-INDEX.md), [`docs/JUDGE-WALKTHROUGH.md`](docs/JUDGE-WALKTHROUGH.md)
+7. Read, in this order: [`docs/platform/PLATFORM-FINDINGS.md`](docs/platform/PLATFORM-FINDINGS.md) (dated platform findings with query IDs),
+   [`docs/testing/FAILURE-AND-FIX-INDEX.md`](docs/testing/FAILURE-AND-FIX-INDEX.md), [`docs/submission/JUDGE-WALKTHROUGH.md`](docs/submission/JUDGE-WALKTHROUGH.md)
    (timed 15-minute path mapped to the rubric, with the "not yet live" list).
 
 **Live path** (your own Snowflake account, synthetic data): paste the ten files in
@@ -32,7 +32,7 @@ results in this repository were observed on other accounts and are reported, not
 | Web unit tests (`cd web && npm test`) | 257 passed, 0 failed | offline, re-run 4 Oct 2026 |
 | Playwright e2e (`npm run test:e2e`, stubbed API) | 40 of 40 passed in 2 of 3 captured full runs; 1 run passed 39 with `storyboard-visual` failing (cause not diagnosed) | offline, 4 Oct 2026 |
 | Typecheck, production build, `check_gate.py --manifest`, deploy-bundle drift check (11 files) | all pass | offline, 4 Oct 2026 |
-| QA rounds | 4 independent QA rounds, 5 fix rounds, 4 deploy-plan rounds, 1 code review; [34 recorded failures](docs/FAILURE-AND-FIX-INDEX.md), 3 still open | [`evidence/qa/`](evidence/qa/) |
+| QA rounds | 4 independent QA rounds, 5 fix rounds, 4 deploy-plan rounds, 1 code review; [34 recorded failures](docs/testing/FAILURE-AND-FIX-INDEX.md), 3 still open | [`evidence/qa/`](evidence/qa/) |
 | SQL rules | 16 rules, 80 fixtures; 28 fixture tests passed live on the earlier account JN89282 (23 Sep); not re-run on the current account | reported |
 | Two-pass extraction | 68 assertions verified, 1 page failed closed (`pass_b_invalid`); disagreement path never fired | reported live, OS69400, 3 Oct 2026 |
 | Evaluation | 80 questions written (40 dev, 40 held out); **0 scored by a model**; no baseline-RAG comparison. Deterministic Class A/B routing rules alone (no model) decided 15 of the 40 dev questions, 14 correct and 1 Class B over-refused; the other 25 are left to the model fallback and counted as neither right nor wrong. Engineering gate on synthetic questions, not clinical validation | offline, 4 Oct 2026 ([`evidence/qa/FIX-ROUND-6.md`](evidence/qa/FIX-ROUND-6.md)) |
@@ -96,7 +96,7 @@ from the live routes. Live routes fail closed rather than substituting fixture d
 `SNOWFLAKE_PRIVATE_KEY_PATH` (or `SNOWFLAKE_PAT_PATH` with `SNOWFLAKE_AUTHENTICATOR`), `SNOWFLAKE_WAREHOUSE`,
 `SAARTHI_AI_WH`, `SAARTHI_ALLOWED_ORIGINS`. The session role is pinned to `SAARTHI_APP` with secondary roles disabled
 (`USE SECONDARY ROLES NONE`). Details and cost controls: [`web/README.md`](web/README.md),
-[`docs/PROTOTYPE-COST-CONTROLS.md`](docs/PROTOTYPE-COST-CONTROLS.md).
+[`docs/platform/PROTOTYPE-COST-CONTROLS.md`](docs/platform/PROTOTYPE-COST-CONTROLS.md).
 
 ## What exists in the web app (`web/app`)
 
@@ -149,9 +149,9 @@ web unit 257 passed; Playwright e2e 40 passed in 2 of 3 captured runs and 39 in 
 | `evidence/coco/` | CoCo lifecycle evidence by phase (`planning.yaml`, `development.yaml`, `execution.yaml`, `testing_validation.yaml`), `verification-query-ids.md` (platform findings with query IDs), `sessions-raw.csv`, failure-and-fix pairs. Live evidence is **reported** here; it is not re-runnable offline. |
 | `evidence/qa/` | Independent review trail, kept uncurated: `QA-ROUND-1..4`, `FIX-ROUND-1..5`, `FIX-ROUND-7`, `DEPLOY-ROUND-1..4`, `CODE-REVIEW-ROUND-1`, `JUDGE-EVALUATION.md` (self-assessment, open gaps), `live-sweep-*.txt` |
 | `evidence/clinical/` | Sourced clinical thresholds; `backend/scripts/verify_clinical_proof.py` re-checks them |
-| `docs/DATASET-LICENCES.md` | Dataset and third-party licence inventory |
-| `docs/PLATFORM-FINDINGS.md`, `docs/FAILURE-AND-FIX-INDEX.md`, `docs/JUDGE-WALKTHROUGH.md` | Dated platform findings with query IDs, failure index, timed reading path |
-| `docs/DECK-OUTLINE.md` | Deck outline and demo script (deck and video themselves are produced by the team) |
+| `docs/compliance/DATASET-LICENCES.md` | Dataset and third-party licence inventory |
+| `docs/platform/PLATFORM-FINDINGS.md`, `docs/testing/FAILURE-AND-FIX-INDEX.md`, `docs/submission/JUDGE-WALKTHROUGH.md` | Dated platform findings with query IDs, failure index, timed reading path |
+| `docs/submission/DECK-OUTLINE.md` | Deck outline and demo script (deck and video themselves are produced by the team) |
 
 Labels: `QUERY_HISTORY` is used for live evidence, `ACCESS_HISTORY` (up to 180 minutes lag) for the written pack.
 

@@ -119,7 +119,7 @@ The family surface should stay smaller: upcoming visit, documented missing/pendi
 what to bring, language choice and a clear boundary to confirm with the care team. It should not
 expose the clinician's full chart by default.
 
-This follows the proposed sequence in the [completeness map](../../docs/COMPLETENESS-MAP.md):
+This follows the proposed sequence in the [completeness map](../../docs/project/COMPLETENESS-MAP.md):
 worklist → patient orientation → source inspection → owned action → closure. Market references do
 not replace implementation or usability sessions with clinicians, coordinators and navigators.
 
@@ -163,4 +163,4 @@ not replace implementation or usability sessions with clinicians, coordinators a
 - Standards: [ABDM FHIR Guide](https://nrces.in/ndhm/fhir/r4/3.0.0/); [India EHR Standards](https://www.mohfw.gov.in/sites/default/files/EMR-EHR_Standards_for_India_as_notified_by_MOHFW_2016.pdf).
 - Existing research: [clinical UX evidence](design/clinical-ux-evidence.md),
   [PS-04 competitor field report](clinical/ps04-competitive-landscape.md),
-  [SAARTHI completeness map](../../docs/COMPLETENESS-MAP.md).
+  [SAARTHI completeness map](../../docs/project/COMPLETENESS-MAP.md).
