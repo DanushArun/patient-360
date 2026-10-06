@@ -36,6 +36,9 @@ BEGIN
         -- caught here so the wider record scan below can never answer them as Class B.
         OR v_q RLIKE '.*\\b(proceed|go ahead|override|ready for|fit for|fit to|okay to|ok to|fine to|enough|mean|means|imply|implies|interpret|interpretation|worry|worried|concerning)\\b.*'
         OR v_q RLIKE '.*\\bcan (she|he|we|they|the patient) (start|have|get|receive|go|continue|take)\\b.*'
+        -- Treatment-course decisions, so the wider worklist scan below never answers them.
+        OR v_q RLIKE '.*\\b(stop|hold|delay|withhold|defer|postpone|reschedule[a-z]*|reason to|treat first|prioriti[sz]e)\\b.*'
+        OR v_q RLIKE '.*\\b(medications?|medicines?|drugs?|regimen|chemo[a-z]*)\\b.*\\b(require[sd]?|need|needs|give|start|add|change|increase|reduce)\\b.*'
     ) THEN
         v_class := 'CLASS_A';
         v_method := 'keyword';
@@ -67,6 +70,7 @@ BEGIN
         OR v_q RLIKE '.*\\b(issues?|problems?) (with|in) (this |the |her |his )?(record|chart|file|visit|patient)\\b.*'
         OR v_q RLIKE '.*\\b(is|are|was|has) (the|her|his|this|their) (pre-?auth[a-z]*|authori[sz]ation|consent|coverage|claim|report|document|pathology|scan)\\b.*'
         OR v_q RLIKE '.*\\b(which|what) cycle\\b.*'
+        OR v_q RLIKE '.*\\b(what|which)\\b.*\\b(medications?|medicines?|drugs?|regimen|protocol|treatment plan)\\b.*'
     ) THEN
         v_class := 'CLASS_B';
         v_method := 'structure';
