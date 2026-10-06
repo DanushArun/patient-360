@@ -1,5 +1,5 @@
-import { loadEvidenceHistory, loadReviewTasks, loadTaskOwners, readSnapshotGates, readTimeline,
-  type PatientData } from "./patient";
+import { loadEvidenceHistory, loadPatientSnapshot, loadReviewTasks, loadTaskOwners,
+  readSnapshotGates, readTimeline, type PatientData } from "./patient";
 import { loadReviewQueue, readSchemes, readView, type WorkspaceQuery } from "./workspace-read";
 import { limitConcurrency, workspaceCacheKey } from "./warm-plan.mjs";
 import { cachedRead, peekRead, primeRead, readAge, readGeneration } from "./read-cache";
@@ -16,9 +16,15 @@ const FACT_DOMAINS = ["labs", "demographics", "coverage", "treatment_plan", "enc
 const run = ((globalThis as { __saarthiWarmLimit?: ReturnType<typeof limitConcurrency> })
   .__saarthiWarmLimit ??= limitConcurrency(4));
 const quiet = (task: () => Promise<unknown>) => { void run(task).catch(() => undefined); };
+// First screens get their own lane: short sessions, more at once, never queued behind tabs.
+const runFirst = ((globalThis as { __saarthiWarmFirst?: ReturnType<typeof limitConcurrency> })
+  .__saarthiWarmFirst ??= limitConcurrency(8));
+const quietFirst = (task: () => Promise<unknown>) => { void runFirst(task).catch(() => undefined); };
 
 /** Census: each patient's first screen and every tab, ahead of the click (warmPatientBundle). */
 export function warmPatients(patientIds: string[]): void {
+  // Every first screen first (one short session each, in parallel), then tabs in the background.
+  for (const id of patientIds) quietFirst(() => loadPatientSnapshot(id));
   quiet(() => loadReviewQueue());
   for (const id of patientIds) quiet(() => warmPatientBundle(id));
 }
@@ -133,7 +139,7 @@ async function renewPatientBundle(patientId: string): Promise<void> {
 // Keep the day-care list warm while someone is using the dashboard. Each cached read lives
 // two minutes (read-cache.ts); renewing at 80 s means an open is never cold mid-session.
 // Renewal stops ten minutes after the last page request, so an idle app costs nothing.
-const RENEW_AT_MS = 80_000;
+const RENEW_AT_MS = 70_000;
 const IDLE_STOP_MS = 10 * 60_000;
 const keep = ((globalThis as { __saarthiKeepWarm?: { ids: string[]; seen: number;
   timer: ReturnType<typeof setInterval> | null } }).__saarthiKeepWarm ??=
@@ -151,9 +157,19 @@ export function keepWarm(patientIds: string[]): void {
     }
     for (const id of keep.ids) {
       const age = readAge(id, "snapshot");
-      if (age === null) quiet(() => warmPatientBundle(id));
-      else if (age >= RENEW_AT_MS) quiet(() => warmPatientBundle(id, true));
+      if (age === null) quietFirst(() => loadPatientSnapshot(id));
+      else if (age >= RENEW_AT_MS) quietFirst(() => renewSnapshot(id));
     }
   }, 20_000);
   keep.timer.unref?.();
+}
+
+/** Re-read one patient's first screen before it expires; the cached one serves meanwhile. */
+async function renewSnapshot(patientId: string): Promise<void> {
+  const generation = readGeneration(patientId);
+  await withPatientSessionAndContext(patientId, async (run, context, checkpoint) => {
+    const snapshot = { ...context, ...await readSnapshotGates(run) } as PatientData;
+    await checkpoint();
+    primeRead(patientId, "snapshot", snapshot, generation);
+  }).catch(() => undefined);
 }
