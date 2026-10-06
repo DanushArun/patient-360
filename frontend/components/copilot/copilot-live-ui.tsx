@@ -106,7 +106,7 @@ export function useSpeech(onFinal: (text: string) => void) {
   }, []);
   useEffect(() => () => recognition.current?.abort(), []);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async function listen(plain = false): Promise<void> {
     const Ctor = speechCtor();
     if (!Ctor) return;
     recognition.current?.abort();
@@ -118,7 +118,7 @@ export function useSpeech(onFinal: (text: string) => void) {
     rec.continuous = true;
     rec.maxAlternatives = 5;
     // Contextual biasing where the browser supports it (Chrome's SpeechRecognitionPhrase).
-    try {
+    if (!plain) try {
       const Phrase = (window as unknown as { SpeechRecognitionPhrase?: new (p: string, b: number) => unknown })
         .SpeechRecognitionPhrase;
       if (Phrase && "phrases" in rec) {
@@ -128,7 +128,7 @@ export function useSpeech(onFinal: (text: string) => void) {
     } catch { /* biasing is optional */ }
     // Prefer on-device recognition where the browser offers it, so speech stays on this machine.
     let local = false;
-    try {
+    if (!plain) try {
       if ("processLocally" in rec && typeof Ctor.available === "function"
         && await Ctor.available({ langs: [rec.lang], processLocally: true }) === "available") {
         rec.processLocally = true;
@@ -160,8 +160,16 @@ export function useSpeech(onFinal: (text: string) => void) {
       setInterim(`${heard}${pending}`.trim());
       finishAfter(END_OF_SPEECH_MS);
     };
+    let retrying = false;
     rec.onerror = (event) => {
-      if (event.error !== "aborted") setError(SPEECH_ERRORS[event.error]
+      if (event.error === "aborted") return;
+      // Name biasing and on-device models are optional extras some browsers reject
+      // (e.g. "phrases-not-supported"); retry once with the plain cloud recogniser.
+      if (!plain && !heard && !["not-allowed", "audio-capture", "no-speech"].includes(event.error)) {
+        retrying = true;
+        return;
+      }
+      setError(SPEECH_ERRORS[event.error]
         ?? "Voice input stopped unexpectedly. Try again, or type in the chat.");
     };
     rec.onend = () => {
@@ -170,6 +178,7 @@ export function useSpeech(onFinal: (text: string) => void) {
       setListening(false);
       setSpeaking(false);
       if (recognition.current === rec) recognition.current = null;
+      if (retrying) { void listen(true); return; }
       // A stop can land before the last phrase is finalised; keep what was heard.
       const text = `${heard} ${pending}`.replace(/\s+/g, " ").trim();
       if (text) finalRef.current(text);
