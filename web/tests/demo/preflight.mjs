@@ -195,7 +195,11 @@ await beat("Cited source opens on the echo report text", page, async () => {
   await page.goto(`${BASE}/patient/${HERO.id}`, { waitUntil: "networkidle" });
   await page.locator(".sa-patient-tabs button", { hasText: /^Documents$/ }).click();
   const row = page.locator("tr[data-copilot-ref='document:DOC-ECHO-DC-12']");
-  await row.locator("button").first().click();
+  await row.waitFor({ timeout: 45000 });
+  const select = row.locator("button[aria-pressed]").first();
+  await select.click();
+  await page.waitForFunction(() => document.querySelector(
+    "tr[data-copilot-ref='document:DOC-ECHO-DC-12'] button[aria-pressed='true']"), null, { timeout: 15000 });
   await page.locator("section[aria-label='Patient workspace content']")
     .getByRole("link", { name: /Open source/ }).first().click({ timeout: 30000 });
   await page.waitForURL(/\/documents\/DOC-ECHO-DC-12/, { timeout: 60000 });

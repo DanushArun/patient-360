@@ -137,9 +137,9 @@ function useDocumentsLibrary({ patientId, knownAsOf, rows }: {
     ? documentSourceHref(patientId, document.doc_id, knownAsOf) : null;
   return { view, setView, filters, setFilters, visibleRows, selectedRow, sourceHref,
     select: (row) => {
-      if (row.kind === "received") {
-        setSelection({ patientId, docId: String(row.document?.doc_id) });
-      }
+      // Store the row id the lookup above compares against ("document:<doc_id>"). Storing the
+      // bare doc_id never matched, so every click fell back to the first document.
+      if (row.kind === "received") setSelection({ patientId, docId: row.id });
     } };
 }
 
