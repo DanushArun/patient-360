@@ -14,6 +14,13 @@ export function documentStateLabel(state) {
   return DOCUMENT_STATES.get(String(state)) ?? "State unavailable";
 }
 
+/** "imaging_report" reads as "Imaging report"; the raw type stays in the Type column. */
+export function documentTitle(docType) {
+  if (typeof docType !== "string" || !docType.trim()) return "Document type unavailable";
+  const text = docType.replaceAll("_", " ").trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 /** @param {Record<string, unknown>[]} documents @param {Record<string, unknown>[]} expectedDocuments
  *  @returns {Record<string, unknown>[]}
  */
@@ -22,7 +29,7 @@ export function documentLibraryRows(documents, expectedDocuments) {
     id: `document:${String(document.doc_id)}`,
     kind: "received",
     document,
-    title: String(document.doc_type ?? "Document type unavailable"),
+    title: documentTitle(document.doc_type),
     state: documentStateLabel(document.missingness_state ?? document.evidence_state ?? "received"),
     stateCode: document.missingness_state ?? document.evidence_state ?? "received",
     verification: assertionSummary(document),

@@ -344,7 +344,8 @@ function RecordTimes({ document }: { document: DocumentRow | null }): ReactNode 
 }
 
 function TimeValue({ value }: { value?: string | null }): ReactNode {
-  return value ? <time dateTime={value}>{value}</time> : "Not recorded";
+  // Readable in the row; the exact recorded value stays on the element (INTERFACE-GUIDELINES §6).
+  return value ? <Clock value={value} /> : "Not recorded";
 }
 
 function RequestAction({ ruleId, onSelectGate }: {
