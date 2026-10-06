@@ -240,7 +240,10 @@ export function planRequest(input, context) {
     const opening = OPEN_VERB.test(lowerClause);
     const finding = FIND_VERB.test(lowerClause);
     const remainder = lowerClause.replace(OPEN_VERB, "").replace(FIND_VERB, "");
-    const asks = !collect && (QUESTION.test(lowerClause)
+    // "Show me the latest lab results" asks the record; "open the lab report" goes to it.
+    const showing = /^(show( me)?|display|give me|tell me|list)\b/.test(lowerClause)
+      && Boolean(matchRecordTool(remainder));
+    const asks = !collect && (QUESTION.test(lowerClause) || showing
       || (opening && (QUESTION.test(remainder) || STATE_WORDS.test(remainder)))
       || (!opening && !finding));
 
@@ -281,7 +284,9 @@ export function planRequest(input, context) {
     // An instruction ("show what's missing") is asked in the wording the SQL classifier
     // recognises as record-state language; ambiguous wording is refused as Class A by design.
     // A question in the person's own words is sent as they wrote it.
-    const question = opening && tool && !QUESTION.test(lowerClause)
+    // "Show me …" is record-state wording the classifier recognises; keep the person's words.
+    const question = opening && !/^show me\b/.test(lowerClause) && tool
+      && !QUESTION.test(lowerClause)
       ? recordToolQuestion(tool.tool) ?? questionText(clause) : questionText(clause);
     steps.push({ type: "ask", scope: "patient", question });
     steps.push({ type: "mark", scope: "patient" });

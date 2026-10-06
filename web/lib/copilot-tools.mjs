@@ -32,9 +32,9 @@ const TOOL_PATTERNS = /** @type {[RecordTool, RegExp][]} */ ([
   ["coverage", /\b(coverage|covered|insur\w*|pre-?auth\w*|authori[sz]\w*|schemes?|pm-?jay|payers?|claims?|annual limit|cashless)\b/],
   ["documents", /\b(documents?|reports?|pdfs?|letters?|uploaded|scanned|paperwork|files?|received)\b/],
   ["timeline", /\b(timeline|history|chronolog\w*|recent(ly)?|what happened|what changed|since)\b/],
-  ["visit", /\b(next visit|appointment|scheduled|schedule|which cycle|cycle number|regimen|day-?care visit)\b/],
+  ["visit", /\b(next visit|appointment|scheduled|schedule|which cycle|cycle number|regimen|day-?care visit|medications?|medicines?|drugs?|treatment plan|protocol)\b/],
   ["labs", /\b(labs?|blood|cbc|counts?|results?|values?|levels?)\b/],
-  ["readiness", /\b(ready|readiness|missing|block\w*|checks?|gates?|outstanding|pending|status|summar\w*|overview|issues?|problems?|stopping|holding|clear(ed)?|what do we have)\b/],
+  ["readiness", /\b(ready|readiness|missing|block\w*|checks?|gates?|outstanding|pending|status|summar\w*|overview|issues?|problems?|stopping|holding|clear(ed)?|what do we have|tell me about|brief|documented|gaps?|recap|consent)\b/],
 ]);
 
 const CHECK_GROUPS = [

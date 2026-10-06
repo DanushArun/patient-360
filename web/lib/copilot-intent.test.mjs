@@ -51,7 +51,7 @@ test("bring-into-chat finds a specific item and collects it; a place noun alone 
   assert.equal(plan.steps[1].kind, "document");
   assert.deepEqual(plan.steps[1].terms, ["lab"], "a place noun never decides a match alone");
   assert.equal(plan.steps[1].phrase, "lab report");
-  assert.deepEqual(planRequest("show me the documents", rakesh).steps,
+  assert.deepEqual(planRequest("open the documents", rakesh).steps,
     [{ type: "section", section: "Documents" }]);
   const check = planRequest("bring the ANC check into chat and explain why it's blocked", rakesh);
   assert.deepEqual(types(check), ["find", "collect", "ask", "mark"]);
@@ -101,9 +101,22 @@ test("a request for an item that is not on screen fails instead of grabbing a ne
 });
 
 test("spoken lab names find their concept code on the facts table", () => {
-  const find = planRequest("show me the platelet count", rakesh).steps
+  const find = planRequest("find the platelet count", rakesh).steps
     .find((step) => step.type === "find");
   assert.deepEqual(find.codes, ["plt"]);
   const rows = [{ text: "WBC count 3.2" }, { text: "PLT 82000 /µL" }];
   assert.equal(rankItems(rows, find.terms, find.codes), 1);
+});
+
+test("show-me record questions, including the suggested starters, are asked, not searched for", () => {
+  for (const text of ["Show me the latest lab results", "Show me the conflicts in the record",
+    "Show me the recent timeline", "Show me the visit schedule", "Show me the documents"]) {
+    const plan = planRequest(text, rakesh);
+    const ask = plan.steps.find((step) => step.type === "ask");
+    assert.ok(ask, text);
+    assert.equal(ask.question, text, "the person's own words are sent");
+    assert.ok(!plan.steps.some((step) => step.type === "find"), text);
+  }
+  // Going to an item is still navigation.
+  assert.ok(planRequest("Open the lab report", rakesh).steps.some((step) => step.type === "find"));
 });
