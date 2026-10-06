@@ -73,6 +73,47 @@ Saarthi's value comes from joining two kinds of data that hospitals keep apart. 
 
 The synthetic generator ([`data/generator/`](data/generator/)) plants the problems real records have, from 13 named corruption scenarios: a pathology addendum that arrives weeks late, HER2 results that disagree between labs, `1.9 lakhs` next to `190000`, a pre-authorisation that is *pending* in the table and *approved* in the letter, a quarantined identity, a prompt injection inside a document, and a misread value on a rotated scan.
 
+## How data gets in
+
+Hospitals do not re-key records into a new tool, so Saarthi ingests from the systems that already hold them. Ingestion runs inside Snowflake on event-driven Tasks; nothing has to be uploaded through the dashboard.
+
+```mermaid
+flowchart LR
+    subgraph Feeds["Hospital, lab and payer systems"]
+        F1["EHR exports<br/>FHIR R4 bundles"]
+        F2["Lab and facility extracts<br/>CSV"]
+        F3["Reports and letters<br/>PDF · JPEG · PNG"]
+        F4["Official guidelines<br/>and manuals"]
+    end
+
+    subgraph SF["Snowflake"]
+        T1[("Typed tables<br/>RAW_FHIR_BUNDLE · events")]
+        ST1[("@PATIENT_DOCS<br/>encrypted stage")]
+        ST2[("@REFERENCE_DOCS<br/>encrypted stage")]
+        SM["DOC_STREAM<br/>new-file stream"]
+        TK["Task chain<br/>parse → chunk → extract ×2 → reconcile → readiness"]
+        DT["Dynamic Tables<br/>harmonised events · review queue"]
+    end
+
+    F1 & F2 --> T1 --> DT
+    F3 -- "one folder per patient" --> ST1 --> SM --> TK
+    F4 --> ST2 --> TK
+    TK --> DT --> APP["Saarthi app<br/>readiness updates"]
+```
+
+- **Documents.** A report dropped into `@PATIENT_DOCS/<patient_id>/` is picked up by `DOC_STREAM`, and `TASK_PARSE_DOCUMENTS` runs within five minutes. The chain parses it with `AI_PARSE_DOCUMENT`, runs both extraction passes, reconciles it against the record and re-evaluates the 16 readiness rules. A late addendum changes the readiness board without anyone touching the dashboard. Files already ingested are skipped by stage path, so a duplicate upload is never parsed twice.
+- **Structured records.** FHIR bundles land in `RAW_FHIR_BUNDLE` and are flattened into clinical events by `TASK_FLATTEN_FHIR`. Facility, lab and payer extracts load into typed tables, and Dynamic Tables harmonise everything into one event stream with all three clocks.
+- **Reference documents.** Official guidelines and manuals go to `@REFERENCE_DOCS` and are indexed into the separate reference search service.
+- **On demand.** `TASK_SAARTHI_ORCHESTRATOR` runs the whole chain in order, and **Recompute readiness** in the patient record re-evaluates one patient immediately.
+
+For a manual load, a single command is enough:
+
+```sql
+PUT file://echo_report.pdf @SAARTHI.STAGES.PATIENT_DOCS/PAT-DC-12/ AUTO_COMPRESS = FALSE;
+```
+
+The loaders used for the synthetic cohort are in [`backend/scripts/`](backend/scripts/) and [`backend/sql/data/`](backend/sql/data/), and every task is defined in [`backend/sql/tasks/`](backend/sql/tasks/).
+
 ## How it works
 
 ```mermaid
@@ -254,6 +295,7 @@ Saarthi is department-agnostic by design: rules, ontology and documents are data
 - **Per-user sign-in.** Move from the single restricted service role to per-practitioner identity, with the row access policy already keyed on `CURRENT_USER()`.
 - **Agent skills.** Load the four authored skills (`clinical-question-routing`, `evidence-retrieval`, `evidence-reconciliation`, `risk-stratification`) into the Cortex Agent.
 - **Scored evaluation.** Run the 96-question independent evaluation set (48 development, 48 held out) end to end.
+- **In-app document intake.** A drag-and-drop upload in the patient record that writes to the same `@PATIENT_DOCS` stage, for documents a family brings on paper.
 - **Scanned reference manuals.** Add OCR for reference documents published as scanned images, such as the PM-JAY Health Benefit Package manual.
 
 Component-level status, with the Snowflake account and date each was exercised, is in [`IMPLEMENTATION-STATUS.md`](IMPLEMENTATION-STATUS.md).
