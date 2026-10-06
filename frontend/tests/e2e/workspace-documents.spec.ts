@@ -88,9 +88,9 @@ test("test_documents_when_authorized_metadata_returns_show_clocks_assertions_and
   await expect(library.locator('time[datetime="2026-10-01T09:42:00"]').first()).toBeVisible();
   await expect(library).toContainText("Known as of 1 Oct 2026, 09:42");
   await expect(library).toContainText("City Labs (synthetic)");
-  await expect(library).toContainText("2026-09-30T08:30:00");
-  await expect(library).toContainText("2026-09-30T09:00:00");
-  await expect(library).toContainText("2026-09-30T09:20:00");
+  await expect(library).toContainText("30 Sept 2026, 08:30");
+  await expect(library).toContainText("30 Sept 2026, 09:00");
+  await expect(library).toContainText("30 Sept 2026, 09:20");
   await expect(library).toContainText("2 assertions · 2 verified · 0 conflicting");
   await expect(library).toContainText("Assertions, current at query");
   await expect(library).toContainText("Final pathology");

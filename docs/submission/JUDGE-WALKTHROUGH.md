@@ -25,8 +25,8 @@ the hosted app, with screenshots in [`evidence/demo/preflight/`](../../evidence/
 ## 2. Offline verification
 
 The commands are listed under **Getting started** in the [README](../../README.md). Expected results: Python 565 passed / 14 skipped / 0
-failed; web unit tests 381 passed; typecheck and
-production build clean. With live access off, `/design-preview/PAT-DC-07` shows a recorded
+failed; web unit tests 381 passed; Playwright
+end-to-end 41 passed; typecheck and production build clean. With live access off, `/design-preview/PAT-DC-07` shows a recorded
 fixture, labelled as such.
 
 ## 3. Real-World Relevance

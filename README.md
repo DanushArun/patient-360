@@ -4,7 +4,7 @@
 
 [**Live app**](https://saarthi-360.vercel.app) · [Architecture](docs/architecture/SPEC.md) · [Evaluation guide](docs/submission/JUDGE-WALKTHROUGH.md) · [Implementation status](IMPLEMENTATION-STATUS.md)
 
-![Snowflake](https://img.shields.io/badge/Snowflake-Cortex%20AI-29B5E8?logo=snowflake&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white) ![Python tests](https://img.shields.io/badge/python%20tests-565%20passed-2ea44f) ![Web tests](https://img.shields.io/badge/web%20tests-381%20passed-2ea44f) ![Data](https://img.shields.io/badge/data-synthetic%20only-6f42c1)
+![Snowflake](https://img.shields.io/badge/Snowflake-Cortex%20AI-29B5E8?logo=snowflake&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white) ![Python tests](https://img.shields.io/badge/python%20tests-565%20passed-2ea44f) ![Web tests](https://img.shields.io/badge/web%20tests-381%20passed-2ea44f) ![E2E tests](https://img.shields.io/badge/e2e%20tests-41%20passed-2ea44f) ![Data](https://img.shields.io/badge/data-synthetic%20only-6f42c1)
 
 ![Saarthi day-care board: tomorrow's visits grouped by record state, each blocked visit showing the rule that blocked it](docs/assets/screens/day-care.png)
 
@@ -213,6 +213,7 @@ With live access off, `/design-preview/PAT-DC-07` shows a recorded snapshot, lab
 | Hosted demo check (`npm run demo:check`): day-care list, voice, every record section, 6 copilot questions, refusal, cited source, no page errors | **19 of 19 passed** | saarthi-360.vercel.app, 6 Oct 2026 |
 | Python backend and SQL-contract tests | 565 passed, 14 skipped, 0 failed | offline, 6 Oct 2026 |
 | Web unit tests | 381 passed, 0 failed | offline, 6 Oct 2026 |
+| Playwright end-to-end (stubbed API) | 41 passed, 0 failed | offline, 6 Oct 2026 |
 | Two-family extraction on 16 synthetic PDFs | 81 assertions verified by both model families; values the passes did not agree on were withheld, never asserted | live, 6 Oct 2026 |
 | Deploy manifest gate (`check_gate.py --manifest`) | 71 active steps, all resolve | offline, 6 Oct 2026 |
 

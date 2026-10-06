@@ -109,7 +109,7 @@ async function captureAnswerAndFamily(page: Page): Promise<void> {
   const input = page.getByRole("textbox", { name: "Question about the selected patient" });
   await input.fill("What is missing or conflicting before the visit?");
   await input.press("Enter");
-  await expect(page.getByRole("region", { name: "Citation index" })).toBeVisible();
+  await expect(page.locator('details[aria-label="Citation index"]')).toBeVisible();
   await capture(page, "16-answer");
   await input.fill("Is it safe to proceed?");
   await input.press("Enter");
