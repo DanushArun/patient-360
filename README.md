@@ -1,4 +1,4 @@
-<h1><img src="docs/assets/saarthi-mark.png" alt="" width="52" height="52" align="center" />&nbsp;Saarthi</h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/saarthi-wordmark-dark.png" /><img src="docs/assets/saarthi-wordmark-light.png" alt="Saarthi" height="56" /></picture></h1>
 
 **Know before they arrive.** The care-readiness and evidence copilot for hospital care teams. It tells you what is **missing**, **pending** or **conflicting** before every visit, and cites the page or row behind every claim.
 
