@@ -43,7 +43,7 @@
                 <mxCell id="L1l" value="&lt;b&gt;1 · WHAT THEY SEE&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#94A3B8&quot;&gt;the dashboard and everything that leaves the building&lt;/font&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontColor=#1F2937;" parent="1" vertex="1">
                     <mxGeometry x="44" y="224" width="148" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="e1" value="&lt;b&gt;Dashboard&lt;/b&gt; · Streamlit on container runtime&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;1 Review queue  2 Patient 360  3 Ask + evidence  4 Chase &amp; close. Evidence drawer opens the exact page or row.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#1F2937;" parent="1" vertex="1">
+                <mxCell id="e1" value="&lt;b&gt;Dashboard&lt;/b&gt; · Next.js web app (web/)&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;1 Review queue  2 Patient 360  3 Ask + evidence  4 Chase &amp; close. Evidence drawer opens the exact page or row.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=2;fontSize=10;fontColor=#1F2937;" parent="1" vertex="1">
                     <mxGeometry x="212" y="228" width="690" height="76" as="geometry"/>
                 </mxCell>
                 <mxCell id="e2" value="&lt;b&gt;Family message service&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#64748B&quot;&gt;SMS / WhatsApp link. Document checklist only, released after a human review.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B45309;fontSize=10;fontColor=#1F2937;" parent="1" vertex="1">
