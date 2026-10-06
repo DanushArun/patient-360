@@ -40,7 +40,7 @@ function humanKey(key: string): string {
 
 /** The server's claim sentence, made readable. The wording of a value is never changed. */
 export function readableClaim(text: string): string {
-  const row = /^Recorded SQL row: (\{.*\})\s*$/s.exec(text);
+  const row = /^Recorded SQL row: (\{[\s\S]*\})\s*$/.exec(text);
   if (row) {
     try {
       const fields = Object.entries(JSON.parse(row[1]) as Record<string, unknown>)

@@ -1,8 +1,8 @@
 {
   "label": "DETERMINISTIC keyword+structure routing baseline; engineering gate on synthetic questions, not clinical validation; AI_CLASSIFY fallback NOT run",
   "patterns_loaded": {
-    "class_a": 6,
-    "class_b": 8
+    "class_a": 8,
+    "class_b": 16
   },
   "questions": 40,
   "decided_by_rules": 34,

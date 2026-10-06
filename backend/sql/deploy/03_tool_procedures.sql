@@ -1115,11 +1115,13 @@ CASE v_doc_type
  WHEN 'discharge_summary' THEN 'Do not infer clearance from elapsed time.\n'
  ELSE 'Extract only explicit labelled findings; do not infer document purpose.\n' END ||
 'SOURCE PAGE:\n'||v_text;
-v_raw_a := (SELECT AI_COMPLETE('llama3.3-70b',:v_prompt,{'temperature':0,'max_tokens':1800}));
+-- AI_COMPLETE returns a VARIANT string on this account. Cast before fence
+-- removal so JSON transport quotes do not turn an otherwise valid array invalid.
+v_raw_a := (SELECT AI_COMPLETE('llama3.3-70b',:v_prompt,{'temperature':0,'max_tokens':1800})::VARCHAR);
 v_a := TRY_PARSE_JSON(REGEXP_REPLACE(v_raw_a,'```(json)?',''));
 IF (NOT COALESCE(IS_ARRAY(v_a),FALSE) OR ARRAY_SIZE(v_a)>16) THEN RETURN OBJECT_CONSTRUCT('error','pass_a_invalid'); END IF;
 -- No first-reader value is supplied to the independent second reader.
-v_raw_b := (SELECT AI_COMPLETE('claude-haiku-4-5',:v_prompt,{'temperature':0,'max_tokens':1800}));
+v_raw_b := (SELECT AI_COMPLETE('claude-haiku-4-5',:v_prompt,{'temperature':0,'max_tokens':1800})::VARCHAR);
 v_b := TRY_PARSE_JSON(REGEXP_REPLACE(v_raw_b,'```(json)?',''));
 IF (NOT COALESCE(IS_ARRAY(v_b),FALSE) OR ARRAY_SIZE(v_b)>16) THEN RETURN OBJECT_CONSTRUCT('error','pass_b_invalid'); END IF;
 INSERT INTO SAARTHI.EVIDENCE.ASSERTION(assertion_id,doc_id,page_index,concept_id,subject,predicate,value,unit,negation,missingness_state,verification_status,pass1_value,pass2_value,extractor_version,char_start,char_end)
@@ -2241,7 +2243,12 @@ BEGIN
                 || '\nSQL_CONTEXT: ' || TO_JSON(v_context)
                 || '\nReturn only JSON with claims. Use provided exact evidence IDs. '
                 || 'Claims: text,claim_type,evidence[{kind,id}],asserted_value for typed values. '
-                || 'Dates: YYYY-MM-DD. No clinical judgments. Empty: claims=[].'))))));
+                || 'For numeric claims asserted_value MUST be a JSON number '
+                || '(e.g. 2900), never a quoted string and never include units. '
+                || 'Copy SQL value_num for numeric claims; units belong in text only. '
+                || 'Dates: YYYY-MM-DD strings, one separate claim for each date. '
+                || 'Status: exact source status string. Textual: omit asserted_value. '
+                || 'Each claim cites exactly one source. No clinical judgments. Empty: claims=[].'))))));
     BEGIN
         v_result := (SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
             'SAARTHI.OPERATIONAL.SAARTHI_AGENT',:v_payload));
