@@ -3,6 +3,7 @@
 import { Clock } from "@/components/ui/clock";
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -31,6 +32,7 @@ import type { ContextReference } from "@/lib/api-contracts.mjs";
 import { PatientAnswerArtifact } from "@/app/patient/[id]/patient-answer-artifact";
 import { GateCitation, type Turn } from "@/app/patient/[id]/patient-evidence";
 import { RecordAnswerCard } from "@/components/copilot/record-answer-card";
+import { AnswerTrace } from "@/components/copilot/copilot-parts";
 
 // Errors a retry can never fix: the Retry button is withheld for these.
 const NON_RETRYABLE_ERRORS = new Set(["reference_scope_unavailable"]);
@@ -57,6 +59,7 @@ const TURN_ERRORS: Record<string, string> = {
   agent_unreachable:
     "The assistant could not be reached. No answer is shown rather than a stale one.",
   nothing_found: "Nothing found for that question.",
+  cancelled: "Stopped. No answer was shown for this question.",
 };
 
 function escapeText(text: string): string {
@@ -198,7 +201,10 @@ export function usePatientChat(
   const [busy, setBusy] = useState(false);
   const [phases, setPhases] = useState<AskPhase[]>([]);
   const runtime = useChatSafety({ patientId, storageKey, setTurns, setQuestion, setBusy });
-  runtime.onPhase = (phase) => setPhases((current) => [...current, phase]);
+  runtime.onPhase = (phase) => {
+    runtime.trace.current.phases.push(phase);
+    setPhases((current) => [...current, phase]);
+  };
   const send = (text: string, scope: SourceScope = "patient", retry = false,
     context: ContextReference[] = []) => {
     if (!busy) setPhases([]);
@@ -209,8 +215,11 @@ export function usePatientChat(
     if (text) void send(text, scope, true);
   };
   const stop = () => {
+    const running = Boolean(runtime.activeRequest.current);
     invalidateChatRequest({ activeRequest: runtime.activeRequest, sequence: runtime.sequence });
     setBusy(false);
+    // A stopped question still gets an outcome in the thread, never a dangling bubble.
+    if (running) appendTurn(setTurns, errorTurn(new Error("cancelled")));
   };
   return { question, setQuestion, busy, send, retry, stop, phases };
 }
@@ -225,6 +234,9 @@ type ChatRuntime = {
   activePatient: React.MutableRefObject<string>;
   activeRequest: React.MutableRefObject<AbortController | null>;
   lastQuestions: React.MutableRefObject<Record<SourceScope, string>>;
+  /** The phases this request actually reported, and when it started: the answer keeps them
+   * so a clinician can see what produced it after the fact, not only while it runs. */
+  trace: React.MutableRefObject<{ phases: AskPhase[]; startedAt: number }>;
   onPhase?: (phase: AskPhase) => void;
 };
 type ChatSubmission = {
@@ -240,9 +252,10 @@ function useChatSafety({ patientId, storageKey, setTurns, setQuestion, setBusy }
   const activeStorageKey = useRef(storageKey);
   const activeRequest = useRef<AbortController | null>(null);
   const lastQuestions = useRef<Record<SourceScope, string>>({ patient: "", reference: "" });
+  const trace = useRef<{ phases: AskPhase[]; startedAt: number }>({ phases: [], startedAt: 0 });
   const runtime: ChatRuntime = {
     patientId, storageKey, setTurns, setQuestion, setBusy, sequence, activePatient,
-    activeRequest, lastQuestions,
+    activeRequest, lastQuestions, trace,
   };
   useEffect(() => {
     const withdraw = (event: Event) => onPatientWithdrawal(event, runtime);
@@ -291,6 +304,7 @@ async function sendPatientQuestion({
 }: ChatSubmission): Promise<void> {
   if (!text.trim() || busy || runtime.activeRequest.current) return;
   const version = ++runtime.sequence.current;
+  runtime.trace.current = { phases: [], startedAt: Date.now() };
   if (!retry) appendQuestion(text, scope, runtime);
   runtime.setQuestion("");
   runtime.setBusy(true);
@@ -324,6 +338,8 @@ async function completePatientQuestion(request: {
     if (!response.ok) throw new Error(result.error ?? "agent_unreachable");
     appendTurn(runtime.setTurns, {
       ...result, id: crypto.randomUUID(), role: "assistant",
+      trace: { phases: [...runtime.trace.current.phases],
+        ms: Date.now() - runtime.trace.current.startedAt },
     });
   } catch (error) {
     if (isLatestPatientResponse(runtime.patientId, runtime.activePatient.current,
@@ -369,8 +385,9 @@ export function PatientConversation({
   showEmptyHint = true, onOpenSection, activity,
 }: {
   showEmptyHint?: boolean;
-  /** Live copilot activity, shown before the turn it led to (or after the last turn). */
-  activity?: { index: number; node: ReactNode };
+  /** Live copilot activity. `index` is the turn of the question it led to: the activity sits
+   * directly under that question. Until the question exists it renders at the end. */
+  activity?: { index: number; render: (anchored: boolean) => ReactNode };
   onOpenSection?: (section: string) => void;
   patientId: string;
   patient?: PatientData;
@@ -383,63 +400,75 @@ export function PatientConversation({
   onRetry: () => void;
 }): ReactNode {
   const last = turns.at(-1)?.role === "assistant" ? turns.at(-1)! : null;
-  return <div role="log" aria-label="Patient conversation" aria-live="polite" aria-busy={busy}>
+  const anchoredAt = activity && turns[activity.index]?.role === "user" ? activity.index : -1;
+  return <div role="log" aria-label="Patient conversation" aria-live="polite" aria-busy={busy}
+    className="sa-chat-log">
     {!turns.length && showEmptyHint && <div className="sa-meta">
       Ask what is recorded, missing, or conflicting. Clinical decisions are referred to the treating
       practitioner.
     </div>}
-    {turns.map((turn, index) => <div key={turn.id}>
-      {activity?.index === index && activity.node}
-      <Message turn={turn} selected={selected} onSelect={onSelect}
-        onOpenSection={onOpenSection} />
-      {turn.role === "assistant" && !turn.error
-        && <PatientAnswerArtifact turn={turn} patientId={patientId} sourceScope={sourceScope} />}
-      {turn.role === "assistant" && !turn.error && turn.artifact?.classification === "CLASS_A"
-        && turns[index - 1]?.role === "user"
-        && <ClinicalReferral patientId={patientId} patient={patient} turn={turn}
-          question={turns[index - 1].text} />}
-    </div>)}
-    {activity && activity.index >= turns.length && activity.node}
-    {busy && <div className="sa-meta" role="status">Consulting the record…</div>}
-    {last?.error && !NON_RETRYABLE_ERRORS.has(last.error) && <button type="button" className="sa-quiet-button"
-      onClick={onRetry} disabled={busy}>Retry last question</button>}
-    {!!last?.suggested.length && <div className="sa-follow-ons">
-      <div className="sa-field-label">Follow on</div>
-      {last.suggested.slice(0, 3).map((suggestion) => <button key={suggestion}
+    {turns.map((turn, index) => <Fragment key={turn.id}>
+      {turn.role === "user"
+        ? <article className="sa-turn-user"><strong>You</strong>
+          <div>{formattedText(turn.text)}</div></article>
+        : <AssistantMessage turn={turn} patientId={patientId} patient={patient}
+          sourceScope={sourceScope} selected={selected} onSelect={onSelect}
+          onOpenSection={onOpenSection}
+          question={turns[index - 1]?.role === "user" ? turns[index - 1].text : null} />}
+      {index === anchoredAt && activity!.render(true)}
+    </Fragment>)}
+    {activity && anchoredAt < 0 && activity.render(false)}
+    {!busy && last?.error && !NON_RETRYABLE_ERRORS.has(last.error) && <button type="button"
+      className="sa-chat-retry" onClick={onRetry}>Retry last question</button>}
+    {!busy && !!last?.suggested.length && <div className="sa-follow-ons"
+      aria-label="Follow-on questions">
+      {last.suggested.slice(0, 3).map((suggestion) => <button key={suggestion} type="button"
         onClick={() => onSend(suggestion)}>{suggestion}</button>)}
     </div>}
   </div>;
 }
 
-function Message({ turn, selected, onSelect, onOpenSection }: {
+/** One assistant turn, in one block: the answer, its evidence and any referral together. */
+function AssistantMessage({ turn, patientId, patient, sourceScope, selected, onSelect,
+  onOpenSection, question }: {
   turn: Turn;
+  patientId: string;
+  patient?: PatientData;
+  sourceScope?: SourceScope;
   selected: { turnId: string; ruleId: string } | null;
   onSelect: (turnId: string, ruleId: string) => void;
   onOpenSection?: (section: string) => void;
+  question: string | null;
 }): ReactNode {
-  const icon = turn.role === "user" ? "You" : "Record assistant";
-  return <article className={turn.role === "assistant" ? "sa-turn-assistant" : "sa-turn-user"}>
-    <strong>{icon}</strong>
-    {turn.role === "user" ? <div>{formattedText(turn.text)}</div> : turn.error
+  return <article className="sa-turn-assistant">
+    <strong>Record assistant</strong>
+    {!turn.error && <AnswerTrace trace={turn.trace} />}
+    {turn.error
       ? <div className="sa-limitation">
         {TURN_ERRORS[turn.error] ?? "No answer is available for this request. Retry or rephrase."}
       </div>
       : turn.record ? <RecordAnswerCard record={turn.record} onOpenSection={onOpenSection}
         onShowEvidence={(ruleId) => onSelect(turn.id, ruleId)} />
-      : <>{!turn.artifact && <p>No validated answer is available for this request.</p>}
+      : <>
+        {turn.artifact
+          ? <PatientAnswerArtifact turn={turn} patientId={patientId} sourceScope={sourceScope} />
+          : <p>No validated answer is available for this request.</p>}
         {/* The answer card carries its own clock; say it once. */}
         {turn.known_as_of && !turn.artifact
           && <div className="sa-meta">Known as of <Clock value={turn.known_as_of} /></div>}
-        {turn.history_saved === false && <p className="sa-meta" role="status">
-          Answer history could not be saved.
-        </p>}
         {!!turn.gates.length && <div className="sa-chat-gates">{turn.gates.map((gate) => {
           const ruleId = gate.rule_id ?? gate.gate;
           return <GateCitation key={ruleId} gate={gate}
             selected={selected?.turnId === turn.id && selected.ruleId === ruleId}
             onSelect={() => onSelect(turn.id, ruleId)} />;
         })}</div>}
+        {turn.artifact?.classification === "CLASS_A" && question
+          && <ClinicalReferral patientId={patientId} patient={patient} turn={turn}
+            question={question} />}
       </>}
+    {turn.history_saved === false && <p className="sa-meta" role="status">
+      Answer history could not be saved.
+    </p>}
   </article>;
 }
 

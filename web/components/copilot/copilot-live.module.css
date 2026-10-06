@@ -260,7 +260,6 @@
   background: var(--bg-secondary);
   animation: textIn var(--motion-standard) var(--ease-standard);
 }
-.receiptRequest { margin: 0; font: var(--text-callout); color: var(--label-secondary); overflow-wrap: anywhere; }
 .receiptHeading {
   display: flex;
   align-items: center;
@@ -295,6 +294,7 @@
 .steps li[data-state="pending"] { color: var(--label-tertiary); }
 .steps li[data-state="failed"] { color: var(--status-blocked); }
 .stepIcon { display: inline-grid; flex: none; place-items: center; width: 16px; height: 16px; }
+.stepText { display: grid; min-width: 0; overflow-wrap: anywhere; }
 .steps li[data-state="done"] .stepIcon { color: var(--status-ready); }
 .pulse { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--accent); animation: blink 1.2s var(--ease-standard) infinite; }
 .receiptNote { margin: 0; font: var(--text-footnote); color: var(--label-secondary); }

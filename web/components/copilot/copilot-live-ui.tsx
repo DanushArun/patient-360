@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import type { LiveRun, RunStep } from "@/lib/copilot-run.mjs";
 import { stepMovesView } from "@/lib/copilot-intent.mjs";
+import { elapsedLabel } from "./copilot-parts";
 import { useOptionalCopilot } from "./copilot-provider";
 import styles from "./copilot-live.module.css";
 
@@ -321,9 +322,31 @@ const STEP_WORD: Record<RunStep["state"], string> = {
   done: "Done", active: "In progress", pending: "Not started", skipped: "Skipped", failed: "Failed",
 };
 
-/** What the live copilot did on screen, step by step. Shown only for runs that moved the view
- * or brought something into the chat; a plain question needs no receipt. */
-export function LiveReceipt(): ReactNode {
+/** Whether the receipt is on screen for this run: only runs that moved the view or brought
+ * something into the chat get one; a plain question needs no receipt. */
+export function receiptVisible(run: LiveRun | null): boolean {
+  return Boolean(run?.steps.some((item) => stepMovesView(item.step)));
+}
+
+/** True while the run's "Ask the record" step is the one in progress, so the answer's own
+ * progress belongs under that step rather than in a second card. */
+export function receiptHostsAsk(run: LiveRun | null): boolean {
+  return receiptVisible(run)
+    && run!.steps.some((item) => item.state === "active" && item.step.type === "ask");
+}
+
+/** The request, written the way the conversation shows the question it led to. */
+function requestText(request: string): string {
+  const text = request.trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** What the live copilot did on screen, step by step. Sits directly under the message that
+ * started it (`anchored`); until that message exists, it shows the request as the person's
+ * own message, in the same place and wording, so nothing jumps when the question lands. */
+export function LiveReceipt({ anchored = false, askProgress }: {
+  anchored?: boolean; askProgress?: ReactNode;
+}): ReactNode {
   const copilot = useOptionalCopilot();
   const run = copilot?.live.run ?? null;
   const [open, setOpen] = useState(true);
@@ -332,43 +355,49 @@ export function LiveReceipt(): ReactNode {
   const finished = run && ["done", "failed", "cancelled"].includes(run.status);
   useEffect(() => { if (finished && run?.status === "done") setOpen(false); },
     [finished, run?.status]);
-  if (!copilot || !run || !run.steps.some((item) => stepMovesView(item.step))) return null;
+  if (!copilot || !run || !receiptVisible(run)) return null;
   const live = copilot.live;
   const completed = run.steps.filter((step) => step.state === "done").length;
-  const heading = run.status === "done" ? `${completed} ${completed === 1 ? "step" : "steps"} completed`
+  const took = run.finishedAt ? elapsedLabel(run.finishedAt - run.startedAt) : "";
+  const heading = run.status === "done"
+    ? `Worked on the screen${took ? ` for ${took}` : ""} · ${completed} ${completed === 1 ? "step" : "steps"}`
     : run.status === "failed" ? "Stopped at a step"
     : run.status === "cancelled" ? "Stopped"
     : run.status === "awaiting" ? "Waiting for you to choose the patient"
     : run.status === "paused" ? "Paused" : "Working on the screen";
-  return <section className={styles.receipt} data-copilot-ignore data-status={run.status}
-    aria-label="Copilot activity">
-    <p className={styles.receiptRequest}>“{run.request}”</p>
-    <button type="button" className={styles.receiptHeading} aria-expanded={open}
-      onClick={() => setOpen(!open)}>
-      <span data-status={run.status}>{run.status === "done" ? <Check size={14} aria-hidden />
-        : run.status === "failed" || run.status === "cancelled" ? <X size={14} aria-hidden />
-        : <span className={styles.pulse} aria-hidden />}</span>
-      <strong>{heading}</strong>
-      <ChevronDown size={14} aria-hidden data-open={open || undefined} />
-    </button>
-    {open && <ol className={styles.steps}>
-      {run.steps.map((step) => <li key={step.id} data-state={step.state}>
-        <span className={styles.stepIcon} title={STEP_WORD[step.state]}>{STEP_ICON[step.state]}</span>
-        <span className={styles.visuallyHidden}>{STEP_WORD[step.state]}: </span>
-        <span>{step.receipt ?? step.label}</span>
-      </li>)}
-    </ol>}
-    {run.note && run.status !== "done" && !run.steps.some((step) => step.receipt === run.note)
-      && <p className={styles.receiptNote}>{run.note}</p>}
-    <div className={styles.receiptActions}>
-      {run.status === "running" && <button type="button" className={styles.bordered}
-        onClick={live.pause}><Pause size={14} aria-hidden />Pause</button>}
-      {run.status === "paused" && <button type="button" className={styles.bordered}
-        onClick={live.resume}><Play size={14} aria-hidden />Resume</button>}
-      {(run.status === "running" || run.status === "paused" || run.status === "awaiting")
-        && <button type="button" className={styles.plain} onClick={live.cancel}>Stop</button>}
-      {finished && run.origin && <button type="button" className={styles.plain}
-        onClick={live.returnToOrigin}><Undo2 size={14} aria-hidden />Return to previous view</button>}
-    </div>
-  </section>;
+  return <>
+    {!anchored && <div className="sa-turn-user" data-copilot-ignore>
+      <span className={styles.visuallyHidden}>You: </span>{requestText(run.request)}</div>}
+    <section className={styles.receipt} data-copilot-ignore data-status={run.status}
+      aria-label="Copilot activity">
+      <button type="button" className={styles.receiptHeading} aria-expanded={open}
+        onClick={() => setOpen(!open)}>
+        <span data-status={run.status}>{run.status === "done" ? <Check size={14} aria-hidden />
+          : run.status === "failed" || run.status === "cancelled" ? <X size={14} aria-hidden />
+          : <span className={styles.pulse} aria-hidden />}</span>
+        <strong>{heading}</strong>
+        <ChevronDown size={14} aria-hidden data-open={open || undefined} />
+      </button>
+      {open && <ol className={styles.steps}>
+        {run.steps.map((step) => <li key={step.id} data-state={step.state}>
+          <span className={styles.stepIcon} title={STEP_WORD[step.state]}>{STEP_ICON[step.state]}</span>
+          <span className={styles.visuallyHidden}>{STEP_WORD[step.state]}: </span>
+          <span className={styles.stepText}>{step.receipt ?? step.label}
+            {step.state === "active" && step.step.type === "ask" && askProgress}</span>
+        </li>)}
+      </ol>}
+      {run.note && run.status !== "done" && !run.steps.some((step) => step.receipt === run.note)
+        && <p className={styles.receiptNote}>{run.note}</p>}
+      <div className={styles.receiptActions}>
+        {run.status === "running" && <button type="button" className={styles.bordered}
+          onClick={live.pause}><Pause size={14} aria-hidden />Pause</button>}
+        {run.status === "paused" && <button type="button" className={styles.bordered}
+          onClick={live.resume}><Play size={14} aria-hidden />Resume</button>}
+        {(run.status === "running" || run.status === "paused" || run.status === "awaiting")
+          && <button type="button" className={styles.plain} onClick={live.cancel}>Stop</button>}
+        {finished && run.origin && <button type="button" className={styles.plain}
+          onClick={live.returnToOrigin}><Undo2 size={14} aria-hidden />Return to previous view</button>}
+      </div>
+    </section>
+  </>;
 }

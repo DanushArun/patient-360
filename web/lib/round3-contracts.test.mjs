@@ -25,7 +25,7 @@ test("test_reference_scope_is_disabled_and_never_retryable_in_the_ui", () => {
   const screen = read("../components/workspace-patient-screen.tsx");
   assert.match(copilot, /NON_RETRYABLE_ERRORS = new Set\(\["reference_scope_unavailable"\]\)/);
   assert.match(copilot, /!NON_RETRYABLE_ERRORS\.has\(last\.error\)/);
-  assert.match(screen, /<option value="reference" disabled>/);
+  assert.match(screen, /<option value="reference" disabled\b/);
   assert.match(screen, /not available/);
   assert.doesNotMatch(screen, /setSourceScope\("reference"\)/);
 });

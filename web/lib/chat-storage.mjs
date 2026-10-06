@@ -82,9 +82,17 @@ function isRecordAnswer(value) {
     && (typeof value.basis === 'string' || value.basis === null);
 }
 
+/** The work trace shown under an answer: the gateway phases the server reported, in order,
+ * and how long the whole read took. Display only; it asserts nothing about the record.
+ * @param {unknown} value @returns {boolean} */
+function isTrace(value) {
+  return isRecord(value) && isStringArray(value.phases) && Number.isFinite(value.ms);
+}
+
 /** @param {Record<string, unknown>} value @returns {boolean} */
 function hasTurnEvidence(value) {
-  return (value.record === undefined || isRecordAnswer(value.record))
+  return (value.trace === undefined || isTrace(value.trace))
+    && (value.record === undefined || isRecordAnswer(value.record))
     && (value.artifact === undefined || isArtifact(value.artifact))
     && (value.tool_results === undefined || (Array.isArray(value.tool_results)
       && value.tool_results.every(isToolResult)));

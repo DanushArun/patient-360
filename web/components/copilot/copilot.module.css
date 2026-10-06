@@ -81,25 +81,89 @@
 .slot { display: contents; }
 
 .stream {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
   min-height: 0;
   min-width: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--space-4);
-  scroll-behavior: smooth;
 }
 .stream :global(p),
 .stream :global(code) { overflow-wrap: anywhere; }
-.stream :global(.sa-turn-assistant) { min-width: 0; }
-.stream > * + * { margin-top: var(--space-4); }
+
+/* One message system for the panel: the person's words in a bubble on the right, the answer as
+   plain content at full width (no bubble, no bleed past the panel padding), one rhythm between
+   them. The visible "You" / "Record assistant" labels stay for assistive tech only. */
+.stream :global(.sa-chat-log) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.stream :global(.sa-turn-user),
+.stream :global(.sa-turn-assistant),
+.stream :global(.sa-follow-ons),
+.stream :global(.sa-chat-retry) { animation: turnIn var(--motion-standard) var(--ease-standard); }
+@keyframes turnIn { from { opacity: 0; transform: translateY(var(--space-1)); } }
 .stream :global(.sa-turn-user) {
-  margin-left: var(--space-8);
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-panel);
   background: var(--bg-tertiary);
+  color: var(--label);
+  font: var(--text-body);
+  overflow-wrap: anywhere;
+}
+.stream :global(.sa-turn-assistant) {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--label);
+  font: var(--text-body);
 }
 .stream :global(.sa-turn-user) > strong,
-.stream :global(.sa-turn-assistant) > strong { display: none; }
+.stream :global(.sa-turn-assistant) > strong {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.stream :global(.sa-turn-assistant) > :global(p) { margin: 0; }
+.stream :global(.sa-turn-assistant .sa-answer) { margin-top: 0; }
+.stream :global(.sa-turn-assistant .sa-limitation) {
+  max-width: none;
+  margin: 0;
+  font: var(--text-body);
+}
+.stream :global(.sa-turn-assistant .sa-chat-gates) { margin: 0; }
+
+.stream :global(.sa-follow-ons) { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.stream :global(.sa-follow-ons button),
+.stream :global(.sa-chat-retry) {
+  min-height: var(--control-height);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--label);
+  font: var(--text-callout);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.stream :global(.sa-chat-retry) { align-self: flex-start; color: var(--accent); font-weight: 500; }
+.stream :global(.sa-follow-ons button:hover),
+.stream :global(.sa-chat-retry:hover) { background: var(--bg-tertiary); }
+@media (prefers-reduced-motion: reduce) {
+  .stream :global(.sa-turn-user), .stream :global(.sa-turn-assistant),
+  .stream :global(.sa-follow-ons), .stream :global(.sa-chat-retry) { animation: none; }
+}
 
 .empty { display: grid; gap: var(--space-3); padding-block: var(--space-8); }
 .empty h2 { margin: 0; font: var(--text-title-3); }
@@ -130,8 +194,48 @@
   font: var(--text-footnote);
   color: var(--label-tertiary);
 }
-.progress li { display: flex; align-items: center; gap: var(--space-2); }
+.progress li { display: flex; align-items: center; gap: var(--space-2); animation: turnIn var(--motion-standard) var(--ease-standard); }
+.progress li > svg, .progress li > .pulse { flex: none; }
 .progress li[data-current] { color: var(--label); font-weight: 600; }
+/* Under the live copilot's "Ask" step: no card of its own, aligned with the step text. */
+.progress[data-embedded] { margin-top: var(--space-1); padding: 0; background: none; font-weight: 400; }
+.progress[data-embedded] li[data-current] { font-weight: 500; }
+
+/* The work behind an answer: one quiet line, the answer's own justification, opening to the
+   steps the server reported. Quiet by default — the answer is what the clinician came for. */
+.trace { display: grid; gap: var(--space-1); justify-items: start; }
+.traceSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--control-height-small);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--label-tertiary);
+  font: var(--text-footnote);
+  cursor: pointer;
+}
+.traceSummary:hover { color: var(--label-secondary); }
+.traceSummary svg { transition: transform var(--motion-standard) var(--ease-standard); }
+.traceSummary svg[data-open] { transform: rotate(180deg); }
+.traceSteps {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0 0 0 var(--space-2);
+  border-left: 1px solid var(--separator);
+  list-style: none;
+  font: var(--text-footnote);
+  color: var(--label-tertiary);
+  animation: turnIn var(--motion-standard) var(--ease-standard);
+}
+.traceSteps li { display: flex; align-items: center; gap: var(--space-2); }
+.traceSteps svg { flex: none; color: var(--status-ready); }
+@media (prefers-reduced-motion: reduce) { .traceSteps { animation: none; } }
+
+.working { display: flex; align-items: center; gap: var(--space-2); margin: 0; font: var(--text-footnote); color: var(--label-secondary); }
+.placeholder { flex: 1; margin: 0; padding: var(--space-4); font: var(--text-callout); color: var(--label-tertiary); }
 .pulse {
   width: 8px;
   height: 8px;
@@ -140,7 +244,7 @@
   animation: pulse 1.2s var(--ease-standard) infinite;
 }
 @keyframes pulse { 50% { opacity: 0.3; } }
-@media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .pulse, .progress li { animation: none; } }
 
 .composer {
   display: grid;
@@ -183,6 +287,7 @@
 .send {
   display: inline-grid;
   flex-shrink: 0;
+  margin-left: auto; /* stays at the trailing edge when the hint is hidden (phone width) */
   place-items: center;
   width: var(--control-height);
   height: var(--control-height);
@@ -220,7 +325,7 @@
 .scopeSelect {
   min-width: 0;
   max-width: 100%;
-  flex: 1;
+  flex: 0 1 auto;
   height: var(--control-height-small);
   padding: 0 var(--space-2);
   border: 1px solid var(--separator-strong);

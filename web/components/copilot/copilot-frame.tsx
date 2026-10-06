@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Info, Maximize2, Minimize2, Plus, Sparkles, X } from "lucide-react";
@@ -9,8 +9,8 @@ import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import { useCopilot, type CopilotChip } from "./copilot-provider";
 import { COHORT_STARTERS } from "@/lib/copilot-cohort.mjs";
 import type { CohortRow, CohortTurn } from "@/lib/copilot-session.mjs";
-import { CopilotComposer, CopilotStarters } from "./copilot-parts";
-import { LiveDock, LiveReceipt } from "./copilot-live-ui";
+import { CopilotComposer, CopilotStarters, useStickToBottom } from "./copilot-parts";
+import { LiveDock, LiveReceipt, receiptVisible } from "./copilot-live-ui";
 import styles from "./copilot.module.css";
 
 // Global copilot frame: launcher, docked panel and the "+ Ask" picker. Patient pages render
@@ -36,6 +36,9 @@ export function CopilotFrame(): ReactNode {
 
 function CopilotPanel(): ReactNode {
   const copilot = useCopilot();
+  // A patient page owns this panel's conversation. Until it has scoped the copilot (or after
+  // access is withdrawn) the panel shows nothing about any patient and never the day-care chat.
+  const patientRoute = /^\/patient\/[^/]+\/?$/.test(usePathname());
   return <>
   {/* Below 900 px the copilot is a sheet over the page; the scrim dismisses it. */}
   <div className={styles.scrim} aria-hidden onClick={() => copilot.setOpen(false)} />
@@ -43,10 +46,12 @@ function CopilotPanel(): ReactNode {
     data-expanded={copilot.expanded || undefined} aria-label="Saarthi copilot">
     <header className={styles.header}>
       <div className={styles.scope}>
-        <strong>{copilot.patient ? copilot.patient.patientName : "My day-care patients"}</strong>
-        <span>{copilot.patient
-          ? `Known as of ${formatRecordDate(copilot.patient.knownAsOf)}`
-          : "Record state across your care team"}</span>
+        <strong>{copilot.patient ? copilot.patient.patientName
+          : patientRoute ? "Saarthi" : "My day-care patients"}</strong>
+        {/* Each answer carries its own "known as of"; a second clock here would disagree with
+            it as soon as the record moves on, so the header names the record instead. */}
+        <span>{copilot.patient ? `Patient record · ${copilot.patient.patientId}`
+          : patientRoute ? "Patient record" : "Record state across your care team"}</span>
       </div>
       <button type="button" className={styles.iconButton} aria-pressed={copilot.inspector}
         aria-label="Conversation context" title="Conversation context"
@@ -64,7 +69,9 @@ function CopilotPanel(): ReactNode {
     </header>
     <div className={styles.body}>
       <div ref={copilot.setSlot} className={styles.slot} />
-      {!copilot.patient && <CohortConversation />}
+      {!copilot.patient && !patientRoute && <CohortConversation />}
+      {!copilot.patient && patientRoute && <p className={styles.placeholder} role="status">
+        Opening the patient record…</p>}
     </div>
   </aside>
   </>;
@@ -74,18 +81,18 @@ function CopilotPanel(): ReactNode {
 
 function CohortConversation(): ReactNode {
   const copilot = useCopilot();
-  const stream = useRef<HTMLDivElement>(null);
+  const stream = useStickToBottom();
   const { turns, busy, question } = copilot.cohort;
   const live = copilot.live;
-  useEffect(() => { stream.current?.scrollTo({ top: stream.current.scrollHeight }); },
-    [turns, busy, live.run]);
   // With the live copilot on, a request can also open records and bring items to the chat.
   const send = (text: string) => {
+    stream.pin();
     if (live.enabled && live.start(text, "chat")) { copilot.setCohortQuestion(""); return; }
     void copilot.sendCohort(text);
   };
   const anchor = live.anchor?.scope === "cohort" && live.anchor.runId === live.run?.id
     ? live.anchor.index : turns.length;
+  const anchoredAt = turns[anchor]?.role === "user" ? anchor : -1;
 
   return <>
     {copilot.inspector && <div className={styles.inspector}>
@@ -96,27 +103,30 @@ function CohortConversation(): ReactNode {
           <li key={turn.id}>{turn.role === "user" ? turn.text : null}</li>)}
         {!turns.length && <li>None yet</li>}</ul></section>
     </div>}
-    <div ref={stream} className={styles.stream} role="log" aria-label="Day-care conversation"
-      aria-live="polite" aria-busy={busy}>
-      {!turns.length && <div className={styles.empty}>
+    <div ref={stream.ref} className={styles.stream}>
+      {!turns.length && !busy && !receiptVisible(live.run) && <div className={styles.empty}>
         <h2>Ask about your day-care list</h2>
         <p>Who can be treated, who is blocked and why. Every answer comes from the record
           checks on screen. Open a patient to ask about their record.</p>
         <CopilotStarters starters={COHORT_STARTERS} onPick={send} />
       </div>}
-      {turns.map((turn, index) => <Fragment key={turn.id}>
-        {index === anchor && <LiveReceipt />}
-        {turn.role === "user"
-          ? <div className="sa-turn-user">{turn.text}</div>
-          : <CohortAnswer turn={turn} />}
-      </Fragment>)}
-      {anchor >= turns.length && <LiveReceipt />}
-      {busy && <p className={styles.meta} role="status">Reading the day-care record checks…</p>}
+      <div className="sa-chat-log" role="log" aria-label="Day-care conversation"
+        aria-live="polite" aria-busy={busy}>
+        {turns.map((turn, index) => <Fragment key={turn.id}>
+          {turn.role === "user"
+            ? <div className="sa-turn-user">{turn.text}</div>
+            : <div className="sa-turn-assistant"><CohortAnswer turn={turn} /></div>}
+          {index === anchoredAt && <LiveReceipt anchored />}
+        </Fragment>)}
+        {anchoredAt < 0 && <LiveReceipt />}
+      </div>
+      {busy && <p className={styles.working} role="status">
+        <span className={styles.pulse} aria-hidden />Reading the day-care record checks…</p>}
     </div>
     <CopilotComposer label="Question about the day-care list"
       placeholder="Ask about today's day-care list…" value={question}
       setValue={copilot.setCohortQuestion} busy={busy}
-      onSend={() => send(question)} onStop={copilot.stopCohort}
+      onSend={() => send(question)} onStop={() => { live.cancel(); copilot.stopCohort(); }}
       chips={[]} onDetach={() => {}}
       picking={copilot.picking} onPick={() => copilot.setPicking(!copilot.picking)} />
     <p className={styles.disclaimer}>Record and coverage facts only. Clinical decisions belong to

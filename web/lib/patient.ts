@@ -288,6 +288,9 @@ export type AgentTurn = {
   known_as_of: string | null;
   error: string | null;
   artifact?: AnswerArtifact;
+  /** What the client watched this answer do: the gateway phases the server reported, in
+   * order, and the wall-clock time it took. Display only; it asserts nothing about the record. */
+  trace?: { phases: string[]; ms: number };
   /** A deterministic record-tool answer (copilot-tools.mjs); no model wrote any of it. */
   record?: RecordAnswer;
   tool_results?: { name: string; result: Record<string, unknown> }[];

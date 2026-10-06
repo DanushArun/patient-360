@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatClock } from "@/lib/display-format.mjs";
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Page, WorkspaceBar, WorkspaceNav } from "@/components/sa";
 import type { RosterPatient } from "@/components/patient-roster";
 import type { Gate, PatientData } from "@/lib/patient";
@@ -17,9 +17,11 @@ import type { AskPhase, SourceScope } from "@/components/workspace-patient-copil
 import type { ContextReference } from "@/lib/api-contracts.mjs";
 import { createPortal } from "react-dom";
 import { useOptionalCopilot } from "@/components/copilot/copilot-provider";
-import { CopilotComposer, CopilotProgress, CopilotStarters } from "@/components/copilot/copilot-parts";
+import {
+  CopilotComposer, CopilotProgress, CopilotStarters, useStickToBottom,
+} from "@/components/copilot/copilot-parts";
 import copilotStyles from "@/components/copilot/copilot.module.css";
-import { LiveReceipt } from "@/components/copilot/copilot-live-ui";
+import { LiveReceipt, receiptHostsAsk, receiptVisible } from "@/components/copilot/copilot-live-ui";
 import { PatientChatInput, PatientConversation } from "@/components/workspace-patient-copilot";
 import { FamilyChecklist } from "@/components/workspace-patient-family";
 import { PatientSectionContent } from "@/components/workspace-patient-views";
@@ -223,13 +225,11 @@ const PATIENT_STARTERS = RECORD_TOOL_STARTERS.slice(0, 3);
  * history clearing behave exactly as before. */
 function DockedPatientConversation({ model }: { model: PatientScreenModel }): ReactNode {
   const copilot = useOptionalCopilot();
-  const stream = useRef<HTMLDivElement>(null);
+  const stream = useStickToBottom();
   const live = copilot?.live;
-  useEffect(() => {
-    stream.current?.scrollTo({ top: stream.current.scrollHeight });
-  }, [model.turns.length, model.chat.busy, model.chat.phases?.length, live?.run]);
   if (!copilot?.open || !copilot.slot || !live) return null;
   const send = (text: string) => {
+    stream.pin();
     // With the live copilot on, a request can also move the screen: open a section, find an
     // item, bring it here. The question itself still goes through the same governed path.
     if (live.enabled && live.start(text, "chat")) { model.chat.setQuestion(""); return; }
@@ -237,10 +237,19 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
     copilot.clearChips();
     void model.chat.send(text, model.sourceScope, false, context);
   };
+  const run = live.run;
+  const progress = <CopilotProgress phases={model.chat.phases ?? []} busy={model.chat.busy}
+    embedded />;
+  // One progress indicator per question: under the receipt's "Ask" step when a live run is
+  // asking, otherwise on its own after the question.
+  const progressInReceipt = model.chat.busy && receiptHostsAsk(run);
+  const anchor = live.anchor?.scope === "patient" && live.anchor.runId === run?.id
+    ? live.anchor.index : model.turns.length;
+  const empty = !model.turns.length && !model.chat.busy && !receiptVisible(run);
   return createPortal(<>
     {copilot.inspector && <PatientInspector model={model} />}
-    <div ref={stream} className={copilotStyles.stream}>
-      {!model.turns.length && !model.chat.busy && <div className={copilotStyles.empty}>
+    <div ref={stream.ref} className={copilotStyles.stream}>
+      {empty && <div className={copilotStyles.empty}>
         <h2>Ask about {model.patient.patientName}&apos;s record</h2>
         <p>What is recorded, missing or conflicting, with the source for every claim. Clinical
           decisions are referred to {model.patient.treatingPractitionerName
@@ -250,16 +259,18 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
       <PatientConversation patientId={model.patient.patientId} patient={model.patient}
         turns={model.turns} sourceScope={model.sourceScope} showEmptyHint={false}
         selected={model.selected} onSelect={model.onSelectAnswer} busy={model.chat.busy}
-        onSend={send} onRetry={() => model.chat.retry(model.sourceScope)}
+        onSend={send} onRetry={() => { stream.pin(); model.chat.retry(model.sourceScope); }}
         onOpenSection={(section) => model.setSection(section as PatientSection)}
-        activity={{ node: <LiveReceipt />, index: live.anchor?.scope === "patient"
-          && live.anchor.runId === live.run?.id ? live.anchor.index : model.turns.length }} />
-      <CopilotProgress phases={model.chat.phases ?? []} busy={model.chat.busy} />
+        activity={{ index: anchor, render: (anchored) => <LiveReceipt anchored={anchored}
+          askProgress={progressInReceipt ? progress : null} /> }} />
+      {!progressInReceipt && <CopilotProgress phases={model.chat.phases ?? []}
+        busy={model.chat.busy} />}
     </div>
     <CopilotComposer label="Question about the selected patient"
       placeholder={`Ask about ${model.patient.patientName}'s record…`}
       value={model.chat.question} setValue={model.chat.setQuestion} busy={model.chat.busy}
-      onSend={() => send(model.chat.question)} onStop={model.chat.stop}
+      onSend={() => send(model.chat.question)}
+      onStop={() => { live.cancel(); model.chat.stop?.(); }}
       chips={copilot.chips} onDetach={copilot.detach} picking={copilot.picking}
       onPick={() => copilot.setPicking(!copilot.picking)}
       leading={<SourceScopeSelect scope={model.sourceScope} setScope={model.setSourceScope}
@@ -341,8 +352,8 @@ function SourceScopeSelect({ scope, setScope, disabled }: {
   return <label className="sa-source-scope">Search in
     <select className={copilotStyles.scopeSelect} value={scope} disabled={disabled}
       onChange={(event) => setScope(event.target.value as SourceScope)}>
-      <option value="patient">Patient record</option><option value="reference" disabled>
-        References (not available: reference corpus not built)</option>
+      <option value="patient">Patient record</option><option value="reference" disabled
+        title="The reference corpus is not built yet">References (not available)</option>
     </select>
   </label>;
 }
