@@ -10,7 +10,8 @@
     "test": "node --require ./lib/test-alias.cjs --test lib/*.test.mjs",
     "test:e2e": "node tests/run-e2e.mjs",
     "test:e2e:raw": "playwright test",
-    "typecheck": "next typegen && tsc --noEmit --incremental false"
+    "typecheck": "next typegen && tsc --noEmit --incremental false",
+    "demo:check": "node tests/demo/preflight.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

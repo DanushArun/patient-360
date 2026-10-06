@@ -1,0 +1,177 @@
+<title>Saarthi Keynote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single black stage; one slide visible at a time, type sized to the viewport.
+   Deliberately single-theme (a keynote stage), so every colour is set explicitly here. */
+:root {
+  --stage: #050607;
+  --ink: #f4f6f5;
+  --ink-dim: #8d9896;
+  --ink-faint: #3a4241;
+  --teal: #3cc7b4;        /* the Saarthi mark */
+  --alert: #ff7a6b;       /* used once: the blocked value */
+  --display: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--stage); color: var(--ink); font-family: var(--display);
+  overflow: hidden; -webkit-font-smoothing: antialiased; }
+.deck { position: relative; height: 100%; }
+.slide { position: absolute; inset: 0; display: grid; place-content: center; gap: 2.2vh;
+  padding-inline: max(16px, 8vw); text-align: center; opacity: 0; visibility: hidden;
+  transform: translateY(1.2vh); transition: opacity 600ms cubic-bezier(.2,0,0,1),
+  transform 700ms cubic-bezier(.32,.72,0,1), visibility 0s linear 600ms; }
+.slide.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+h1 { margin: 0; font-weight: 800; font-size: clamp(40px, 9vw, 150px); line-height: 1; letter-spacing: -0.035em;
+  text-wrap: balance; }
+h2 { margin: 0; font-weight: 700; font-size: clamp(32px, 6.4vw, 108px); line-height: 1.04; letter-spacing: -0.03em;
+  text-wrap: balance; }
+.sub { margin: 0; color: var(--ink-dim); font-weight: 500; font-size: clamp(18px, 2.4vw, 38px);
+  letter-spacing: -0.01em; }
+.teal { color: var(--teal); }
+.mono { font-family: var(--mono); font-weight: 400; letter-spacing: 0; }
+.eyebrow { font-family: var(--mono); font-size: clamp(12px, 1.1vw, 18px); letter-spacing: .16em;
+  text-transform: uppercase; color: var(--teal); margin: 0; }
+.count { font-variant-numeric: tabular-nums; }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 3vw 5vw; }
+.stat { display: grid; gap: .6vh; min-width: 10ch; }
+.stat b { font-size: clamp(40px, 6vw, 96px); font-weight: 800; letter-spacing: -0.04em; line-height: 1;
+  font-variant-numeric: tabular-nums; }
+.stat span { color: var(--ink-dim); font-size: clamp(13px, 1.3vw, 20px); font-weight: 500; }
+.patient { display: grid; gap: 1.6vh; }
+.chip { display: inline-flex; align-items: center; gap: .6em; justify-self: center; padding: .45em 1.1em;
+  border: 1px solid var(--ink-faint); border-radius: 999px; font-family: var(--mono);
+  font-size: clamp(12px, 1.2vw, 18px); color: var(--ink-dim); }
+.chip i { width: .55em; height: .55em; border-radius: 50%; background: var(--teal); }
+.lvef { font-family: var(--mono); font-size: clamp(22px, 3.2vw, 52px); color: var(--ink-dim); }
+.lvef b { color: var(--alert); font-weight: 500; }
+.foot { position: absolute; left: 0; right: 0; bottom: calc(3vh + env(safe-area-inset-bottom, 0px));
+  display: flex; justify-content: center; gap: 1.6vw; color: var(--ink-faint);
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em; pointer-events: none; }
+.dots { position: absolute; left: 0; right: 0; top: calc(2.4vh + env(safe-area-inset-top, 0px));
+  display: flex; justify-content: center; gap: 8px; }
+.dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--ink-faint); cursor: pointer; transition: background 300ms, transform 300ms; }
+.dots button[aria-current="true"] { background: var(--ink); transform: scale(1.3); }
+.dots button:focus-visible, .nav:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.notes { position: absolute; left: 50%; bottom: calc(7vh + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%); width: min(880px, calc(100% - 32px)); box-sizing: border-box;
+  padding: 14px 18px; border: 1px solid var(--ink-faint); border-radius: 14px; background: #0d1011;
+  color: var(--ink-dim); font-size: 16px; line-height: 1.5; text-align: left; }
+.notes strong { color: var(--ink); font-weight: 500; }
+.hint { position: absolute; right: 16px; bottom: calc(2.4vh + env(safe-area-inset-bottom, 0px));
+  color: var(--ink-faint); font-family: var(--mono); font-size: 11px; }
+.nav { position: absolute; top: 0; bottom: 0; width: 14vw; border: 0; background: transparent; cursor: pointer; }
+.nav.prev { left: 0; } .nav.next { right: 0; }
+@media (max-width: 640px) { .stat { min-width: 40vw; } }
+@media (prefers-reduced-motion: reduce) { .slide { transition: opacity 1ms, visibility 0s; transform: none; } }
+</style>
+
+<main class="deck" id="deck" aria-roledescription="slide deck">
+  <section class="slide" aria-label="Tomorrow, 9:30"
+    data-note="Every evening, in every cancer day-care unit in India, someone has to answer one question.">
+    <h1>Tomorrow, <span class="count">9:30</span>.</h1>
+  </section>
+
+  <section class="slide" aria-label="Who can be treated?"
+    data-note="Not <em>should</em> they be treated. That is the doctor's call. <em>Can</em> they: is everything the doctor needs actually there?">
+    <h1>Who <span class="teal">can</span> be treated?</h1>
+    <p class="sub">Not should. Can.</p>
+  </section>
+
+  <section class="slide" aria-label="Four hospitals, one payer, no shared records"
+    data-note="The answer is spread across hospitals that don't talk to each other, an insurer's portal, and photos on WhatsApp. A coordinator stitches it together by hand, at night.">
+    <div class="row">
+      <div class="stat"><b>4</b><span>hospitals</span></div>
+      <div class="stat"><b>1</b><span>payer</span></div>
+      <div class="stat"><b>0</b><span>shared records</span></div>
+    </div>
+  </section>
+
+  <section class="slide" aria-label="Saarthi"
+    data-note="Saarthi doesn't drive. It makes sure the person who does has everything. Let me show you.">
+    <p class="eyebrow">सारथी · the charioteer</p>
+    <h1>Saarthi</h1>
+  </section>
+
+  <section class="slide" aria-label="Live demo: Anjali Deshpande"
+    data-note="<strong>Go live.</strong> Day care page, Copilot on. Mic: <em>Who is blocked today?</em> → mic: <em>Open Anjali's record</em> → click Open record → <em>Why is she blocked?</em> → open the echo source → <em>Is her pre-authorisation approved?</em> → Compare sources → <em>Should we hold her trastuzumab?</em> → Prepare evidence.">
+    <p class="eyebrow">Live · synthetic patient PAT-DC-12</p>
+    <div class="patient">
+      <h2>Anjali Deshpande</h2>
+      <p class="sub">Cycle 7 · paclitaxel + trastuzumab · tomorrow 09:30</p>
+      <p class="lvef">LVEF 63% → <b>49%</b></p>
+      <span class="chip"><i></i>SURV-LVEF-002 v1 · COV-AUTH-001 v1</span>
+    </div>
+  </section>
+
+  <section class="slide" aria-label="The model never decides"
+    data-note="Language models read documents and understand questions. Every status, number and threshold comes from SQL, with its version and its source. When evidence isn't there, Saarthi says <em>not received</em>, never <em>negative</em>.">
+    <h2>The model never decides.</h2>
+    <div class="row">
+      <div class="stat"><b>16</b><span>versioned SQL rules</span></div>
+      <div class="stat"><b>2</b><span>model families per fact</span></div>
+      <div class="stat"><b>3</b><span>clocks on every answer</span></div>
+      <div class="stat"><b>0</b><span>confidence scores</span></div>
+    </div>
+  </section>
+
+  <section class="slide" aria-label="One more thing"
+    data-note="<strong>Go live:</strong> Family tab, Marathi. Anjali's family speaks Marathi. Tonight they get a checklist in Marathi: what's ready, what's missing, what to bring tomorrow. From the same record checks, not from a chatbot.">
+    <h2>One more thing.</h2>
+  </section>
+
+  <section class="slide" aria-label="Saarthi, closing"
+    data-note="Every answer cited. Every decision left to the person accountable for it. Thank you.">
+    <h1>Saarthi</h1>
+    <p class="sub">Every answer cited. Every decision left to a person.</p>
+  </section>
+
+  <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+  <button class="nav prev" id="prev" aria-label="Previous slide"></button>
+  <button class="nav next" id="next" aria-label="Next slide"></button>
+  <div class="foot">SYNTHETIC DATA ONLY · ENGINEERING CHECKS, NOT CLINICAL VALIDATION</div>
+  <div class="notes" id="notes" hidden></div>
+  <div class="hint">← → · N notes · F full screen</div>
+</main>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll(".slide")];
+  const dots = document.getElementById("dots");
+  const notes = document.getElementById("notes");
+  let index = 0;
+  try { index = Math.min(slides.length - 1, Number(localStorage.getItem("saarthi-keynote")) || 0); } catch {}
+  slides.forEach((slide, i) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.setAttribute("aria-label", `Slide ${i + 1}: ${slide.getAttribute("aria-label")}`);
+    dot.addEventListener("click", () => show(i));
+    dots.append(dot);
+  });
+  function show(next) {
+    index = Math.max(0, Math.min(slides.length - 1, next));
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("on", i === index);
+      slide.setAttribute("aria-hidden", String(i !== index));
+    });
+    [...dots.children].forEach((dot, i) => dot.setAttribute("aria-current", String(i === index)));
+    notes.innerHTML = slides[index].dataset.note ?? "";
+    try { localStorage.setItem("saarthi-keynote", String(index)); } catch {}
+  }
+  document.getElementById("prev").addEventListener("click", () => show(index - 1));
+  document.getElementById("next").addEventListener("click", () => show(index + 1));
+  document.addEventListener("keydown", (event) => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(event.key)) { event.preventDefault(); show(index + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(event.key)) { event.preventDefault(); show(index - 1); }
+    else if (event.key === "Home") show(0);
+    else if (event.key === "End") show(slides.length - 1);
+    else if (event.key.toLowerCase() === "n") notes.hidden = !notes.hidden;
+    else if (event.key.toLowerCase() === "f") document.documentElement.requestFullscreen?.().catch(() => {});
+  });
+  show(index);
+})();
+</script>

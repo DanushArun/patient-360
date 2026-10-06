@@ -1,0 +1,641 @@
+{
+  "recorded_at": "2026-10-06T08:05:58.295618+00:00",
+  "base_revision": "f94f391bdf395941a6a5e0a3bafeac73634c91b7",
+  "working_tree": true,
+  "status": "FAIL",
+  "mode": "verify",
+  "started_at": "2026-10-06T08:05:52+00:00",
+  "visits_tomorrow": 11,
+  "outcomes": {
+    "PAT-DC-11": {
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 72.7 mL/min (Cockcroft-Gault, age=63 weight=68 cr=1) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 6.8, within threshold 8.5"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 3960, meets threshold 1500"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.7 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 28 U/L for context"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 205000, meets threshold 100000"
+      }
+    },
+    "PAT-DC-10": {
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 240000, meets threshold 100000"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 5.5, within threshold 8.5"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "DOC-HER2-001": {
+        "outcome": "not_evaluated",
+        "reason": "HER2 IHC=2 on latest specimen (grade=III ihc=2+) - FISH reflex required, no FISH result on record yet"
+      },
+      "ENDO-DEXA-001": {
+        "outcome": "pass",
+        "reason": "DEXA T-score -1.1 (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan 62 days old, within interval"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 3304, meets threshold 1500"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 91.3 mL/min (Cockcroft-Gault, age=45 weight=57 cr=0.7) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.5 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 23 U/L for context"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      }
+    },
+    "PAT-DC-09": {
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 3648, meets threshold 1500"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "fail",
+        "reason": "HBA1C is 9.4, at or above threshold 8.5"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "2 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 92.7 mL/min (Cockcroft-Gault, age=49 weight=66 cr=0.9) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 221000, meets threshold 100000"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.8 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 30 U/L for context"
+      }
+    },
+    "PAT-DC-08": {
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 5.8, within threshold 8.5"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "not_evaluated",
+        "reason": "no usable PLT evidence found as of 2026-10-06T08:01:45"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "not_evaluated",
+        "reason": "no usable ANC evidence found as of 2026-10-06T08:01:45"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.5 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 27 U/L for context"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 73.1 mL/min (Cockcroft-Gault, age=55 weight=51 cr=0.7) - clears strictest per-agent minimum (60 for cisplatin)"
+      }
+    },
+    "PAT-DC-07": {
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 4473, meets threshold 1500"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 198000, meets threshold 100000"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "COV-AUTH-001": {
+        "outcome": "conflicting",
+        "reason": "pre-auth table status is 'pending' but letter says 'approved' - human reconciliation required"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 67.4 mL/min (Cockcroft-Gault, age=66 weight=59 cr=0.9) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 7.1, within threshold 8.5"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.9 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 35 U/L for context"
+      }
+    },
+    "PAT-DC-06": {
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 4209, meets threshold 1500"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "COV-AUTH-001": {
+        "outcome": "not_evaluated",
+        "reason": "pre-authorisation status is pending - decision not yet issued"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "2 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "ENDO-DEXA-001": {
+        "outcome": "pass",
+        "reason": "DEXA T-score -0.3 (normal, T>=-1.0) - 24-month interval, last scan 42 days old, within interval"
+      },
+      "DOC-HER2-001": {
+        "outcome": "pass",
+        "reason": "HER2 status final from IHC alone: grade=III ihc=3+"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "SURV-LVEF-002": {
+        "outcome": "pass",
+        "reason": "LVEF 65 vs baseline 66 (drop 1pp) - within thresholds, continue"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.4 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 21 U/L for context"
+      },
+      "SURV-LVEF-001": {
+        "outcome": "pass",
+        "reason": "LVEF measured 11 days ago, within 90-day surveillance interval"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 232000, meets threshold 100000"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 5.2, within threshold 8.5"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 107.3 mL/min (Cockcroft-Gault, age=39 weight=54 cr=0.6) - clears strictest per-agent minimum (60 for cisplatin)"
+      }
+    },
+    "PAT-DC-05": {
+      "CLIN-ANC-001": {
+        "outcome": "fail",
+        "reason": "ANC is 1160, below threshold 1500"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.8 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 33 U/L for context"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 156000, meets threshold 100000"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 83.3 mL/min (Cockcroft-Gault, age=60 weight=60 cr=0.8) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 6.4, within threshold 8.5"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      }
+    },
+    "PAT-DC-04": {
+      "CLIN-PLT-001": {
+        "outcome": "fail",
+        "reason": "PLT is 82000, below threshold 100000"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "2 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 2208, meets threshold 1500"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "ENDO-DEXA-001": {
+        "outcome": "pass",
+        "reason": "DEXA T-score -0.5 (normal, T>=-1.0) - 24-month interval, last scan 92 days old, within interval"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 5.4, within threshold 8.5"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.6 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 29 U/L for context"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "DOC-HER2-001": {
+        "outcome": "pass",
+        "reason": "HER2 status final from IHC alone: grade=II ihc=1+"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 89 mL/min (Cockcroft-Gault, age=44 weight=55 cr=0.7) - clears strictest per-agent minimum (60 for cisplatin)"
+      }
+    },
+    "PAT-DC-03": {
+      "CLIN-ANC-001": {
+        "outcome": "fail",
+        "reason": "ANC assessment is 13 days old, exceeds 7-day limit"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 81 mL/min (Cockcroft-Gault, age=58 weight=64 cr=0.9) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 6.1, within threshold 8.5"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "fail",
+        "reason": "PLT assessment is 13 days old, exceeds 7-day limit"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.7 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 31 U/L for context"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      }
+    },
+    "PAT-DC-01": {
+      "SURV-LVEF-001": {
+        "outcome": "pass",
+        "reason": "LVEF measured 40 days ago, within 90-day surveillance interval"
+      },
+      "ENDO-DEXA-001": {
+        "outcome": "pass",
+        "reason": "DEXA T-score -0.8 (normal, T>=-1.0) - 24-month interval, last scan 152 days old, within interval"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 5.6, within threshold 8.5"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 210000, meets threshold 100000"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 3596, meets threshold 1500"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 75.3 mL/min (Cockcroft-Gault, age=52 weight=58 cr=0.8) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "DOC-HER2-001": {
+        "outcome": "pass",
+        "reason": "HER2 status final from IHC alone: grade=II ihc=3+"
+      },
+      "SURV-LVEF-002": {
+        "outcome": "pass",
+        "reason": "LVEF 61 vs baseline 64 (drop 3pp) - within thresholds, continue"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.6 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 26 U/L for context"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "2 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      }
+    },
+    "PAT-DC-02": {
+      "COV-LIMIT-001": {
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)"
+      },
+      "ENDO-DEXA-001": {
+        "outcome": "pass",
+        "reason": "DEXA T-score -1.4 (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan 202 days old, within interval"
+      },
+      "ENDO-HBA1C-001": {
+        "outcome": "pass",
+        "reason": "HBA1C is 5.9, within threshold 8.5"
+      },
+      "CLIN-BILI-001": {
+        "outcome": "pass",
+        "reason": "bilirubin 0.5 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 24 U/L for context"
+      },
+      "SURV-LVEF-002": {
+        "outcome": "pass",
+        "reason": "LVEF 58 vs baseline 62 (drop 4pp) - within thresholds, continue"
+      },
+      "ID-QUAR-001": {
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record"
+      },
+      "DOC-PATH-001": {
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status"
+      },
+      "CLIN-ANC-001": {
+        "outcome": "pass",
+        "reason": "ANC is 3190, meets threshold 1500"
+      },
+      "COV-AUTH-001": {
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current"
+      },
+      "SURV-LVEF-001": {
+        "outcome": "fail",
+        "reason": "LVEF last measured 120 days ago, exceeds 90-day surveillance interval"
+      },
+      "CLIN-PLT-001": {
+        "outcome": "pass",
+        "reason": "PLT is 245000, meets threshold 100000"
+      },
+      "ID-LINK-001": {
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)"
+      },
+      "CLIN-CRCL-001": {
+        "outcome": "pass",
+        "reason": "CrCl 97.2 mL/min (Cockcroft-Gault, age=47 weight=62 cr=0.7) - clears strictest per-agent minimum (60 for cisplatin)"
+      },
+      "DOC-DISC-001": {
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected"
+      },
+      "DOC-HER2-001": {
+        "outcome": "pass",
+        "reason": "HER2 status final from IHC alone: grade=III ihc=3+"
+      }
+    }
+  },
+  "hero_documents": [],
+  "failures": [
+    "PAT-DC-12: no visit scheduled for tomorrow",
+    "PAT-DC-12: no readiness rows",
+    "DOC-LAB-DC-12: not loaded",
+    "DOC-ECHO-DC-12: not loaded",
+    "DOC-PATH-DC-12: not loaded",
+    "DOC-BIOPSY-DC-12: not loaded",
+    "DOC-PA-DC-12: not loaded"
+  ],
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78b65-0204-df67-0005-755200087dbe",
+      "elapsed_ms": 248.83212501299568
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78b65-0204-df67-0005-755200087dc2",
+      "elapsed_ms": 180.87591699440964
+    },
+    {
+      "label": "query",
+      "sql_sha256": "ceac6a9bd9868c43e759aa6263aaafc04f5aa303f1dc41a6f5a86954ee5d1545",
+      "status": "PASS",
+      "rows": 11,
+      "query_id": "01c78b65-0204-df67-0005-755200087dca",
+      "elapsed_ms": 244.14250001427718
+    },
+    {
+      "label": "query",
+      "sql_sha256": "1ee2dd797c7c1f2cf8d234fb030f8bcf6de119a308e0baa650e0fda489c123e2",
+      "status": "PASS",
+      "rows": 137,
+      "query_id": "01c78b65-0204-df74-0005-755200089a82",
+      "elapsed_ms": 443.6151670233812
+    },
+    {
+      "label": "query",
+      "sql_sha256": "fa99807403880aa984bb4b210d95ea324aa86482209387c7db78c1606fe49646",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78b65-0204-df67-0005-755200087dce",
+      "elapsed_ms": 323.4510830079671
+    },
+    {
+      "label": "query",
+      "sql_sha256": "0ae17fea48bf48b67c6401e11720458ee795c01ac49fcda04689885ba744ba7c",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78b65-0204-df67-0005-755200087dd2",
+      "elapsed_ms": 596.4248749951366
+    }
+  ]
+}
