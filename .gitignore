@@ -19,3 +19,5 @@ venv/
 .snowflake/
 .playwright-mcp/
 .cortex/
+.vercel
+.env*
