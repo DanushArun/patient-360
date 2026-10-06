@@ -32,31 +32,6 @@
   }
 }
 
-.ct-topbar {
-  display: flex;
-  min-height: var(--control-height);
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid var(--sa-rule);
-  color: var(--sa-ink-muted);
-  font-size: var(--fs-footnote);
-}
-
-.ct-topbar strong {
-  color: var(--sa-ink);
-  font-weight: 500;
-}
-
-.ct-topbar > span > span {
-  padding: 0 8px;
-  color: var(--sa-ink-muted);
-}
-
-.ct-topbar > span:last-child {
-  font-size: var(--fs-caption);
-}
-
 .ct-search {
   display: flex;
   align-items: center;
@@ -69,15 +44,6 @@
   padding: 4px 0;
   border: 0;
   background: transparent;
-}
-
-.ct-copilot-disclaimer {
-  margin: 0;
-  padding: 12px 16px 24px;
-  color: var(--sa-ink-muted);
-  font-size: var(--fs-caption);
-  line-height: 1.6;
-  text-align: center;
 }
 
 .sa-task-actions {
@@ -104,17 +70,6 @@
 
 .sa-task-form button {
   justify-self: start;
-}
-
-@media (max-width: 600px) {
-  .ct-topbar {
-    min-height: var(--control-height);
-    font-size: var(--fs-caption);
-  }
-
-  .ct-topbar > span:last-child {
-    display: none;
-  }
 }
 
 .sa-preview-entry {

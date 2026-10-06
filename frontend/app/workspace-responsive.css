@@ -86,18 +86,13 @@
     gap: 12px;
     padding-bottom: 16px;
   }
-  .sa-screen-header h1, .sa-census-title { font-size: var(--fs-large-title); }
-  .sa-worklist-toolbar { align-items: stretch; flex-direction: column; }
-  .sa-worklist-toolbar .sa-search-input { max-width: none; margin-left: 0; }
+  .sa-screen-header h1 { font-size: var(--fs-large-title); }
   .sa-worklist-board { display: flex; flex-direction: column; overflow: visible; }
   .sa-worklist-board > section { width: 100%; min-width: 0; }
   .sa-worklist-card { display: grid; grid-template-columns: 1fr auto; align-items: center; }
   .sa-worklist-card > span, .sa-worklist-card > code, .sa-worklist-card > small:last-child  {
     grid-column: 1 / -1;
   }
-  .sa-patient-header { align-items: flex-start; flex-direction: column; gap: 12px; }
-  .ct-patient-identity h2 { font-size: var(--fs-large-title); }
-  .sa-patient-header-actions { flex-wrap: wrap; }
   .sa-patient-tabs { margin-right: -16px; padding-bottom: 4px; }
   .sa-patient-tabs button { min-height: var(--control-height); }
   .sa-rule-row { gap: 8px; }

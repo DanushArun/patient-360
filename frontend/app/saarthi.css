@@ -31,12 +31,10 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 /* Tabular figures on every number. Two reasons: values align on the digit for
    comparison, and when known_as_of moves the digits change IN PLACE instead of
    jittering horizontally. This is why the time-travel demo reads as precise. */
-.sa-num, .sa-value, .sa-ts, .sa-meta {
+.sa-num, .sa-meta {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
 }
-
-.sa-measure { max-width: 68ch; }
 
 /* ---- masthead: who is asking, about whom, under what authority, as of when -- */
 .sa-masthead {
@@ -54,13 +52,6 @@ span[class*="material-symbols"], span[class*="material-icons"] {
                    color: var(--label-secondary); font-variant-numeric: tabular-nums; }
 
 /* ---- claim: text, not a card. No shadow - shadow implies a button. ------- */
-.sa-claim {
-    border-top: 1px solid var(--separator);
-    padding: 24px 0 16px 0;
-}
-.sa-claim:first-of-type { border-top: none; }
-.sa-claim-text { font-size: var(--fs-title-3); line-height: var(--lh-title-3);
-                  max-width: 68ch; margin-bottom: 12px; }
 
 /* ---- status chip: glyph + word + border style --------------------------- */
 .sa-status {
@@ -82,12 +73,6 @@ span[class*="material-symbols"], span[class*="material-icons"] {
                   color: var(--label-secondary); font-style: italic; }
 
 /* ---- action: what to do, addressed to someone -------------------------- */
-.sa-action {
-    font-size: var(--fs-title-3); line-height: var(--lh-body);
-    border-left: 2px solid var(--label-tertiary);
-    padding-left: 12px; margin-top: 12px;
-    max-width: 68ch; color: var(--label-secondary);
-}
 
 /* ---- evidence margin: persistent, never a modal ------------------------ */
 /* Provenance verification needs claim and source visible SIMULTANEOUSLY; a modal
@@ -103,14 +88,12 @@ span[class*="material-symbols"], span[class*="material-icons"] {
    reading it as a finding about the patient" (COPILOT-SPEC 2). Three signals:
    left edge colour, surface tint, and an explicit word. */
 .sa-ev-patient   { border-left: 3px solid var(--evidence-patient); }
-.sa-ev-reference { border-left: 3px solid var(--evidence-reference); background: var(--bg-secondary); }
 .sa-ev-kind {
     font-size: var(--fs-callout); line-height: var(--lh-footnote);
     text-transform: uppercase; letter-spacing: 0.06em;
     margin-bottom: 8px;
 }
 .sa-ev-patient .sa-ev-kind   { color: var(--evidence-patient); }
-.sa-ev-reference .sa-ev-kind { color: var(--evidence-reference); }
 .sa-ev-id { font-family: "JetBrains Mono", ui-monospace, monospace;
              font-size: var(--fs-footnote); color: var(--label-secondary); }
 
@@ -141,23 +124,10 @@ span[class*="material-symbols"], span[class*="material-icons"] {
        important string in the product. It must wrap, never scroll away. */
     white-space: pre-wrap; overflow-wrap: anywhere;
 }
-.sa-derivation-note { font-size: var(--fs-callout); color: var(--label-secondary);
-                       margin-top: 12px; }
 
 /* ---- Class A refusal: a formal addressed notice, not a yellow warning --- */
 /* NMC TPG 2020 is a legal boundary. It should read like a referral, because that
    is what it is: this question belongs to a named registered practitioner. */
-.sa-refusal {
-    border: 1px solid var(--label-tertiary); border-top: 3px solid var(--label);
-    border-radius: var(--radius-control); padding: 24px; max-width: 68ch;
-}
-.sa-refusal-kind { font-size: var(--fs-callout); text-transform: uppercase;
-                    letter-spacing: 0.08em; color: var(--label-tertiary);
-                    margin-bottom: 12px; }
-.sa-refusal-message { font-size: var(--fs-title-2);
-                       line-height: var(--lh-title-2); margin-bottom: 16px; }
-.sa-refusal-addressee { border-top: 1px solid var(--separator); padding-top: 12px;
-                         font-size: var(--fs-body); }
 
 /* ---- limitations: first-class, not a caption --------------------------- */
 /* What the system could NOT establish is the most credible thing on the screen.
@@ -170,10 +140,6 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 }
 
 /* ---- gate strip (Patient 360) ----------------------------------------- */
-.sa-gate-row {
-    display: flex; align-items: baseline; gap: 16px;
-    padding: 12px 0; border-bottom: 1px solid var(--separator);
-}
 .sa-gate-name { font-size: var(--fs-title-3); font-weight: 600;
                  min-width: 140px; letter-spacing: -0.01em; }
 
@@ -236,31 +202,8 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 /* ---- day-care census: the coordinator's home screen -------------------- */
 /* Urgency is position (sorted blocked-first) and chip shape. Rows are text on
    hairlines, not cards - eleven boxed cards would be the clutter anti-pattern. */
-.sa-census-head { display: flex; flex-wrap: wrap; align-items: baseline;
-                   gap: 16px; margin-bottom: 12px; }
-.sa-census-day { font-size: var(--fs-title-2); line-height: var(--lh-title-2);
-                  font-weight: 500; letter-spacing: -0.01em; }
-.sa-census-counts { display: flex; flex-wrap: wrap; gap: 16px;
-                     font-size: var(--fs-body); color: var(--label-secondary); }
-.sa-census-count b { color: var(--label); font-weight: 600; }
-.sa-census-row { display: grid; grid-template-columns: minmax(180px, 2fr) minmax(0, 3fr);
-                  gap: 16px; align-items: start; }
-.sa-census-name { font-size: var(--fs-title-3); font-weight: 600; letter-spacing: -0.01em; }
-.sa-census-state { display: flex; flex-direction: column; gap: 4px;
-                    align-items: flex-start; }
-.sa-census-reason { font-size: var(--fs-title-3); line-height: var(--lh-body);
-                     color: var(--label-secondary); max-width: 68ch; }
-.sa-census-reason code { font-family: "JetBrains Mono", ui-monospace, monospace;
-                          font-size: var(--fs-footnote); color: var(--label-tertiary); }
-@media (max-width: 640px) { .sa-census-row { grid-template-columns: 1fr; } }
 
 /* ---- family checklist (Navigator View) --------------------------------- */
-.sa-check-item { display: flex; gap: 12px; padding: 12px 0;
-                  border-top: 1px solid var(--separator); }
-.sa-check-n { flex: 0 0 24px; height: 24px; border-radius: var(--radius-panel); text-align: center;
-               line-height: var(--lh-title-3); font-size: var(--fs-callout); font-weight: 600;
-               border: 1px solid var(--label-tertiary); color: var(--label-secondary); }
-.sa-check-text { font-size: var(--fs-title-3); line-height: var(--lh-title-3); max-width: 68ch; }
 
 /* ---- Streamlit's own chrome, restyled to the same system --------------- *
  * Everything above styles the sa-* HTML islands this app writes itself.
@@ -283,16 +226,6 @@ span[class*="material-symbols"], span[class*="material-icons"] {
 [data-testid="stChatMessageAvatarAssistant"] {
     background: var(--bg-secondary) !important; color: var(--label-secondary) !important;
     border: 1px solid var(--separator);
-}
-.sa-chat-avatar {
-    width: 34px; height: 34px; flex: 0 0 34px;
-    display: grid; place-items: center;
-    border: 1px solid var(--separator); border-radius: var(--radius-control);
-    background: var(--bg-secondary); color: var(--label-secondary);
-    font-family: "Material Symbols Rounded";
-    font-size: var(--fs-title-2); font-weight: 400; line-height: 1;
-    font-feature-settings: "liga";
-    -webkit-font-smoothing: antialiased;
 }
 
 /* Chat input: match the measure and type scale, replace the default heavy

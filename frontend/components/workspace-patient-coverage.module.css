@@ -22,8 +22,7 @@
   border-bottom: 1px solid var(--sa-rule);
 }
 
-.heading h2,
-.columns h3 {
+.heading h2 {
   margin: 0;
   color: var(--sa-ink);
   font-size: var(--fs-title-2);

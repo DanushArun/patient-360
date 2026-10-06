@@ -147,8 +147,7 @@
   overflow-wrap: anywhere;
 }
 
-.previewLimit,
-.actionHelp {
+.previewLimit {
   margin: 12px 0 0;
   color: var(--sa-ink-muted);
   font-size: var(--fs-footnote);

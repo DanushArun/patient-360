@@ -12,7 +12,7 @@
   box-shadow: none;
 }
 .sa-screen-header::before { display: none; }
-.sa-screen-header h1, .sa-census-title {
+.sa-screen-header h1 {
   margin: 0 0 4px;
   color: var(--sa-ink);
   font-size: var(--fs-large-title);
@@ -47,10 +47,7 @@
 .sa-quiet-button { background: var(--bg); color: var(--sa-ink-secondary); }
 .sa-quiet-button:hover { background: var(--bg-secondary); border-color: var(--separator-strong); }
 .sa-primary-action { border-color: var(--sa-accent); background: var(--sa-accent); color: var(--accent-label); }
-.sa-worklist-toolbar { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
-.sa-worklist-toolbar .sa-search-input { max-width: 320px; margin-left: auto; }
-.sa-view-switch { display: flex; gap: 4px; }
-.sa-view-switch button, .sa-patient-tabs button {
+.sa-patient-tabs button {
   min-height: 34px;
   padding: 8px 12px;
   border: 1px solid transparent;
@@ -60,17 +57,10 @@
   font-size: var(--fs-callout);
   cursor: pointer;
 }
-.sa-view-switch button[aria-pressed="true"], .sa-patient-tabs button[aria-pressed="true"]  {
+.sa-patient-tabs button[aria-pressed="true"]  {
   background: var(--bg-tertiary);
   color: var(--sa-ink);
   font-weight: 600;
-}
-.sa-search-input  {
-  min-height: var(--control-height);
-  padding: 8px 12px;
-  border: 1px solid var(--sa-rule);
-  border-radius: var(--radius-control);
-  font-size: var(--fs-callout);
 }
 .sa-worklist-board  {
   display: grid;
@@ -110,33 +100,9 @@
 }
 .sa-worklist-card:hover { border-color: var(--separator-strong); background: var(--bg); }
 .sa-worklist-card strong { color: var(--sa-ink); font-size: var(--fs-body); font-weight: 600; }
-.sa-worklist-card small, .sa-worklist-table small { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
+.sa-worklist-card small { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
 .sa-worklist-dx { margin-top: calc(-1 * var(--space-1)); color: var(--label-secondary); font: var(--text-callout); overflow-wrap: anywhere; }
 .sa-worklist-card code { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
-.sa-worklist-table-wrap { width: 100%; overflow-x: auto; }
-.sa-worklist-table { width: 100%; border-collapse: collapse; font-size: var(--fs-callout); }
-.sa-worklist-table th  {
-  padding: 12px;
-  border-bottom: 1px solid var(--sa-rule);
-  color: var(--sa-ink-muted);
-  font-size: var(--fs-footnote);
-  font-weight: 500;
-  text-align: left;
-  white-space: nowrap;
-}
-.sa-worklist-table td  {
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--sa-rule);
-  color: var(--sa-ink-secondary);
-  vertical-align: middle;
-}
-.sa-worklist-table td:first-child a  {
-  color: var(--sa-ink);
-  font-weight: 600;
-  text-decoration: none;
-}
-.sa-worklist-table td small { display: block; margin-top: 2px; }
-.sa-worklist-table .sa-status { white-space: nowrap; }
 .sa-status  {
   padding: 4px 8px;
   border-radius: var(--radius-pill);
@@ -145,43 +111,6 @@
   line-height: var(--lh-footnote);
 }
 .sa-status-glyph { font-size: var(--fs-footnote); }
-.sa-patient-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 0 16px;
-  border: 0;
-  border-bottom: 1px solid var(--sa-rule);
-  border-radius: 0;
-  background: transparent;
-}
-.ct-patient-identity { flex: 1; min-width: 200px; }
-.ct-patient-identity > div:first-child  {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.ct-patient-identity h2  {
-  margin: 0;
-  color: var(--sa-ink);
-  font-size: var(--fs-large-title);
-  font-weight: 600;
-  letter-spacing: -.7px;
-}
-.ct-patient-id { color: var(--sa-ink-muted); font-size: var(--fs-callout); }
-.ct-patient-identity p { margin: 4px 0 0; color: var(--sa-ink-secondary); font-size: var(--fs-callout); }
-.ct-patient-tags  {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
-  color: var(--sa-ink-muted);
-  font-size: var(--fs-footnote);
-}
-.sa-patient-header-actions { display: flex; align-items: center; gap: 8px; }
-.sa-patient-header-actions .sa-field { display: none; }
 .sa-patient-tabs  {
   display: flex;
   gap: 4px;
@@ -196,16 +125,6 @@
   margin: 0 8px;
   border-left: 1px solid var(--sa-rule);
 }
-.sa-patient-state-line  {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-  padding: 8px 0 16px;
-  color: var(--sa-ink-secondary);
-  font-size: var(--fs-callout);
-}
-.sa-patient-state-line span { display: flex; gap: 8px; align-items: center; }
-.sa-patient-state-line strong { color: var(--sa-ink-muted); font-weight: 500; }
 .sa-rule-list { margin-top: 16px; }
 .sa-rule-list h2, .sa-view-intro h2  {
   margin: 0 0 4px;
@@ -227,57 +146,6 @@
 .sa-rule-row small { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
 .sa-rule-row p { margin: 0; color: var(--sa-ink-secondary); font-size: var(--fs-callout); line-height: 1.45; }
 .sa-rule-row .sa-quiet-button { white-space: nowrap; }
-.sa-data-workspace { max-width: 920px; }
-.sa-data-workspace > .sa-field-label { display: block; max-width: 280px; margin-bottom: 12px; }
-.sa-document-list { display: grid; gap: 12px; }
-.sa-document-list article, .sa-document-pages article {
-  padding: 16px 0;
-  border-top: 1px solid var(--sa-rule);
-}
-.sa-document-list article > div strong, .sa-document-list article > div small { display: block; }
-.sa-document-list article > div strong { font-size: var(--fs-body); font-weight: 600; }
-.sa-document-list article > div small { margin-top: 4px; color: var(--sa-ink-muted); }
-.sa-document-list p { margin: 8px 0; color: var(--sa-ink-secondary); font-size: var(--fs-callout); }
-.sa-document-list dl, .sa-document-pages dl  {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-  margin: 12px 0;
-}
-.sa-document-list dl div, .sa-document-pages dl div { min-width: 130px; }
-.sa-document-list dt, .sa-document-pages dt { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
-.sa-document-list dd, .sa-document-pages dd  {
-  margin: 2px 0 0;
-  color: var(--sa-ink-secondary);
-  font-size: var(--fs-footnote);
-  font-variant-numeric: tabular-nums;
-}
-.sa-document-pages h2 { margin: 12px 0; font-size: var(--fs-title-3); }
-.sa-document-pages pre  {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font: inherit;
-  line-height: 1.65;
-}
-.sa-family-message { white-space: pre-wrap; }
-.sa-fact-list { display: grid; gap: 12px; }
-.sa-fact-object { margin: 12px 0; }
-.sa-fact-object > div  {
-  display: grid;
-  grid-template-columns: minmax(150px, 220px) 1fr;
-  gap: 16px;
-  padding: 8px 0;
-  border-top: 1px solid var(--sa-rule);
-}
-.sa-fact-object dt { color: var(--sa-ink-muted); font-size: var(--fs-footnote); text-transform: capitalize; }
-.sa-fact-object dd  {
-  min-width: 0;
-  margin: 0;
-  color: var(--sa-ink-secondary);
-  font-size: var(--fs-callout);
-  overflow-wrap: anywhere;
-}
-.sa-fact-object dd dl { margin-top: -8px; }
 .sa-empty-inline, .sa-data-unavailable, .sa-view-intro p  {
   color: var(--sa-ink-secondary);
   font-size: var(--fs-body);

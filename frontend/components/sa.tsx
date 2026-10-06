@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
-import { BookOpen, ClipboardList, LayoutDashboard, Settings, UserRound, Users } from "lucide-react";
+import { BookOpen, ClipboardList, LayoutDashboard, Settings, UserRound } from "lucide-react";
 import { PatientRoster, type RosterPatient } from "./patient-roster";
 import { SidebarToggle } from "./ui/sidebar-toggle";
 import { CopilotTrigger } from "./copilot/copilot-trigger";
@@ -98,9 +98,6 @@ export function WorkspaceNav({
     <WorkspaceBrand />
     <div className="sa-sidebar-heading">Workspace</div>
     <WorkspaceLinks current={current} />
-    <Link href="/#patient-roster" className="sa-workspace-link">
-      <Users size={16} strokeWidth={1.8} aria-hidden="true" />Patients
-    </Link>
     {onReferences && <button type="button" className="sa-workspace-link"
       onClick={onReferences}>References</button>}
     {patients && <PatientRoster patients={patients} selectedId={patientId} preview={preview}

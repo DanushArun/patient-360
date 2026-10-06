@@ -127,55 +127,13 @@ html, body {
 }
 
 /* ---- search input ---------------------------------------------------- */
-.sa-search-input {
-  flex: 1;
-  min-height: var(--control-height);
-  padding: 8px 16px;
-  border: 1px solid var(--sa-rule);
-  border-radius: var(--radius-control);
-  font: inherit;
-  font-size: var(--fs-body);
-  color: var(--sa-ink);
-  background: var(--sa-surface);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
-}
-.sa-search-input::placeholder { color: var(--sa-ink-muted); opacity: 1; }
-.sa-search-input:focus {
-  outline: none;
-  border-color: var(--sa-patient-edge);
-  box-shadow: 0 0 0 3px rgb(26 92 138 / 10%);
-}
 
 /* ---- census row cards ------------------------------------------------ */
-.sa-census-card {
-  text-decoration: none;
-  color: inherit;
-  border-radius: var(--radius-control);
-  padding: 16px 12px;
-  margin: 0 -12px;
-  transition: background 150ms ease;
-}
-.sa-census-card:hover { background: var(--sa-surface-sunken); }
-.sa-census-card:focus-visible { outline: 2px solid var(--sa-patient-edge); outline-offset: 2px; }
-.sa-open-btn {
-  border: 1px solid var(--sa-rule);
-  color: var(--sa-ink);
-  transition: border-color 150ms ease, background 150ms ease;
-}
-.sa-census-card:hover .sa-open-btn {
-  border-color: var(--sa-patient-edge);
-  background: white;
-}
 
 /* ---- patient picker items -------------------------------------------- */
-.sa-picker-trigger { transition: border-color 150ms ease; }
-.sa-picker-trigger:hover { border-color: var(--sa-ink-muted) !important; }
-.sa-picker-item { transition: background 120ms ease; }
-.sa-picker-item:hover { background: var(--sa-surface-sunken); }
 
 /* ---- workspace navigation / screen hierarchy ------------------------- */
 .sa-workspace-nav { display: flex; align-items: center; gap: 8px; margin: 0 0 32px; min-height: 32px; }
-.sa-wordmark { margin-right: 16px; font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 700; letter-spacing: .08em; }
 .sa-workspace-link { padding: 8px 12px; border-radius: var(--radius-control); color: var(--sa-ink-secondary); font-size: var(--fs-body); line-height: var(--lh-body); text-decoration: none; }
 .sa-workspace-link:hover { background: var(--sa-surface-sunken); color: var(--sa-ink); }
 .sa-workspace-link-active { box-shadow: inset 0 -2px 0 var(--sa-ink); color: var(--sa-ink); font-weight: 600; }
@@ -187,31 +145,12 @@ html, body {
 .sa-inline-link { display: inline-block; margin-top: 16px; color: var(--sa-patient-edge); text-decoration: underline; }
 
 /* ---- review queue ----------------------------------------------------- */
-.sa-queue-summary { display: grid; grid-template-columns: auto auto; column-gap: 12px; align-items: baseline; padding: 12px 16px; border: 1px solid var(--sa-rule); border-radius: var(--radius-control); min-width: 175px; }
-.sa-queue-summary strong { font-size: var(--fs-title-2); font-weight: 600; }
-.sa-queue-summary span { color: var(--sa-ink-secondary); font-size: var(--fs-callout); }
-.sa-queue-filters { display: grid; grid-template-columns: minmax(260px, 1fr) 180px 180px; gap: 12px; padding: 24px 0 12px; }
-.sa-queue-filters label { display: flex; flex-direction: column; gap: 8px; color: var(--sa-ink-muted); font-size: var(--fs-callout); font-weight: 500; letter-spacing: .04em; }
-.sa-queue-filters input, .sa-queue-filters select, .sa-field-label select { min-height: var(--control-height); padding: 8px 12px; border: 1px solid var(--sa-rule); border-radius: var(--radius-control); color: var(--sa-ink); background: var(--bg); font: inherit; font-size: var(--fs-body); letter-spacing: normal; }
-.sa-queue-note { margin: 8px 0 16px; padding: 8px 12px; border-left: 2px dashed var(--sa-ink-muted); color: var(--sa-ink-secondary); font-size: var(--fs-body); line-height: var(--lh-body); }
-.sa-queue-list { border-top: 1px solid var(--sa-rule); }
-.sa-queue-row { display: grid; grid-template-columns: minmax(220px, 2.4fr) minmax(142px, 1.2fr) minmax(180px, 1.5fr) auto; gap: 24px; align-items: center; padding: 24px 12px; border-bottom: 1px solid var(--sa-rule); }
-.sa-queue-unowned { border-left: 3px dashed var(--sa-ink-muted); padding-left: 8px; }
-.sa-queue-patient { margin-bottom: 4px; font-weight: 600; letter-spacing: -.01em; }
-.sa-queue-detail { margin-top: 8px; color: var(--sa-ink-secondary); font-size: var(--fs-body); }
-.sa-queue-state { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-.sa-queue-owner { display: flex; flex-direction: column; gap: 4px; color: var(--sa-ink-secondary); font-size: var(--fs-body); }
-.sa-unowned { color: var(--sa-ink); font-weight: 600; }
-.sa-queue-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.sa-field-label select { min-height: var(--control-height); padding: 8px 12px; border: 1px solid var(--sa-rule); border-radius: var(--radius-control); color: var(--sa-ink); background: var(--bg); font: inherit; font-size: var(--fs-body); letter-spacing: normal; }
 .sa-quiet-button { min-height: var(--control-height); padding: 4px 12px; border: 1px solid var(--sa-rule); border-radius: var(--radius-control); color: var(--sa-ink-secondary); background: var(--bg); font: inherit; font-size: var(--fs-body); cursor: pointer; }
 .sa-quiet-button:hover { border-color: var(--sa-patient-edge); color: var(--sa-ink); }
 .sa-empty-state { display: flex; flex-direction: column; gap: 8px; padding: 32px 0; color: var(--sa-ink-secondary); }
 .sa-empty-state strong { color: var(--sa-ink); }
 .sa-empty-state a { width: fit-content; color: var(--sa-patient-edge); text-decoration: underline; }
-
-.sa-navigator-review { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.sa-review-state { padding: 2px 8px; border: 1px dashed var(--sa-ink-muted); border-radius: var(--radius-control); color: var(--sa-ink-secondary); font-size: var(--fs-callout); line-height: var(--lh-footnote); }
-.sa-review-state-done { border-style: solid; color: var(--sa-ink-pass); }
 
 /* ---- review and history ------------------------------------------------ */
 .sa-history-layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(240px, 4fr); gap: 48px; padding-top: 32px; }
@@ -224,8 +163,6 @@ html, body {
 .sa-history-item p { margin: 8px 0 12px; color: var(--sa-ink-secondary); font-size: var(--fs-body); line-height: var(--lh-body); }
 .sa-history-line { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--sa-ink-secondary); font-size: var(--fs-callout); }
 .sa-history-dot { width: 9px; height: 9px; border: 2px solid var(--sa-ink); border-radius: 50%; }
-.sa-history-rail { width: 28px; height: 1px; background: var(--sa-rule); }
-.sa-history-muted { color: var(--sa-ink-muted); }
 .sa-history-aside { align-self: start; padding: 16px; border-left: 3px solid var(--sa-reference-edge); background: var(--bg-secondary); }
 .sa-history-aside p { color: var(--sa-ink-secondary); font-size: var(--fs-body); line-height: var(--lh-body); }
 .sa-loading-lines { display: grid; gap: 12px; padding: 24px 0; }
@@ -233,14 +170,8 @@ html, body {
 .sa-loading-lines span:nth-child(2) { width: 82%; }.sa-loading-lines span:nth-child(3) { width: 64%; }
 
 /* ---- sidebar links --------------------------------------------------- */
-.sa-sidebar-link { transition: color 120ms ease; }
-.sa-sidebar-link:hover { color: var(--sa-patient-edge) !important; text-decoration: underline; }
 
 /* ---- gate tile hover ------------------------------------------------- */
-.sa-gate-tile {
-  transition: background 120ms ease, border-color 120ms ease;
-}
-.sa-gate-tile:hover { background: var(--sa-surface-sunken) !important; }
 
 /* ---- chat turn styling ----------------------------------------------- */
 .sa-turn-assistant {
@@ -251,11 +182,6 @@ html, body {
 }
 
 /* ---- mode control tabs ----------------------------------------------- */
-.sa-mode-btn {
-  transition: background 120ms ease, color 120ms ease;
-}
-.sa-mode-btn:hover:not(.sa-mode-active) { background: var(--sa-surface-sunken) !important; }
-.sa-mode-active { background: var(--bg-tertiary) !important; font-weight: 600 !important; }
 
 /* ---- evidence panel spacing ------------------------------------------ */
 .sa-evidence { margin-bottom: 12px; }
@@ -379,21 +305,6 @@ html, body {
   font-weight: 600;
 }
 
-.sa-patient-columns {
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr) !important;
-}
-
-.sa-patient-columns > * { min-width: 0; }
-
-.sa-patient-evidence-sticky {
-  position: sticky;
-  top: 24px;
-  align-self: start;
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
 @media (max-width: 1179px) {
   .sa-chat-dock-wrap {
     left: 85px;
@@ -402,16 +313,6 @@ html, body {
 }
 
 @media (max-width: 960px) {
-  .sa-patient-columns {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 32px !important;
-  }
-
-  .sa-patient-evidence-sticky {
-    position: static;
-    max-height: none;
-    overflow: visible;
-  }
 
   .sa-chat-dock-wrap {
     width: calc(100vw - 170px);
@@ -432,22 +333,10 @@ html, body {
 
 @media (max-width: 800px) {
   .sa-screen-header, .sa-history-layout { grid-template-columns: 1fr; display: grid; }
-  .sa-queue-filters { grid-template-columns: 1fr; }
-  .sa-queue-row { grid-template-columns: 1fr; gap: 12px; }
-  .sa-queue-actions { justify-content: flex-start; }
   .sa-workspace-nav { flex-wrap: wrap; margin-bottom: 16px; }
 }
 
 /* Compact queue restoration: comparisons belong in aligned rows, not cards. */
-.sa-queue-list { overflow: hidden; border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg); box-shadow: 0 3px 14px rgb(26 55 72 / 5%); }
-.sa-queue-column-head { display: grid; grid-template-columns: minmax(280px, 2.2fr) minmax(210px, 1.2fr) minmax(220px, 1.3fr) 500px; gap: 24px; padding: 12px 24px; border-bottom: 1px solid var(--separator); background: var(--bg-secondary); color: var(--label-tertiary); font-size: var(--fs-caption); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.sa-queue-row { display: grid; grid-template-columns: minmax(245px, 2.2fr) minmax(170px, 1.1fr) minmax(190px, 1.25fr) minmax(255px, auto); gap: 24px; align-items: center; padding: 16px 24px; border: 0; border-bottom: 1px solid var(--separator); border-radius: 0; background: var(--bg); box-shadow: none; }
-.sa-queue-row:last-child { border-bottom: 0; }.sa-queue-row:hover { border-color: transparent; background: var(--bg-secondary); box-shadow: none; }.sa-queue-unowned { border-left: 4px solid var(--label-tertiary); padding-left: 24px; background: var(--bg); }
-.sa-queue-patient { font-size: var(--fs-title-3); line-height: var(--lh-title-3); }.sa-queue-detail { display: block; margin-top: 8px; padding: 0; border-radius: 0; background: transparent; color: var(--sa-ink-secondary); font-size: var(--fs-callout); }.sa-queue-state { display: flex; flex-direction: column; justify-self: end; align-items: flex-end; gap: 8px; text-align: right; }.sa-queue-owner { padding-left: 48px; border-left: 1px solid var(--separator); }.sa-queue-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; padding-left: 4px; margin: 0; }.sa-queue-actions .sa-btn { flex: 0; }
-
-@media (max-width: 800px) { .sa-queue-row { grid-template-columns: 1fr; }.sa-queue-column-head { display: none; } }
-
-.sa-visit-context { display: flex; flex-wrap: wrap; gap: 16px 32px; padding: 12px 0 16px; border-bottom: 1px solid var(--sa-rule); }
 
 /* ---- 2026 clinical workspace refresh ---------------------------------
    Calm blue surfaces distinguish navigation and context from record evidence.
@@ -461,7 +350,6 @@ body { background: var(--bg-secondary) !important; }
   box-shadow: 0 3px 14px rgb(26 55 72 / 6%);
 }
 .sa-brand { display: flex; align-items: center; gap: 12px; min-width: 178px; color: var(--sa-ink); text-decoration: none; }
-.sa-brand-mark { display: grid; width: 38px; height: var(--control-height); place-items: center; border-radius: var(--radius-panel); background: var(--label-secondary); color: var(--accent-label); font-size: var(--fs-title-2); font-weight: 700; letter-spacing: -.05em; }
 .sa-brand strong { display: block; font-size: var(--fs-body); letter-spacing: .07em; line-height: var(--lh-callout); }
 .sa-brand small { display: block; color: var(--sa-ink-muted); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: .04em; text-transform: uppercase; }
 .sa-workspace-links { display: flex; align-items: center; gap: 4px; }
@@ -474,23 +362,6 @@ body { background: var(--bg-secondary) !important; }
 .sa-screen-header::before { position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--evidence-patient); content: ""; }
 .sa-screen-header h1 { font-size: var(--fs-large-title); line-height: var(--lh-large-title); }
 .sa-eyebrow { color: var(--evidence-patient); font-weight: 700; }
-.sa-queue-summary { display: grid; grid-template-columns: repeat(4, minmax(72px, 1fr)); gap: 16px; padding: 16px 16px; border-color: var(--separator); background: var(--bg-secondary); }
-.sa-queue-summary div { display: flex; flex-direction: column; gap: 2px; }.sa-queue-summary strong { color: var(--label-secondary); font-size: var(--fs-large-title); }.sa-queue-summary span { font-size: var(--fs-caption); line-height: var(--lh-caption); text-transform: uppercase; letter-spacing: .04em; }
-
-.sa-queue-filters { grid-template-columns: minmax(260px, 1fr) 190px 190px; margin-top: 16px; padding: 16px; border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg); box-shadow: 0 2px 10px rgb(26 55 72 / 4%); }
-.sa-queue-filters label { color: var(--label-secondary); font-weight: 700; }
-.sa-queue-filters input, .sa-queue-filters select { min-height: var(--control-height); border-color: var(--separator-strong); background: var(--bg); }
-.sa-queue-note { margin: 16px 0; padding: 12px 16px; border: 1px dashed var(--label-quaternary); border-left: 3px solid var(--label-tertiary); border-radius: var(--radius-control); background: var(--bg); }
-.sa-queue-list { overflow: hidden; border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg); box-shadow: 0 3px 14px rgb(26 55 72 / 5%); }
-.sa-queue-column-head { display: grid; grid-template-columns: minmax(245px, 2.2fr) minmax(140px, 1fr) minmax(190px, 1.25fr) minmax(255px, auto); gap: 24px; padding: 12px 24px; border-bottom: 1px solid var(--separator); background: var(--bg-secondary); color: var(--label-tertiary); font-size: var(--fs-caption); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.sa-queue-row { grid-template-columns: minmax(245px, 2.2fr) minmax(140px, 1fr) minmax(190px, 1.25fr) minmax(255px, auto); padding: 24px 24px; border-bottom-color: var(--separator); }
-.sa-queue-row:last-child { border-bottom: 0; }
-.sa-queue-row:hover { background: var(--bg-secondary); }
-.sa-queue-unowned { border-left: 5px solid var(--label-tertiary); padding-left: 24px; background: var(--bg); }
-.sa-queue-patient { font-size: var(--fs-title-3); }
-.sa-queue-detail { display: inline-flex; margin-top: 8px; padding: 4px 8px; border-radius: var(--radius-control); background: var(--bg-tertiary); color: var(--label-secondary); font-size: var(--fs-footnote); font-weight: 600; }
-.sa-queue-owner { padding-left: 16px; border-left: 1px solid var(--separator); }
-.sa-queue-actions { padding-left: 4px; }
 .sa-quiet-button { min-height: var(--control-height); border-color: var(--separator-strong); background: var(--bg); font-weight: 600; }
 .sa-quiet-button:hover { border-color: var(--evidence-patient); background: var(--bg-secondary); }
 
@@ -502,27 +373,10 @@ body { background: var(--bg-secondary) !important; }
 /* Existing census retains its familiar list model, now with a clinical shell. */
 main.mx-auto.max-w-7xl { padding-top: 32px !important; }
 main.mx-auto.max-w-7xl > .mb-5 { padding: 24px 24px; border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg); box-shadow: 0 3px 14px rgb(26 55 72 / 5%); }
-main.mx-auto.max-w-7xl .sa-census-card { margin: 0; padding: 16px 16px; border: 1px solid transparent; border-radius: var(--radius-control); }
-main.mx-auto.max-w-7xl .sa-census-card:hover { border-color: var(--separator); background: var(--bg-secondary); }
 
 /* Patient and navigator surfaces receive the same hierarchy without changing source copy. */
 .sa-masthead { padding: 16px 24px; border: 1px solid var(--separator) !important; border-radius: var(--radius-panel); background: var(--bg); box-shadow: 0 3px 14px rgb(26 55 72 / 5%); }
-.sa-visit-context { margin: 12px 0 24px; padding: 16px 24px; border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--bg-secondary); }
 .sa-evidence { border: 1px solid var(--separator); border-radius: var(--radius-control); box-shadow: 0 2px 8px rgb(26 55 72 / 4%); }
-.sa-gate-tile { border-radius: var(--radius-control) !important; }
-
-.sa-readiness-panel { margin: 0 0 24px; overflow: hidden; border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg); box-shadow: 0 3px 14px rgb(26 55 72 / 5%); }
-.sa-readiness-heading { display: flex; justify-content: space-between; gap: 24px; padding: 24px 24px 16px; background: var(--bg-secondary); }
-.sa-readiness-heading h2 { margin: 4px 0 4px; color: var(--label-secondary); font-size: var(--fs-title-2); line-height: var(--lh-title-2); font-weight: 600; letter-spacing: -.02em; }
-.sa-readiness-heading p:not(.sa-eyebrow) { margin: 0; color: var(--sa-ink-secondary); font-size: var(--fs-body); }
-.sa-readiness-counts { display: grid; grid-template-columns: repeat(2, max-content); align-content: start; gap: 8px 16px; padding-top: 4px; color: var(--label-secondary); font-size: var(--fs-footnote); text-transform: uppercase; letter-spacing: .04em; }
-.sa-readiness-counts b { color: var(--label-secondary); font-size: var(--fs-title-3); margin-right: 4px; }
-.sa-readiness-asof { padding: 12px 24px; border-top: 1px solid var(--separator); border-bottom: 1px solid var(--separator); color: var(--label-tertiary); font-size: var(--fs-footnote); }
-.sa-readiness-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
-.sa-gate-tile { min-height: 112px; padding: 16px; border: 0; border-right: 1px solid var(--separator); border-bottom: 1px solid var(--separator); background: var(--bg); }
-.sa-gate-tile:nth-child(4n) { border-right: 0; }.sa-gate-tile:nth-last-child(-n+4) { border-bottom: 0; }
-.sa-gate-tile:hover { background: var(--bg-secondary) !important; }.sa-gate-tile-selected { box-shadow: inset 0 3px 0 var(--evidence-patient); background: var(--bg-secondary) !important; }
-.sa-gate-tile .sa-status { margin-top: 12px; }
 
 /* Copilot docking lives in shell.css with the rest of the window layout. */
 html[data-copilot-picking] [data-copilot-ref] { cursor: crosshair; outline: 1px dashed var(--separator-strong); outline-offset: 2px; }
