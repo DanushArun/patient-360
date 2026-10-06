@@ -21,10 +21,10 @@ try {
   await mkdir(copy, { recursive: true });
   await cp(web, copy, { recursive: true,
     filter: (source) => !excluded(path.basename(source)) });
-  // web/ imports two repository-level JSON files by relative path; copy exactly those, nothing else.
+  // web/ imports three repository-level JSON files by relative path; copy exactly those, nothing else.
   const repo = path.resolve(web, '..');
   for (const rel of ['frontend/fixtures/daycare_census_recorded.json',
-    'frontend/contracts/answer_schema.json']) {
+    'frontend/contracts/answer_schema.json', 'data/reference/catalog.json']) {
     await mkdir(path.dirname(path.join(root, rel)), { recursive: true });
     await cp(path.join(repo, rel), path.join(root, rel));
   }

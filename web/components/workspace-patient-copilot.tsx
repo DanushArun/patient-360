@@ -190,7 +190,8 @@ async function readAskStream(body: ReadableStream<Uint8Array>,
 }
 
 export type SourceScope = "patient" | "reference";
-export type AskPhase = "access" | "routing" | "refusing" | "reading" | "validating" | "saving";
+export type AskPhase = "access" | "routing" | "refusing" | "reading" | "references"
+  | "validating" | "saving";
 
 export function usePatientChat(
   storageKey: string,

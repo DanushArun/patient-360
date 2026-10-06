@@ -14,9 +14,9 @@
 > A manual full cohort refresh hit the 120-second session timeout. The Day
 > Care Copilot's first live whole-worklist question failed because its read session dropped
 > SQL bind values; this is fixed and verified in Chrome, returning 5 blocked visits and the
-> cohort status totals. Reference search
-> No resource monitor exists. Reference search
-> corpus is populated, but the dashboard selector remains disabled and the API rejects it.
+> cohort status totals. No resource monitor exists. Reference search is live in the patient
+> copilot (6 Oct, XG46956): "Search in: Reference documents" returns verbatim quoted passages
+> with publisher, title, version and page; Class A questions are still refused first.
 > Prompt-store hashes and agent source match. Local verification: 340 web tests, 15 focused
 > Python contract tests, TypeScript pass. This checkpoint supersedes stale account labels below.
 >
@@ -98,8 +98,8 @@ stated. Which account holds the submission build must be confirmed by the team (
 | Skills (4 `SKILL.md`) | **partial**; loading **unverified-needs-deploy** | offline, 4 Oct (Round 6) | Four definitions authored. `backend/skills/upload_skills.sql` now generated (COPY INTO, one per skill; in `setup.sql` step 19 and bundle step 04), and the agent spec has a `skills:` block pointing at the stage folders: **none of this has run on Snowflake**, and whether the agent spec accepts the block is unknown. Reuse proof is offline only: `backend/skills/reuse-tests/evidence_reconciliation/` runs a deterministic **reference implementation** of the skill contract on a second synthetic schema (one mapping and a supersession chain; two ambiguities refused as `not_evaluated`). It is not an LLM executing the skill. `TASK_SAARTHI_ORCHESTRATOR` chains parse, chunk, extract, reconcile and refresh procedures; it does not orchestrate skills (C-3) |
 | Tasks (7) | **partial** | OS69400, 3 Oct | Created, **suspended on purpose** (cost). The etag-vs-`file_hash` dedupe bug is fixed in the working tree (Round 6: both cursors key on `DOCUMENT.source_path`, etag only as a legacy fallback; `parse_documents_proc` added to bundle step 04): **unverified-needs-deploy**, and `file_hash` on rows the task inserts still holds the stage etag, not a SHA-256. Chain exercised manually. Scheduled runs not demonstrated (C-11, gap 17) |
 | Dynamic Tables (4) | **built** | OS69400, 3 Oct | Resumed and refreshed (`DT_REVIEW_QUEUE` 0 -> 17 rows) at that checkpoint. AI steps correctly live in Tasks (platform fact 9) |
-| Cortex Search x2 (R6) | **built** | OS69400, 3 Oct | 692 reference / 26 patient rows `ACTIVE` at that checkpoint; **suspended afterwards**. Reference-scope selector disabled in the UI (`reference_scope_unavailable`) |
-| Reference corpus | **partial** | OS69400, 3 Oct | 7 documents, 692 pages loaded; scoped retrieval verified as `SAARTHI_APP`. No cited web-app answer against it recorded; the 159-chunk figure in part C is JN89282 |
+| Cortex Search x2 (R6) | **built** | XG46956, 6 Oct | `REFERENCE_DOC_SEARCH` 628 rows and `PATIENT_DOC_SEARCH` 24 rows, both `ACTIVE`. Reference scope is answered from the reference service alone (`web/lib/patient.ts` `answerFromReferences`, before the record tools and patient gateway); attached patient items are dropped for reference questions |
+| Reference corpus | **built**; one document **unreadable** | XG46956, 6 Oct | 7 documents: 6 active (628 chunks), the PM-JAY HBP 2.2 manual loaded as `unreadable` (0 text pages). Cited web-app answers recorded in Chrome on 6 Oct for 3 questions (Herceptin LVEF monitoring, Herceptin warnings, ICMR HbA1c), 3-4 quoted passages each. Passages are chosen by a fixed term-overlap rule over Cortex Search's ranking and quoted verbatim (`web/lib/reference-answer.mjs`); no model writes them. No effective date is recorded for any document, and the UI says so. The question classifier refuses some document-content questions as Class A (e.g. "Which section of the trastuzumab label covers cardiomyopathy?"); over-refusal, not leakage |
 | Row access policy on `CURRENT_USER()` | **built**; Round-4 version **unverified-needs-deploy** | F3 verified (query IDs); OS69400 patient-scope check 3 Oct | N4-03 (does the inner `doc_id` bind to `DOC_PAGE`?) unresolved; **no recorded cross-patient negative test on `DOC_PAGE` for the current policy** |
 | Masking policies (2) | **built** | JN89282 only | Not recorded on OS69400 |
 | Eval harness (`backend/eval/`) | **partial** | offline, 4 Oct | `harness/score_results.py` (scorer) plus `harness/deterministic_routing_baseline.py`, a rules-only Class A/B baseline whose patterns are read from `classify_question.sql`. **Measured on `data/eval/dev.jsonl` (40 synthetic questions; engineering gate, not clinical validation; AI_CLASSIFY fallback not run):** 4 Oct rules: decided 15, 14 correct, 1 Class B over-refused (DEV-018); 25 left for the LLM fallback (3 Class A, 22 Class B); of 9 Class A, 6 refused by rules and none answered as B. **6 Oct, after widening the judgment and record scans** (working tree; **unverified-needs-deploy**): dev decided 34, 33 correct, still only DEV-018 over-refused, 6 residue; 8 of 9 Class A refused, none answered as B. Held-out, rules only, run once after tuning on dev: Class B answered by rules 3 to 12 of 33, Class A answered as B 0 of 7 before and after. On NY64016 `AI_CLASSIFY` returns 399504, so residue fails closed to Class A: before the change 22 of 31 dev Class B questions were refused live. Results in `backend/eval/results/`. The end-to-end answer eval and any baseline-RAG comparison have **not** been run (C-4) |
@@ -152,7 +152,7 @@ and create paid duplicates. Not tested: a Class A question against the new refer
 
 **4 October 2026 — QA Round 3 fixes (working tree, `unverified-needs-deploy`):** timeline and labs
 facts share one `value_state` rule (a recorded final event with a label is `present`, never
-`not_received`); the UI hides the unbuilt reference scope; the document manifest has a documented
+`not_received`); the UI offered no reference scope at that checkpoint (enabled 6 Oct, see the table); the document manifest has a documented
 generator step; `DOC-SURG-NOTE-01` (PAT-DEEP-0001) gets a synthetic source page, so its three
 seeded assertions can now be read by the two-pass pipeline (they stay `unverified` until it runs;
 PAT-DEEP-0001 also has the live CBC document). **Designed-only, not claimed:** the

@@ -13,6 +13,7 @@ const PHASE_LABEL: Record<AskPhase, string> = {
   routing: "Routing the question",
   refusing: "Preparing a referral to the treating practitioner",
   reading: "Reading the record",
+  references: "Searching the reference documents",
   validating: "Validating every cited claim",
   saving: "Saving to history",
 };
@@ -96,7 +97,9 @@ export function AnswerTrace({ trace }: { trace?: { phases: string[]; ms: number 
   return <div className={styles.trace}>
     <button type="button" className={styles.traceSummary} aria-expanded={open}
       onClick={() => setOpen(!open)}>
-      <span>Read the record{time ? ` in ${time}` : ""}</span>
+      <span>{phases.includes("refusing") ? "Checked the question"
+        : phases.includes("references") ? "Searched the references" : "Read the record"}
+        {time ? ` in ${time}` : ""}</span>
       <ChevronDown size={12} aria-hidden data-open={open || undefined} />
     </button>
     {open && <ol className={styles.traceSteps}>

@@ -9,6 +9,8 @@ import { withPatientSession, withPatientSessionAndContext, procedureRows, proced
 import { readGatewayAnswer, guardAnswer } from "./guarded-answer.mjs";
 import { routeQuestion } from "./question-routing.mjs";
 import { randomUUID } from "node:crypto";
+import { composeReferenceAnswer } from "./reference-answer.mjs";
+import referenceCatalog from "../../data/reference/catalog.json";
 import { deriveValueState } from "./workspace-patient-facts.mjs";
 import { confirmWriteReceipt } from "./write-receipts.mjs";
 
@@ -400,16 +402,18 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 }
 
 /** Real request phases, in order, reported to the copilot's progress display. */
-export type AskPhase = "access" | "routing" | "refusing" | "reading" | "validating" | "saving";
+export type AskPhase = "access" | "routing" | "refusing" | "reading" | "references"
+  | "validating" | "saving";
 
 /** What the record tools need besides the classified question: the user's own words and the
  * items they attached, kept apart from the preamble so screen labels never pick the tool. */
 export type AskTooling = { question: string; references: { kind: string; id: string }[] };
 
 export async function askPatient(patientId: string, question: string,
-  onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling): Promise<AgentTurn> {
+  onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling,
+  scope: "patient" | "reference" = "patient"): Promise<AgentTurn> {
   try {
-    return await askPatientUncached(patientId, question, onPhase, tooling);
+    return await askPatientUncached(patientId, question, onPhase, tooling, scope);
   } finally {
     // An answer writes only to answer history; every other cached read stays valid.
     forgetRead(patientId, "evidence");
@@ -417,10 +421,17 @@ export async function askPatient(patientId: string, question: string,
 }
 
 async function askPatientUncached(patientId: string, question: string,
-  onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling): Promise<AgentTurn> {
+  onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling,
+  scope: "patient" | "reference" = "patient"): Promise<AgentTurn> {
   onPhase("access");
   return withPatientSessionAndContext(patientId, async (run, context) => {
     const turn: AgentTurn = await routeQuestion(question, run, async (clock: string) => {
+      // R6: a reference question is answered from the reference corpus alone. It never reaches
+      // the record tools or the patient gateway, so the two corpora are never ranked together.
+      if (scope === "reference") {
+        onPhase("references");
+        return answerFromReferences(tooling?.question ?? question, run, clock);
+      }
       // Class B only (Class A was refused above). A recognised record question is answered
       // by a deterministic tool over the governed reads; anything else goes to the gateway.
       const match = matchRecordTool(tooling?.question ?? question, tooling?.references ?? []);
@@ -452,6 +463,22 @@ async function askPatientUncached(patientId: string, question: string,
     } catch { turn.history_saved = false; }
     return turn;
   });
+}
+
+/** Passages from the reference corpus, quoted with their source (reference-answer.mjs). The
+ * search procedure takes only the question: no patient identifier or record value is sent. */
+async function answerFromReferences(question: string, run: Run, clock: string)
+  : Promise<AgentTurn> {
+  const value = procedureValue(await run(
+    "CALL SAARTHI.OPERATIONAL.SEARCH_REFERENCE_DOCUMENTS(?,NULL,NULL)", [question.slice(0, 1000)]));
+  if (value.error) throw new Error("tool_unavailable");
+  const hits = Array.isArray(value.results) ? value.results as Record<string, unknown>[] : [];
+  return {
+    text: "", thinking: "", suggested: [], gates: [], known_as_of: clock, error: null,
+    tools: [{ name: "reference.search", query_id: null, took_patient_id: false }],
+    artifact: composeReferenceAnswer({ question, hits, catalog: referenceCatalog,
+      knownAsOf: clock }),
+  };
 }
 
 /** Reads a cached value when it is fresh (a full governed read at most 2 minutes old),

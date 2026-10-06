@@ -74,7 +74,7 @@ export function PatientWorkspaceScreen({ model }: { model: PatientScreenModel })
     <WorkspaceNav patients={model.patients} patientId={model.patient.patientId}
       practitioner={model.preview ? "Design preview" : model.patient.practitionerName}
       preview={model.preview} onAsk={model.preview ? undefined : model.toggleAsk}
-      // Reference search is not built (R6: separate corpus, no service yet); no entry point.
+      // References are reached from the copilot's "Search in" control, not a second entry point.
       onReferences={undefined} />
     <WorkspaceBar section={model.patient.patientName} knownAsOf={
       <time dateTime={model.patient.knownAsOf ?? undefined}
@@ -219,6 +219,15 @@ function SelectedEvidencePanel({ model }: { model: PatientScreenModel }): ReactN
 }
 
 const PATIENT_STARTERS = RECORD_TOOL_STARTERS.slice(0, 3);
+// Questions the loaded corpus can answer: the Herceptin label and the ICMR diabetes guideline.
+// The PM-JAY manual is loaded as unreadable (no text pages), so no starter points at it.
+// Each is phrased as "what does the document state", which the question classifier routes
+// as a record question; asking what to do for a patient is refused, here as everywhere.
+const REFERENCE_STARTERS = [
+  "What does the Herceptin label state about LVEF monitoring?",
+  "What does the trastuzumab label list under warnings?",
+  "What HbA1c target does the ICMR diabetes guideline give?",
+];
 
 /** The patient conversation, rendered into the docked copilot (COPILOT-EXPERIENCE §2). The
  * page keeps owning the conversation state, so patient switching, consent withdrawal and
@@ -228,8 +237,12 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
   const stream = useStickToBottom();
   const live = copilot?.live;
   if (!copilot?.open || !copilot.slot || !live) return null;
+  const reference = model.sourceScope === "reference";
   const send = (text: string) => {
     stream.pin();
+    // A reference question goes straight to the reference corpus: the live copilot only ever
+    // asks the patient record, so routing it there would cross corpora (R6).
+    if (reference) { void model.chat.send(text, "reference"); return; }
     // With the live copilot on, a request can also move the screen: open a section, find an
     // item, bring it here. The question itself still goes through the same governed path.
     if (live.enabled && live.start(text, "chat")) { model.chat.setQuestion(""); return; }
@@ -250,11 +263,18 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
     {copilot.inspector && <PatientInspector model={model} />}
     <div ref={stream.ref} className={copilotStyles.stream}>
       {empty && <div className={copilotStyles.empty}>
-        <h2>Ask about {model.patient.patientName}&apos;s record</h2>
-        <p>What is recorded, missing or conflicting, with the source for every claim. Clinical
-          decisions are referred to {model.patient.treatingPractitionerName
-            ?? "the treating practitioner"}.</p>
-        <CopilotStarters starters={PATIENT_STARTERS} onPick={send} />
+        {reference ? <>
+          <h2>Ask the reference documents</h2>
+          <p>Passages from published guidelines and labels, quoted with their source and page.
+            They describe guidance, not this patient.</p>
+          <CopilotStarters starters={REFERENCE_STARTERS} onPick={send} />
+        </> : <>
+          <h2>Ask about {model.patient.patientName}&apos;s record</h2>
+          <p>What is recorded, missing or conflicting, with the source for every claim. Clinical
+            decisions are referred to {model.patient.treatingPractitionerName
+              ?? "the treating practitioner"}.</p>
+          <CopilotStarters starters={PATIENT_STARTERS} onPick={send} />
+        </>}
       </div>}
       <PatientConversation patientId={model.patient.patientId} patient={model.patient}
         turns={model.turns} sourceScope={model.sourceScope} showEmptyHint={false}
@@ -267,7 +287,8 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
         busy={model.chat.busy} />}
     </div>
     <CopilotComposer label="Question about the selected patient"
-      placeholder={`Ask about ${model.patient.patientName}'s record…`}
+      placeholder={reference ? "Ask the reference documents…"
+        : `Ask about ${model.patient.patientName}'s record…`}
       value={model.chat.question} setValue={model.chat.setQuestion} busy={model.chat.busy}
       onSend={() => send(model.chat.question)}
       onStop={() => { live.cancel(); model.chat.stop?.(); }}
@@ -352,8 +373,8 @@ function SourceScopeSelect({ scope, setScope, disabled }: {
   return <label className="sa-source-scope">Search in
     <select className={copilotStyles.scopeSelect} value={scope} disabled={disabled}
       onChange={(event) => setScope(event.target.value as SourceScope)}>
-      <option value="patient">Patient record</option><option value="reference" disabled
-        title="The reference corpus is not built yet">References (not available)</option>
+      <option value="patient">Patient record</option>
+      <option value="reference">Reference documents</option>
     </select>
   </label>;
 }

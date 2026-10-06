@@ -20,14 +20,18 @@ test("test_previously_uncatalogued_error_codes_are_typed_and_have_ui_copy", () =
   assert.equal(apiErrorStatus("reference_scope_unavailable"), 409);
 });
 
-test("test_reference_scope_is_disabled_and_never_retryable_in_the_ui", () => {
-  const copilot = read("../components/workspace-patient-copilot.tsx");
+test("test_reference_scope_is_answered_from_the_reference_corpus_alone", () => {
+  const route = read("../app/api/ask/route.ts");
+  const patient = read("./patient.ts");
   const screen = read("../components/workspace-patient-screen.tsx");
-  assert.match(copilot, /NON_RETRYABLE_ERRORS = new Set\(\["reference_scope_unavailable"\]\)/);
-  assert.match(copilot, /!NON_RETRYABLE_ERRORS\.has\(last\.error\)/);
-  assert.match(screen, /<option value="reference" disabled\b/);
-  assert.match(screen, /not available/);
-  assert.doesNotMatch(screen, /setSourceScope\("reference"\)/);
+  // R6: the reference branch runs before the record tools and the patient gateway, sends only
+  // the question, and drops attached patient items.
+  assert.match(route, /const context = scope === "reference" \? \[\] : body\.context/);
+  const branch = patient.indexOf('if (scope === "reference")');
+  assert.ok(branch > 0 && branch < patient.indexOf("matchRecordTool(tooling"));
+  assert.match(patient, /SEARCH_REFERENCE_DOCUMENTS\(\?,NULL,NULL\)/);
+  // The live copilot only asks the patient record, so reference questions bypass it.
+  assert.match(screen, /if \(reference\) \{ void model\.chat\.send\(text, "reference"\); return; \}/);
 });
 
 test("test_timeline_and_labs_share_one_value_state_rule_in_sql", () => {

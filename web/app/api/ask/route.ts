@@ -19,19 +19,17 @@ export async function POST(request: Request) {
   if (!body) {
     return Response.json(apiError("invalid_argument"), { status: 400 });
   }
-  // R6: the reference corpus is a separate service. Never answer a reference-scoped question
-  // from the patient corpus (the scope used to be validated and then silently dropped).
-  if (body.sourceScope === "reference") {
-    const failure = apiError("reference_scope_unavailable");
-    return Response.json(failure, { status: apiErrorStatus(failure.error) });
-  }
-  const question = contextPreamble(body.context ?? []) + body.question;
-  const tooling: AskTooling = { question: body.question, references: body.context ?? [] };
+  // R6: the reference corpus is a separate service. A reference-scoped question is answered
+  // from it alone, and never carries attached patient items into the search.
+  const scope = body.sourceScope === "reference" ? "reference" : "patient";
+  const context = scope === "reference" ? [] : body.context ?? [];
+  const question = contextPreamble(context) + body.question;
+  const tooling: AskTooling = { question: body.question, references: context };
   if (request.headers.get("accept")?.includes("application/x-ndjson")) {
-    return streamAnswer(body.patientId, question, tooling);
+    return streamAnswer(body.patientId, question, tooling, scope);
   }
   try {
-    return Response.json(await askPatient(body.patientId, question, undefined, tooling));
+    return Response.json(await askPatient(body.patientId, question, undefined, tooling, scope));
   } catch (error) {
     const failure = apiError(error, "agent_unreachable");
     return Response.json(failure, { status: apiErrorStatus(failure.error) });
@@ -41,14 +39,15 @@ export async function POST(request: Request) {
 // One JSON object per line: {"phase": ...} as each real gateway step starts, then exactly one
 // {"result": ...} or {"error": ..., "status": ...}. Phases are emitted by the server code that
 // performs the step, so the progress shown is never simulated.
-function streamAnswer(patientId: string, question: string, tooling: AskTooling): Response {
+function streamAnswer(patientId: string, question: string, tooling: AskTooling,
+  scope: "patient" | "reference"): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (value: object) => controller.enqueue(encoder.encode(`${JSON.stringify(value)}\n`));
       try {
         const result = await askPatient(patientId, question, (phase: AskPhase) => send({ phase }),
-          tooling);
+          tooling, scope);
         send({ result });
       } catch (error) {
         const failure = apiError(error, "agent_unreachable");

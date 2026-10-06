@@ -151,7 +151,9 @@ export function PatientAnswerArtifact({ turn, patientId, sourceScope }: {
         <Claim key={`${claim.claim_type}-${index}`} claim={claim}
           citationOffset={artifact.claims.slice(0, index).reduce((count, item) =>
             count + item.evidence.length, 0)} />)}</ul>
-      : <p>Nothing in the record answers this question.</p>}
+      : <p>{sourceScope === "reference"
+        ? "No passage in the reference documents answers this question."
+        : "Nothing in the record answers this question."}</p>}
     <footer className="sa-answer-foot">{clock}
       {artifact.overall_status !== "supported" && <span>Answer status: Partial</span>}</footer>
     <CitationIndex claims={artifact.claims} patientId={patientId}

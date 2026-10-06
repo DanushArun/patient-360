@@ -35,6 +35,19 @@ async function common(route: Route): Promise<boolean> {
   return false;
 }
 
+function referenceAnswer(): unknown {
+  return { text: "", thinking: "", tools: [], suggested: [], gates: [], known_as_of: cutoff,
+    error: null, artifact: { classification: "CLASS_B", overall_status: "supported",
+      known_as_of: cutoff, limitations: ["Reference guidance, quoted from the source."],
+      claims: [{ text: "“Assess left ventricular ejection fraction (LVEF) prior to initiation.”",
+        claim_type: "textual", provenance_note: "U.S. Food and Drug Administration · page 3",
+        evidence: [{ kind: "reference_clause", id: "REF-CHUNK-1", doc_id: "REF-SYN-1",
+          page_index: 2, publisher: "U.S. Food and Drug Administration",
+          document_title: "HERCEPTIN (trastuzumab) prescribing information",
+          version: "06/2024", jurisdiction: "US",
+          effective_date: "Not stated in the document" }] }] } };
+}
+
 function answer(scope: string, clinical = false): unknown {
   const refusal = { reason_code: "class_a_clinical_judgment",
     message: "This clinical decision belongs to the treating practitioner.",
@@ -46,7 +59,8 @@ function answer(scope: string, clinical = false): unknown {
       overall_status: clinical ? "refused" : "supported", known_as_of: cutoff,
       claims: clinical ? [] : [{ text: "Cited record",
         claim_type: "textual", evidence: [{ kind: "document_span", id: "ASSERT-SYN-1",
-          doc_id: "DOC-SYNTHETIC-1", page_index: 0, char_start: 5, char_end: 12 }] }],
+          doc_id: "DOC-SYNTHETIC-1", page_index: 0, char_start: 5, char_end: 12,
+          verification_status: "verified" }] }],
       limitations: [], ...(clinical ? { refusal } : {}) } };
 }
 
@@ -95,9 +109,9 @@ test("test_answers_when_scope_changes_and_clinical_question_is_refused_keeps_bou
     if (url.pathname === "/api/ask") {
       const body = route.request().postDataJSON();
       if (body.sourceScope === "reference") {
-        await route.fulfill({ status: 409, contentType: "application/json",
-          body: JSON.stringify({ error: "reference_scope_unavailable", category: "conflict" }) });
-        return;
+        // R6: a reference question carries no attached patient items.
+        expect(body.context ?? []).toHaveLength(0);
+        await json(route, referenceAnswer()); return;
       }
       await json(route, answer(body.sourceScope, body.question.includes("safe"))); return;
     }
@@ -112,12 +126,16 @@ test("test_answers_when_scope_changes_and_clinical_question_is_refused_keeps_bou
   await input.fill("What is documented?"); await input.press("Enter");
   await expect(page.getByText("Cited record", { exact: true })).toBeVisible();
   await expect(page.getByText("Unsupported raw model prose must stay hidden")).toHaveCount(0);
-  // The reference corpus is not built: the option is disabled and says why (real contract:
-  // /api/ask answers 409 reference_scope_unavailable).
-  const referenceOption = page.getByLabel("Search in").locator("option[value=reference]");
-  await expect(referenceOption).toHaveAttribute("disabled", "");
-  await expect(referenceOption).toContainText("not available");
+  // References are a separate corpus and a separate thread: quoted passages with their source,
+  // never mixed into the patient conversation.
+  await page.getByLabel("Search in").selectOption("reference");
+  await expect(page.getByText("Cited record", { exact: true })).toHaveCount(0);
+  await input.fill("What does the Herceptin label state about LVEF monitoring?");
+  await input.press("Enter");
+  await expect(page.getByText(/Assess left ventricular ejection fraction/)).toBeVisible();
+  await expect(page.getByText(/U\.S\. Food and Drug Administration/).first()).toBeVisible();
   await page.getByLabel("Search in").selectOption("patient");
+  await expect(page.getByText("Cited record", { exact: true })).toBeVisible();
   await input.fill("Is it safe to proceed?"); await input.press("Enter");
   await page.getByRole("button", { name: "Prepare evidence packet for Dr Meera Iyer" }).click();
   await expect(page.getByText(/Prepared for Dr Meera Iyer/)).toBeVisible();
