@@ -60,46 +60,104 @@ Saarthi brings every source into one patient record and runs the readiness check
 </tr>
 </table>
 
+## The data: structured and unstructured, in one record
+
+Saarthi's value comes from joining two kinds of data that hospitals keep apart. Every fact keeps its source, its three clocks and its evidence state, whichever path it arrived by.
+
+| | Structured | Unstructured | Reference |
+|---|---|---|---|
+| **What** | EHR/FHIR R4 bundles, lab results, encounters, regimens, PM-JAY pre-authorisations and claims | Lab, pathology and echo reports and pre-authorisation letters, as PDFs | Official regulatory and clinical documents |
+| **In this repo** | 12 FHIR bundles and per-facility CSV extracts from 4 synthetic facilities ([`data/generated/`](data/generated/)) | 22 synthetic cohort PDFs, plus 16 evaluation PDFs | 7 public PDFs: National Health Authority (PM-JAY), US FDA (trastuzumab label), ICMR (3), National Cancer Grid, state treatment guidelines ([`data/reference/`](data/reference/)) |
+| **How it is read** | Loaded into typed Snowflake tables and harmonised into one event stream by Dynamic Tables | `AI_PARSE_DOCUMENT`, then two independent extraction passes from different model families | Parsed and chunked into its own Cortex Search service |
+| **What it becomes** | Events with `event_time`, `source_recorded_at`, `ingested_at` | Typed assertions linked to the page they came from, *verified* only when both passes agree | Quotable passages with publisher, title, version and page |
+
+The synthetic generator ([`data/generator/`](data/generator/)) plants the problems real records have, from 13 named corruption scenarios: a pathology addendum that arrives weeks late, HER2 results that disagree between labs, `1.9 lakhs` next to `190000`, a pre-authorisation that is *pending* in the table and *approved* in the letter, a quarantined identity, a prompt injection inside a document, and a misread value on a rotated scan. 10 of the 13 are seeded and tested; the other 3 are handled by design but not yet tested.
+
 ## How it works
 
 ```mermaid
 flowchart LR
-    subgraph Sources
-        A[EHR / FHIR bundles]
-        B[Lab results]
-        C[PM-JAY pre-auths and claims]
-        D[PDF reports<br/>lab · pathology · echo · letters]
-        R[Public regulatory and<br/>clinical guidelines]
+    subgraph S["Structured sources"]
+        A["EHR / FHIR bundles"]
+        B["Lab results"]
+        C["PM-JAY pre-auths and claims"]
+    end
+    subgraph U["Unstructured sources"]
+        D["PDF reports<br/>lab · pathology · echo · letters"]
+    end
+    subgraph RS["Official reference documents"]
+        R["NHA PM-JAY · US FDA · ICMR<br/>National Cancer Grid · treatment guidelines"]
     end
 
-    subgraph Snowflake
-        P[AI_PARSE_DOCUMENT]
-        X1[Extraction pass A<br/>llama3.3-70b]
-        X2[Verification pass B<br/>claude-haiku-4-5]
-        V{Agree?}
-        E[(Evidence store<br/>3 clocks · 7 evidence states)]
-        G[16 versioned SQL rules<br/>Dynamic Tables + Tasks]
-        S1[Patient document search]
-        S2[Reference search]
-        AG[Cortex Agent<br/>claude-opus-5-5 · 8 scoped tools]
+    subgraph SF["Snowflake"]
+        H["Harmonised events<br/>Dynamic Tables"]
+        P["AI_PARSE_DOCUMENT"]
+        X1["Pass A · llama3.3-70b"]
+        X2["Pass B · claude-haiku-4-5"]
+        V{"Both agree?"}
+        CF["conflicting<br/>gate not evaluated"]
+        E[("Evidence store<br/>3 clocks · 7 evidence states")]
+        G["16 versioned SQL rules"]
+        S1["Patient search"]
+        S2["Reference search"]
+        AG["Answer gateway<br/>claude-opus-5-5 · 8 scoped tools"]
+        VA["VALIDATE_ANSWER<br/>6 checks per claim"]
     end
 
-    UI[Saarthi web app<br/>Next.js on Vercel]
+    UI["Saarthi app<br/>Next.js on Vercel"]
 
-    A & B & C --> E
+    A & B & C --> H --> E
     D --> P --> X1 & X2 --> V
     V -- yes --> E
-    V -- no --> CF[conflicting: gate not evaluated] --> E
+    V -- no --> CF --> E
     E --> G --> UI
     E --> S1 --> AG
     R --> S2 --> AG
-    AG --> UI
+    G --> AG
+    AG --> VA --> UI
 ```
 
-1. **Ingest.** Structured records land in Snowflake tables. PDFs land on an encrypted stage and are read by `AI_PARSE_DOCUMENT`.
+1. **Ingest both kinds of data.** Structured records land in typed tables and are harmonised into one event stream. PDFs land on an encrypted stage and are read by `AI_PARSE_DOCUMENT`.
 2. **Extract twice.** Two model families read every safety-critical field independently, at temperature 0. If they disagree, the value is stored as `conflicting` and the gate returns `not_evaluated`. A value is never asserted from one unverified read.
 3. **Decide in SQL.** 16 versioned rules (LVEF surveillance, neutrophil count, HER2 reflex testing, pre-authorisation and others) compute every status. No model decides a status, a number or a date.
-4. **Answer with citations.** The Cortex Agent turns a question into bounded tool calls and phrases the result. Its tools have no `patient_id` input, so it cannot reach outside the user's scope.
+4. **Answer, then verify.** The model only phrases facts the SQL tools returned. Every claim it makes is checked against its cited source before it is shown (next section).
+
+## How every answer is checked against its evidence
+
+Saarthi never asks you to trust the model. A model's answer is a set of **typed claims** (numeric, date, status or text), each pointing at exactly one piece of evidence. Before anything reaches the screen, [`VALIDATE_ANSWER`](backend/sql/procedures/validate_answer.sql) runs six checks on every claim, in SQL:
+
+```mermaid
+flowchart LR
+    Q["Question"] --> CL{"Clinical<br/>judgment?"}
+    CL -- yes --> RF["Refused.<br/>Evidence packet offered<br/>to the treating practitioner"]
+    CL -- no --> T["Scoped SQL tools<br/>record rows · rule results<br/>document pages · reference passages"]
+    T --> M["Model phrases the facts<br/>as typed claims, each with<br/>one evidence ID"]
+    M --> C1["1 · Existence<br/>the evidence ID resolves"]
+    C1 --> C2["2 · Scope<br/>it belongs to this patient"]
+    C2 --> C3["3 · Time<br/>it existed at known_as_of"]
+    C3 --> C4["4 · Entailment<br/>the passage confirms the claim"]
+    C4 --> C5["5 · Type and value<br/>the number, date or status matches"]
+    C5 --> C6["6 · Trust<br/>the assertion is verified"]
+    C6 --> OK["Shown with its citation"]
+    C1 & C2 & C3 & C4 & C5 & C6 -. fails .-> X["Claim stripped,<br/>reason recorded"]
+```
+
+- **It fails closed.** A claim that fails any check is removed and the reason is logged; a fabricated or cross-patient evidence ID is also recorded as a security event. If the entailment check (`AI_FILTER`) errors, the claim is stripped, never passed. The answer reports how many claims were accepted and its overall status.
+- **Record answers are quoted, not written.** Facts come from canonical row and page quotations, and rule results come with their rule ID and version.
+- **Regulatory answers are quoted verbatim.** For reference questions, Cortex Search ranks pages in the reference corpus and a fixed term-overlap rule picks the matching sentences ([`reference-answer.mjs`](frontend/lib/reference-answer.mjs)). They are shown word for word with publisher, title, version and page. No model writes or paraphrases them, and they are never presented as findings about the patient.
+- **Every reference document is fingerprinted.** [`catalog.json`](data/reference/catalog.json) records each file's SHA-256, publisher, title and version, and whether its origin was byte-matched against the publisher's download. Where a field could not be verified, it says so.
+
+### The rules themselves are traced to official sources
+
+The thresholds the rules use are checked against the documents that govern treatment. [`verify_clinical_proof.py`](backend/scripts/verify_clinical_proof.py) downloads each official source, confirms its fingerprint, finds every quoted requirement word for word on the stated page, and compares the rule's numbers with the document's.
+
+| Result | Count |
+|---|---|
+| Requirements traced to a named, dated official document | 55, from 13 sources (regimen protocols, the trastuzumab label, a nursing checklist, the PM-JAY manual) |
+| Quotes found verbatim on the stated page | 58 of 58 |
+| Requirements fully met by Saarthi's rules today | 11 of 53 in scope (21%); 20 of 53 met or partly met (38%) |
+
+The gaps are reported, not hidden: the [coverage report](evidence/clinical/REPORT.md) lists every requirement Saarthi does not yet check, and any rule looser than its source must be labelled *unsafe*. This is engineering traceability, not clinical validation.
 
 ## Engineering principles
 
@@ -198,6 +256,7 @@ Saarthi is a working prototype, not a clinical product. [`IMPLEMENTATION-STATUS.
 - **One department mapped.** Rules, ontology and documents are data, so the design is department-agnostic, but only day-care chemotherapy is mapped today.
 - **Single app role.** The hosted app runs as one restricted service role. There is no per-user login yet.
 - **No scored evaluation.** 96 independent evaluation questions exist (48 development, 48 held out). The end-to-end answer evaluation and a baseline comparison have not been run.
+- **One reference document is unreadable.** The PM-JAY Health Benefit Package 2.2 manual loaded with no extractable text, so 6 of the 7 reference documents are searchable.
 - **Skills authored, not loaded.** The four `SKILL.md` definitions and their upload script exist; loading them into the agent has not been verified on Snowflake.
 
 ## Responsible AI
