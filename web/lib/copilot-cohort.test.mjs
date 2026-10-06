@@ -48,3 +48,19 @@ test("unrecognised question returns no rows rather than guessing", () => {
   assert.equal(answer.title, null);
   assert.deepEqual(answer.rows, []);
 });
+
+test("a counting question returns a number with its breakdown, not a list", async () => {
+  const { matchCohortIntent, answerCohort } = await import("./copilot-cohort.mjs");
+  const chairs = [["a", "blocked"], ["b", "blocked"], ["c", "conflict"], ["d", "waiting"], ["e", "ready"]]
+    .map(([patientId, status]) => ({ patientId, name: patientId, status, headline: null,
+      headlineRule: null, otherIssues: 0, scheduled: "2026-10-07T09:30:00" }));
+  const all = answerCohort(chairs, matchCohortIntent("How many patient appointments do I have tomorrow"));
+  assert.deepEqual(all.rows, []);
+  assert.match(all.text, /5 day-care visits on Wed 7 Oct: 3 need review \(2 blocked, 1 in conflict\), 1 waiting/);
+  const blocked = answerCohort(chairs, matchCohortIntent("how many are blocked"));
+  assert.match(blocked.text, /2 visits on Wed 7 Oct are blocked, out of 5 visits/);
+  const ots = answerCohort(chairs, matchCohortIntent("How many appointments and OTs tomorrow"));
+  assert.match(ots.text, /no theatre count/);
+  // A plain list question still lists.
+  assert.equal(answerCohort(chairs, matchCohortIntent("List the blocked patients")).rows.length, 2);
+});

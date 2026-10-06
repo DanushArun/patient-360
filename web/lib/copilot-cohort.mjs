@@ -28,6 +28,10 @@ const TOPICS = [
 export const COHORT_STARTERS = ["List the blocked patients",
   "Show me patients with pending evidence", "List patients with coverage conflicts"];
 
+const COUNTING = /\b(how many|number of|count of|total (number|visits|patients|appointments)|how much)\b/;
+// Operating-theatre lists are not part of the record Saarthi reads; say so rather than guess.
+const THEATRE = /\b(ots?|operating (theatre|theater|room)s?|surger(y|ies)|theatre list)\b/;
+
 const OVERVIEW = /\b(who|which|list|show|how many|summary|overview|today|everyone|patients|census|status)\b/;
 
 const STATUS_TITLES = {
@@ -44,8 +48,12 @@ export function matchCohortIntent(question) {
   const text = question.toLowerCase();
   const status = STATUS_WORDS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
   const topic = TOPICS.find(([, , pattern]) => pattern.test(text)) ?? null;
-  const kind = topic ? "topic" : status ? "status" : OVERVIEW.test(text) ? "overview" : "unknown";
-  return { kind, status, rulePrefix: topic?.[0] ?? null, topic: topic?.[1] ?? null };
+  // "How many…" asks for a number, not a list of everyone.
+  const counting = COUNTING.test(text);
+  const theatre = THEATRE.test(text);
+  const kind = counting || theatre ? "count"
+    : topic ? "topic" : status ? "status" : OVERVIEW.test(text) ? "overview" : "unknown";
+  return { kind, status, rulePrefix: topic?.[0] ?? null, topic: topic?.[1] ?? null, theatre };
 }
 
 /**
@@ -54,6 +62,7 @@ export function matchCohortIntent(question) {
  * @param {ReturnType<typeof matchCohortIntent>} intent
  */
 export function answerCohort(chairs, intent) {
+  if (intent.kind === "count") return countAnswer(chairs, intent);
   if (intent.kind === "unknown") {
     return { title: null, rows: [], counts: countByStatus(chairs), basis: null };
   }
@@ -79,4 +88,36 @@ function countByStatus(chairs) {
   const counts = { blocked: 0, conflict: 0, waiting: 0, advisory: 0, ready: 0 };
   for (const chair of chairs) if (chair.status in counts) counts[chair.status] += 1;
   return counts;
+}
+
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** A number with its breakdown, built from the same counts the board shows. */
+function countAnswer(chairs, intent) {
+  const counts = countByStatus(chairs);
+  const days = [...new Set(chairs.map((chair) => String(chair.scheduled).slice(0, 10)))].sort();
+  const when = days.length === 1 ? `on ${formatDay(days[0])}` : "in the next 7 days";
+  const needReview = counts.blocked + counts.conflict;
+  let text;
+  if (intent.status) {
+    const label = { blocked: "blocked", conflict: "in conflict", waiting: "waiting on evidence",
+      advisory: "ready with an advisory", ready: "ready" }[intent.status];
+    text = `${plural(counts[intent.status], "visit")} ${when} ${counts[intent.status] === 1 ? "is" : "are"} `
+      + `${label}, out of ${plural(chairs.length, "visit")}.`;
+  } else {
+    text = `${plural(chairs.length, "day-care visit")} ${when}: ${needReview} need review `
+      + `(${counts.blocked} blocked, ${counts.conflict} in conflict), ${counts.waiting} waiting on `
+      + `evidence, ${counts.advisory} with an advisory, ${counts.ready} ready.`;
+  }
+  if (intent.theatre) {
+    text += " Operating-theatre lists are not part of the record Saarthi reads, so there is no "
+      + "theatre count to give.";
+  }
+  return { title: null, rows: [], counts, text, basis: null };
+}
+
+function formatDay(day) {
+  const date = new Date(`${day}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? day : new Intl.DateTimeFormat("en-GB",
+    { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(date);
 }
