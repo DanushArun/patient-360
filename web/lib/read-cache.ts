@@ -33,6 +33,19 @@ export function cachedRead<T>(patientId: string, name: string, load: () => Promi
   return value;
 }
 
+/** A fresh cached read, or null. Never starts a load: the copilot reads through its own
+ * bound session on a miss instead of opening a second one. */
+export function peekRead<T>(patientId: string, name: string): Promise<T> | null {
+  const hit = state.entries.get(`${patientId}\u0000${name}`);
+  return hit && hit.generation === generationOf(patientId) && Date.now() - hit.at < TTL_MS
+    ? hit.value as Promise<T> : null;
+}
+
+/** Drop one cached read (a write that changes only that read, e.g. answer history). */
+export function forgetRead(patientId: string, name: string): void {
+  state.entries.delete(`${patientId}\u0000${name}`);
+}
+
 /** Scope for reads that span patients (review queue): any patient write invalidates it. */
 export const WORKSPACE_SCOPE = "__workspace";
 

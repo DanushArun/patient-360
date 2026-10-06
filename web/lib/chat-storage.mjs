@@ -68,9 +68,24 @@ function isToolResult(value) {
   return isRecord(value) && typeof value.name === 'string' && isRecord(value.result);
 }
 
+/** A record-tool answer card (copilot-tools.mjs): checked for shape, never trusted blindly.
+ * @param {unknown} value @returns {boolean} */
+function isRecordAnswer(value) {
+  return isRecord(value) && typeof value.tool === 'string' && typeof value.title === 'string'
+    && typeof value.summary === 'string' && Number.isInteger(value.more)
+    && Array.isArray(value.items) && value.items.every((item) => isRecord(item)
+      && ['id', 'label', 'value', 'state', 'tone'].every((key) => typeof item[key] === 'string'))
+    && Array.isArray(value.actions) && value.actions.every((action) => isRecord(action)
+      && typeof action.label === 'string' && typeof action.section === 'string')
+    && isStringArray(value.sources)
+    && (typeof value.known_as_of === 'string' || value.known_as_of === null)
+    && (typeof value.basis === 'string' || value.basis === null);
+}
+
 /** @param {Record<string, unknown>} value @returns {boolean} */
 function hasTurnEvidence(value) {
-  return (value.artifact === undefined || isArtifact(value.artifact))
+  return (value.record === undefined || isRecordAnswer(value.record))
+    && (value.artifact === undefined || isArtifact(value.artifact))
     && (value.tool_results === undefined || (Array.isArray(value.tool_results)
       && value.tool_results.every(isToolResult)));
 }

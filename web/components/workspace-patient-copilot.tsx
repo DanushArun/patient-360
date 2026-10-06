@@ -30,6 +30,7 @@ import { readStoredTurns, writeStoredTurns } from "@/lib/chat-storage.mjs";
 import type { ContextReference } from "@/lib/api-contracts.mjs";
 import { PatientAnswerArtifact } from "@/app/patient/[id]/patient-answer-artifact";
 import { GateCitation, type Turn } from "@/app/patient/[id]/patient-evidence";
+import { RecordAnswerCard } from "@/components/copilot/record-answer-card";
 
 // Errors a retry can never fix: the Retry button is withheld for these.
 const NON_RETRYABLE_ERRORS = new Set(["reference_scope_unavailable"]);
@@ -362,9 +363,10 @@ function storedQuestion(storageKey: string): string {
 
 export function PatientConversation({
   patientId, turns, selected, onSelect, busy, onSend, onRetry, sourceScope, patient,
-  showEmptyHint = true,
+  showEmptyHint = true, onOpenSection,
 }: {
   showEmptyHint?: boolean;
+  onOpenSection?: (section: string) => void;
   patientId: string;
   patient?: PatientData;
   turns: Turn[];
@@ -382,7 +384,8 @@ export function PatientConversation({
       practitioner.
     </div>}
     {turns.map((turn, index) => <div key={turn.id}>
-      <Message turn={turn} selected={selected} onSelect={onSelect} />
+      <Message turn={turn} selected={selected} onSelect={onSelect}
+        onOpenSection={onOpenSection} />
       {turn.role === "assistant" && !turn.error
         && <PatientAnswerArtifact turn={turn} patientId={patientId} sourceScope={sourceScope} />}
       {turn.role === "assistant" && !turn.error && turn.artifact?.classification === "CLASS_A"
@@ -401,10 +404,11 @@ export function PatientConversation({
   </div>;
 }
 
-function Message({ turn, selected, onSelect }: {
+function Message({ turn, selected, onSelect, onOpenSection }: {
   turn: Turn;
   selected: { turnId: string; ruleId: string } | null;
   onSelect: (turnId: string, ruleId: string) => void;
+  onOpenSection?: (section: string) => void;
 }): ReactNode {
   const icon = turn.role === "user" ? "You" : "Record assistant";
   return <article className={turn.role === "assistant" ? "sa-turn-assistant" : "sa-turn-user"}>
@@ -413,6 +417,8 @@ function Message({ turn, selected, onSelect }: {
       ? <div className="sa-limitation">
         {TURN_ERRORS[turn.error] ?? "No answer is available for this request. Retry or rephrase."}
       </div>
+      : turn.record ? <RecordAnswerCard record={turn.record} onOpenSection={onOpenSection}
+        onShowEvidence={(ruleId) => onSelect(turn.id, ruleId)} />
       : <>{!turn.artifact && <p>No validated answer is available for this request.</p>}
         {turn.known_as_of && <div className="sa-meta">Known as of <Clock value={turn.known_as_of} /></div>}
         {turn.history_saved === false && <p className="sa-meta" role="status">

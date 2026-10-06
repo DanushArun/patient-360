@@ -7,6 +7,7 @@ import { Page, WorkspaceBar, WorkspaceNav } from "@/components/sa";
 import type { RosterPatient } from "@/components/patient-roster";
 import type { Gate, PatientData } from "@/lib/patient";
 import type { PatientSection } from "@/lib/workspace-state.mjs";
+import { RECORD_TOOL_STARTERS } from "@/lib/copilot-tools.mjs";
 import {
   EvidencePanel,
   type Turn,
@@ -214,8 +215,7 @@ function SelectedEvidencePanel({ model }: { model: PatientScreenModel }): ReactN
   </ContextPanel>;
 }
 
-const PATIENT_STARTERS = ["What's blocking this visit?",
-  "What's missing before the next cycle?", "Do any sources disagree?"];
+const PATIENT_STARTERS = RECORD_TOOL_STARTERS.slice(0, 3);
 
 /** The patient conversation, rendered into the docked copilot (COPILOT-EXPERIENCE §2). The
  * page keeps owning the conversation state, so patient switching, consent withdrawal and
@@ -245,7 +245,8 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
       <PatientConversation patientId={model.patient.patientId} patient={model.patient}
         turns={model.turns} sourceScope={model.sourceScope} showEmptyHint={false}
         selected={model.selected} onSelect={model.onSelectAnswer} busy={model.chat.busy}
-        onSend={send} onRetry={() => model.chat.retry(model.sourceScope)} />
+        onSend={send} onRetry={() => model.chat.retry(model.sourceScope)}
+        onOpenSection={(section) => model.setSection(section as PatientSection)} />
       <CopilotProgress phases={model.chat.phases ?? []} busy={model.chat.busy} />
     </div>
     <CopilotComposer label="Question about the selected patient"

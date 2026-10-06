@@ -7,6 +7,7 @@ import { Info, Maximize2, Minimize2, Plus, Sparkles, X } from "lucide-react";
 import { CensusChip, type CensusStatus } from "@/components/sa";
 import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import { useCopilot, type CopilotChip } from "./copilot-provider";
+import { COHORT_STARTERS } from "@/lib/copilot-cohort.mjs";
 import { CopilotComposer, CopilotStarters } from "./copilot-parts";
 import styles from "./copilot.module.css";
 
@@ -75,8 +76,6 @@ type CohortTurn =
     counts?: Record<CensusStatus, number>; basis: string | null; known_as_of: string | null;
     text?: string; error?: string | null };
 
-const COHORT_STARTERS = ["Who is blocked today?", "Who is waiting on evidence?",
-  "Which patients have coverage conflicts?"];
 
 function CohortConversation(): ReactNode {
   const copilot = useCopilot();

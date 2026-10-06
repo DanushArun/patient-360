@@ -313,3 +313,52 @@
 @media (max-width: 900px) {
   .launcher { display: none; }
 }
+
+/* Record-tool answer card: grouped rows, state as icon + word, two actions at most. */
+.recordCard { display: grid; gap: var(--space-3); }
+.recordHeader { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); }
+.recordHeader h3 { margin: 0; font: var(--text-headline); color: var(--label); }
+.recordHeader span { font: var(--text-footnote); color: var(--label-tertiary); }
+.recordSummary { margin: 0; font: var(--text-body); color: var(--label); }
+.recordRows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-panel);
+  background: var(--bg);
+  overflow: hidden;
+}
+.recordRows li { display: grid; gap: var(--space-1); padding: var(--space-3); }
+.recordRows li + li { border-top: 1px solid var(--separator); }
+.recordRowHead { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+.recordRowHead strong { min-width: 0; font: var(--text-callout); font-weight: 600; color: var(--label); overflow-wrap: anywhere; }
+.recordState {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  font: var(--text-caption);
+  white-space: nowrap;
+  color: var(--status-neutral);
+  background: var(--status-neutral-bg);
+}
+.recordState[data-tone="positive"] { color: var(--status-ready); background: var(--status-ready-bg); }
+.recordState[data-tone="warning"] { color: var(--status-waiting); background: var(--status-waiting-bg); }
+.recordState[data-tone="critical"] { color: var(--status-blocked); background: var(--status-blocked-bg); }
+.recordValue { margin: 0; font: var(--text-callout); color: var(--label); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.recordNote { margin: 0; font: var(--text-footnote); color: var(--label-secondary); overflow-wrap: anywhere; }
+.recordNote button {
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+.recordNote button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-control-inner); }
+.recordActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }

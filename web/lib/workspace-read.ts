@@ -18,20 +18,24 @@ export function loadWorkspaceView(patientId: string, query: WorkspaceQuery) {
 }
 
 export function loadSchemes(patientId: string) {
-  return cachedRead(patientId, "schemes", () => withPatientSession(patientId, async (run) => {
-    const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('schemes',NULL)"));
-    return rows.map((r) => ({
-      schemeId: r.SCHEME_ID,
-      schemeName: r.SCHEME_NAME,
-      schemeType: r.SCHEME_TYPE,
-      annualLimit: r.ANNUAL_LIMIT,
-      status: r.ELIGIBILITY_STATUS,
-      packages: r.COVERED_PACKAGES,
-    }));
+  return cachedRead(patientId, "schemes", () => withPatientSession(patientId, readSchemes));
+}
+
+/** Schemes through an already-bound session. */
+export async function readSchemes(run: Run) {
+  const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('schemes',NULL)"));
+  return rows.map((r) => ({
+    schemeId: r.SCHEME_ID,
+    schemeName: r.SCHEME_NAME,
+    schemeType: r.SCHEME_TYPE,
+    annualLimit: r.ANNUAL_LIMIT,
+    status: r.ELIGIBILITY_STATUS,
+    packages: r.COVERED_PACKAGES,
   }));
 }
 
-async function readView(run: Run, query: WorkspaceQuery): Promise<Record<string, unknown>> {
+/** One workspace view through an already-bound session. */
+export async function readView(run: Run, query: WorkspaceQuery): Promise<Record<string, unknown>> {
   if (query.view === "facts") {
     // Facts need a domain and a cutoff; the procedure's single ARGUMENT carries both.
     const body = await call(run, "facts",

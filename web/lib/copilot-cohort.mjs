@@ -23,6 +23,11 @@ const TOPICS = [
   ["CLIN-BILI", "liver function", /\b(bilirubin|liver|hepatic|ast)\b/],
 ];
 
+/** Starter questions, worded as record-state language the SQL classifier recognises without
+ * its LLM fallback (checked in copilot-tools.test.mjs). */
+export const COHORT_STARTERS = ["List the blocked patients",
+  "Show me patients with pending evidence", "List patients with coverage conflicts"];
+
 const OVERVIEW = /\b(who|which|list|show|how many|summary|overview|today|everyone|patients|census|status)\b/;
 
 const STATUS_TITLES = {

@@ -1,4 +1,4 @@
-import { askPatient, type AskPhase } from "@/lib/patient";
+import { askPatient, type AskPhase, type AskTooling } from "@/lib/patient";
 import {
   apiError, apiErrorStatus, contextPreamble, isSameOrigin, readJsonBody, validateAskBody,
 } from "@/lib/api-contracts.mjs";
@@ -26,11 +26,12 @@ export async function POST(request: Request) {
     return Response.json(failure, { status: apiErrorStatus(failure.error) });
   }
   const question = contextPreamble(body.context ?? []) + body.question;
+  const tooling: AskTooling = { question: body.question, references: body.context ?? [] };
   if (request.headers.get("accept")?.includes("application/x-ndjson")) {
-    return streamAnswer(body.patientId, question);
+    return streamAnswer(body.patientId, question, tooling);
   }
   try {
-    return Response.json(await askPatient(body.patientId, question));
+    return Response.json(await askPatient(body.patientId, question, undefined, tooling));
   } catch (error) {
     const failure = apiError(error, "agent_unreachable");
     return Response.json(failure, { status: apiErrorStatus(failure.error) });
@@ -40,13 +41,14 @@ export async function POST(request: Request) {
 // One JSON object per line: {"phase": ...} as each real gateway step starts, then exactly one
 // {"result": ...} or {"error": ..., "status": ...}. Phases are emitted by the server code that
 // performs the step, so the progress shown is never simulated.
-function streamAnswer(patientId: string, question: string): Response {
+function streamAnswer(patientId: string, question: string, tooling: AskTooling): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (value: object) => controller.enqueue(encoder.encode(`${JSON.stringify(value)}\n`));
       try {
-        const result = await askPatient(patientId, question, (phase: AskPhase) => send({ phase }));
+        const result = await askPatient(patientId, question, (phase: AskPhase) => send({ phase }),
+          tooling);
         send({ result });
       } catch (error) {
         const failure = apiError(error, "agent_unreachable");

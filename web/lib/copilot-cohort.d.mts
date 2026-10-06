@@ -11,3 +11,5 @@ export function matchCohortIntent(question: string): CohortIntent;
 export function answerCohort<T extends CohortChair>(chairs: T[], intent: CohortIntent): {
   title: string | null; rows: T[]; counts: Record<CohortStatus, number>; basis: string | null;
 };
+
+export const COHORT_STARTERS: string[];

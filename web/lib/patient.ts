@@ -1,4 +1,9 @@
-import { cachedRead, invalidatePatient } from "./read-cache";
+import { cachedRead, forgetRead, invalidatePatient, peekRead } from "./read-cache";
+import { composeRecordAnswer, followOns, matchRecordTool, readsFor, RECORD_TOOL_STARTERS,
+  type RecordAnswer, type RecordToolMatch } from "./copilot-tools.mjs";
+import { readSchemes, readView } from "./workspace-read";
+import { workspaceCacheKey } from "./warm-plan.mjs";
+import type { PatientBinding } from "./snowflake";
 import { humanizeClocks } from "./display-format.mjs";
 import { withPatientSession, withPatientSessionAndContext, procedureRows, procedureValue } from "./snowflake";
 import { readGatewayAnswer, guardAnswer } from "./guarded-answer.mjs";
@@ -6,6 +11,8 @@ import { routeQuestion } from "./question-routing.mjs";
 import { randomUUID } from "node:crypto";
 import { deriveValueState } from "./workspace-patient-facts.mjs";
 import { confirmWriteReceipt } from "./write-receipts.mjs";
+
+type Run = (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>;
 
 // Both providers ask Snowflake to classify before inference. Patient scope
 // comes from the bound request session, never from model-produced selectors.
@@ -102,19 +109,18 @@ export function loadPatientSnapshot(patientId: string): Promise<PatientData> {
 }
 
 async function loadPatientSnapshotUncached(patientId: string): Promise<PatientData> {
-  return withPatientSessionAndContext(patientId, async (run, context) => {
-    const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('snapshot',NULL)"));
-    const gates = rows.map(snapshotGate).sort((a,b) => a.gate.localeCompare(b.gate) || (a.rule_id ?? "").localeCompare(b.rule_id ?? ""));
-    const knownAsOf = gates[0]?.known_as_of ?? null;
-    if (gates.some((gate) => !gate.known_as_of)) {
-      throw new Error("readiness_snapshot_missing_as_of");
-    }
-    return {
-      ...context,
-      knownAsOf,
-      gates,
-    };
-  });
+  return withPatientSessionAndContext(patientId, async (run, context) =>
+    ({ ...context, ...await readSnapshotGates(run) }));
+}
+
+async function readSnapshotGates(run: Run): Promise<{ knownAsOf: string | null; gates: Gate[] }> {
+  const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('snapshot',NULL)"));
+  const gates = rows.map(snapshotGate).sort((a,b) => a.gate.localeCompare(b.gate) || (a.rule_id ?? "").localeCompare(b.rule_id ?? ""));
+  const knownAsOf = gates[0]?.known_as_of ?? null;
+  if (gates.some((gate) => !gate.known_as_of)) {
+    throw new Error("readiness_snapshot_missing_as_of");
+  }
+  return { knownAsOf, gates };
 }
 
 export async function refreshPatient(patientId: string): Promise<PatientData> {
@@ -176,54 +182,56 @@ export function loadPatientTimeline(patientId: string): Promise<PatientTimeline>
 }
 
 async function loadPatientTimelineUncached(patientId: string): Promise<PatientTimeline> {
-  return withPatientSession(patientId, async (run) => {
-    const rows = await run("CALL SAARTHI.OPERATIONAL.GET_TIMELINE(NULL)");
-    const result = parseValue(Object.values(rows[0] ?? {})[0]);
-    if (result.error) throw new Error(String(result.error));
-    if (!Array.isArray(result.timeline) || typeof result.known_as_of !== "string") {
-      throw new Error("timeline_unavailable");
-    }
-    const ids = (value: unknown): string[] =>
-      Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
-    const text = (value: unknown): string | null =>
-      typeof value === "string" && value.trim() ? value : null;
-    const timeline = result.timeline.map((raw): TimelineEvent => {
-      const event = parseValue(raw);
-      return {
-        // The SQL coalesces concept, display and code; the event type is the last honest label.
-        concept: text(event.concept) ?? text(event.display) ?? text(event.code)
-          ?? (text(event.event_type) ? String(event.event_type).replace(/_/g, " ") : "Unlabelled event"),
-        event_type: text(event.event_type),
-        value: typeof event.value === "number" ? event.value : null,
-        value_text: text(event.value_text),
-        unit: text(event.unit),
-        abnormal_flag: text(event.abnormal_flag),
-        // R3: never default a missing state to a negative claim; derive it from the value.
-        value_state: deriveValueState(event.value_state,
-          typeof event.value === "number" ? event.value : null, event.value_text),
-        is_derived: event.is_derived === true,
-        derivation: text(event.derivation),
-        valid_until: text(event.valid_until),
-        event_time: String(event.event_time ?? ""),
-        source_recorded_at: String(event.source_recorded_at ?? ""),
-        ingested_at: String(event.ingested_at ?? ""),
-        event_id: String(event.event_id ?? ""),
-        source_event_ids: ids(event.source_event_ids),
-        source_assertion_ids: ids(event.source_assertion_ids),
-        source_document_ids: ids(event.source_document_ids),
-        source_links_observed_at: text(event.source_links_observed_at),
-      };
-    });
+  return withPatientSession(patientId, readTimeline);
+}
+
+async function readTimeline(run: Run): Promise<PatientTimeline> {
+  const rows = await run("CALL SAARTHI.OPERATIONAL.GET_TIMELINE(NULL)");
+  const result = parseValue(Object.values(rows[0] ?? {})[0]);
+  if (result.error) throw new Error(String(result.error));
+  if (!Array.isArray(result.timeline) || typeof result.known_as_of !== "string") {
+    throw new Error("timeline_unavailable");
+  }
+  const ids = (value: unknown): string[] =>
+    Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+  const text = (value: unknown): string | null =>
+    typeof value === "string" && value.trim() ? value : null;
+  const timeline = result.timeline.map((raw): TimelineEvent => {
+    const event = parseValue(raw);
     return {
-      timeline,
-      known_as_of: result.known_as_of,
-      ...(typeof result.provenance_observed_at === "string"
-        ? { provenance_observed_at: result.provenance_observed_at } : {}),
-      ...(typeof result.total_events === "number" ? { total_events: result.total_events } : {}),
-      ...(typeof result.timeline_limit === "number" ? { timeline_limit: result.timeline_limit } : {}),
-      ...(typeof result.truncated === "boolean" ? { truncated: result.truncated } : {}),
+      // The SQL coalesces concept, display and code; the event type is the last honest label.
+      concept: text(event.concept) ?? text(event.display) ?? text(event.code)
+        ?? (text(event.event_type) ? String(event.event_type).replace(/_/g, " ") : "Unlabelled event"),
+      event_type: text(event.event_type),
+      value: typeof event.value === "number" ? event.value : null,
+      value_text: text(event.value_text),
+      unit: text(event.unit),
+      abnormal_flag: text(event.abnormal_flag),
+      // R3: never default a missing state to a negative claim; derive it from the value.
+      value_state: deriveValueState(event.value_state,
+        typeof event.value === "number" ? event.value : null, event.value_text),
+      is_derived: event.is_derived === true,
+      derivation: text(event.derivation),
+      valid_until: text(event.valid_until),
+      event_time: String(event.event_time ?? ""),
+      source_recorded_at: String(event.source_recorded_at ?? ""),
+      ingested_at: String(event.ingested_at ?? ""),
+      event_id: String(event.event_id ?? ""),
+      source_event_ids: ids(event.source_event_ids),
+      source_assertion_ids: ids(event.source_assertion_ids),
+      source_document_ids: ids(event.source_document_ids),
+      source_links_observed_at: text(event.source_links_observed_at),
     };
   });
+  return {
+    timeline,
+    known_as_of: result.known_as_of,
+    ...(typeof result.provenance_observed_at === "string"
+      ? { provenance_observed_at: result.provenance_observed_at } : {}),
+    ...(typeof result.total_events === "number" ? { total_events: result.total_events } : {}),
+    ...(typeof result.timeline_limit === "number" ? { timeline_limit: result.timeline_limit } : {}),
+    ...(typeof result.truncated === "boolean" ? { truncated: result.truncated } : {}),
+  };
 }
 
 export function loadReviewTasks(patientId: string, ruleId: string): Promise<ReviewTask[]> {
@@ -231,18 +239,20 @@ export function loadReviewTasks(patientId: string, ruleId: string): Promise<Revi
 }
 
 async function loadReviewTasksUncached(patientId: string, ruleId: string): Promise<ReviewTask[]> {
-  return withPatientSession(patientId, async (run) => {
-    const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('tasks',?)", [ruleId]));
-    return rows.map((row) => ({
-      taskId: String(row.TASK_ID), issueId: String(row.ISSUE_ID),
-      owner: String(row.OWNER ?? "Unassigned"), state: String(row.STATE ?? "unknown"),
-      action: String(row.DECISION ?? "unknown"), reason: String(row.REASON ?? ""),
-      createdAt: String(row.CREATED_AT ?? ""),
-      ownerId: row.OWNER_PRACTITIONER_ID ? String(row.OWNER_PRACTITIONER_ID) : null,
-      issueVersion: Number(row.ISSUE_VERSION ?? 0), isEvent: row.IS_EVENT === true,
-      actor: String(row.ACTOR ?? row.ACTOR_PRACTITIONER_ID ?? ""),
-    })).sort((a,b) => b.createdAt.localeCompare(a.createdAt) || a.taskId.localeCompare(b.taskId));
-  });
+  return withPatientSession(patientId, (run) => readReviewTasks(run, ruleId));
+}
+
+async function readReviewTasks(run: Run, ruleId: string): Promise<ReviewTask[]> {
+  const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('tasks',?)", [ruleId]));
+  return rows.map((row) => ({
+    taskId: String(row.TASK_ID), issueId: String(row.ISSUE_ID),
+    owner: String(row.OWNER ?? "Unassigned"), state: String(row.STATE ?? "unknown"),
+    action: String(row.DECISION ?? "unknown"), reason: String(row.REASON ?? ""),
+    createdAt: String(row.CREATED_AT ?? ""),
+    ownerId: row.OWNER_PRACTITIONER_ID ? String(row.OWNER_PRACTITIONER_ID) : null,
+    issueVersion: Number(row.ISSUE_VERSION ?? 0), isEvent: row.IS_EVENT === true,
+    actor: String(row.ACTOR ?? row.ACTOR_PRACTITIONER_ID ?? ""),
+  })).sort((a,b) => b.createdAt.localeCompare(a.createdAt) || a.taskId.localeCompare(b.taskId));
 }
 
 function snapshotGate(row: Record<string, unknown>): Gate {
@@ -278,6 +288,8 @@ export type AgentTurn = {
   known_as_of: string | null;
   error: string | null;
   artifact?: AnswerArtifact;
+  /** A deterministic record-tool answer (copilot-tools.mjs); no model wrote any of it. */
+  record?: RecordAnswer;
   tool_results?: { name: string; result: Record<string, unknown> }[];
 };
 
@@ -387,32 +399,49 @@ export function parseAgentResponse(input: unknown): AgentTurn {
 /** Real request phases, in order, reported to the copilot's progress display. */
 export type AskPhase = "access" | "routing" | "refusing" | "reading" | "validating" | "saving";
 
+/** What the record tools need besides the classified question: the user's own words and the
+ * items they attached, kept apart from the preamble so screen labels never pick the tool. */
+export type AskTooling = { question: string; references: { kind: string; id: string }[] };
+
 export async function askPatient(patientId: string, question: string,
-  onPhase: (phase: AskPhase) => void = () => {}): Promise<AgentTurn> {
+  onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling): Promise<AgentTurn> {
   try {
-    return await askPatientUncached(patientId, question, onPhase);
+    return await askPatientUncached(patientId, question, onPhase, tooling);
   } finally {
-    invalidatePatient(patientId);
+    // An answer writes only to answer history; every other cached read stays valid.
+    forgetRead(patientId, "evidence");
   }
 }
 
 async function askPatientUncached(patientId: string, question: string,
-  onPhase: (phase: AskPhase) => void = () => {}): Promise<AgentTurn> {
+  onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling): Promise<AgentTurn> {
   onPhase("access");
-  return withPatientSessionAndContext(patientId, async (run) => {
+  return withPatientSessionAndContext(patientId, async (run, context) => {
     const turn: AgentTurn = await routeQuestion(question, run, async (clock: string) => {
+      // Class B only (Class A was refused above). A recognised record question is answered
+      // by a deterministic tool over the governed reads; anything else goes to the gateway.
+      const match = matchRecordTool(tooling?.question ?? question, tooling?.references ?? []);
+      if (match) {
+        onPhase("reading");
+        return answerWithRecordTool(patientId, run, context, match, clock);
+      }
       onPhase("reading");
       const rows = await run("CALL SAARTHI.OPERATIONAL.ASK_SAARTHI(?)", [question]);
       const payload = parseValue(Object.values(rows[0] ?? {})[0]);
       if (payload.classification || payload.error) return readGatewayAnswer(payload);
       onPhase("validating");
-      return guardAnswer(parseAgentResponse(payload), run, clock);
+      const guarded = await guardAnswer(parseAgentResponse(payload), run, clock);
+      // Nothing verifiable came back: say what can be asked instead of an empty answer.
+      if (guarded.artifact?.classification === "CLASS_B" && !guarded.artifact.claims.length) {
+        guarded.suggested = RECORD_TOOL_STARTERS;
+      }
+      return guarded;
     }, (phase: string) => onPhase(phase as AskPhase));
     onPhase("saving");
     try {
       const record = procedureValue(await run("CALL SAARTHI.OPERATIONAL.RECORD_WEB_ANSWER(?,?,PARSE_JSON(?)::ARRAY,?,?)", [
-        question, turn.known_as_of, JSON.stringify([...new Set(
-          turn.artifact?.claims.flatMap((claim) => claim.evidence.map((item) => item.id)) ?? [],
+        question, turn.known_as_of, JSON.stringify([...new Set(turn.record?.sources
+          ?? turn.artifact?.claims.flatMap((claim) => claim.evidence.map((item) => item.id)) ?? [],
         )].slice(0, 100)),
         randomUUID(), turn.error ? "error" : "recorded",
       ]));
@@ -420,6 +449,54 @@ async function askPatientUncached(patientId: string, question: string,
     } catch { turn.history_saved = false; }
     return turn;
   });
+}
+
+/** Reads a cached value when it is fresh (a full governed read at most 2 minutes old),
+ * otherwise reads through this already-bound session. Never opens a second session. */
+async function readThrough<T>(patientId: string, key: string, load: () => Promise<T>): Promise<T> {
+  const cached = peekRead<T>(patientId, key);
+  if (cached) {
+    try { return await cached; } catch { /* a failed background read: read it here instead */ }
+  }
+  return load();
+}
+
+async function answerWithRecordTool(patientId: string, run: Run, context: PatientBinding,
+  match: RecordToolMatch, clock: string): Promise<AgentTurn> {
+  const snapshot = await readThrough(patientId, "snapshot",
+    async () => ({ ...context, ...await readSnapshotGates(run) }));
+  const knownAsOf = snapshot.knownAsOf;
+  const view = (name: "facts" | "documents" | "coverage_comparison", domain: string | null = null) => {
+    const query = { view: name, domain, knownAsOf, documentId: null } as Parameters<typeof readView>[1];
+    return readThrough(patientId, workspaceCacheKey(query), () => readView(run, query));
+  };
+  const reads: Record<string, unknown> = { patient: { ...snapshot, now: clock } };
+  // Sequential on purpose: one bound session runs one statement at a time.
+  for (const read of readsFor(match.tool)) {
+    if (read === "labs") reads.labs = await view("facts", "labs");
+    if (read === "documents") reads.documents = await view("documents");
+    if (read === "coverage") reads.coverage = await view("coverage_comparison");
+    if (read === "schemes") reads.schemes = await readThrough(patientId, "schemes", () => readSchemes(run));
+    if (read === "timeline") reads.timeline = await readThrough(patientId, "timeline", () => readTimeline(run));
+    if (read === "tasks") {
+      const tasks: Record<string, ReviewTask[]> = {};
+      for (const gate of snapshot.gates) {
+        if (gate.outcome === "pass" || !gate.rule_id) continue;
+        const ruleId = gate.rule_id;
+        tasks[ruleId] = await readThrough(patientId, `tasks:${ruleId}`, () => readReviewTasks(run, ruleId));
+      }
+      reads.tasks = tasks;
+    }
+  }
+  const record = composeRecordAnswer(match, reads);
+  const cited = new Set(record.items.map((item) => item.ruleId).filter(Boolean));
+  return {
+    text: record.summary, thinking: "", suggested: followOns(match.tool),
+    tools: [{ name: `record.${match.tool}`, query_id: null, took_patient_id: false }],
+    // The gates the card points at, so "Show evidence" opens the same panel as the screen.
+    gates: snapshot.gates.filter((gate) => gate.rule_id && cited.has(gate.rule_id)),
+    known_as_of: clock, error: null, record,
+  };
 }
 
 export function loadEvidenceHistory(patientId: string) {
