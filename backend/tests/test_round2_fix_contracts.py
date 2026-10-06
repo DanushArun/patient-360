@@ -101,10 +101,13 @@ class WebFixes(unittest.TestCase):
         self.assertIn("could not be read back", read(WEB / "components/task-actions.tsx"))
         self.assertIn("write_readback_unconfirmed", read(WEB / "components/use-patient-review-task.ts"))
 
-    def test_ask_route_refuses_reference_scope_instead_of_dropping_it(self):
+    def test_ask_route_carries_reference_scope_through_instead_of_dropping_it(self):
+        # The reference corpus is now answered (separate corpus, R6); a reference-scoped
+        # question must reach the answer path with its scope and never with patient context.
         route = read(WEB / "app/api/ask/route.ts")
         self.assertIn('body.sourceScope === "reference"', route)
-        self.assertLess(route.index("reference_scope_unavailable"), route.index("askPatient(body"))
+        self.assertIn('scope === "reference" ? [] : body.context', route)
+        self.assertIn("scope)", route[route.index("askPatient("):])
 
 
 if __name__ == "__main__":

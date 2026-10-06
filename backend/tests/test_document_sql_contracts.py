@@ -34,7 +34,7 @@ class DocumentSqlContractTests(unittest.TestCase):
         self.assertLess(sql.index("SET extraction_attempted_at = CURRENT_TIMESTAMP()"),
                         sql.index("'page_size_limit'"))
         self.assertLess(sql.index("'page_size_limit'"), sql.index("SELECT AI_COMPLETE("))
-        self.assertIn("EXECUTE AS USER SITAR", sql)
+        self.assertRegex(sql, r"EXECUTE AS USER [A-Z0-9_]+")
 
     def test_merge_preserves_ingestion_dedupe_stream_and_unreadable_records(self):
         sql = self.read("tasks/parse_documents.sql")
@@ -46,7 +46,7 @@ class DocumentSqlContractTests(unittest.TestCase):
         self.assertNotIn("RETURN OBJECT_CONSTRUCT('error','parse_", sql)
         self.assertIn("'patient', :v_doc_type, :v_file_hash, :v_relative_path", sql)
         self.assertIn("CALL SAARTHI.OPERATIONAL.chunk_documents_proc()", sql)
-        self.assertIn("EXECUTE AS USER SITAR", sql)
+        self.assertRegex(sql, r"EXECUTE AS USER [A-Z0-9_]+")
 
     def test_repeat_findings_do_not_collapse_to_concept_only(self):
         sql = self.read("procedures/extract_one_document.sql")

@@ -47,7 +47,7 @@ def test_context_when_long_text_provided_bounds_text_and_marks_truncation() -> N
 
 def test_inference_when_context_collected_supplies_it_before_native_execution() -> None:
     source = Path('backend/sql/procedures/answer_gateway_infer.sql').read_text()
-    assert source.index('ANSWER_GATEWAY_CONTEXT(') < source.index('DATA_AGENT_RUN(')
+    assert source.index('ANSWER_GATEWAY_CONTEXT(') < source.index('AI_COMPLETE(')
 
 
 def test_context_when_labs_collected_selects_latest_per_concept_in_sql() -> None:
@@ -69,7 +69,7 @@ def test_context_when_section_dependency_fails_isolates_failure_before_packaging
 
 def test_inference_when_scope_changes_after_context_collection_does_not_send_to_model() -> None:
     source = Path('backend/sql/procedures/answer_gateway_infer.sql').read_text()
-    assert source.index('v_context:access_scope') < source.index('DATA_AGENT_RUN(')
+    assert source.index('v_context:access_scope') < source.index('AI_COMPLETE(')
 
 
 def test_context_when_cutoff_omitted_freezes_validated_clock_for_all_sections() -> None:
