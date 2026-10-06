@@ -59,10 +59,16 @@ const fakeSpeech = () => {
   window.SpeechRecognition = Recogniser;
 };
 
-const expectText = async (locator, pattern, what) => {
-  const text = await locator.innerText({ timeout: 45000 });
-  if (!pattern.test(text)) throw new Error(`${what}: expected ${pattern}, saw "${text.slice(0, 160)}"`);
-  return text;
+// Sections load their data after they render, so poll until the content arrives (or 45 s).
+const expectText = async (locator, pattern, what, timeout = 45000) => {
+  const until = Date.now() + timeout;
+  let text = "";
+  while (Date.now() < until) {
+    text = await locator.innerText({ timeout: 5000 }).catch(() => "");
+    if (pattern.test(text)) return text;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`${what}: expected ${pattern}, saw "${text.slice(0, 160)}"`);
 };
 
 async function ask(page, question) {
@@ -170,7 +176,7 @@ for (const [question, pattern] of [
   ["What does the echo show?", /LVEF|49/],
   ["Is her pre-authorisation approved?", /pending|approved|conflict/i],
   ["Show me the latest lab results", /Platelets|WBC|ANC/],
-  ["What medication is she on?", /trastuzumab/i],
+  ["What medication is she on?", /recorded regimen is .*trastuzumab/i],
 ]) {
   await beat(`Ask: ${question}`, page, async () => {
     const { text } = await ask(page, question);
@@ -190,8 +196,11 @@ await beat("Cited source opens on the echo report text", page, async () => {
   await page.locator(".sa-patient-tabs button", { hasText: /^Documents$/ }).click();
   const row = page.locator("tr[data-copilot-ref='document:DOC-ECHO-DC-12']");
   await row.locator("button").first().click();
+  await page.locator("section[aria-label='Patient workspace content']")
+    .getByRole("link", { name: /Open source/ }).first().click({ timeout: 30000 });
+  await page.waitForURL(/\/documents\/DOC-ECHO-DC-12/, { timeout: 60000 });
   const source = page.locator("text=LVEF (biplane Simpson): 49 %").first();
-  await source.waitFor({ timeout: 30000 });
+  await source.waitFor({ timeout: 45000 });
   return "LVEF (biplane Simpson): 49 % visible";
 });
 
