@@ -107,6 +107,10 @@ def prepare(session: Session, report: dict) -> None:
                   "DATEADD(minute, 570, DATEADD(day, 1, CURRENT_DATE()))::TIMESTAMP_NTZ "
                   "WHERE encounter_id = 'EVT-CHEMO-07' AND status = 'scheduled'",
                   label="reanchor_deep_case_visit")
+    # The treating practitioner's display name on every screen and evidence packet.
+    session.query("UPDATE SAARTHI.GOVERNANCE.PRACTITIONER SET name = 'Dr. Oncologist' "
+                  "WHERE practitioner_id = 'PRAC-01' AND name != 'Dr. Oncologist'",
+                  label="practitioner_display_name")
     run_file(session, HERO)
     run_file(session, DOC_DATES)
     for row in session.query("SHOW DYNAMIC TABLES IN DATABASE SAARTHI"):

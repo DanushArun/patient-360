@@ -23,7 +23,7 @@ const gates = [
 ];
 const patient = { patientName: "Fatima Begum", knownAsOf: "2026-10-05T07:51:53", gates,
   scheduledAt: "2026-10-05T09:30:00", cycleNumber: 3, regimen: "Doxorubicin + cyclophosphamide",
-  treatingPractitionerName: "Dr. Test Oncologist", now: "2026-10-06T08:00:00" };
+  treatingPractitionerName: "Dr. Oncologist", now: "2026-10-06T08:00:00" };
 const fact = (concept, value, unit, extra = {}) => ({ concept, value, unit, value_state: "present",
   event_id: `EVT-DC-04-${concept}`, event_time: "2026-10-03T23:03:11", is_derived: false,
   derivation: null, value_text: null, ...extra });

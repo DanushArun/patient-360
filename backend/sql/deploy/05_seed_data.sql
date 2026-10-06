@@ -50,8 +50,9 @@ WHEN NOT MATCHED THEN INSERT (department_id, facility_id, specialty, name) VALUE
 -- Test practitioner mapped to the ACTUAL Snowflake user running this session,
 -- so bind_patient/CURRENT_USER() resolve to a real row (F3's join).
 MERGE INTO SAARTHI.GOVERNANCE.PRACTITIONER t USING (SELECT 'PRAC-01' practitioner_id) s ON t.practitioner_id = s.practitioner_id
+WHEN MATCHED THEN UPDATE SET t.name = 'Dr. Oncologist'
 WHEN NOT MATCHED THEN INSERT (practitioner_id, facility_id, department_id, name, nmc_registration_no, qualification, snowflake_user, active)
-VALUES ('PRAC-01', 'FAC-02', 'DEPT-ONC-02', 'Dr. Test Oncologist', 'NMC-TEST-0001', 'MD Oncology', CURRENT_USER(), TRUE);
+VALUES ('PRAC-01', 'FAC-02', 'DEPT-ONC-02', 'Dr. Oncologist', 'NMC-TEST-0001', 'MD Oncology', CURRENT_USER(), TRUE);
 
 -- A second practitioner with NO relationship to the deep-case patient, for
 -- the cross-scope negative test (WORK-PLAN.md Day 2-3 test 2).

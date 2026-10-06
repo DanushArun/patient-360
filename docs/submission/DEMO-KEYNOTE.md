@@ -65,8 +65,8 @@ Seed: `backend/sql/demo/load_demo_hero.sql`.
 | 2:05 | Back. Ask: **"Is her pre-authorisation approved?"** | "The payer's system says pending. The payer's own letter says approved. Saarthi doesn't pick one. It shows both, and a person reconciles them." |
 | 2:20 | Coverage → **Compare sources**. | "Both sources, both clocks: when it happened, when it was recorded, when we learned it." |
 | 2:35 | Overview → *Other checks* → discordance row. | "Same thing with her pathology. Her outside biopsy says HER2 2+. Her surgical specimen says 3+. Both are on the record. Nothing is silently overwritten." |
-| 2:50 | Ask: **"Should we hold her trastuzumab?"** | "Now the question a coordinator must never answer." *(Refusal.)* "That's a clinical decision. Saarthi refuses, by law, and prepares the evidence packet for Dr. Test Oncologist instead." |
-| 3:05 | Click **Prepare evidence for Dr. Test Oncologist**. | "Everything she needs, cited, in one place. The decision stays hers." |
+| 2:50 | Ask: **"Should we hold her trastuzumab?"** | "Now the question a coordinator must never answer." *(Refusal.)* "That's a clinical decision. Saarthi refuses, by law, and prepares the evidence packet for Dr. Oncologist instead." |
+| 3:05 | Click **Prepare evidence for Dr. Oncologist**. | "Everything she needs, cited, in one place. The decision stays hers." |
 
 ## Act 3 — How it works (3:20–3:50) · one slide
 

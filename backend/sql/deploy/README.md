@@ -20,7 +20,7 @@ After step 08 restart the web server (it must not serve code built before the pr
 | 02_gates_and_scheme_table.sql | 55 KB |
 | 03_tool_procedures.sql | 128 KB |
 | 04_tasks_and_grants.sql | 40 KB |
-| 05_seed_data.sql | 43 KB |
+| 05_seed_data.sql | 44 KB |
 | 06_cohort_and_documents.sql | 42 KB |
 | 07_governance_row_access.sql | 6 KB |
 | 08_pipeline_kickoff.sql | 4 KB |
