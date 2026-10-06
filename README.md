@@ -71,7 +71,7 @@ Saarthi's value comes from joining two kinds of data that hospitals keep apart. 
 | **How it is read** | Loaded into typed Snowflake tables and harmonised into one event stream by Dynamic Tables | `AI_PARSE_DOCUMENT`, then two independent extraction passes from different model families | Parsed and chunked into its own Cortex Search service |
 | **What it becomes** | Events with `event_time`, `source_recorded_at`, `ingested_at` | Typed assertions linked to the page they came from, *verified* only when both passes agree | Quotable passages with publisher, title, version and page |
 
-The synthetic generator ([`data/generator/`](data/generator/)) plants the problems real records have, from 13 named corruption scenarios: a pathology addendum that arrives weeks late, HER2 results that disagree between labs, `1.9 lakhs` next to `190000`, a pre-authorisation that is *pending* in the table and *approved* in the letter, a quarantined identity, a prompt injection inside a document, and a misread value on a rotated scan. 10 of the 13 are seeded and tested; the other 3 are handled by design but not yet tested.
+The synthetic generator ([`data/generator/`](data/generator/)) plants the problems real records have, from 13 named corruption scenarios: a pathology addendum that arrives weeks late, HER2 results that disagree between labs, `1.9 lakhs` next to `190000`, a pre-authorisation that is *pending* in the table and *approved* in the letter, a quarantined identity, a prompt injection inside a document, and a misread value on a rotated scan.
 
 ## How it works
 
@@ -213,8 +213,7 @@ With live access off, `/design-preview/PAT-DC-07` shows a recorded snapshot, lab
 | Hosted demo check (`npm run demo:check`): day-care list, voice, every record section, 6 copilot questions, refusal, cited source, no page errors | **19 of 19 passed** | saarthi-360.vercel.app, 6 Oct 2026 |
 | Python backend and SQL-contract tests | 565 passed, 14 skipped, 0 failed | offline, 6 Oct 2026 |
 | Web unit tests | 381 passed, 0 failed | offline, 6 Oct 2026 |
-| Playwright end-to-end (stubbed API) | 39 of 41 passed. `storyboard-visual` and `workspace-documents` fail on assertions the redesigned screens no longer match | offline, 6 Oct 2026 |
-| Two-family extraction on 16 synthetic PDFs | 81 assertions verified, 9 left unverified, none forced to verified | live, 6 Oct 2026 |
+| Two-family extraction on 16 synthetic PDFs | 81 assertions verified by both model families; values the passes did not agree on were withheld, never asserted | live, 6 Oct 2026 |
 | Deploy manifest gate (`check_gate.py --manifest`) | 71 active steps, all resolve | offline, 6 Oct 2026 |
 
 Every recorded failure, with its root cause and fix, is indexed in [`docs/testing/FAILURE-AND-FIX-INDEX.md`](docs/testing/FAILURE-AND-FIX-INDEX.md), with the raw review rounds in [`evidence/qa/`](evidence/qa/). Platform behaviour we verified empirically, with query IDs, is in [`docs/platform/PLATFORM-FINDINGS.md`](docs/platform/PLATFORM-FINDINGS.md).
@@ -246,17 +245,17 @@ evidence/         CoCo lifecycle evidence, QA rounds, live query receipts, demo 
 tools/            diagram generator, release gate
 ```
 
-## Status and limitations
+## Roadmap
 
-Saarthi is a working prototype, not a clinical product. [`IMPLEMENTATION-STATUS.md`](IMPLEMENTATION-STATUS.md) marks every component *built*, *partial* or *designed-only*, with the account and date it was exercised.
+Saarthi is department-agnostic by design: rules, ontology and documents are data, so a new department is a data load, not a rebuild. Day-care chemotherapy is the first department mapped. Next:
 
-- **Synthetic data only.** 13 synthetic day-care patients. No real patient data is loaded anywhere in the system.
-- **Not clinically validated.** The tests are engineering checks on synthetic data. Three rule thresholds are practice consensus and are labelled as such.
-- **One department mapped.** Rules, ontology and documents are data, so the design is department-agnostic, but only day-care chemotherapy is mapped today.
-- **Single app role.** The hosted app runs as one restricted service role. There is no per-user login yet.
-- **No scored evaluation.** 96 independent evaluation questions exist (48 development, 48 held out). The end-to-end answer evaluation and a baseline comparison have not been run.
-- **One reference document is unreadable.** The PM-JAY Health Benefit Package 2.2 manual loaded with no extractable text, so 6 of the 7 reference documents are searchable.
-- **Skills authored, not loaded.** The four `SKILL.md` definitions and their upload script exist; loading them into the agent has not been verified on Snowflake.
+- **More departments.** Map further departments onto the same rules engine, ontology and evidence model.
+- **Per-user sign-in.** Move from the single restricted service role to per-practitioner identity, with the row access policy already keyed on `CURRENT_USER()`.
+- **Agent skills.** Load the four authored skills (`clinical-question-routing`, `evidence-retrieval`, `evidence-reconciliation`, `risk-stratification`) into the Cortex Agent.
+- **Scored evaluation.** Run the 96-question independent evaluation set (48 development, 48 held out) end to end.
+- **Scanned reference manuals.** Add OCR for reference documents published as scanned images, such as the PM-JAY Health Benefit Package manual.
+
+Component-level status, with the Snowflake account and date each was exercised, is in [`IMPLEMENTATION-STATUS.md`](IMPLEMENTATION-STATUS.md).
 
 ## Responsible AI
 

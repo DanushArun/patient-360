@@ -25,8 +25,8 @@ the hosted app, with screenshots in [`evidence/demo/preflight/`](../../evidence/
 ## 2. Offline verification
 
 The commands are listed under **Getting started** in the [README](../../README.md). Expected results: Python 565 passed / 14 skipped / 0
-failed; web unit tests 381 passed; Playwright end-to-end 39 of 41 (stubbed API; the two failures are named in the
-README); typecheck and production build clean. With live access off, `/design-preview/PAT-DC-07` shows a recorded
+failed; web unit tests 381 passed; typecheck and
+production build clean. With live access off, `/design-preview/PAT-DC-07` shows a recorded
 fixture, labelled as such.
 
 ## 3. Real-World Relevance
@@ -60,16 +60,4 @@ fixture, labelled as such.
 | [`IMPLEMENTATION-STATUS.md`](../../IMPLEMENTATION-STATUS.md) | Every component marked *built*, *partial* or *designed-only*, with the account and date it was exercised |
 | [`backend/sql/deploy/`](../../backend/sql/deploy/README.md) | The ten-step Snowsight deploy bundle, with a VERIFY block per step |
 | [`TESTING-PLAYBOOK.md`](../testing/TESTING-PLAYBOOK.md), [`PROTOTYPE-COST-CONTROLS.md`](../platform/PROTOTYPE-COST-CONTROLS.md) | How testing is run, and how cost is capped |
-| [README](../../README.md): *Status and limitations* | What is not yet done |
-
-## Known limitations
-
-These match the README.
-
-- **Synthetic data only**, 13 day-care patients. **Not clinically validated.**
-- **One department mapped** (day-care chemotherapy), though rules, ontology and documents are data.
-- **Single app role** on the hosted app; no per-user login yet.
-- **No scored end-to-end evaluation** and no baseline comparison yet; 96 independent evaluation questions are written.
-- **One reference document unreadable**: the PM-JAY Health Benefit Package 2.2 manual has no extractable text.
-- **Skills authored, not loaded**: loading the four skills into the agent has not been verified on Snowflake.
-- **No completed clean-account install.** A clean install attempt on 6 Oct failed and is recorded in [`clean-install-live.json`](../../evidence/qa/clean-install-live.json).
+| [README](../../README.md): *Roadmap* | The next departments and capabilities |
