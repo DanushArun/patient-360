@@ -151,7 +151,8 @@ Report the measured minutes and the sample size.
 
 `backend/sql/setup.sql` was run end to end on a new trial account (`PVYRHHT-XG46956`, locator `WH11571`, AWS
 `ap-northeast-1`) from a Cortex Code session as user `DAKSHA`. This is the first run of the full manifest on a clean
-account. Results below are **reported from that CoCo session**; the counts have not yet been re-queried independently.
+account. Step results are reported by that CoCo session; counts, search services and task states were then checked with
+read-only queries.
 
 | Area | Result on XG46956 |
 |---|---|
@@ -161,15 +162,15 @@ account. Results below are **reported from that CoCo session**; the counts have 
 | Skills | `upload_skills.sql` ran in step 19 before the agent was created, so the four skills are now uploaded on this account. Not yet exercised in an agent run |
 | Fixes needed during the run | Two task files ran `EXECUTE AS USER SITAR`, a user that does not exist here; the agent spec's `additionalProperties: false` was rejected by `CREATE AGENT`. Both fixed in PR #18 |
 | Rerun needed | Step 15 was reported passed but `DT_SCHEME_ELIGIBILITY` and `DT_TREATMENT_PLAN` were missing afterwards and were created by hand |
+| Counts, checked | 16 rules (17 rows: `ENDO-DEXA-001` has a version 2), 13 patients, `SAARTHI_AGENT` created |
+| Cortex Search, checked | Both services active; `PATIENT_DOC_SEARCH` indexes 19 chunks, `REFERENCE_DOC_SEARCH` indexes 628 |
+| Tasks, checked | All 7 tasks suspended, so no trial credit is spent on schedules |
 
 **Not done yet on XG46956**
 
-- **No documents loaded.** The structured-event CSV load processed 0 files, and the cohort PDFs were not uploaded to
-  the patient-document stage. Document search, two-pass extraction and document-cited gates have nothing to work on
-  until `deploy/06_cohort_and_documents.sql` and `deploy/08_pipeline_kickoff.sql` are run.
-- **Counts not verified.** Rule, patient and procedure counts still need a read-only check
-  (`SELECT COUNT(*)` on `RULE_CATALOG` and `PATIENT`, `SHOW AGENTS`, `SHOW TASKS`).
-- **Task state unknown.** Confirm all seven tasks are suspended so they do not spend trial credit.
+- **Cohort documents not loaded.** The 22 cohort PDFs are not yet uploaded and parsed, and the structured-event CSV
+  load processed 0 files, so two-pass extraction has not run on this account. Run
+  `deploy/06_cohort_and_documents.sql` and `deploy/08_pipeline_kickoff.sql`.
 - **Task user is hardcoded.** PR #18 changed `EXECUTE AS USER SITAR` to `DAKSHA`, which fixes this account but breaks
   setup on accounts without a `DAKSHA` user. The task user should become a deploy-time setting.
 - **Web app not yet switched on.** `web/.env.local` points at XG46956 with user `DAKSHA`, role `SAARTHI_APP` and
