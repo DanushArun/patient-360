@@ -29,7 +29,7 @@ failed; web unit tests 381 passed; Playwright end-to-end 39 of 41 (stubbed API; 
 README); typecheck and production build clean. With live access off, `/design-preview/PAT-DC-07` shows a recorded
 fixture, labelled as such.
 
-## 3. The problem and the boundary (Real-World Relevance)
+## 3. Real-World Relevance
 
 | Read | What to check |
 |---|---|
@@ -39,7 +39,7 @@ fixture, labelled as such.
 | [`evidence/clinical/`](../../evidence/clinical/README.md) | 55 requirements quoted word for word from 13 official sources, checked by script against the rules' numbers, with the coverage gaps listed |
 | [`DATASET-LICENCES.md`](../compliance/DATASET-LICENCES.md) | Synthetic-only position, reference document provenance and licence status |
 
-## 4. The engineering (Technical Execution)
+## 4. Technical Execution
 
 | Read | What to check |
 |---|---|
@@ -53,14 +53,14 @@ fixture, labelled as such.
 | [`FAILURE-AND-FIX-INDEX.md`](../testing/FAILURE-AND-FIX-INDEX.md), [`evidence/qa/`](../../evidence/qa/) | Recorded failures with root cause, fix and verification status, and the uncurated QA, fix and deploy rounds |
 | [`evidence/coco/`](../../evidence/coco/README.md) | CoCo lifecycle evidence by phase: planning, development, execution, testing |
 
-## 5. Completeness and honesty (Solution Completeness)
+## 5. Solution Completeness
 
 | Read | What to check |
 |---|---|
 | [`IMPLEMENTATION-STATUS.md`](../../IMPLEMENTATION-STATUS.md) | Every component marked *built*, *partial* or *designed-only*, with the account and date it was exercised |
 | [`backend/sql/deploy/`](../../backend/sql/deploy/README.md) | The ten-step Snowsight deploy bundle, with a VERIFY block per step |
 | [`TESTING-PLAYBOOK.md`](../testing/TESTING-PLAYBOOK.md), [`PROTOTYPE-COST-CONTROLS.md`](../platform/PROTOTYPE-COST-CONTROLS.md) | How testing is run, and how cost is capped |
-| [README](../../README.md): *Status and limitations* | What is not yet done, stated plainly |
+| [README](../../README.md): *Status and limitations* | What is not yet done |
 
 ## Known limitations
 
