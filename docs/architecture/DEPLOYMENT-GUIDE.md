@@ -95,7 +95,7 @@ Break any of these and single-user testing looks perfect while cross-patient lea
 
 ## 4. Repository layout (implementation)
 
-**Revised 21 Sept — this section originally proposed `src/sql/` with one file per numbered phase. It was superseded the same day: everything that runs inside Snowflake (plus the tooling that deploys and tests it) lives under `backend/`, and the Streamlit client is `frontend/` — with one file per *procedure* rather than one file per deploy phase, so two people editing different tool procedures never touch the same file. `setup.sql` still contains no DDL — it is a list of `EXECUTE IMMEDIATE FROM` lines in build order, one per file below, which is where the 21-phase shape from §3 actually lives. `planning/builder-1/REPO-STRUCTURE.md` §2 has the full rationale; treat it as authoritative over this tree if the two ever disagree.**
+**Revised 21 Sept — this section originally proposed `src/sql/` with one file per numbered phase. It was superseded the same day: everything that runs inside Snowflake (plus the tooling that deploys and tests it) lives under `backend/`, and the Streamlit client is `frontend/` — with one file per *procedure* rather than one file per deploy phase, so two people editing different tool procedures never touch the same file. `setup.sql` still contains no DDL — it is a list of `EXECUTE IMMEDIATE FROM` lines in build order, one per file below, which is where the 21-phase shape from §3 actually lives. has the full rationale; treat it as authoritative over this tree if the two ever disagree.**
 
 ```
 patient-360/

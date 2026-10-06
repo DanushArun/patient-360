@@ -1,4 +1,4 @@
-# SAARTHI — keynote demo
+# Saarthi — keynote demo
 
 One patient, one evening, one coordinator. Four minutes, mostly live.
 

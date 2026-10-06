@@ -218,6 +218,6 @@ That is a lot of genuine, legally safe recommendation value that the architectur
 
 Across all three reviews, the same pattern: **the research is right and the architecture didn't absorb it.**
 
-Consent, the FHIR mapping, the family floater, the `conflicting` status, retention clocks, the model-risk register, extraction quality on rotated photos, unit-conversion traps, specimen-level discordance, the 60–70% curable-denial statistic — all documented in `planning/research/` with citations, none carried into SPEC.md.
+Consent, the FHIR mapping, the family floater, the `conflicting` status, retention clocks, the model-risk register, extraction quality on rotated photos, unit-conversion traps, specimen-level discordance, the 60–70% curable-denial statistic — all documented in `docs/research/` with citations, none carried into SPEC.md.
 
 The fix is not more research. It is a rewrite of SPEC.md that treats every research file as a checklist to be closed out, with a traceability matrix proving each finding landed in a specific object.

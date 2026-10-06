@@ -9,7 +9,7 @@ An optional intelligence layer that helps a medical professional navigate the ex
 - [OpenAI UI guidelines](https://developers.openai.com/plugins/concepts/ui-guidelines): conversation can remain alongside richer work surfaces; floating surfaces suit ongoing sessions and should stay lightweight; result cards need few clear actions. Applied as one conversation with a compact floating controller, persistent evidence and source-opening actions. This is an adaptation to SAARTHI, not an assertion that its standalone UI must follow ChatGPT plugin layout requirements.
 - [OpenAI: What makes a great ChatGPT app](https://developers.openai.com/blog/what-makes-a-great-chatgpt-app): useful conversational capabilities bring relevant context, enable actions and offer clear next steps. Applied as scoped record navigation and evidence retrieval.
 
-Local grounding: ../INTERFACE-GUIDELINES.md; ../../../planning/revised-architecture/SPEC.md; ../../../planning/revised-architecture/COPILOT-SPEC.md. The current interface guidelines take precedence over the older designer brief for typography.
+Local grounding: ../INTERFACE-GUIDELINES.md; ../../../docs/architecture/SPEC.md; ../../../docs/architecture/COPILOT-SPEC.md. The current interface guidelines take precedence over the older designer brief for typography.
 
 ## Three rendered moments
 1. 01-listen-and-select.png — voice request with roster available; explicit patient selection before patient-specific retrieval.

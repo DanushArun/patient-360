@@ -355,7 +355,7 @@ These appear on the homepage census rows:
 - `docs/TESTING-PLAYBOOK.md` -- 65 test cases with expected results (shows exact user flows)
 - `docs/PROJECT-OVERVIEW.md` -- Architecture, 16 rules, 8 tools, access control model
 - `IMPLEMENTATION-STATUS.md` -- Per-component status with honest labels
-- `planning/research/design/DESIGN-SYSTEM.md` -- Full design system specification
-- `planning/research/design/screens/` -- Screenshots of the running app
+- `docs/design/DESIGN-SYSTEM.md` -- Full design system specification
+- `docs/design/screens/` -- Screenshots of the running app
 - `frontend/components/sa.tsx` -- Current design system components (colour tokens, chips, layout)
 - `frontend/app/saarthi.css` -- Full stylesheet with commented design decisions (315 lines, every decision explained)

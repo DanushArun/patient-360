@@ -2,7 +2,7 @@
 
 > **Honesty note added 4 Oct 2026 (FIX-ROUND-5).** This is a historical 16-17 Sept snapshot. Competitor source code is **not
 > vendored in this repository**; statements about competitors are a researcher's file-level reading recorded in
-> `planning/research/clinical/ps04-competitive-landscape.md` (e.g. `streamlit/login.py`, `sql/00_infrastructure.sql`,
+> `docs/research/clinical/ps04-competitive-landscape.md` (e.g. `streamlit/login.py`, `sql/00_infrastructure.sql`,
 > with no line numbers) and **cannot be re-verified from this repo**. Read "no competitor does X" as "we did not find X in
 > the code we reviewed". Superseded in part by `DECISION-household-removal.md`.
 
