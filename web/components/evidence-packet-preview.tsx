@@ -12,9 +12,9 @@ import { factStateDisplay, factValueLabel } from "@/lib/workspace-patient-facts.
 export function EvidencePacketPreview({ patient, knownAsOf, recipient }: {
   patient: PatientData; knownAsOf: string | null; recipient: string;
 }): ReactNode {
-  if (!knownAsOf || knownAsOf !== patient.knownAsOf) return <p role="status" className="sa-meta">
-    Packet preview unavailable: the answer and displayed record have different snapshot cutoffs.
-  </p>;
+  // A preview drawn from a different snapshot than the answer would mix two clocks; show none.
+  // The packet itself is still prepared from the server's own snapshot.
+  if (!knownAsOf || knownAsOf !== patient.knownAsOf) return null;
   return <section aria-label="Evidence packet preview" className="sa-packet-preview">
     <h3>Evidence packet preview</h3>
     <p className="sa-meta">Draft · Not created · Addressed to {recipient}</p>

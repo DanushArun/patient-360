@@ -116,7 +116,8 @@ test("test_refused_answer_when_class_a_is_returned_shows_practitioner_referral",
   }));
 
   assert.match(markup, /Answer status: Refused/);
-  assert.match(markup, /Evidence packet addressed to Dr Meera Iyer is offered/);
+  assert.match(markup, /Clinical decision for Dr Meera Iyer/);
+  assert.match(markup, /evidence packet can be prepared/);
 });
 
 test("test_turn_error_when_artifact_is_unavailable_shows_recoverable_failure", () => {

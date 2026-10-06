@@ -555,3 +555,23 @@ html[data-copilot-picking] [data-copilot-ref]:hover { outline: 2px solid var(--a
   box-shadow: var(--shadow-elevated);
   pointer-events: none;
 }
+
+/* Validated answer card (app/patient/[id]/patient-answer-artifact.tsx): facts first, one clock,
+   provenance one click away. */
+.sa-answer { display: grid; gap: var(--space-2); margin-top: var(--space-2); font: var(--text-body); color: var(--label); }
+.sa-answer p { margin: 0; }
+.sa-answer-claims { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-4); }
+.sa-answer-claims li { padding-left: var(--space-1); overflow-wrap: anywhere; }
+.sa-answer-claims li::marker { color: var(--label-tertiary); }
+.sa-answer-refs { margin-left: 2px; font: var(--text-caption); color: var(--accent); }
+.sa-answer-rule, .sa-answer-note { display: block; margin-top: 2px; font: var(--text-footnote); color: var(--label-tertiary); }
+.sa-answer-note { color: var(--label-secondary); }
+.sa-answer-foot { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); font: var(--text-footnote); color: var(--label-tertiary); }
+.sa-answer-more { font: var(--text-footnote); color: var(--label-secondary); }
+.sa-answer-more > summary { cursor: pointer; color: var(--label-secondary); font-weight: 500; }
+.sa-answer-more > summary:hover { color: var(--label); }
+.sa-answer-more ol, .sa-answer-more ul { display: grid; gap: var(--space-2); margin: var(--space-2) 0 0; padding-left: var(--space-4); }
+.sa-answer-more code { font: var(--text-caption-mono); }
+.sa-answer-referral { padding: var(--space-3); border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg-secondary); }
+/* Many cited rows at once: a tint and a hairline, so the table stays readable. */
+[data-copilot-mark="cited"] { outline-width: 1px; }

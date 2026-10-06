@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 import { Clock } from "@/components/ui/clock";
 import type { AgentTurn, AnswerClaim } from "@/lib/patient";
+import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import Link from "next/link";
+
+// A validated answer, laid out for a clinician: the cited facts first, one clock, and the
+// provenance (sources, caveats) one click away. Nothing is dropped: every source and every
+// limitation the server returned is still rendered, inside a disclosure.
 
 type Evidence = AnswerClaim["evidence"][number] & {
   page_index?: number;
@@ -19,6 +24,38 @@ function sourceHref(patientId: string, knownAsOf: string, source: Evidence): str
     end: String(source.char_end) });
   return `/patient/${encodeURIComponent(patientId)}/documents/`
     + `${encodeURIComponent(source.doc_id)}?${query}`;
+}
+
+const ISO = /\b(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(\.\d+)?\b/g;
+
+/** Record times in prose read as "3 Oct 2026, 23:03", never as raw ISO strings. */
+function readableTimes(text: string): string {
+  return text.replace(ISO, (_, day: string, time: string) => formatRecordDate(`${day}T${time}`));
+}
+
+function humanKey(key: string): string {
+  const text = key.replace(/_(at|display|id)$/, "").replaceAll("_", " ").trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** The server's claim sentence, made readable. The wording of a value is never changed. */
+export function readableClaim(text: string): string {
+  const row = /^Recorded SQL row: (\{.*\})\s*$/s.exec(text);
+  if (row) {
+    try {
+      const fields = Object.entries(JSON.parse(row[1]) as Record<string, unknown>)
+        .filter(([key, value]) => key !== "version" && value !== null && value !== "");
+      return fields.map(([key, value]) => `${humanKey(key)}: ${readableTimes(String(value))}`)
+        .join(" · ");
+    } catch { /* not JSON after all: show the sentence as written */ }
+  }
+  const check = /^SQL record check (\S+) version (\d+): ([a-z_]+)\.\s*This is not treatment clearance\.?$/i
+    .exec(text);
+  if (check) {
+    const outcome = check[3].replaceAll("_", " ");
+    return `Record check ${check[1]}: ${outcome.charAt(0).toUpperCase()}${outcome.slice(1)}`;
+  }
+  return readableTimes(text.replace(/\(event time ([^)]+)\)/g, "($1)"));
 }
 
 function ReferenceMetadata({ source }: { source: Evidence }): ReactNode {
@@ -53,8 +90,8 @@ function Citation({ source, recordedText, index, patientId, knownAsOf, sourceSco
   const documentType = sourceScope === "reference" ? "Reference document" : "Patient document";
   const type = source.kind === "reference_clause" ? "Reference quotation"
     : source.kind === "document_span" ? documentType : "Structured record";
-  return <li className="space-y-1" data-source-kind={source.kind}>
-    <div><strong>[{index + 1}]</strong> {type} · {source.id}</div>
+  return <li data-source-kind={source.kind}>
+    <div><strong>{index + 1}</strong> {type} · <code>{source.id}</code></div>
     {source.kind === "structured"
       && <StructuredSource source={source} recordedText={recordedText} />}
     {source.kind === "reference_clause" && <ReferenceMetadata source={source} />}
@@ -76,23 +113,15 @@ function Citation({ source, recordedText, index, patientId, knownAsOf, sourceSco
 function Claim({ claim, citationOffset }: {
   claim: AnswerClaim; citationOffset: number;
 }): ReactNode {
-  return <li className="space-y-2">
-    <p>{claim.text}</p>
-    <div className="sa-meta">Claim type: {claim.claim_type}</div>
-    {claim.rule_id && Number.isInteger(claim.rule_version) && <div className="sa-meta">
-      Rule: {claim.rule_id} · version {claim.rule_version}
-    </div>}
-    {claim.provenance_note && <div className="sa-limitation">{claim.provenance_note}</div>}
-    {claim.asserted_value !== undefined && claim.asserted_value !== null
-      && <div className="sa-meta">Recorded value: {String(claim.asserted_value)}</div>}
-    <div className="sa-meta">{claim.evidence.length
-      ? "Citations " + claim.evidence.map((_, index) => `[${citationOffset + index + 1}]`).join(" ")
-      : "No citation supplied for this claim."}</div>
+  return <li>
+    <span>{readableClaim(claim.text)}</span>
+    {claim.evidence.length > 0 && <sup className="sa-answer-refs">
+      {claim.evidence.map((_, index) => citationOffset + index + 1).join(",")}</sup>}
+    {claim.rule_id && Number.isInteger(claim.rule_version) && <small className="sa-answer-rule">
+      Rule: {claim.rule_id} · version {claim.rule_version}</small>}
+    {claim.provenance_note && <small className="sa-answer-note">{claim.provenance_note}</small>}
+    {!claim.evidence.length && <small className="sa-answer-note">No citation supplied.</small>}
   </li>;
-}
-
-function statusLabel(status: string): string {
-  return status === "supported" ? "Supported" : status === "partial" ? "Partial" : "Refused";
 }
 
 export function PatientAnswerArtifact({ turn, patientId, sourceScope }: {
@@ -100,31 +129,38 @@ export function PatientAnswerArtifact({ turn, patientId, sourceScope }: {
 }): ReactNode {
   const artifact = turn.error ? undefined : turn.artifact;
   if (!artifact && !turn.error) return null;
-  return <section className="mt-4 space-y-3" aria-label="Answer evidence artifact">
-    <div className="sa-field-label">Answer evidence</div>
-    {artifact && <>
-      <div className="sa-meta">Answer status: {statusLabel(artifact.overall_status)}</div>
-      <div className="sa-meta">Question class: {artifact.classification}</div>
-      <div className="sa-meta">Known as of <Clock value={artifact.known_as_of} fallback="Unavailable" /></div>
-      {artifact.refusal && <div className="sa-limitation">
-        {artifact.refusal.message}<br />
-        Evidence packet addressed to {artifact.refusal.practitioner.name}
-        {artifact.refusal.evidence_packet_offered ? " is offered." : "."}
-      </div>}
-      <ol className="space-y-3">{(artifact.classification === "CLASS_A"
-        ? [] : artifact.claims).map((claim, index) =>
+  if (turn.error) return <section className="sa-answer" aria-label="Answer evidence artifact">
+    <div role="alert" className="sa-limitation">Answer unavailable: {turn.error}</div>
+  </section>;
+  if (!artifact) return null;
+  const clock = <span>Known as of <Clock value={artifact.known_as_of} fallback="Unavailable" /></span>;
+
+  if (artifact.classification === "CLASS_A") {
+    const name = artifact.refusal?.practitioner.name ?? "the treating practitioner";
+    return <section className="sa-answer sa-answer-referral" aria-label="Answer evidence artifact">
+      <p><strong>Clinical decision for {name}.</strong> Saarthi answers record questions only.
+        {artifact.refusal?.evidence_packet_offered
+          ? " An evidence packet can be prepared for them below." : ""}</p>
+      <footer className="sa-answer-foot">{clock}<span>Answer status: Refused</span></footer>
+    </section>;
+  }
+
+  return <section className="sa-answer" aria-label="Answer evidence artifact">
+    {artifact.claims.length > 0
+      ? <ul className="sa-answer-claims">{artifact.claims.map((claim, index) =>
         <Claim key={`${claim.claim_type}-${index}`} claim={claim}
           citationOffset={artifact.claims.slice(0, index).reduce((count, item) =>
-            count + item.evidence.length, 0)}
-          />)}</ol>
-      {artifact.classification !== "CLASS_A" && <CitationIndex claims={artifact.claims}
-        patientId={patientId} knownAsOf={artifact.known_as_of} sourceScope={sourceScope} />}
-      {artifact.limitations.map((limitation, index) =>
-        <div key={index} className="sa-limitation">{limitation}</div>)}
-    </>}
-    {turn.error && <div role="alert" className="sa-limitation">
-      Answer unavailable: {turn.error}
-    </div>}
+            count + item.evidence.length, 0)} />)}</ul>
+      : <p>Nothing in the record answers this question.</p>}
+    <footer className="sa-answer-foot">{clock}
+      {artifact.overall_status !== "supported" && <span>Answer status: Partial</span>}</footer>
+    <CitationIndex claims={artifact.claims} patientId={patientId}
+      knownAsOf={artifact.known_as_of} sourceScope={sourceScope} />
+    {artifact.limitations.length > 0 && <details className="sa-answer-more">
+      <summary>Notes ({artifact.limitations.length})</summary>
+      <ul>{artifact.limitations.map((limitation, index) =>
+        <li key={index}>{readableTimes(limitation)}</li>)}</ul>
+    </details>}
   </section>;
 }
 
@@ -135,11 +171,11 @@ function CitationIndex({ claims, patientId, knownAsOf, sourceScope }: {
   const sources = claims.flatMap((claim) => claim.evidence.map(source =>
     ({ source, recordedText: claim.text })));
   if (!sources.length) return null;
-  return <section className="sa-citation-index" aria-label="Citation index">
-    <h3>Citation index</h3>
+  return <details className="sa-answer-more sa-citation-index" aria-label="Citation index">
+    <summary>Sources ({sources.length})</summary>
     <ol>{sources.map(({ source, recordedText }, index) => <Citation key={`${source.id}-${index}`}
       source={source as Evidence} index={index} patientId={patientId}
       recordedText={recordedText}
       knownAsOf={knownAsOf} sourceScope={sourceScope} />)}</ol>
-  </section>;
+  </details>;
 }

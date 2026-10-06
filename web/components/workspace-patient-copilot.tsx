@@ -427,7 +427,9 @@ function Message({ turn, selected, onSelect, onOpenSection }: {
       : turn.record ? <RecordAnswerCard record={turn.record} onOpenSection={onOpenSection}
         onShowEvidence={(ruleId) => onSelect(turn.id, ruleId)} />
       : <>{!turn.artifact && <p>No validated answer is available for this request.</p>}
-        {turn.known_as_of && <div className="sa-meta">Known as of <Clock value={turn.known_as_of} /></div>}
+        {/* The answer card carries its own clock; say it once. */}
+        {turn.known_as_of && !turn.artifact
+          && <div className="sa-meta">Known as of <Clock value={turn.known_as_of} /></div>}
         {turn.history_saved === false && <p className="sa-meta" role="status">
           Answer history could not be saved.
         </p>}
