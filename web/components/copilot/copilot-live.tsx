@@ -227,6 +227,7 @@ export function useLiveCopilot(deps: LiveDeps): LiveState {
             throw new Error("The day-care checks could not be read.");
           }
           lastCohortIds.current = last.rows.map((row) => row.patientId);
+          if (last.refused) return "Referred to the treating practitioner";
           return last.title ? `Found ${plural(last.rows.length, "patient")}: ${last.title}`
             : "Answered from the day-care checks";
         }

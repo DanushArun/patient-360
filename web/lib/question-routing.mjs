@@ -30,8 +30,11 @@ function routingFailure(knownAsOf) {
  * @param {(phase: string) => void} [onPhase] reports real progress: "routing" before the
  *   classifier runs, then "refusing" for a Class A question. The answer callback reports
  *   its own later phases.
+ * @param {((knownAsOf: string) => Promise<object>) | null} [refuse] how to refuse a Class A question.
+ *   Defaults to the patient-bound gateway refusal; a caller with no bound patient (the
+ *   day-care list) must supply its own, because that procedure requires a binding.
  */
-export async function routeQuestion(question, run, answer, onPhase = () => {}) {
+export async function routeQuestion(question, run, answer, onPhase = () => {}, refuse = null) {
   onPhase("routing");
   const clock = await run(
     `SELECT TO_VARCHAR(CURRENT_TIMESTAMP()::TIMESTAMP_NTZ, 'YYYY-MM-DD"T"HH24:MI:SS')`
@@ -51,6 +54,7 @@ export async function routeQuestion(question, run, answer, onPhase = () => {}) {
   const classification = parseClassifierResult(rows)?.classification;
   if (classification === "CLASS_A") {
     onPhase("refusing");
+    if (refuse) return refuse(knownAsOf);
     const refusal = await run('CALL SAARTHI.OPERATIONAL.ANSWER_GATEWAY_REFUSAL(?)', [knownAsOf]);
     return readGatewayAnswer(Object.values(refusal[0] ?? {})[0]);
   }

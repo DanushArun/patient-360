@@ -4,7 +4,7 @@ export type CohortRow = { patientId: string; name: string; status: CohortStatus;
 export type CohortTurn = { id: string; role: "user"; text: string } | {
   id: string; role: "assistant"; title: string | null; rows: CohortRow[];
   counts?: Record<CohortStatus, number>; basis: string | null;
-  known_as_of: string | null; text?: string; error?: string | null;
+  known_as_of: string | null; text?: string; error?: string | null; refused?: boolean;
 };
 export type CohortSessionSnapshot = { turns: CohortTurn[]; busy: boolean; question: string };
 export type CohortSession = {
