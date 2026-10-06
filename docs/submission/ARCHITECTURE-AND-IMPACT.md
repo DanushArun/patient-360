@@ -142,8 +142,37 @@ Report the measured minutes and the sample size.
 
 ### Not yet live, per `IMPLEMENTATION-STATUS.md`
 
-- The four skills are written but not loaded into the agent; the deploy step is unverified.
-- The seven Tasks are created but suspended, so no scheduled run has been shown.
+- The seven Tasks are created but no scheduled run has been shown.
 - The answer validator exists but is not in the answer path.
 - 80 eval questions written, none scored; no baseline comparison yet.
 - 12 of 100 planned patients; localhost, single operator.
+
+## Deployment update, 6 Oct 2026: account XG46956
+
+`backend/sql/setup.sql` was run end to end on a new trial account (`PVYRHHT-XG46956`, locator `WH11571`, AWS
+`ap-northeast-1`) from a Cortex Code session as user `DAKSHA`. This is the first run of the full manifest on a clean
+account. Step results are reported by that CoCo session; counts, search services and task states were then checked with
+read-only queries.
+
+| Area | Result on XG46956 |
+|---|---|
+| Account setup | Warehouse `SAARTHI_AI_WH`, role `SAARTHI_APP` granted to `DAKSHA`, `SNOWFLAKE.CORTEX_USER` granted, cross-region inference set to `ANY_REGION` |
+| Cortex AI | `AI_COMPLETE` returned `OK` under `SAARTHI_APP` for both R7 models, `llama3.3-70b` and `claude-haiku-4-5`. This trial is not blocked from AI functions |
+| `setup.sql` steps 1–19b | Reported passed: database and 7 schemas, tables, row access and masking policies, rules, synthetic data, stream, procedures, dynamic tables, 7 tasks, 2 Cortex Search services, semantic view, skills upload, Cortex Agent, MCP server, judge probes and grants |
+| Skills | `upload_skills.sql` ran in step 19 before the agent was created, so the four skills are now uploaded on this account. Not yet exercised in an agent run |
+| Fixes needed during the run | Two task files ran `EXECUTE AS USER SITAR`, a user that does not exist here; the agent spec's `additionalProperties: false` was rejected by `CREATE AGENT`. Both fixed in PR #18 |
+| Rerun needed | Step 15 was reported passed but `DT_SCHEME_ELIGIBILITY` and `DT_TREATMENT_PLAN` were missing afterwards and were created by hand |
+| Counts, checked | 16 rules (17 rows: `ENDO-DEXA-001` has a version 2), 13 patients, `SAARTHI_AGENT` created |
+| Cortex Search, checked | Both services active; `PATIENT_DOC_SEARCH` indexes 19 chunks, `REFERENCE_DOC_SEARCH` indexes 628 |
+| Tasks, checked | All 7 tasks suspended, so no trial credit is spent on schedules |
+
+**Not done yet on XG46956**
+
+- **Cohort documents not loaded.** The 22 cohort PDFs are not yet uploaded and parsed, and the structured-event CSV
+  load processed 0 files, so two-pass extraction has not run on this account. Run
+  `deploy/06_cohort_and_documents.sql` and `deploy/08_pipeline_kickoff.sql`.
+- **Task user fix not yet deployed.** PR #18 hardcoded `EXECUTE AS USER DAKSHA`; PR #20 replaces that with a deploy-time
+  lookup (the user on practitioner `PRAC-01`, else the deploying user). Offline checks pass; re-run the two task files
+  on Snowflake after it merges.
+- **Web app not yet switched on.** `web/.env.local` points at XG46956 with user `DAKSHA`, role `SAARTHI_APP` and
+  warehouse `SAARTHI_AI_WH`; live access stays off until the checks above pass.
