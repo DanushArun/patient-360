@@ -297,9 +297,15 @@ WITH next_visit AS (
            FROM SAARTHI.CORE.TREATMENT_PLAN
           QUALIFY ROW_NUMBER() OVER (
             PARTITION BY patient_id ORDER BY version DESC, decided_at DESC) = 1
+       ), latest_diagnosis AS (
+         -- The condition under treatment: the most recent diagnosis event on the record.
+         SELECT patient_id, display, code
+           FROM SAARTHI.CORE.CLINICAL_EVENT
+          WHERE patient_id = :v_patient_id AND event_type = 'diagnosis' AND display IS NOT NULL
+          QUALIFY ROW_NUMBER() OVER (ORDER BY event_time DESC, event_id DESC) = 1
        )
        SELECT p.name, p.primary_language, nv.scheduled_at, nv.cycle_number,
-              lp.regimen_display,
+              lp.regimen_display, ld.display AS diagnosis, ld.code AS diagnosis_code,
               (SELECT b.consent_id FROM SAARTHI.GOVERNANCE.PATIENT_BINDING b
                 WHERE b.session_id = CURRENT_SESSION() AND b.released_at IS NULL
                 ORDER BY b.bound_at DESC LIMIT 1) AS consent_id,
@@ -319,6 +325,7 @@ WITH next_visit AS (
            ON pr.snowflake_user = CURRENT_USER() AND pr.active = TRUE
          LEFT JOIN next_visit nv ON nv.patient_id = p.patient_id
          LEFT JOIN latest_plan lp ON lp.patient_id = p.patient_id
+         LEFT JOIN latest_diagnosis ld ON ld.patient_id = p.patient_id
         WHERE p.patient_id = :v_patient_id
 );
 ELSEIF (VIEW_NAME = 'snapshot') THEN

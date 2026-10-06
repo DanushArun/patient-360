@@ -27,7 +27,14 @@ def main() -> int:
         with_dx = [row for row in rows if row.get("DIAGNOSIS")]
         print(f"census rows: {len(rows)}; with diagnosis: {len(with_dx)}")
         print("sample:", {(row["NAME"], row["DIAGNOSIS"], row["DIAGNOSIS_CODE"]) for row in with_dx[:3]})
-        return 0 if rows and len(with_dx) == len(rows) else 1
+        # The header reads GET_WEB_PATIENT_DATA('context') under a bound patient.
+        session.query("CALL SAARTHI.OPERATIONAL.BIND_PATIENT(%s)", ("PAT-DC-12",))
+        try:
+            header = session.call("GET_WEB_PATIENT_DATA", ["context", None])["rows"][0]
+        finally:
+            session.query("CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()")
+        print("header:", header.get("NAME"), "|", header.get("DIAGNOSIS"), header.get("DIAGNOSIS_CODE"))
+        return 0 if rows and len(with_dx) == len(rows) and header.get("DIAGNOSIS") else 1
 
 
 if __name__ == "__main__":
