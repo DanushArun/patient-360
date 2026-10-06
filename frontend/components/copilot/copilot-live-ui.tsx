@@ -115,18 +115,11 @@ export function useSpeech(onFinal: (text: string) => void) {
     // Indian English hears Indian accents and patient names far better than the en-US default.
     rec.lang = "en-IN";
     rec.interimResults = true;
-    // Keep listening through pauses; a silence timer below decides when the person has finished.
-    rec.continuous = true;
+    // One utterance per press: the browser ends recognition when the person stops speaking.
+    // (Continuous mode kept re-firing results, so the silence timer never ran out.)
+    rec.continuous = false;
     rec.maxAlternatives = 5;
-    // Contextual biasing where the browser supports it (Chrome's SpeechRecognitionPhrase).
-    if (!plain) try {
-      const Phrase = (window as unknown as { SpeechRecognitionPhrase?: new (p: string, b: number) => unknown })
-        .SpeechRecognitionPhrase;
-      if (Phrase && "phrases" in rec) {
-        (rec as unknown as { phrases: unknown[] }).phrases = vocabulary().map((phrase) =>
-          new Phrase(phrase, 5));
-      }
-    } catch { /* biasing is optional */ }
+    // No phrase biasing: boosted names and phrases were inserted into transcripts unspoken.
     // Prefer on-device recognition where the browser offers it, so speech stays on this machine.
     let local = false;
     if (!plain) try {
