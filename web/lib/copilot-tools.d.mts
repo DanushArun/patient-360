@@ -4,7 +4,7 @@ export type RecordRead = "snapshot" | "labs" | "documents" | "coverage" | "schem
   | "timeline" | "tasks";
 export type RecordToolMatch = {
   tool: RecordTool; concepts: string[]; ruleIds: string[]; eventIds: string[];
-  documentIds: string[]; group: string | null;
+  documentIds: string[]; group: string | null; focus?: "regimen" | null;
 };
 export type RecordTone = "positive" | "neutral" | "warning" | "critical";
 export type RecordItem = {
@@ -18,7 +18,7 @@ export type RecordAnswer = {
 };
 export function matchRecordTool(question: string,
   references?: { kind: string; id: string }[]): RecordToolMatch | null;
-export function readsFor(tool: RecordTool): RecordRead[];
+export function readsFor(tool: RecordTool, concepts?: string[]): RecordRead[];
 export function gateState(gate: { outcome: string; severity?: string }):
   { state: string; tone: RecordTone };
 export function composeRecordAnswer(match: RecordToolMatch, reads: Record<string, unknown>):

@@ -472,7 +472,7 @@ async function answerWithRecordTool(patientId: string, run: Run, context: Patien
   };
   const reads: Record<string, unknown> = { patient: { ...snapshot, now: clock } };
   // Sequential on purpose: one bound session runs one statement at a time.
-  for (const read of readsFor(match.tool)) {
+  for (const read of readsFor(match.tool, match.concepts)) {
     if (read === "labs") reads.labs = await view("facts", "labs");
     if (read === "documents") reads.documents = await view("documents");
     if (read === "coverage") reads.coverage = await view("coverage_comparison");

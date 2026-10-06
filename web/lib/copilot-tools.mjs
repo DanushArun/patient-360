@@ -58,7 +58,10 @@ export function matchRecordTool(question, references = []) {
   const concepts = LAB_CONCEPTS.filter(([, , pattern]) => pattern.test(text))
     .map(([concept]) => concept);
   const group = CHECK_GROUPS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
-  const base = { concepts, ruleIds, eventIds, documentIds, group };
+  // A medication question is answered by the visit card, led by the recorded regimen.
+  const focus = /\b(medications?|medicines?|drugs?|regimen|treatment plan|protocol|chemo(therapy)? is)\b/
+    .test(text) ? "regimen" : null;
+  const base = { concepts, ruleIds, eventIds, documentIds, group, focus };
   const named = TOOL_PATTERNS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
   // Words name the tool; without them, attached items do, then a named lab value.
   if (named === "labs" || (!named && concepts.length)) return { ...base, tool: "labs" };
@@ -69,11 +72,16 @@ export function matchRecordTool(question, references = []) {
   return null;
 }
 
+// Measured on imaging (echo, DEXA), not in a lab: the facts read covers lab and vitals
+// events only, so these are read from the timeline, which carries every event type.
+const IMAGING_CONCEPTS = new Set(["LVEF", "T_SCORE"]);
+
 /** Which governed reads a tool needs. "snapshot" is always read for clocks and checks. */
-export function readsFor(tool) {
+export function readsFor(tool, concepts = []) {
+  const imaging = concepts.some((concept) => IMAGING_CONCEPTS.has(concept));
   return {
     readiness: ["snapshot"],
-    labs: ["snapshot", "labs"],
+    labs: imaging ? ["snapshot", "labs", "timeline"] : ["snapshot", "labs"],
     documents: ["snapshot", "documents"],
     coverage: ["snapshot", "coverage", "schemes"],
     timeline: ["snapshot", "timeline"],
@@ -206,8 +214,11 @@ function readiness(match, { patient }) {
   });
 }
 
-function labs(match, { patient, labs: read }) {
-  const facts = /** @type {any[]} */ (read?.facts ?? []);
+function labs(match, { patient, labs: read, timeline }) {
+  const measured = /** @type {any[]} */ (read?.facts ?? []);
+  const imaging = /** @type {any[]} */ (timeline?.timeline ?? []).filter((event) =>
+    IMAGING_CONCEPTS.has(event.concept) && !measured.some((fact) => fact.event_id === event.event_id));
+  const facts = [...measured, ...imaging];
   let chosen = facts;
   if (match.eventIds.length) chosen = facts.filter((fact) => match.eventIds.includes(fact.event_id));
   else if (match.concepts.length) chosen = facts.filter((fact) => match.concepts.includes(fact.concept));
@@ -239,6 +250,14 @@ function labs(match, { patient, labs: read }) {
     const fact = chosen.find((candidate) => candidate.event_id === item.id);
     summary = `${item.label}: ${item.value}, taken ${formatClock(fact?.event_time)}.`
       + (item.ruleId ? ` Flagged by ${item.ruleId}.` : "");
+  } else if (new Set(items.map((item) => item.label)).size === 1) {
+    // One test measured more than once (an echo series): latest first, then the one before.
+    const series = [...chosen].sort((a, b) => String(b.event_time).localeCompare(String(a.event_time)));
+    const [latest, previous] = series;
+    const flag = items.find((item) => item.ruleId)?.ruleId;
+    summary = `${items[0].label}: ${factValue(latest)} on ${formatClock(latest.event_time)}, `
+      + `previously ${factValue(previous)} on ${formatClock(previous.event_time)}.`
+      + (flag ? ` Flagged by ${flag}.` : "");
   } else {
     summary = `${plural(items.length, "latest lab value")} on record; `
       + `${flaggedCount ? `${flaggedCount} flagged by a record check` : "none flagged by a record check"}.`;
@@ -433,9 +452,19 @@ function visit(match, { patient }) {
       ...recorded(patient.treatingPractitionerName, "Treating practitioner") },
   ];
   const cycle = patient.cycleNumber ? `, cycle ${patient.cycleNumber}` : "";
+  if (match.focus === "regimen") {
+    const regimen = items.splice(2, 1)[0];
+    items.unshift(regimen);
+  }
   return card("visit", {
-    title: "Visit", items,
-    summary: !at ? `No day-care visit is scheduled for ${patient.patientName}.`
+    title: match.focus === "regimen" ? "Treatment" : "Visit", items,
+    summary: match.focus === "regimen"
+      ? (patient.regimen
+        ? `${patient.patientName}'s recorded regimen is ${patient.regimen}`
+          + `${patient.cycleNumber ? `; cycle ${patient.cycleNumber}` : ""}`
+          + `${at && !past ? ` is due ${formatClock(at)}` : ""}.`
+        : `No regimen is recorded for ${patient.patientName}.`)
+      : !at ? `No day-care visit is scheduled for ${patient.patientName}.`
       : past ? `${patient.patientName}'s last scheduled day-care visit was ${formatClock(at)}${cycle}. `
         + "No later visit is on record."
         : `${patient.patientName}'s next day-care visit is ${formatClock(at)}${cycle}.`,

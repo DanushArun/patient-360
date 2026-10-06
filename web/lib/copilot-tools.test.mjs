@@ -227,3 +227,38 @@ test("coverage rows carry dates and packages, and a letter that disagrees is a c
   assert.equal(conflicted.state, "Conflict");
   assert.match(conflicted.note, /Letter says denied, table says approved/);
 });
+
+test("an echo question reads imaging from the timeline and reports the series, not 'not received'", () => {
+  const match = matchRecordTool("what does the echo show?");
+  assert.equal(match.tool, "labs");
+  assert.deepEqual(readsFor(match.tool, match.concepts), ["snapshot", "labs", "timeline"]);
+  assert.deepEqual(readsFor("labs", ["PLT"]), ["snapshot", "labs"]);
+  const gate = { rule_id: "SURV-LVEF-002", outcome: "fail", severity: "blocker", gate: "LVEF",
+    reason: "LVEF 49 below 50", evidence_ids: ["EVT-L0", "EVT-L1"] };
+  const card = composeRecordAnswer(match, {
+    patient: { patientName: "Anjali Deshpande", knownAsOf: "2026-10-06T09:00:00", gates: [gate] },
+    labs: { facts: [], known_as_of: "2026-10-06T09:00:00" },
+    timeline: { timeline: [
+      { event_id: "EVT-L0", concept: "LVEF", event_type: "imaging", value: 63, unit: "%",
+        event_time: "2026-06-17 09:30:00.000", value_state: "present" },
+      { event_id: "EVT-L1", concept: "LVEF", event_type: "imaging", value: 49, unit: "%",
+        event_time: "2026-10-03 09:30:00.000", value_state: "present" },
+      { event_id: "EVT-P", concept: "PLT", event_type: "lab", value: 228000, unit: "/cumm",
+        event_time: "2026-10-06 05:00:00.000", value_state: "present" }] },
+  });
+  assert.equal(card.items.length, 2);
+  assert.match(card.summary, /49.*previously 63/);
+  assert.match(card.summary, /SURV-LVEF-002/);
+  assert.doesNotMatch(card.summary, /Not received/);
+});
+
+test("a medication question leads with the recorded regimen", () => {
+  const match = matchRecordTool("what medication is she on?");
+  assert.equal(match.tool, "visit");
+  assert.equal(match.focus, "regimen");
+  const card = composeRecordAnswer(match, { patient: { patientName: "Anjali Deshpande",
+    regimen: "Paclitaxel + trastuzumab, weekly", cycleNumber: 7, scheduledAt: "2026-10-07T09:30:00",
+    now: "2026-10-06T09:00:00", knownAsOf: "2026-10-06T09:00:00", gates: [] } });
+  assert.match(card.summary, /recorded regimen is Paclitaxel \+ trastuzumab, weekly; cycle 7 is due/);
+  assert.equal(card.items[0].label, "Regimen");
+});
