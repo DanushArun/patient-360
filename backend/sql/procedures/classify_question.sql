@@ -32,6 +32,10 @@ BEGIN
         OR v_q RLIKE '.*\\b(prognosis|survival|survive)\\b.*'
         OR v_q RLIKE '.*\\b(mortality|die|best treatment|change dose|switch regimen|advise)\\b.*'
         OR v_q RLIKE '.*\\bwhat( is|''s)? wrong with (this |the )?(patient|her|him)[ ?.!,]*'
+        -- Record-sounding questions that ask for a judgment about the patient (6 Oct 2026):
+        -- caught here so the wider record scan below can never answer them as Class B.
+        OR v_q RLIKE '.*\\b(proceed|go ahead|override|ready for|fit for|fit to|okay to|ok to|fine to|enough|mean|means|imply|implies|interpret|interpretation|worry|worried|concerning)\\b.*'
+        OR v_q RLIKE '.*\\bcan (she|he|we|they|the patient) (start|have|get|receive|go|continue|take)\\b.*'
     ) THEN
         v_class := 'CLASS_A';
         v_method := 'keyword';
@@ -48,6 +52,10 @@ BEGIN
         OR v_q RLIKE '.*\\b(how many|list|show me|status of|changed since)\\b.*'
         OR v_q RLIKE '.*\\b(contradict(ions?)?|conflicts?|disagreements?)\\b.*'
         OR v_q RLIKE '.*\\b(expired|remaining|received|final|pending|documented|recorded|on file)\\b.*'
+        -- A record question word plus a record noun (6 Oct 2026). Judgment wording is refused by
+        -- the keyword scan above before this is reached; "Is she ready?" names no record noun.
+        OR v_q RLIKE '.*\\b(what|which|when|where|has|have|do we have|is there|are there)\\b.*\\b(on record|in the record|reports?|labs?|counts?|results?|anc|platelets?|hba1c|lvef|dexa|echo[a-z]*|identifiers?|abha|consent|coverage|pm-jay|pre-?auth[a-z]*|authori[sz]ation|gates?|care team|practitioners|facilities|pathology|fish|biopsy|timeline|amended|superseded|changed|documents?|tasks?|visit|schedule)\\b.*'
+        OR v_q RLIKE '.*\\bstill (valid|active|current|in force)\\b.*'
     ) THEN
         v_class := 'CLASS_B';
         v_method := 'structure';

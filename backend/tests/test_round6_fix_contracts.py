@@ -65,13 +65,16 @@ def test_answer_gateway_validates_before_and_after_inference():
 
 def test_deterministic_routing_baseline_counts_are_reproducible_and_fail_closed():
     report, results = run(ROOT / "data/eval/dev.jsonl")
-    # absolute counts as measured offline on 4 Oct 2026 (rules only; AI_CLASSIFY fallback not run)
-    assert report["questions"] == 40 and report["decided_by_rules"] == 15
-    assert report["residue_needs_llm_fallback"] == 25
-    assert report["class_a_total"] == 9 and report["class_a_refused_by_rules"] == 6
+    # absolute counts measured offline (rules only; AI_CLASSIFY fallback not run).
+    # 4 Oct 2026: 15 decided, 25 residue, 6 of 9 Class A refused, 14 correct.
+    # 6 Oct 2026, after the wider judgment and record scans: the numbers below. Residue is
+    # refused on an account without AI_CLASSIFY, so it is over-refusal there, never an answer.
+    assert report["questions"] == 40 and report["decided_by_rules"] == 34
+    assert report["residue_needs_llm_fallback"] == 6
+    assert report["class_a_total"] == 9 and report["class_a_refused_by_rules"] == 8
     assert report["class_a_answered_as_b_by_rules"] == []              # the highest-harm error did not occur
     assert report["class_b_over_refused_by_rules"] == ["DEV-018"]
-    assert report["class_correct_of_decided"] == 14
+    assert report["class_correct_of_decided"] == 33
     saved = json.loads(read("backend/eval/results/dev_deterministic_routing_report.json"))
     assert saved == json.loads(json.dumps(report))
 

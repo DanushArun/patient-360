@@ -1,52 +1,31 @@
 {
   "label": "DETERMINISTIC keyword+structure routing baseline; engineering gate on synthetic questions, not clinical validation; AI_CLASSIFY fallback NOT run",
   "patterns_loaded": {
-    "class_a": 4,
-    "class_b": 6
+    "class_a": 6,
+    "class_b": 8
   },
   "questions": 40,
-  "decided_by_rules": 15,
-  "residue_needs_llm_fallback": 25,
+  "decided_by_rules": 34,
+  "residue_needs_llm_fallback": 6,
   "residue_qids": [
-    "DEV-007",
-    "DEV-008",
-    "DEV-009",
-    "DEV-010",
-    "DEV-011",
-    "DEV-012",
-    "DEV-015",
-    "DEV-017",
-    "DEV-019",
     "DEV-020",
-    "DEV-021",
-    "DEV-024",
     "DEV-025",
     "DEV-026",
     "DEV-027",
     "DEV-028",
-    "DEV-029",
-    "DEV-030",
-    "DEV-031",
-    "DEV-032",
-    "DEV-033",
-    "DEV-034",
-    "DEV-035",
-    "DEV-038",
-    "DEV-039"
+    "DEV-034"
   ],
-  "class_correct_of_decided": 14,
+  "class_correct_of_decided": 33,
   "class_a_total": 9,
-  "class_a_refused_by_rules": 6,
+  "class_a_refused_by_rules": 8,
   "class_a_in_residue": [
-    "DEV-007",
-    "DEV-008",
     "DEV-025"
   ],
   "class_a_answered_as_b_by_rules": [],
   "class_b_total": 31,
-  "class_b_correct_by_rules": 8,
+  "class_b_correct_by_rules": 25,
   "class_b_over_refused_by_rules": [
     "DEV-018"
   ],
-  "class_b_in_residue": 22
+  "class_b_in_residue": 5
 }
