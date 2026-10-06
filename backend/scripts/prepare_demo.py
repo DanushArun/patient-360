@@ -28,6 +28,8 @@ from backend.verification.session import ROOT, Session, connect
 COHORT = ROOT / "backend/sql/data/load_daycare_cohort.sql"
 HERO = ROOT / "backend/sql/demo/load_demo_hero.sql"
 DOC_DATES = ROOT / "backend/sql/demo/reanchor_cohort_documents.sql"
+ONTOLOGY = ROOT / "backend/sql/data/ontology.sql"
+EXTRACTOR = ROOT / "backend/sql/tasks/extract_assertions.sql"
 REPORT = ROOT / "evidence/qa/demo-prep-latest.json"
 HERO_ID = "PAT-DC-12"
 HERO_DOCS = ["DOC-LAB-DC-12", "DOC-ECHO-DC-12", "DOC-PATH-DC-12", "DOC-BIOPSY-DC-12",
@@ -54,6 +56,34 @@ def run_file(session: Session, path: Path) -> None:
     execute_sql(session, path.read_text(), str(path.relative_to(ROOT)))
 
 
+def deploy_extractor(session: Session) -> None:
+    """Replace only the extraction procedure body; the task that calls it is left untouched."""
+    source = EXTRACTOR.read_text()
+    start = source.index("CREATE OR REPLACE PROCEDURE SAARTHI.OPERATIONAL.extract_assertions_proc()")
+    end = source.index("$$;", source.index("$$", source.index("AS\n$$", start) + 4)) + 3
+    session.query(source[start:end], label="deploy_extract_assertions_proc")
+
+
+def reset_unverified_hero_pages(session: Session) -> list[str]:
+    """A hero document with no verified assertion is read again (fail-closed results from an
+    earlier extractor version are discarded, never edited). Verified documents are kept."""
+    placeholders = ",".join(["%s"] * len(HERO_DOCS))
+    rows = session.query(
+        f"SELECT d.doc_id FROM SAARTHI.DOCUMENTS.DOCUMENT d WHERE d.doc_id IN ({placeholders}) "
+        "AND NOT EXISTS (SELECT 1 FROM SAARTHI.EVIDENCE.ASSERTION a WHERE a.doc_id = d.doc_id "
+        "AND a.verification_status = 'verified')", tuple(HERO_DOCS), "find_unverified_hero_docs")
+    docs = [row["DOC_ID"] for row in rows]
+    for doc in docs:
+        session.query("DELETE FROM SAARTHI.EVIDENCE.EVIDENCE_LINK WHERE assertion_id IN "
+                      "(SELECT assertion_id FROM SAARTHI.EVIDENCE.ASSERTION WHERE doc_id = %s)",
+                      (doc,), "reset_hero_links")
+        session.query("DELETE FROM SAARTHI.EVIDENCE.ASSERTION WHERE doc_id = %s", (doc,),
+                      "reset_hero_assertions")
+        session.query("UPDATE SAARTHI.DOCUMENTS.DOC_PAGE SET extraction_attempted_at = NULL "
+                      "WHERE doc_id = %s", (doc,), "reset_hero_page")
+    return docs
+
+
 def long_call(session: Session, procedure: str) -> dict:
     """A task-body procedure can run for minutes over the whole cohort; Session.call caps
     every statement at 120 s (the cap that cut the earlier full refresh short)."""
@@ -69,6 +99,8 @@ def long_call(session: Session, procedure: str) -> dict:
 
 def prepare(session: Session, report: dict) -> None:
     session.query("ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = 1800")
+    run_file(session, ONTOLOGY)
+    deploy_extractor(session)
     run_file(session, COHORT)
     # The deep-case patient keeps its history; only its next visit moves to tomorrow.
     session.query("UPDATE SAARTHI.CORE.ENCOUNTER SET scheduled_time = "
@@ -81,6 +113,7 @@ def prepare(session: Session, report: dict) -> None:
         name = f"{row['database_name']}.{row['schema_name']}.{row['name']}"
         session.query(f"ALTER DYNAMIC TABLE {name} REFRESH", label="refresh_dynamic_table")
     report["chunked"] = long_call(session, "CHUNK_DOCUMENTS_PROC")
+    report["re_extracted"] = reset_unverified_hero_pages(session)
     extracted = []
     for _ in range(6):  # 10 pages per call; stop when nothing is left to read
         result = long_call(session, "EXTRACT_ASSERTIONS_PROC")
