@@ -234,7 +234,7 @@ BEGIN
                          WHERE event_type = 'validator_strip' AND detail:reason::VARCHAR = 'fabricated_evidence_id');
 
     v_result := (CALL SAARTHI.OPERATIONAL.validate_answer(
-        PARSE_JSON('[{"text":"HER2 is triple negative","evidence":[{"kind":"document_span","id":"FABRICATED-EVIDENCE-DOES-NOT-EXIST"}]}]'),
+        PARSE_JSON('[{"text":"HER2 is triple negative","claim_type":"textual","evidence":[{"kind":"document_span","id":"FABRICATED-EVIDENCE-DOES-NOT-EXIST"}]}]'),
         NULL));
 
     v_after_count := (SELECT COUNT(*) FROM SAARTHI.GOVERNANCE.SECURITY_EVENT
@@ -247,7 +247,7 @@ BEGIN
     RETURN OBJECT_CONSTRUCT(
         'probe', 5,
         'title', 'Fabricated claim (evidence id does not resolve)',
-        'sql_shown', 'CALL validate_answer(''[{"text":"HER2 is triple negative","evidence":[{"kind":"document_span","id":"FABRICATED-EVIDENCE-DOES-NOT-EXIST"}]}]'', NULL);',
+        'sql_shown', 'CALL validate_answer(''[{"text":"HER2 is triple negative","claim_type":"textual","evidence":[{"kind":"document_span","id":"FABRICATED-EVIDENCE-DOES-NOT-EXIST"}]}]'', NULL);',
         'expected', 'claims=[] (stripped), limitations names check1_existence, and a new SECURITY_EVENT row is logged - a fabricated claim is not just silently dropped, it is recorded.',
         'validator_result', v_result,
         'security_event_logged', v_logged_event,
