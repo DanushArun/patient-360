@@ -47,6 +47,24 @@
   white-space: nowrap;
 }
 
+.diagnosis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  margin: 0 0 var(--space-1);
+  color: var(--label);
+  font: var(--text-body);
+  font-weight: 500;
+}
+
+.diagnosisLabel {
+  color: var(--label-tertiary);
+  font: var(--text-caption);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
 .patientDetails {
   display: flex;
   flex-wrap: wrap;

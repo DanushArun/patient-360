@@ -63,6 +63,12 @@ BEGIN
       FROM SAARTHI.CORE.TREATMENT_PLAN
      WHERE patient_id = :v_patient_id
      QUALIFY ROW_NUMBER() OVER (ORDER BY version DESC, decided_at DESC NULLS LAST) = 1
+  ), latest_diagnosis AS (
+    -- The condition under treatment: the most recent diagnosis event on the record.
+    SELECT display, code, code_system
+      FROM SAARTHI.CORE.CLINICAL_EVENT
+     WHERE patient_id = :v_patient_id AND event_type = 'diagnosis' AND display IS NOT NULL
+     QUALIFY ROW_NUMBER() OVER (ORDER BY event_time DESC, event_id DESC) = 1
   )
   SELECT OBJECT_CONSTRUCT_KEEP_NULL(
            'NAME', p.name,
@@ -70,6 +76,9 @@ BEGIN
            'SCHEDULED_AT', nv.scheduled_at,
            'CYCLE_NUMBER', nv.cycle_number,
            'REGIMEN_DISPLAY', lp.regimen_display,
+           'DIAGNOSIS', ld.display,
+           'DIAGNOSIS_CODE', ld.code,
+           'DIAGNOSIS_CODE_SYSTEM', ld.code_system,
            'CONSENT_ID', (SELECT c.consent_id FROM SAARTHI.GOVERNANCE.CONSENT c
                            WHERE c.patient_id = :v_patient_id AND c.status = 'active'
                              AND c.valid_from <= CURRENT_TIMESTAMP()
@@ -82,6 +91,7 @@ BEGIN
     JOIN SAARTHI.GOVERNANCE.PRACTITIONER pr ON pr.practitioner_id = :v_practitioner_id
     LEFT JOIN next_visit nv ON TRUE
     LEFT JOIN latest_plan lp ON TRUE
+    LEFT JOIN latest_diagnosis ld ON TRUE
    WHERE p.patient_id = :v_patient_id);
   RETURN v_result;
 END;

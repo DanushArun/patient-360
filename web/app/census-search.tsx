@@ -136,6 +136,7 @@ function WorklistCard({ chair }: { chair: Chair }): ReactNode {
   return <Link href={`/patient/${chair.patientId}`} prefetch={false} className="sa-worklist-card"
     data-copilot-ref={`patient:${chair.patientId}`} data-copilot-label={chair.name}>
     <strong>{chair.name}</strong>
+    {chair.diagnosis && <span className="sa-worklist-dx">{chair.diagnosis}</span>}
     <small>{chair.patientId} · {formatDay(chair.scheduled.slice(0, 10))}
       {` · ${visitTime(chair.scheduled)}`}
       {cycleLabel(chair.cycle)}</small>

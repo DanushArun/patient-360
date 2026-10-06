@@ -111,6 +111,7 @@
 .sa-worklist-card:hover { border-color: var(--separator-strong); background: var(--bg); }
 .sa-worklist-card strong { color: var(--sa-ink); font-size: var(--fs-body); font-weight: 600; }
 .sa-worklist-card small, .sa-worklist-table small { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
+.sa-worklist-dx { margin-top: calc(-1 * var(--space-1)); color: var(--label-secondary); font: var(--text-callout); overflow-wrap: anywhere; }
 .sa-worklist-card code { color: var(--sa-ink-muted); font-size: var(--fs-caption); }
 .sa-worklist-table-wrap { width: 100%; overflow-x: auto; }
 .sa-worklist-table { width: 100%; border-collapse: collapse; font-size: var(--fs-callout); }

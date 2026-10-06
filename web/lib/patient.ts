@@ -46,6 +46,8 @@ export type PatientData = {
   scheduledAt: string | null;
   cycleNumber: number | null;
   regimen: string | null;
+  diagnosis?: string | null;
+  diagnosisCode?: string | null;
   knownAsOf: string | null;
   gates: Gate[];
 };

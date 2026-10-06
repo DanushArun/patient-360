@@ -1,3 +1,4 @@
+import { diagnosisLabel } from "./diagnosis.mjs";
 import { query, procedureRows } from "./snowflake";
 import { cachedRead, WORKSPACE_SCOPE } from "./read-cache";
 import { formatClock, humanizeClocks } from "./display-format.mjs";
@@ -12,6 +13,8 @@ export interface ReadinessRow {
   STATE: string | null;
   PRIMARY_LANGUAGE: string | null;
   REGIMEN_DISPLAY: string | null;
+  DIAGNOSIS?: string | null;
+  DIAGNOSIS_CODE?: string | null;
   CYCLE_NUMBER: number | null;
   SCHEDULED: string;
   GATE: string | null;
@@ -64,6 +67,7 @@ export interface Chair {
   place: string;
   language: string | null;
   regimen: string | null;
+  diagnosis: string | null;
   cycle: number | null;
   scheduled: string;
   status: ChairStatus;
@@ -85,6 +89,7 @@ function projectChair(encounterId: string, group: ReadinessRow[]): Chair {
     place: [meta.DISTRICT, meta.STATE].filter(Boolean).join(", "),
     language: meta.PRIMARY_LANGUAGE,
     regimen: meta.REGIMEN_DISPLAY,
+    diagnosis: diagnosisLabel(meta.DIAGNOSIS, meta.DIAGNOSIS_CODE),
     cycle: meta.CYCLE_NUMBER,
     scheduled: meta.SCHEDULED,
     status,

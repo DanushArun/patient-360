@@ -22,6 +22,7 @@ import {
 } from "@/components/copilot/copilot-parts";
 import copilotStyles from "@/components/copilot/copilot.module.css";
 import { LiveReceipt, receiptHostsAsk, receiptVisible } from "@/components/copilot/copilot-live-ui";
+import { diagnosisLabel } from "@/lib/diagnosis.mjs";
 import { PatientChatInput, PatientConversation } from "@/components/workspace-patient-copilot";
 import { FamilyChecklist } from "@/components/workspace-patient-family";
 import { PatientSectionContent } from "@/components/workspace-patient-views";
@@ -113,6 +114,10 @@ function PatientHeader({ patient, preview, onAsk }: {
         <div className={styles.nameLine}><h1>{patient.patientName}</h1>
           {preview && <span className={styles.previewBadge}>Synthetic preview</span>}
         </div>
+        <p className={styles.diagnosis}>
+          <span className={styles.diagnosisLabel}>Diagnosis</span>
+          {diagnosisLabel(patient.diagnosis, patient.diagnosisCode) ?? "Not recorded"}
+        </p>
         <p className={styles.patientDetails}>
           <span>Visit {visit}</span>
           <span>{patient.regimen ?? "Treatment regimen not recorded"}</span>

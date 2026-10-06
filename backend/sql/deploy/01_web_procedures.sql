@@ -268,8 +268,14 @@ WITH patient_scope AS (
       QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id
                                  ORDER BY version DESC, decided_at DESC NULLS LAST) = 1
   )
+   , dx AS (
+      SELECT patient_id, display AS diagnosis, code AS diagnosis_code
+        FROM SAARTHI.CORE.CLINICAL_EVENT
+       WHERE event_type = 'diagnosis' AND display IS NOT NULL
+      QUALIFY ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY event_time DESC, event_id DESC) = 1
+  )
   SELECT e.encounter_id, p.patient_id, p.name, p.district, p.state, p.primary_language,
-         plan.regimen_display, e.cycle_number,
+         plan.regimen_display, dx.diagnosis, dx.diagnosis_code, e.cycle_number,
          TO_VARCHAR(e.scheduled_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS scheduled,
          rs.gate, rs.rule_id, rs.rule_version, rs.outcome, rs.severity, rs.reason,
          TO_VARCHAR(rs.known_as_of, 'YYYY-MM-DD"T"HH24:MI:SS') AS known_as_of,
@@ -277,6 +283,7 @@ WITH patient_scope AS (
     FROM SAARTHI.CORE.ENCOUNTER e
     JOIN SAARTHI.CORE.PATIENT p ON p.patient_id = e.patient_id
     LEFT JOIN plan ON plan.patient_id = e.patient_id
+    LEFT JOIN dx ON dx.patient_id = e.patient_id
     LEFT JOIN SAARTHI.OPERATIONAL.READINESS_STATE rs ON rs.encounter_id = e.encounter_id
    WHERE e.encounter_type = 'daycare'
      AND e.scheduled_time >= CURRENT_DATE()

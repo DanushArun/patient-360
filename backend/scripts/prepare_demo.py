@@ -100,6 +100,8 @@ def long_call(session: Session, procedure: str) -> dict:
 def prepare(session: Session, report: dict) -> None:
     session.query("ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = 1800")
     run_file(session, ONTOLOGY)
+    for name in ("web_patient_context.sql", "web_reads.sql"):
+        run_file(session, ROOT / "backend/sql/procedures" / name)
     deploy_extractor(session)
     run_file(session, COHORT)
     # The deep-case patient keeps its history; only its next visit moves to tomorrow.

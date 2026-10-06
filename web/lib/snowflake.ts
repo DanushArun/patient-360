@@ -256,6 +256,8 @@ export async function withPatientSessionAndContext<T>(
       scheduledAt: typeof rows[0].SCHEDULED_AT === "string" ? rows[0].SCHEDULED_AT : null,
       cycleNumber: typeof rows[0].CYCLE_NUMBER === "number" ? rows[0].CYCLE_NUMBER : null,
       regimen: typeof rows[0].REGIMEN_DISPLAY === "string" ? rows[0].REGIMEN_DISPLAY : null,
+      diagnosis: typeof rows[0].DIAGNOSIS === "string" ? rows[0].DIAGNOSIS : null,
+      diagnosisCode: typeof rows[0].DIAGNOSIS_CODE === "string" ? rows[0].DIAGNOSIS_CODE : null,
       practitionerName: String(rows[0].PRACTITIONER_NAME ?? ""),
       treatingPractitionerName: typeof rows[0].TREATING_PRACTITIONER_NAME === "string"
         ? rows[0].TREATING_PRACTITIONER_NAME : null,
@@ -272,6 +274,8 @@ export interface PatientBinding {
   scheduledAt: string | null;
   cycleNumber: number | null;
   regimen: string | null;
+  diagnosis: string | null;
+  diagnosisCode: string | null;
   practitionerName: string;
   treatingPractitionerName: string | null;
 }

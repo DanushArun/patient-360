@@ -32,6 +32,6 @@ export default async function ControlledDayCare({ searchParams }: {
 
 function visit(id: string, name: string, status: Chair["status"], schedule: { time: string; headline: string }): Chair {
   return { encounterId: `ENC-${id}`, patientId: `PAT-DC-${id}`, name, status, headline: schedule.headline,
-    place: "Synthetic facility", language: "Tamil", regimen: "Synthetic regimen", cycle: 3,
+    place: "Synthetic facility", language: "Tamil", diagnosis: "Carcinoma breast · C50.9", regimen: "Synthetic regimen", cycle: 3,
     scheduled: `2026-10-03T${schedule.time}:00`, headlineRule: "SYN-RULE-1", otherIssues: 0 };
 }
