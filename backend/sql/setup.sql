@@ -67,7 +67,6 @@ EXECUTE IMMEDIATE FROM './account/03_database_schemas.sql';
 -- STEP 4 - Roles.  [2]
 -- ---------------------------------------------------------------------------
 -- 5 roles. Policies and grants reference them by name, so they come first.
--- Name settled in planning/builder-1/README.md item 5.
 EXECUTE IMMEDIATE FROM './account/04_roles.sql';
 
 

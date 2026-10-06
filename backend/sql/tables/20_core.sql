@@ -2,7 +2,7 @@
 -- STEP 6b - CORE tables (8)
 -- =============================================================================
 -- SPEC.md §2.3, §2.4, §2.5. No policies attached yet (step 7/8).
--- Drop the v1-shaped legacy tables first - archived in planning/archive/v1-src-sql/,
+-- Drop the v1-shaped legacy tables first - from the retired v1 schema,
 -- predate the revised architecture (6 schemas, no GOVERNANCE tables, facility
 -- as bare VARCHAR). IF NOT EXISTS cannot fix a table with the wrong columns.
 DROP TABLE IF EXISTS SAARTHI.CORE.PATIENT;

@@ -9,7 +9,7 @@
 -- same bundle produces zero new rows.
 --
 -- Current status: RAW_FHIR_BUNDLE has 0 rows because per-patient FHIR
--- generation is on the multi-patient roadmap (REMAINING-WORK.md §5 gap 11).
+-- generation is on the multi-patient roadmap.
 -- The task is created so a fresh deploy is complete, and it is a no-op
 -- until bundles land. Structure verified by shape not by live output.
 

@@ -9,10 +9,10 @@
 4 Oct 2026; outputs are in the results table.
 
 1. `python3 -m venv venv && ./venv/bin/pip install -r requirements.txt && cd frontend && npm ci && npx playwright install chromium && cd ..`
-2. `cd frontend && npm test` (unit tests, 257 expected) and `npm run typecheck`
+2. `cd frontend && npm test` (unit tests, 381 expected) and `npm run typecheck`
 3. `SAARTHI_SNOWFLAKE_ENABLED=false npm run build` (production build, no live access)
-4. `npm run test:e2e` (Playwright against a stubbed API, 40 expected; **not live data**)
-5. `cd .. && ./venv/bin/python -m pytest -q` (backend and SQL-contract tests, 405 passed / 14 skipped expected)
+4. `npm run test:e2e` (Playwright against a stubbed API, 41 tests; **not live data**)
+5. `cd .. && ./venv/bin/python -m pytest -q` (backend and SQL-contract tests, 565 passed / 14 skipped expected)
 6. `SAARTHI_SNOWFLAKE_ENABLED=false npm run dev` in `frontend/`, then open `http://127.0.0.1:3000/design-preview/PAT-DC-07`:
    a **recorded fixture snapshot**, labelled as such. Live routes fail closed instead of substituting fixture data.
 7. Read, in this order: [`docs/platform/PLATFORM-FINDINGS.md`](docs/platform/PLATFORM-FINDINGS.md) (dated platform findings with query IDs),
@@ -28,9 +28,9 @@ results in this repository were observed on other accounts and are reported, not
 
 | Measure | Result | Kind and date |
 |---|---|---|
-| Python tests (`./venv/bin/python -m pytest -q`) | 405 passed, 14 skipped, 0 failed | offline, re-run 4 Oct 2026 |
-| Web unit tests (`cd frontend && npm test`) | 257 passed, 0 failed | offline, re-run 4 Oct 2026 |
-| Playwright e2e (`npm run test:e2e`, stubbed API) | 40 of 40 passed in 2 of 3 captured full runs; 1 run passed 39 with `storyboard-visual` failing (cause not diagnosed) | offline, 4 Oct 2026 |
+| Python tests (`./venv/bin/python -m pytest -q backend/tests tools`) | 565 passed, 14 skipped, 0 failed | offline, re-run 6 Oct 2026 |
+| Web unit tests (`cd frontend && npm test`) | 381 passed, 0 failed | offline, re-run 6 Oct 2026 |
+| Playwright e2e (`npm run test:e2e`, stubbed API) | 39 of 41 passed; 2 fail: `storyboard-visual` (citation index not found) and `workspace-documents` (expects a raw ISO timestamp the redesigned page no longer prints) | offline, 6 Oct 2026 |
 | Typecheck, production build, `check_gate.py --manifest`, deploy-bundle drift check (11 files) | all pass | offline, 4 Oct 2026 |
 | QA rounds | 4 independent QA rounds, 5 fix rounds, 4 deploy-plan rounds, 1 code review; [34 recorded failures](docs/testing/FAILURE-AND-FIX-INDEX.md), 3 still open | [`evidence/qa/`](evidence/qa/) |
 | SQL rules | 16 rules, 80 fixtures; 28 fixture tests passed live on the earlier account JN89282 (23 Sep); not re-run on the current account | reported |
@@ -137,8 +137,8 @@ named account and exercised, not reproduced on a clean account.
 | **Partial** | Answer validator (6 checks, procedure exists, **not in the answer path**); Cortex Agent with 8 generic tools and inbound MCP server (verified on JN89282 only, not recorded on OS69400); 7 Tasks (created suspended); semantic view (no verified queries); 12 of 100 patients; 22 synthetic cohort PDFs |
 | **Designed-only** | Skills loaded into the agent (4 `SKILL.md` authored, not uploaded, no `skills:` block); outbound MCP action; Judge Console UI; hosted/per-user app; document-derived discordance gate; eval run (scorer exists, no results); reference-scope selector in the UI (disabled) |
 
-Offline test counts re-run on 4 Oct 2026 (`evidence/qa/FIX-ROUND-7.md`): Python 405 passed / 14 skipped / 0 failed;
-web unit 257 passed; Playwright e2e 40 passed in 2 of 3 captured runs and 39 in the third (stubbed API, not live data); TypeScript and production build clean.
+Offline test counts re-run on 6 Oct 2026: Python 565 passed / 14 skipped / 0 failed;
+web unit 381 passed; Playwright e2e 39 of 41 passed (stubbed API, not live data; the 2 failures are listed above); TypeScript and production build clean.
 
 ## Evidence, organised
 
@@ -163,11 +163,12 @@ Labels: `QUERY_HISTORY` is used for live evidence, `ACCESS_HISTORY` (up to 180 m
 - `backend/eval/harness/score_results.py` — offline scorer; `backend/eval/` otherwise a placeholder
 - `backend/tests/` — SQL-contract and pipeline tests, separate from the app in `frontend/`
 - `frontend/` — the Next.js app (UI, API routes, tests), plus `contracts/` and `fixtures/`: the frozen answer schema and recorded fixtures shared with the backend
-- `planning/revised-architecture/` — architecture (start with `ARCHITECTURE-HANDOFF.md`), 15 diagrams in `ARCHITECTURE-DIAGRAMS.md` and `drawio/`; `architecture.md` is the superseded v1
+- `docs/architecture/` — specification (`SPEC.md`), contracts (`ARCHITECTURE-HANDOFF.md`), diagrams (`ARCHITECTURE-DIAGRAMS.md`, `diagrams/`, `drawio/`), decision records and design reviews
+- `docs/research/` — clinical, legal, platform and patient-reality research behind the design
 - `tools/drawio/` — diagram generator; `tools/release_gate.py`
 - `AGENTS.md` — binding rules; `IMPLEMENTATION-STATUS.md` — honest ledger
 
-`planning/revised-architecture/FINAL-VALIDATION.md` is a **historical 17 September snapshot**, superseded in part by
+`docs/architecture/FINAL-VALIDATION.md` is a **historical 17 September snapshot**, superseded in part by
 `DECISION-household-removal.md`; its competitor comparison is a researcher's reading of public repositories that are not
 vendored here and cannot be re-verified from this repo.
 

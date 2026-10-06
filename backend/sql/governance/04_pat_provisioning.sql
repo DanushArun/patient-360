@@ -21,4 +21,3 @@ SHOW GRANTS TO ROLE SAARTHI_MCP_CLIENT;
 -- Assign the role only to the explicitly selected operator with a matching practitioner
 -- and care-team record. Configure that user's approved network CIDRs before PAT creation.
 -- Generate a role-restricted, short-lived PAT interactively; retain it in a secret store.
--- See docs/submission/TEAMMATE-ACCOUNT-RUNBOOK.md for runtime and boundary acceptance.

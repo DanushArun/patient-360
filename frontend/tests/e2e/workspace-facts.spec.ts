@@ -76,7 +76,7 @@ test("test_facts_when_sql_labs_return_then_render_state_clocks_sources", async (
   await expect(facts.getByRole("link", { name: /Open source document DOC-CBC-1/ }).first())
     .toHaveAttribute("href", /DOC-CBC-1.*known_as_of=2026-09-23T14%3A14%3A48.*return=facts/,
   );
-  await page.screenshot({ path: "../planning/dashboard-release/evidence/facts-desktop.png",
+  await page.screenshot({ path: "test-results/screens/facts-desktop.png",
     fullPage: true });
 });
 
@@ -91,7 +91,7 @@ test("test_facts_when_viewport_is_389_pixels_then_rows_stay_readable", async ({ 
     scroll: element.scrollWidth, client: element.clientWidth,
   }));
   expect(width.scroll).toBeLessThanOrEqual(width.client);
-  await page.screenshot({ path: "../planning/dashboard-release/evidence/facts-phone.png",
+  await page.screenshot({ path: "test-results/screens/facts-phone.png",
     fullPage: true });
 });
 

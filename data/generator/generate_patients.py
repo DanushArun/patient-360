@@ -1,5 +1,5 @@
 """
-Synthetic patient generator — Task 1, Step 6-8 (team plan, planning/dev2-brief).
+Synthetic patient generator — Task 1, Step 6-8.
 
 Produces a plain list of ~10 fake patients as dictionaries. Every field is
 invented; no real patient data. Run directly, no Snowflake dependency.

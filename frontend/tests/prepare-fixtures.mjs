@@ -18,7 +18,7 @@ const routes = {
 };
 
 for (const [fixture, route] of Object.entries(routes)) {
-  const destination = path.join(target, 'frontend/app', route);
+  const destination = path.join(target, 'web/app', route);
   await mkdir(destination, { recursive: true });
   await copyFile(path.join(source, 'fixtures', fixture), path.join(destination, 'page.tsx'));
 }

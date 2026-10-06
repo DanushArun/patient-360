@@ -117,7 +117,7 @@ validate it with oncologists, coordinators and navigators using realistic cases.
 ### Scope boundary: hackathon proof versus hospital deployment
 
 The architecture already contains much of the hackathon scope in
-`planning/revised-architecture/SPEC.md` §10: Ask + Evidence, Review Queue, Patient 360,
+`docs/architecture/SPEC.md` §10: Ask + Evidence, Review Queue, Patient 360,
 Review + History, Navigator View, and Judge Console. Build and prove those before claiming
 the current two-route shell represents the whole product. The repo explicitly limits the
 demo to synthetic data, 16 rules, patient-level coverage arithmetic, and a periodic refresh.

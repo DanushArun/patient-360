@@ -29,7 +29,7 @@ reported by the team, not documented in the repo), **to learn document formats a
 * **No scan, photo or PDF of those reports is in the repository** (checked: tracked image/PDF/DOCX files were listed;
   none correspond to them).
 * **A written research note derived from them is in the repository:**
-  `planning/research/patient-reality/real-patient-dipali.md`. It records, from the real reports, a **patient name,
+  `docs/research/patient-reality/real-patient-dipali.md`. It records, from the real reports, a **patient name,
   district and pincode, employer-scheme, diagnosis, IHC/FISH values, staging and facility roles**. It is a planning
   document, is not loaded into Snowflake, and no system data is taken from it. **It is nevertheless personal health
   information about a real person in a public submission.** Recommendation for the team before the freeze: redact
@@ -43,7 +43,7 @@ reported by the team, not documented in the repo), **to learn document formats a
 
 Indexed into the reference Cortex Search service (R6). Page counts read from the PDFs on 4 Oct; they total 692, matching
 the 692 pages reported loaded on OS69400. The repo does not store a download URL, retrieval date or licence per file
-(`planning/research/hackathon/reference-corpus-sources.md` states an intent to record them and a general expectation that
+(`docs/research/reference-corpus-sources.md` states an intent to record them and a general expectation that
 the documents are government publications or open access); **per-file source URLs and licence terms: not verified in
 repo**.
 
@@ -67,7 +67,6 @@ facts used for synthetic engineering tests, not clinical guidance.
 
 | File | What it is | Status |
 |---|---|---|
-| `dashboard-design/`, `planning/dashboard-release/evidence/` | Design screenshots and storyboards of the synthetic dashboard | Team-produced images of synthetic data |
 | `frontend/public/saarthi-mark.png`, `frontend/app/icon.png`, `frontend/app/apple-icon.png`, `frontend/app/favicon.ico` | SAARTHI heart-and-stethoscope logo (sidebar mark, browser-tab and Apple touch icons) | Supplied by the team on 5 Oct 2026 as a PNG; how it was produced and its licence are not recorded in the repo, to be confirmed by the team. Replaces the earlier `carethread-mark.svg` |
 | Fonts `frontend/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | Publisher licence notices added under `frontend/public/fonts/`; Inter/JetBrains notices also under `frontend/static/`. Local TTF name tables confirm SIL OFL 1.1 (Inter 4.000, JetBrains Mono 2.304). Google documents Material Symbols as Apache 2.0. Checked 5 Oct 2026; binary publisher identity for the WOFF2 remains unverified |
 

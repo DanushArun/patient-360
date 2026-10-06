@@ -89,7 +89,7 @@ test("test_coverage_when_comparison_opens_preserves_sources_and_followup_draft",
   await expect(comparison).toContainText("No single valid-through date is asserted.");
   await expect(comparison.getByRole("link", { name: /Open exact source span/ }).first())
     .toHaveAttribute("href", /known_as_of=.*start=5.*end=15/);
-  await page.screenshot({ path: "../planning/dashboard-release/evidence/coverage-comparison.png",
+  await page.screenshot({ path: "test-results/screens/coverage-comparison.png",
     fullPage: true });
   await comparison.getByRole("button", { name: "Prepare review task" }).click();
   await page.getByRole("button", { name: "Escalate to treating doctor" }).click();

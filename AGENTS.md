@@ -23,7 +23,7 @@ If you believe something urgently needs committing, say so in one sentence and s
 ## 2. Architecture rules — non-negotiable, enforced in code
 
 These are the product. Violating one is a defect, not a design choice.
-Full detail: `planning/revised-architecture/SPEC.md`.
+Full detail: `docs/architecture/SPEC.md`.
 
 | Rule | Statement |
 |---|---|

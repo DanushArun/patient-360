@@ -1,9 +1,9 @@
 # SAARTHI: architecture and impact
 
 Submission answers for **Section 2 (Architecture Diagram)** and **Section 3 (Impact Statement)**. Compiled from
-`README.md`, `docs/project/PROJECT-OVERVIEW.md`, `planning/revised-architecture/ARCHITECTURE-HANDOFF.md`,
+`README.md`, `docs/project/PROJECT-OVERVIEW.md`, `docs/architecture/ARCHITECTURE-HANDOFF.md`,
 `backend/skills/README.md`, `evidence/coco/README.md` and
-`planning/research/patient-reality/`. Synthetic data only; engineering checks are not clinical validation.
+`docs/research/patient-reality/`. Synthetic data only; engineering checks are not clinical validation.
 
 > **SQL decides. AI extracts and phrases. The practitioner stays accountable.**
 
@@ -104,7 +104,7 @@ engineering results show what the prototype already does on synthetic data.
 | 14% of scheduled chemo visits missed, median delay 13.75 days (n=870, Indian tertiary centre) | Cancer Reports 2020, PMC7941559 |
 | 74% of breast cancer patients consult two or more facilities; 82.6% hit a delay | TMC breast cancer cohort studies |
 | 85% of Tata Memorial patients come from outside Mumbai; trips of 500 to 1,400 km | TMC, IIPS-TMC study |
-| 2–5 minutes available to an oncologist for pre-consult chart review | `planning/research/patient-reality/` |
+| 2–5 minutes available to an oncologist for pre-consult chart review | `docs/research/patient-reality/` |
 
 ### What the prototype shows (synthetic data only)
 

@@ -4,7 +4,7 @@ const fixtureRoute = "/test-daycare";
 
 test("test_visits_when_sorted_keeps_eight_sql_statuses_and_patient_links", async ({ page }) => {
   await page.goto(fixtureRoute);
-  await page.screenshot({ path: "../planning/dashboard-release/evidence/daycare-desktop.png",
+  await page.screenshot({ path: "test-results/screens/daycare-desktop.png",
     fullPage: true });
   await page.getByRole("button", { name: "Visits", exact: true }).click();
 

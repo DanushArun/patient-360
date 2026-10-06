@@ -352,5 +352,5 @@ budgeted disposable environment.
 Successful local tests alone do not establish live connectivity or a complete
 clinical workflow. The bounded live checks above verify the single-operator
 recording path only. Clean-account grants and owner-procedure read integration
-described in [the web README](../web/README.md) still need verification before
+described in [the web README](../../frontend/README.md) still need verification before
 normal least-privilege or shared/production operation.

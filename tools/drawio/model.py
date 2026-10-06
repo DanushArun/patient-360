@@ -1,7 +1,7 @@
 """draw.io (mxGraph) document primitives for the SAARTHI architecture diagram set.
 
 Colour and shape semantics are identical to the master notation key in
-planning/revised-architecture/ARCHITECTURE-DIAGRAMS.md, so one key serves both
+docs/architecture/ARCHITECTURE-DIAGRAMS.md, so one key serves both
 the Mermaid and the draw.io renderings.
 """
 from __future__ import annotations

@@ -13,7 +13,7 @@ import styles from "./copilot-live.module.css";
 
 // The live copilot's surfaces: the floating dock (voice and status), the toolbar switch, and
 // the activity receipt in the chat. One conversation, one composer: the dock never holds a
-// thread of its own (docs/design/copilot-concepts-2026-10-06/README.md).
+// thread of its own (docs/design/copilot-concepts/README.md).
 
 // ---------------------------------------------------------------- voice
 

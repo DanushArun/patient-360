@@ -46,7 +46,7 @@ Measure elegance through work, not appearance alone: clinician steps per complet
 
 ## 3. What the problem statement actually requires
 
-The authoritative local brief is [PROBLEM-STATEMENT-verbatim.md](../planning/PROBLEM-STATEMENT-verbatim.md). The governing build contract is [SPEC.md](../planning/revised-architecture/SPEC.md), with [COPILOT-SPEC.md](../planning/revised-architecture/COPILOT-SPEC.md) and [COPILOT-EXPERIENCE.md](design/COPILOT-EXPERIENCE.md).
+The authoritative local brief is [PROBLEM-STATEMENT.md](./PROBLEM-STATEMENT.md). The governing build contract is [SPEC.md](../docs/architecture/SPEC.md), with [COPILOT-SPEC.md](../docs/architecture/COPILOT-SPEC.md) and [COPILOT-EXPERIENCE.md](design/COPILOT-EXPERIENCE.md).
 
 | Requirement | Required demonstration | Supervisor implication |
 |---|---|---|

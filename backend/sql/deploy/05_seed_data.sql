@@ -95,7 +95,7 @@ WHEN NOT MATCHED THEN INSERT (map_id, patient_id, source_system, source_patient_
 -- =============================================================================
 -- STEP 12c - LVEF + HbA1c clinical events for the deep-case patient
 -- =============================================================================
--- ledger.py does not emit LVEF or HbA1c events (REMAINING-WORK.md §5 gap 7 -
+-- ledger.py does not emit LVEF or HbA1c events (known gap 7 -
 -- extending the ledger to emit these hits 12+8+9 test files and multiple pipeline
 -- files, deferred to Danush). Seeding directly here with concept_ids from
 -- CLINICAL_ONTOLOGY so DT_HARMONIZED_EVENTS.concept_name resolves to
@@ -263,7 +263,7 @@ WHERE extractor_version='seed-v1' AND doc_id='DOC-SURG-NOTE-01'
   AND assertion_id IN ('ASS-WOUND-01','ASS-INFECT-01','ASS-CLEAR-01');
 
 -- COV-AUTH-001 - AUTHORIZATION row (consolidated table per SPEC §239 + §247;
--- retired the parallel PRE_AUTHORIZATION on 23 Sept - see REMAINING-WORK.md §5)
+-- retired the parallel PRE_AUTHORIZATION on 23 Sept)
 MERGE INTO SAARTHI.CORE.AUTHORIZATION t USING (SELECT 'PA-DEEP-0001' k) s ON t.auth_id = s.k
 WHEN NOT MATCHED THEN INSERT (auth_id, patient_id, encounter_id, coverage_id, scheme, package_code, package_display, status, letter_status, requested_at, decided_at, expires_at, reviewed_by)
 VALUES ('PA-DEEP-0001', 'PAT-DEEP-0001', 'EVT-CHEMO-06', 'COV-DEEP-0001', 'PM-JAY', 'PKG-ONCO-CHEMO-01', 'Chemotherapy cycle - Package 01', 'approved', 'approved', DATEADD(day, -30, CURRENT_TIMESTAMP()), DATEADD(day, -28, CURRENT_TIMESTAMP()), DATEADD(day, 60, CURRENT_TIMESTAMP()), 'insurer-reviewer');

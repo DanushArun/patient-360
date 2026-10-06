@@ -18,7 +18,7 @@
 #   item (touches evaluate_gates test wiring).
 #
 # GAP NOTE - 3 of the 16 rules have current implementation gaps flagged in
-# REMAINING-WORK.md §5:
+# the implementation status ledger:
 #   gap 6: ENDO-DEXA-001 threshold shape not implemented (returns not_evaluated
 #          when it should return pass/fail based on T-score)
 #   gap 7: LVEF and HbA1c events not emitted by ledger.py (so SURV-LVEF-*,

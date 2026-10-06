@@ -141,5 +141,3 @@ changing a clinical rule result or a complete validated cited answer on screen.
 Hosting, per-user access, the full answer guard and final permission/session tests
 remain open. Judge Console is not part of this frontend scope.
 
-See `../docs/history/WORKSPACE-RECONCILIATION-2026-09-30.md` and
-`../docs/history/WORKSPACE-BASELINE-2026-09-30.md` for preservation decisions and verification.

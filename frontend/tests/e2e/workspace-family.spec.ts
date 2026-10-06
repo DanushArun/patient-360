@@ -43,7 +43,7 @@ for (const width of [390, 768, 1024, 1440]) {
     await expect(page.getByRole("navigation", { name: "Patient sections" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
       .toBe(true);
-    await page.screenshot({ path: `../planning/dashboard-release/evidence/patient-${width}.png`,
+    await page.screenshot({ path: `test-results/screens/patient-${width}.png`,
       fullPage: true });
   });
 }

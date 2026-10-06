@@ -140,9 +140,7 @@ contents. No SQL, thresholds, clinical mappings, or rules were changed here.
 6. Integrate batch/single-document verification and scoped evidence-to-answer
    links without changing R1–R7. Test the complete workflow before hosting.
 
-Website performance is a separate workstream. The latest main branch contains
-earlier local measurements in `planning/dashboard-release/evidence/performance-baseline.md`.
-Do not treat those as fresh results from this trial or hosted Web Vitals.
+Website performance is a separate workstream; see `docs/PERFORMANCE.md`.
 
 **Status: partial — local mocked compatibility, not live integration or clinical validation.**
 
@@ -159,7 +157,7 @@ No tables, clinical rules, grants or schedules were added. These candidate
 changes require Snowflake compilation and isolated live regression tests before
 being called working backend integrations. The batch and single-page envelope
 shapes remain different; persistent SQL specimen links and reference-clause
-validation still need work. See [release gates](../../docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+validation still need work. See [release gates](../../docs/testing/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
 
 ### Recorded checkpoint — 3 October 2026
 

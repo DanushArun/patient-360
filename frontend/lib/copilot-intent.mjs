@@ -1,5 +1,5 @@
 // Live copilot planner: turns a spoken or typed request into a short list of screen steps
-// from a closed vocabulary (docs/design/copilot-concepts-2026-10-06/README.md). Nothing here
+// from a closed vocabulary (docs/design/copilot-concepts/README.md). Nothing here
 // reads or asserts a clinical fact (R1). It only decides where to look on screen; every status,
 // value and date still comes from the governed reads the dashboard already uses. A patient
 // named in a request is only ever suggested: the step waits for a human click (COPILOT-SPEC §0).

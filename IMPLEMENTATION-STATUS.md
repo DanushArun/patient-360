@@ -20,8 +20,7 @@
 > Prompt-store hashes and agent source match. Local verification: 340 web tests, 15 focused
 > Python contract tests, TypeScript pass. This checkpoint supersedes stale account labels below.
 >
-> **5 October, earlier execution checkpoint:** [full release gates](docs/submission/RELEASE-GATES-2026-10-05.md)
-> track 9/20 verified (45%); this is completion tracking, not a judging score.
+> **5 October, earlier execution checkpoint:** release gates tracked 9/20 verified (45%); this is completion tracking, not a judging score.
 > Restricted permissions are applied. Live authorized/foreign claim and consent-withdrawal
 > probes passed. Answer, practitioner packet and retried action each have one persisted row.
 > Guarded ASK works on NY64016 with bounded SQL recovery. Native agent remains trial-blocked.
@@ -232,7 +231,7 @@ The user's approval and failed attempt are recorded in the release-gates log.
 metadata checks now succeed. The warehouse remains suspended; `SITAR` defaults
 to `ACCOUNTADMIN`, so the bounded Cortex REST test stopped before source reads
 or inference. No role/grant changes or paid model calls occurred. Changing the
-default role awaits approval. [Recorded checks](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+default role awaits approval. [Recorded checks](docs/testing/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
 
 **3 October 2026 — approved live preflight blocked:** the user approved a maximum
 $1 for one synthetic-page/four-call compatibility test. Authentication failed
@@ -241,7 +240,7 @@ AuthorityInfoAccess with the system trust store. Certificate checks remain on;
 no warehouse was resumed and no paid model call ran. This is not a live
 compatibility result. Local checks: **51 targeted Python tests, 265 frontend
 unit/render tests, TypeScript and 9 manifest/preamble gates passed**; source tests
-do not prove SQL compilation. Details: [release gates](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+do not prove SQL compilation. Details: [release gates](docs/testing/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
 
 **3 October 2026 — second local document checkpoint, partial:** candidate SQL
 updates add conservative heading routing, remove filename-based source-quality
@@ -252,7 +251,7 @@ evaluates supplied parse output, compares saved A/B/C predictions and tests an
 opt-in Snowflake-only HTTP transport with fake responses. No credentials or paid
 services were used. Clinical approval, persistent SQL specimen links, shared
 extraction envelopes, reference-clause validation, actual orchestration/E2E,
-live cost/accuracy and hosting remain open. See [release gates and cost proposal](docs/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
+live cost/accuracy and hosting remain open. See [release gates and cost proposal](docs/testing/DOCUMENT-IMPROVEMENT-RELEASE-GATES.md).
 
 **3 October 2026 — offline extraction trial, partial:** LangExtract 1.7.0 ran
 locally with injected fake Cortex responses and network-blocked tests. **26/26
@@ -284,11 +283,11 @@ different-owner reassignment, permission/session/language regressions, clean-acc
 patch deployment and the answer guard remain open. Hosting/per-user login are
 deferred; Judge Console is excluded from this frontend scope. **49 web tests,
 TypeScript and the production build passed.** See the latest checkpoint in
-[the test and cost log](docs/PROTOTYPE-COST-CONTROLS.md) and [web setup](frontend/README.md).
+[the test and cost log](docs/platform/PROTOTYPE-COST-CONTROLS.md) and [web setup](frontend/README.md).
 The dated observations below describe earlier checkpoints, not the current account.
 
-**30 September source reconciliation:** the current tested development baseline
-and account-access blockers are in [WORKSPACE-BASELINE](docs/WORKSPACE-BASELINE-2026-09-30.md).
+**30 September source reconciliation:** the tested development baseline and account-access blockers were
+recorded at the time.
 The dated deployment counts below are retained as historical observations, not
 current clean-account proof. Five of five read probes failed with `002003` under
 the configured `SAARTHI_APP` role. New source consent/release corrections are not deployed.
@@ -304,7 +303,7 @@ is superseded by the real routes in part A.
 **23 September audit notice:** Most inventory and counts below are a 20 September snapshot.
 They do not describe the current live database or Next.js page. Do not cite their old
 `designed-only` labels as current status. The current observed paths, failures, and untested
-release gates are in [the clinician completeness audit](docs/COMPLETENESS-MAP.md).
+release gates are in [the clinician completeness audit](docs/project/COMPLETENESS-MAP.md).
 The live audit proved one synthetic-patient load, one Class B answer, one task creation,
 one language switch and browser-session restoration. It did not prove the document-to-answer
 pipeline, six specified workflows, access controls, or hospital readiness.
@@ -331,7 +330,7 @@ pipeline, six specified workflows, access controls, or hospital readiness.
 | Architecture | **complete** — 7 specification documents, 15 diagrams in 2 renderings, 0 unresolved contradictions |
 | Build | **live vertical slice on JN89282** — 35 tables, 4 dynamic tables, 6 tasks, 18 procedures, 2 Cortex Search services, 1 semantic view, 1 agent, 1 MCP server (external round trip verified). `check_gate.py --manifest` PASS at 55 active deploy steps. 28/28 rule-fixture tests pass. 4 of 6 Streamlit screens wired to fixtures (Navigator + Judge Console still designed-only). |
 
-**The vertical slice is demonstrable end-to-end.** Remaining gaps are named in §5 and `REMAINING-WORK.md` — 88 of 100 patients (need `ledger.py` parameterisation), FHIR bundles per patient (blocked on same), 2 UI screens (Navigator + Judge Console), and the frontend→live-backend wiring pass.
+**The vertical slice is demonstrable end-to-end.** Remaining gaps are named in §5 — 88 of 100 patients (need `ledger.py` parameterisation), FHIR bundles per patient (blocked on same), 2 UI screens (Navigator + Judge Console), and the frontend→live-backend wiring pass.
 
 ### Day-1 scaffold — the scaffold is now built out
 
@@ -442,7 +441,7 @@ Specified in `SPEC.md` §2. **All 34 `[B]`-marked tables are live on JN89282** a
 
 ## 5. Application — 6 screens
 
-**Design system: `planning/research/design/DESIGN-SYSTEM.md`.** Grounded in three research
+**Design system: `docs/design/DESIGN-SYSTEM.md`.** Grounded in three research
 files in the same directory (1,526 lines) — Apple HIG fetched live, clinical UX evidence with
 19 cited sources, and empirically probed Streamlit-in-Snowflake capabilities. Every token is
 either traced to a source or explicitly marked as a judgment call.
@@ -479,7 +478,7 @@ means Apple's scale and restraint, not Apple's typeface. Do not claim SF Pro any
 Flexibility, Simplicity, Craft, Delight (verified live, 8 June 2026). The widely-repeated
 "Clarity, Deference, Depth" is **retired** and should not be cited.
 
-### Verified by screenshot — `planning/research/design/screens/`
+### Verified by screenshot — `docs/design/screens/`
 
 Captured from the running app, not mockups. `05-gate-strip-greyscale-audit.png` is the
 accessibility proof: with all colour removed, all four outcomes remain unambiguous.
@@ -576,5 +575,5 @@ Written now so they are not forgotten under deadline pressure.
 2. **Three thresholds are practice consensus, not guideline requirements.** Labelled ⚠️ in §3 and in the UI.
 3. **Five NRCeS ABDM FHIR profile claims are unverified** — flagged in `fhir-field-mapping.md` §12. Base-FHIR paths are standard and stable.
 4. **`ACCESS_HISTORY` lags up to 180 minutes.** Live probes use `QUERY_HISTORY`; the written pack uses `ACCESS_HISTORY`. Each is labelled.
-5. **Competitor comparisons are historical and not re-verifiable here.** Their source is not vendored in this repo and the file:line citations are limited to those in `planning/research/clinical/ps04-competitive-landscape.md`; no "no competitor does this" claim is made in judge-facing material (FIX-ROUND-5).
+5. **Competitor comparisons are historical and not re-verifiable here.** Their source is not vendored in this repo and the file:line citations are limited to those in `docs/research/clinical/ps04-competitive-landscape.md`; no "no competitor does this" claim is made in judge-facing material (FIX-ROUND-5).
 6. **100 patients, not population scale.** Sharding and event-driven recomputation are documented, not built.

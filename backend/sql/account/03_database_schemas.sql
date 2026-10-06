@@ -6,7 +6,7 @@
 -- by the app role, or the system can read its own answer key (WORK-PLAN.md).
 --
 -- The SAARTHI database and 6 of these 7 schemas already exist in this account,
--- created 16 Sept by an archived v1 script (planning/archive/v1-src-sql/).
+-- created 16 Sept by an archived v1 script.
 -- CREATE ... IF NOT EXISTS leaves them untouched here; legacy v1 TABLES inside
 -- CORE and GOVERNANCE are dropped explicitly in step 6's table files, because
 -- IF NOT EXISTS cannot fix a table that exists with the wrong (v1) columns.

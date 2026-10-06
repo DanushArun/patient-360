@@ -1,7 +1,7 @@
 """Generate the SAARTHI draw.io architecture document.
 
 Usage:  python3 -m tools.drawio.generate
-Writes: planning/revised-architecture/drawio/SAARTHI-architecture.drawio
+Writes: docs/architecture/drawio/SAARTHI-architecture.drawio
 
 The generated file is a normal editable draw.io document. Once it has been edited
 by hand in draw.io, the .drawio file becomes the source of truth and regenerating
@@ -16,7 +16,7 @@ from .serialize import build
 from .validate import summarise, validate
 from . import pages_c4, pages_data, pages_flow
 
-OUT = pathlib.Path("planning/revised-architecture/drawio/SAARTHI-architecture.drawio")
+OUT = pathlib.Path("docs/architecture/drawio/SAARTHI-architecture.drawio")
 
 ORDER = [
     *pages_c4.PAGES[:5],

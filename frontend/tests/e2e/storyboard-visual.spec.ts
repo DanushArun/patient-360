@@ -4,7 +4,7 @@ import { mkdir } from "node:fs/promises";
 import { cutoff, patientId, installStoryboardApi } from "./storyboard-api";
 
 const workspace = `/test-workspace/${patientId}`;
-const evidence = path.resolve(__dirname, "../../../planning/dashboard-release/evidence/screens");
+const evidence = path.resolve(__dirname, "../../test-results/screens");
 
 async function capture(page: Page, screen: string): Promise<void> {
   await mkdir(evidence, { recursive: true });
