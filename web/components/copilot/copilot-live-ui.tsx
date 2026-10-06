@@ -44,6 +44,42 @@ const SPEECH_ERRORS: Record<string, string> = {
   "language-not-supported": "Voice input does not support this language here. Type in the chat.",
 };
 
+// Pauses inside a sentence are often 1 s or more; 2 s of quiet means the person has finished.
+const END_OF_SPEECH_MS = 2000;
+const FIRST_WORD_MS = 8000;
+const MAX_LISTEN_MS = 30000;
+
+// Words this dashboard expects. Used to choose between the recogniser's alternatives
+// ("treatment" over "three") and, where supported, to bias recognition itself.
+const VOCABULARY = ["treatment", "patient", "record", "records", "medication", "medicine",
+  "regimen", "chemotherapy", "chemo", "cycle", "visit", "blocked", "missing", "pending",
+  "waiting", "ready", "documents", "report", "lab", "labs", "platelets", "platelet count",
+  "neutrophils", "ANC", "haemoglobin", "creatinine", "bilirubin", "echo", "LVEF",
+  "ejection fraction", "HER2", "pathology", "biopsy", "trastuzumab", "paclitaxel",
+  "pre-authorisation", "pre-auth", "coverage", "insurance", "PM-JAY", "consent", "timeline",
+  "conflicts", "evidence", "day care", "review queue", "summary", "open", "show"];
+
+function vocabulary(): string[] {
+  // Patient names on screen are part of the vocabulary too.
+  const names = [...document.querySelectorAll("[data-copilot-ref^='patient:']")]
+    .map((element) => element.getAttribute("data-copilot-label") ?? "").filter(Boolean);
+  return [...new Set([...VOCABULARY, ...names])];
+}
+
+function bestAlternative(result: ArrayLike<{ transcript: string }>): string {
+  const words = vocabulary().map((word) => word.toLowerCase());
+  let best = result[0]?.transcript ?? "";
+  let bestScore = -1;
+  for (let index = 0; index < result.length; index += 1) {
+    const text = result[index].transcript;
+    const lower = ` ${text.toLowerCase()} `;
+    // Recogniser order breaks ties: alternative 0 wins unless another names more known words.
+    const score = words.reduce((sum, word) => sum + (lower.includes(` ${word} `) ? 1 : 0), 0);
+    if (score > bestScore) { best = text; bestScore = score; }
+  }
+  return best.trim();
+}
+
 export function useSpeech(onFinal: (text: string) => void) {
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const finalRef = useRef(onFinal);
@@ -62,10 +98,21 @@ export function useSpeech(onFinal: (text: string) => void) {
     if (!Ctor) return;
     recognition.current?.abort();
     const rec = new Ctor();
-    rec.lang = navigator.language?.toLowerCase().startsWith("en") ? navigator.language : "en-IN";
+    // Indian English hears Indian accents and patient names far better than the en-US default.
+    rec.lang = "en-IN";
     rec.interimResults = true;
-    rec.continuous = false;
-    rec.maxAlternatives = 1;
+    // Keep listening through pauses; a silence timer below decides when the person has finished.
+    rec.continuous = true;
+    rec.maxAlternatives = 5;
+    // Contextual biasing where the browser supports it (Chrome's SpeechRecognitionPhrase).
+    try {
+      const Phrase = (window as unknown as { SpeechRecognitionPhrase?: new (p: string, b: number) => unknown })
+        .SpeechRecognitionPhrase;
+      if (Phrase && "phrases" in rec) {
+        (rec as unknown as { phrases: unknown[] }).phrases = vocabulary().map((phrase) =>
+          new Phrase(phrase, 5));
+      }
+    } catch { /* biasing is optional */ }
     // Prefer on-device recognition where the browser offers it, so speech stays on this machine.
     let local = false;
     try {
@@ -76,29 +123,43 @@ export function useSpeech(onFinal: (text: string) => void) {
       }
     } catch { /* fall back to the browser's default service */ }
     let heard = "";
+    let pending = "";
+    let silence: ReturnType<typeof setTimeout> | undefined;
+    // Stop after this much quiet once speech has started; allow longer before the first word.
+    const finishAfter = (ms: number) => {
+      clearTimeout(silence);
+      silence = setTimeout(() => rec.stop(), ms);
+    };
+    const cap = setTimeout(() => rec.stop(), MAX_LISTEN_MS);
     rec.onstart = () => {
+      finishAfter(FIRST_WORD_MS);
       setListening(true); setSpeaking(false); setInterim(""); setError(null); setOnDevice(local);
     };
     rec.onspeechstart = () => setSpeaking(true);
     rec.onspeechend = () => setSpeaking(false);
     rec.onresult = (event) => {
-      let pending = "";
+      pending = "";
       for (let index = event.resultIndex; index < event.results.length; index += 1) {
         const result = event.results[index];
-        if (result.isFinal) heard += result[0].transcript;
+        if (result.isFinal) heard += ` ${bestAlternative(result)}`;
         else pending += result[0].transcript;
       }
       setInterim(`${heard}${pending}`.trim());
+      finishAfter(END_OF_SPEECH_MS);
     };
     rec.onerror = (event) => {
       if (event.error !== "aborted") setError(SPEECH_ERRORS[event.error]
         ?? "Voice input stopped unexpectedly. Try again, or type in the chat.");
     };
     rec.onend = () => {
+      clearTimeout(silence);
+      clearTimeout(cap);
       setListening(false);
       setSpeaking(false);
       if (recognition.current === rec) recognition.current = null;
-      if (heard.trim()) finalRef.current(heard.trim());
+      // A stop can land before the last phrase is finalised; keep what was heard.
+      const text = `${heard} ${pending}`.replace(/\s+/g, " ").trim();
+      if (text) finalRef.current(text);
     };
     recognition.current = rec;
     try { rec.start(); } catch { setError("Voice input could not start. Try again."); }
