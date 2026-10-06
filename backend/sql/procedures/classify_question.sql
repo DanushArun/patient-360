@@ -39,6 +39,8 @@ BEGIN
         -- Treatment-course decisions, so the wider worklist scan below never answers them.
         OR v_q RLIKE '.*\\b(stop|hold|delay|withhold|defer|postpone|reschedule[a-z]*|reason to|treat first|prioriti[sz]e)\\b.*'
         OR v_q RLIKE '.*\\b(medications?|medicines?|drugs?|regimen|chemo[a-z]*)\\b.*\\b(require[sd]?|need|needs|give|start|add|change|increase|reduce)\\b.*'
+        -- Severity and trajectory are clinical judgments, so the record-topic scan below never answers them.
+        OR v_q RLIKE '.*\\b(serious|severe|critical|worse|worsening|improving|better|stable|urgent|emergency|alarming)\\b.*'
     ) THEN
         v_class := 'CLASS_A';
         v_method := 'keyword';
@@ -68,8 +70,14 @@ BEGIN
         OR v_q RLIKE '.*\\b(what''s|what is|whats) (missing|outstanding|pending|blocking|open|left)\\b.*'
         OR v_q RLIKE '.*\\b(gaps?|outstanding|blocked|blocking|blockers?|disagree[a-z]*|discrepanc[a-z]*)\\b.*'
         OR v_q RLIKE '.*\\b(issues?|problems?) (with|in) (this |the |her |his )?(record|chart|file|visit|patient)\\b.*'
+        -- "What's the issue with Fatima?" (6 Oct 2026, live): a named patient's flagged record
+        -- issues. "What's wrong with her" and judgment wording are refused by the keyword scan first.
+        OR v_q RLIKE '.*\\b(what''s|whats|what is|what are|any|list the|show the) (the |her |his |their )?(main |open |record )?(issues?|problems?|flags?)\\b.*'
         OR v_q RLIKE '.*\\b(is|are|was|has) (the|her|his|this|their) (pre-?auth[a-z]*|authori[sz]ation|consent|coverage|claim|report|document|pathology|scan)\\b.*'
         OR v_q RLIKE '.*\\b(which|what) cycle\\b.*'
+        -- Record topics a clinician or judge asks about by name (6 Oct 2026, 54-question live sweep:
+        -- these 12 reached the AI fallback and were refused). Judgment wording is refused above first.
+        OR v_q RLIKE '.*\\b(diagnos[a-z]*|condition|her2|receptor status|vitals?|history|timeline|pm-?jay|covered|insurance|schemes?|treating (doctor|practitioner|oncologist)|doctor|overdue|due|red flags?|attention|waiting( on evidence)?)\\b.*'
         OR v_q RLIKE '.*\\b(what|which)\\b.*\\b(medications?|medicines?|drugs?|regimen|protocol|treatment plan)\\b.*'
     ) THEN
         v_class := 'CLASS_B';

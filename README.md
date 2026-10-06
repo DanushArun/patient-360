@@ -118,6 +118,44 @@ PUT file://echo_report.pdf @SAARTHI.STAGES.PATIENT_DOCS/PAT-DC-12/ AUTO_COMPRESS
 
 The loaders used for the synthetic cohort are in [`backend/scripts/`](backend/scripts/) and [`backend/sql/data/`](backend/sql/data/), and every task is defined in [`backend/sql/tasks/`](backend/sql/tasks/).
 
+## Try asking Saarthi
+
+Type in the Copilot panel or press the mic (voice works in Chrome, Edge and Safari). Open a
+patient first for patient questions; use the Day care page for list questions. Every question
+below was routed live on 6 Oct 2026: 44 record questions answered, 15 clinical-judgement
+questions refused, 0 misrouted (`backend/sql/procedures/classify_question.sql`).
+
+**Day care list**
+- "Who is blocked today?"
+- "How many patients are ready?"
+- "List patients waiting on evidence"
+- "Which patients have coverage conflicts?"
+- "What needs my attention today?"
+- "Brief me on today's day care list"
+
+**One patient's record** (open Fatima Begum, Anjali Deshpande or Abdul Rahman)
+- "What's the issue with Fatima?"
+- "Why is Lakshmi blocked?"
+- "What is her platelet count?"
+- "What was the last ANC?" · "What is the LVEF?" · "What is her HbA1c?"
+- "Show me her latest labs"
+- "What does the pathology report say?"
+- "Has the FISH result come back?"
+- "Is the pre-authorisation approved?" · "Is she covered under PM-JAY?"
+- "Is her consent active?"
+- "Do any sources disagree?"
+- "What changed since yesterday?"
+- "Summarise this patient"
+- "Where does the LVEF value come from?"
+
+**Clinical judgement: refused by design**
+"Should she proceed with chemo?", "Is it safe to give trastuzumab?", "What dose should I give?",
+"What is her prognosis?" and "Is her condition serious?" are refused for every role, and Saarthi
+offers an evidence packet for the treating practitioner instead. NMC Telemedicine Practice
+Guidelines 2020 bar AI platforms from clinical counselling; the practitioner decides.
+
+If no verified, cited record answers a question, Saarthi says so rather than guessing.
+
 ## How it works
 
 ```mermaid

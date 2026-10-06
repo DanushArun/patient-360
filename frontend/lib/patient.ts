@@ -415,7 +415,11 @@ export async function askPatient(patientId: string, question: string,
   onPhase: (phase: AskPhase) => void = () => {}, tooling?: AskTooling,
   scope: "patient" | "reference" = "patient"): Promise<AgentTurn> {
   try {
-    return await askPatientUncached(patientId, question, onPhase, tooling, scope);
+    const turn = await askPatientUncached(patientId, question, onPhase, tooling, scope);
+    // Never show a blank answer: say plainly that no verified, cited record answered it.
+    if (!turn.error && !turn.text.trim()) turn.text = "No verified, cited record answers this "
+      + "question yet. The record checks and documents on this screen show what is on file.";
+    return turn;
   } finally {
     // An answer writes only to answer history; every other cached read stays valid.
     forgetRead(patientId, "evidence");
