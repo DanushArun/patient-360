@@ -15,7 +15,7 @@ def prepare(source: Path, destination: Path) -> dict[str, str]:
     if destination.resolve().is_relative_to(source.resolve()):
         raise ValueError('The upload package must be outside the source checkout')
     manifest: dict[str, str] = {}
-    for root in ('web', 'frontend/contracts', 'frontend/fixtures'):
+    for root in ('frontend',):
         for path in (source / root).rglob('*'):
             relative = path.relative_to(source)
             if not path.is_file() or path.is_symlink() or not allowed(relative):
@@ -24,7 +24,7 @@ def prepare(source: Path, destination: Path) -> dict[str, str]:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(path, target)
             manifest[relative.as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
-    if 'web/package-lock.json' not in manifest:
+    if 'frontend/package-lock.json' not in manifest:
         raise ValueError('Missing dependency lockfile')
     (destination / 'upload-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     return manifest

@@ -2,7 +2,7 @@
 
 Submission answers for **Section 2 (Architecture Diagram)** and **Section 3 (Impact Statement)**. Compiled from
 `README.md`, `docs/project/PROJECT-OVERVIEW.md`, `planning/revised-architecture/ARCHITECTURE-HANDOFF.md`,
-`backend/skills/README.md`, `evidence/coco/README.md`, `docs/submission/DECK-OUTLINE.md` and
+`backend/skills/README.md`, `evidence/coco/README.md` and
 `planning/research/patient-reality/`. Synthetic data only; engineering checks are not clinical validation.
 
 > **SQL decides. AI extracts and phrases. The practitioner stays accountable.**
@@ -174,5 +174,5 @@ read-only queries.
 - **Task user fix not yet deployed.** PR #18 hardcoded `EXECUTE AS USER DAKSHA`; PR #20 replaces that with a deploy-time
   lookup (the user on practitioner `PRAC-01`, else the deploying user). Offline checks pass; re-run the two task files
   on Snowflake after it merges.
-- **Web app not yet switched on.** `web/.env.local` points at XG46956 with user `DAKSHA`, role `SAARTHI_APP` and
+- **Web app not yet switched on.** `frontend/.env.local` points at XG46956 with user `DAKSHA`, role `SAARTHI_APP` and
   warehouse `SAARTHI_AI_WH`; live access stays off until the checks above pass.

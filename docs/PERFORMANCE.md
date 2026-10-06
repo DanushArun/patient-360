@@ -21,12 +21,12 @@ Queue time was about 0 ms. The cost is per-statement latency inside the procedur
 ## What changed
 
 1. **Parallel reads.** The patient page starts its snapshot and roster reads together instead of one after the other.
-2. **Read-ahead** (`web/lib/warm.ts`, run with Next.js `after()` once the response is sent):
+2. **Read-ahead** (`frontend/lib/warm.ts`, run with Next.js `after()` once the response is sent):
    - The census warms the review queue, plus each listed patient's snapshot and Overview documents.
    - The patient page warms every tab: documents, the six fact domains, coverage comparison, timeline, evidence history, review tasks for each open check, owners and schemes.
    - At most four background sessions run at once.
-3. **Cache window of 2 minutes** (`web/lib/read-cache.ts`; it was 15 s), decided on 6 Oct 2026.
-4. **Shared cache keys.** The API routes and the read-ahead use the same canonical keys (`web/lib/warm-plan.mjs`), so warmed entries are always the ones requested.
+3. **Cache window of 2 minutes** (`frontend/lib/read-cache.ts`; it was 15 s), decided on 6 Oct 2026.
+4. **Shared cache keys.** The API routes and the read-ahead use the same canonical keys (`frontend/lib/warm-plan.mjs`), so warmed entries are always the ones requested.
 5. **Explicit Refresh always re-reads.** Census **Refresh** and **Refresh queue** clear the cross-patient cache before reading.
 
 ## Results

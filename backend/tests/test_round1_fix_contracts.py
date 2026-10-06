@@ -9,7 +9,7 @@ import unittest
 
 REPO = Path(__file__).resolve().parents[2]
 SQL = REPO / "backend/sql"
-WEB = REPO / "web"
+WEB = REPO / "frontend"
 
 
 def sql(path):

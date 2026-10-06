@@ -45,10 +45,10 @@ paid model services. Adapter tests block socket connections and DNS. If the
 optional library is absent, adapter tests skip: a skipped run does **not** prove
 compatibility. Check for zero skips before reporting success.
 
-Frontend checks, after syncing the existing `web/package-lock.json` dependencies:
+Frontend checks, after syncing the existing `frontend/package-lock.json` dependencies:
 
 ```sh
-cd web
+cd frontend
 npm test
 npm run typecheck
 ```
@@ -181,7 +181,7 @@ or `.env` files into Git. Its key must already authenticate `SITAR` in
 `OHCXVXM-OS69400`, not the exhausted teammate account. Creating a public-key
 file alone does not register it in Snowflake.
 
-After installing the existing frontend lockfile with `cd web && npm ci`, the
+After installing the existing frontend lockfile with `cd frontend && npm ci`, the
 approved metadata-only check can run from the repository root:
 
 ```sh

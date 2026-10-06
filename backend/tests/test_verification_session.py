@@ -45,7 +45,7 @@ def test_connection_when_options_built_pins_utc_snapshot_clocks(
 
     key = tmp_path / 'key.p8'
     key.write_text('test key path only; connector is not called')
-    # Hermetic: the allowed account comes from the test, never from this machine's web/.env.local.
+    # Hermetic: the allowed account comes from the test, never from this machine's frontend/.env.local.
     monkeypatch.setenv('SNOWFLAKE_ACCOUNT', 'KGTPGHJ-YJ28449')
     monkeypatch.setenv('SAARTHI_SNOWFLAKE_ALLOWED_ACCOUNT', 'KGTPGHJ-YJ28449')
     monkeypatch.setenv('SNOWFLAKE_USER', 'TEST_USER')

@@ -73,7 +73,7 @@ def test_review_task_scope_is_checked_before_idempotency_replay():
 
 
 def test_binding_release_uses_scoped_owner_procedure():
-    connector = (ROOT / 'web/lib/snowflake.ts').read_text()
+    connector = (ROOT / 'frontend/lib/snowflake.ts').read_text()
     procedure = (ROOT / 'backend/sql/procedures/release_patient_binding.sql').read_text()
     assert 'CALL SAARTHI.OPERATIONAL.RELEASE_PATIENT_BINDING()' in connector
     assert 'UPDATE SAARTHI.GOVERNANCE.PATIENT_BINDING' not in connector

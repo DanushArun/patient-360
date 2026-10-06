@@ -1,6 +1,6 @@
 # SAARTHI Interface Guidelines
 
-The rules every SAARTHI screen follows. Each rule is adapted from Apple's Human Interface Guidelines (HIG). macOS is the reference platform, because SAARTHI is a desktop web tool used at a clinic workstation. The rules are enforced in code by `web/app/tokens.css` and checked by `web/lib/design-tokens.test.mjs`.
+The rules every SAARTHI screen follows. Each rule is adapted from Apple's Human Interface Guidelines (HIG). macOS is the reference platform, because SAARTHI is a desktop web tool used at a clinic workstation. The rules are enforced in code by `frontend/app/tokens.css` and checked by `frontend/lib/design-tokens.test.mjs`.
 
 **Why this exists.** A 5 October 2026 audit found that the web app used 24 font sizes, 149 hex colours, 115 padding values, 59 heights and 18 corner radii across 21 CSS files. One census toolbar row had four controls at four sizes. Inconsistency reads as unreliability, and a clinician who doubts the interface will doubt the record.
 

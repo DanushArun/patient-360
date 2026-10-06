@@ -1,7 +1,7 @@
 /* SAARTHI design tokens: the single source of every type, space, size, radius and
    colour value. Rules and rationale: docs/design/INTERFACE-GUIDELINES.md (adapted
    from Apple HIG, macOS reference platform). Raw hex values live only in this file;
-   web/lib/design-tokens.test.mjs fails the build if they appear anywhere else. */
+   frontend/lib/design-tokens.test.mjs fails the build if they appear anywhere else. */
 
 :root {
   color-scheme: light;

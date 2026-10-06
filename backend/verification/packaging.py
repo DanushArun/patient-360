@@ -12,9 +12,9 @@ RUNTIME_FILES = frozenset({
     'frontend/fixtures/daycare_census_recorded.json',
 })
 FONT_NOTICES = frozenset({
-    'web/public/fonts/LICENSE-Inter.txt',
-    'web/public/fonts/LICENSE-JetBrainsMono.txt',
-    'web/public/fonts/LICENSE-MaterialSymbols.txt',
+    'frontend/public/fonts/LICENSE-Inter.txt',
+    'frontend/public/fonts/LICENSE-JetBrainsMono.txt',
+    'frontend/public/fonts/LICENSE-MaterialSymbols.txt',
 })
 SOURCE_ROOTS = frozenset({'app', 'components', 'lib', 'public'})
 SOURCE_SUFFIXES = frozenset({
@@ -29,7 +29,7 @@ def allowed(path: Path) -> bool:
         return False
     if path.as_posix() in RUNTIME_FILES | FONT_NOTICES:
         return True
-    if len(parts) < 2 or parts[0] != 'web':
+    if len(parts) < 2 or parts[0] != 'frontend':
         return False
     if len(parts) == 2:
         return parts[1] in WEB_FILES

@@ -4,7 +4,7 @@
 
 **Setup:**
 1. `cd web`
-2. Create `web/.env.local` if it does not exist (gitignored, never committed):
+2. Create `frontend/.env.local` if it does not exist (gitignored, never committed):
    ```
    SNOWFLAKE_ACCOUNT=IFTDBGM-EA72552
    SNOWFLAKE_USER=DAKSHA
@@ -410,7 +410,7 @@ For each language:
 **Pass criteria:** Cannot access non-existent patients by URL.
 
 ### G3. Role check (S4 fix)
-1. **Verify** the connection uses `SAARTHI_APP` role (check `web/lib/snowflake.ts` line 25)
+1. **Verify** the connection uses `SAARTHI_APP` role (check `frontend/lib/snowflake.ts` line 25)
 2. If you have access to Snowflake query history, verify recent queries ran as `SAARTHI_APP`, not `ACCOUNTADMIN`
 
 **Pass criteria:** No queries running as ACCOUNTADMIN from the frontend.

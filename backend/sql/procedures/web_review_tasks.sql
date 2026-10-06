@@ -1,4 +1,4 @@
--- NOT DEPLOYED / NOT WIRED (code review CR1-17): nothing in web/ calls this procedure and setup.sql does not run it.
+-- NOT DEPLOYED / NOT WIRED (code review CR1-17): nothing in frontend/ calls this procedure and setup.sql does not run it.
 -- The authoritative implementation is GET_WEB_WORKSPACE / GET_WEB_PATIENT_DATA in web_reads.sql. Do not deploy this
 -- file without first removing the duplicate view there; two unsynchronised authorization paths are a defect.
 -- Review history for the patient already bound to this Snowflake session.

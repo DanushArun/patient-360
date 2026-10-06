@@ -1,4 +1,4 @@
-// Runs the Playwright suite against an ISOLATED copy of web/ that has the synthetic test routes
+// Runs the Playwright suite against an ISOLATED copy of frontend/ that has the synthetic test routes
 // (/test-daycare, /test-workspace, /test-source, /test-history, /test-queue) installed.
 // Those routes are fixtures; they must never exist in the shipping app, so they are installed
 // only into a throwaway copy outside the repository (prepare-fixtures.mjs refuses anything else).
@@ -21,7 +21,7 @@ try {
   await mkdir(copy, { recursive: true });
   await cp(web, copy, { recursive: true,
     filter: (source) => !excluded(path.basename(source)) });
-  // web/ imports three repository-level JSON files by relative path; copy exactly those, nothing else.
+  // frontend/ imports three repository-level JSON files by relative path; copy exactly those, nothing else.
   const repo = path.resolve(web, '..');
   for (const rel of ['frontend/fixtures/daycare_census_recorded.json',
     'frontend/contracts/answer_schema.json', 'data/reference/catalog.json']) {

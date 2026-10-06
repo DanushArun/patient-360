@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def connection_options(role: str, use_warehouse: bool = True) -> dict[str, Any]:
-    env = {**dotenv_values(ROOT / "web/.env.local"), **os.environ}
+    env = {**dotenv_values(ROOT / "frontend/.env.local"), **os.environ}
     account = env.get("SNOWFLAKE_ACCOUNT")
     expected = env.get("SAARTHI_SNOWFLAKE_ALLOWED_ACCOUNT", "KGTPGHJ-YJ28449")
     if not account or account.upper() != expected.upper():
@@ -26,7 +26,7 @@ def connection_options(role: str, use_warehouse: bool = True) -> dict[str, Any]:
     if not key or not env.get("SNOWFLAKE_USER"):
         raise ValueError("Snowflake user and private key path are required")
     path = Path(key).expanduser()
-    path = path if path.is_absolute() else ROOT / "web" / path
+    path = path if path.is_absolute() else ROOT / "frontend" / path
     if not path.is_file():
         raise ValueError("private key file missing")
     options = {"account": account, "user": env["SNOWFLAKE_USER"],

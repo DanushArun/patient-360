@@ -80,7 +80,7 @@ npm run build
 
 Browser checks need the five synthetic test routes in an isolated checkout outside
 this repository. From the original repository root, run
-`node web/tests/prepare-fixtures.mjs /absolute/path/to/isolated-checkout`.
+`node frontend/tests/prepare-fixtures.mjs /absolute/path/to/isolated-checkout`.
 The checkout must include `web`, `frontend/contracts` and `frontend/fixtures`.
 In its `web` directory, install dependencies and Chromium (`npm ci` and
 `npx playwright install chromium`), then run `SAARTHI_SNOWFLAKE_ENABLED=false npm run build`

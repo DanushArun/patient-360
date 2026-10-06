@@ -44,11 +44,7 @@ This directory organizes all project documentation, specifications, guidelines, 
 
 ### 5. [`submission/`](./submission/) — Hackathon Submission & Judge Materials
 - **[`JUDGE-WALKTHROUGH.md`](./submission/JUDGE-WALKTHROUGH.md)**: Guided walkthrough for judges to independently verify claims and architecture.
-- **[`DECK-OUTLINE.md`](./submission/DECK-OUTLINE.md)**: Slide-by-slide structure and narrative outline for the presentation pitch.
 - **[`SAARTHI-submission-2026-10-05.pptx`](./submission/SAARTHI-submission-2026-10-05.pptx)**: Final submission slide deck.
-- **[`FINALS-SCRIPT-2026-10-04.md`](./submission/FINALS-SCRIPT-2026-10-04.md)**: Presentation script for live demo and evaluation.
-- **[`GRAND-FINALS-EVALUATION-2026-10-04.md`](./submission/GRAND-FINALS-EVALUATION-2026-10-04.md)**: Evaluation score sheet and rubric self-assessment.
-- **[`SUBMISSION-READINESS-AUDIT-2026-10-04.md`](./submission/SUBMISSION-READINESS-AUDIT-2026-10-04.md)**: Pre-submission verification checklist.
 - **[`INDEPENDENT-EVALUATION-RUNBOOK.md`](./submission/INDEPENDENT-EVALUATION-RUNBOOK.md)**: Runbook for evaluators running tests in clean environments.
 - **[`RELEASE-GATES-2026-10-05.md`](./submission/RELEASE-GATES-2026-10-05.md)**: Release gate signoff criteria.
 
@@ -62,4 +58,3 @@ This directory organizes all project documentation, specifications, guidelines, 
 ### 8. [`history/`](./history/) — Baselines & Execution Logs
 - **[`WORKSPACE-BASELINE-2026-09-30.md`](./history/WORKSPACE-BASELINE-2026-09-30.md)**: Snapshot baseline of repository assets as of 30 Sept 2026.
 - **[`WORKSPACE-RECONCILIATION-2026-09-30.md`](./history/WORKSPACE-RECONCILIATION-2026-09-30.md)**: Reconciliation record resolving duplicate or conflicting files.
-- **[`AGENT-EXECUTION-HANDOFF-2026-10-04.md`](./history/AGENT-EXECUTION-HANDOFF-2026-10-04.md)**: Dated task and milestone handoff documentation.

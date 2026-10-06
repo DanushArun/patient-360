@@ -18,7 +18,7 @@ from __future__ import annotations
 from data.generator.eval_questions import _anc_evidence_from_ledger, build_anc_readiness_question
 from data.generator.ledger import generate_deep_case
 from data.generator.reference_rules import evaluate_clin_anc_001
-from frontend.core.contracts import validate_answer
+from backend.verification.answer_contract import validate_answer
 
 _LEDGER = generate_deep_case(seed=20260918)
 

@@ -8,7 +8,7 @@ this builds is the pattern the full set reuses: a question's expected
 answer is assembled from the ledger (the only source of truth) and
 reference_rules.py (the independent oracle that must never share code with
 the SQL it will eventually check), then validated against the real frozen
-Contract 3 schema (frontend/core/contracts.py) — not hand-typed and hoped
+Contract 3 schema (backend/verification/answer_contract.py) — not hand-typed and hoped
 correct.
 """
 

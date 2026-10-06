@@ -87,7 +87,7 @@ The test fixture installer only writes to an isolated checkout outside this repo
 
 ```sh
 cd /Users/danusharun/Documents/patient-360
-node web/tests/prepare-fixtures.mjs /absolute/path/to/isolated-checkout
+node frontend/tests/prepare-fixtures.mjs /absolute/path/to/isolated-checkout
 cd /absolute/path/to/isolated-checkout/web
 npm test
 npm run build

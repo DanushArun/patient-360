@@ -18,7 +18,7 @@ clean. Then open `/design-preview/PAT-DC-07`: a **recorded fixture**, labelled a
 | Read | What to check |
 |---|---|
 | [README](../README.md) top, first two paragraphs | The user (day-care coordinator, family) and the question: what is missing, pending or conflicting before the next visit |
-| [`backend/sql/procedures/classify_question.sql`](../backend/sql/procedures/classify_question.sql), [`web/lib/question-routing.mjs`](../web/lib/question-routing.mjs), [`docs/CLASSIFIER-TEST-SUITE.md`](CLASSIFIER-TEST-SUITE.md) | Class A (clinical judgment) is refused for every role; Class B is routed to deterministic tools. Legal basis: NMC Telemedicine Practice Guidelines 2020 ([`AGENTS.md`](../AGENTS.md) section 5) |
+| [`backend/sql/procedures/classify_question.sql`](../backend/sql/procedures/classify_question.sql), [`frontend/lib/question-routing.mjs`](../web/lib/question-routing.mjs), [`docs/CLASSIFIER-TEST-SUITE.md`](CLASSIFIER-TEST-SUITE.md) | Class A (clinical judgment) is refused for every role; Class B is routed to deterministic tools. Legal basis: NMC Telemedicine Practice Guidelines 2020 ([`AGENTS.md`](../AGENTS.md) section 5) |
 | [`docs/READINESS-CHECKS-EXPLAINED.md`](READINESS-CHECKS-EXPLAINED.md), [`data/fixtures/rules/rule_fixtures.yaml`](../data/fixtures/rules/rule_fixtures.yaml) | 16 versioned SQL rules, 80 fixtures. Never a model's opinion, never a confidence percentage |
 | [`evidence/clinical/README.md`](../evidence/clinical/README.md) | Sourced thresholds; three are practice consensus and labelled so |
 | [`docs/DATASET-LICENCES.md`](DATASET-LICENCES.md) | Synthetic-only position and licence inventory (per-file reference licences are not all verified) |
@@ -41,8 +41,6 @@ clean. Then open `/design-preview/PAT-DC-07`: a **recorded fixture**, labelled a
 | Read | What to check |
 |---|---|
 | [`backend/sql/deploy/README.md`](../backend/sql/deploy/README.md) | The 10-step Snowsight bundle, with a VERIFY block per step. **Never run on a clean account** |
-| [`evidence/qa/JUDGE-EVALUATION.md`](../evidence/qa/JUDGE-EVALUATION.md) | Our own adversarial self-assessment and its open gaps |
-| [`docs/DECK-OUTLINE.md`](DECK-OUTLINE.md) | Outline and demo script only; the deck and video are produced separately |
 | [`docs/TESTING-PLAYBOOK.md`](TESTING-PLAYBOOK.md), [`docs/PROTOTYPE-COST-CONTROLS.md`](PROTOTYPE-COST-CONTROLS.md) | How testing is run, and how cost was capped |
 
 ## What is not yet live, and known limitations

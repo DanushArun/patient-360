@@ -58,7 +58,7 @@ All patients below are synthetic. This is a **small smoke run**, not coverage of
 | V-05 | Opened the checklist and changed Bengali to Hindi | Checklist item and copyable family message changed language. The other three languages, copy action, and missing prerequisites were not exercised. |
 | V-06 | Reloaded `PAT-DC-04` | Both the submitted question and assistant answer returned from `sessionStorage`. Other-patient isolation was not exercised. |
 | V-07 | Ran `venv/bin/pytest -x --tb=short` | 203 tests passed, then `frontend/tests/test_streamlit_app.py::test_app_runs_offline_without_exception` failed because `streamlit_extras` is imported but absent from the test environment. The suite stopped there. |
-| V-08 | Ran `web/node_modules/.bin/tsc --noEmit` | Passed. This checks types, not production build or browser behavior. |
+| V-08 | Ran `frontend/node_modules/.bin/tsc --noEmit` | Passed. This checks types, not production build or browser behavior. |
 | V-09 | Read eight recent `PAT-DC-04` binding rows | All eight had distinct Snowflake session IDs and non-null release times, query `01c744a5-0003-9673-0001-fd060034c9ca`. This is a sample, not a controlled concurrent A/B or failure-path test. |
 | V-10 | Requested `/api/patient/PAT-NOT-EXISTS` | Returned HTTP 403 in 3.0 seconds with `bind failed: no_patient_access` and no patient facts. This tests an unknown ID only; a real foreign patient and revoked consent remain open. |
 
@@ -187,26 +187,26 @@ adverse and ambiguous cases rather than excluding them.
 
 | ID | User action / state | Required visible result | Source | Status and proof needed |
 | --- | --- | --- | --- | --- |
-| H1 | Open `/` with accessible visits | Day groups; Ready, Advisory, Waiting, Conflict, Blocked counts; blocker-first rows with patient, regimen, status, reason, `Open` | `web/app/page.tsx`, `web/lib/census.ts`; Streamlit `_render_census` | Code-backed. Compare counts and row order against one `READINESS_STATE` capture. |
-| H2 | Open patient picker; choose any listed patient | Picker contains every accessible patient; choice opens that patient's page | `web/app/page.tsx:10-37,72-83`; Streamlit header selector | **Gap:** picker inherits only census patients plus a hardcoded Meera row. Query all bindable patients and verify every option. |
-| H3 | Click a census row's `Open` | Patient route starts loading immediately, then shows the selected patient, never a different binding | `web/app/page.tsx:189-197`, `web/app/patient/[id]/page.tsx` | Code-backed; browser click plus patient ID/name assertion open. |
-| H4 | No visits in seven days | Explicit empty message; accessible patient picker still works | `web/app/page.tsx:125-130` | Code-backed; controlled empty census fixture open. |
-| H5 | Snowflake census failure | Explicit error, no misleading zero-count success state | `web/app/page.tsx:49-57,116-123` | Code-backed; inject connection failure and capture UI. |
-| H6 | Desktop and narrow viewport | No clipped rows, count labels, picker, or `Open` controls; keyboard focus visible | `web/app/page.tsx`, `web/app/globals.css` | Open; capture both widths and tab order. |
+| H1 | Open `/` with accessible visits | Day groups; Ready, Advisory, Waiting, Conflict, Blocked counts; blocker-first rows with patient, regimen, status, reason, `Open` | `frontend/app/page.tsx`, `frontend/lib/census.ts`; Streamlit `_render_census` | Code-backed. Compare counts and row order against one `READINESS_STATE` capture. |
+| H2 | Open patient picker; choose any listed patient | Picker contains every accessible patient; choice opens that patient's page | `frontend/app/page.tsx:10-37,72-83`; Streamlit header selector | **Gap:** picker inherits only census patients plus a hardcoded Meera row. Query all bindable patients and verify every option. |
+| H3 | Click a census row's `Open` | Patient route starts loading immediately, then shows the selected patient, never a different binding | `frontend/app/page.tsx:189-197`, `frontend/app/patient/[id]/page.tsx` | Code-backed; browser click plus patient ID/name assertion open. |
+| H4 | No visits in seven days | Explicit empty message; accessible patient picker still works | `frontend/app/page.tsx:125-130` | Code-backed; controlled empty census fixture open. |
+| H5 | Snowflake census failure | Explicit error, no misleading zero-count success state | `frontend/app/page.tsx:49-57,116-123` | Code-backed; inject connection failure and capture UI. |
+| H6 | Desktop and narrow viewport | No clipped rows, count labels, picker, or `Open` controls; keyboard focus visible | `frontend/app/page.tsx`, `frontend/app/globals.css` | Open; capture both widths and tab order. |
 
 ## Patient record and every readiness check
 
 | ID | User action / state | Required visible result | Source | Status and proof needed |
 | --- | --- | --- | --- | --- |
-| P1 | Open authorized `/patient/[id]` | Name, patient ID, consent, practitioner, readiness, conversation/evidence columns, composer | `web/app/patient/[id]/page.tsx`, `patient-client.tsx:73-85,267-305` | Code-backed; full page capture after load. |
-| P2 | Initial SQL snapshot, then live refresh | Snapshot clearly labelled with `known_as_of`; live result replaces it; no stale result labelled current | `web/lib/patient.ts:39-85`, `patient-client.tsx:249-283` | Code-backed; record both states and timestamps. |
+| P1 | Open authorized `/patient/[id]` | Name, patient ID, consent, practitioner, readiness, conversation/evidence columns, composer | `frontend/app/patient/[id]/page.tsx`, `patient-client.tsx:73-85,267-305` | Code-backed; full page capture after load. |
+| P2 | Initial SQL snapshot, then live refresh | Snapshot clearly labelled with `known_as_of`; live result replaces it; no stale result labelled current | `frontend/lib/patient.ts:39-85`, `patient-client.tsx:249-283` | Code-backed; record both states and timestamps. |
 | P3 | Live readiness unavailable | Snapshot remains labelled; error and retry appear; empty snapshot states no inferred outcome | `patient-client.tsx:269-283` | Code-backed; force refresh failure, then retry success. |
-| P4 | Bind denied or unknown patient | No patient facts or gates; access/error page shown | `web/lib/snowflake.ts`, `web/app/patient/[id]/page.tsx` | Open; use unauthorized synthetic ID and inspect response/body. |
+| P4 | Bind denied or unknown patient | No patient facts or gates; access/error page shown | `frontend/lib/snowflake.ts`, `frontend/app/patient/[id]/page.tsx` | Open; use unauthorized synthetic ID and inspect response/body. |
 | R1 | Click **each** readiness tile, including identity, coverage, documentation | Selected tile and evidence panel agree on category, outcome, rule/version, severity, reason, evidence IDs, as-of, derived value when supplied; second click or Clear selection unpins | `patient-evidence.tsx:9-40,73-107` | Code-backed; run rule matrix below. |
 | R2 | Click a `pass` tile | Explain why it passed; no review action | `patient-evidence.tsx:73-105` | Code-backed; browser assertion per category open. |
 | R3 | Click a `fail`, `conflicting`, or `not_evaluated` tile | Exact SQL outcome and reason; missing evidence stated; two permitted actions visible | `patient-evidence.tsx:73-123` | Code-backed; browser assertion per available outcome open. |
 | R4 | Tile or answer carries `provenance_note` | Show the provenance note with the gate's evidence | Streamlit `streamlit_app.py:578`; Next `patient-evidence.tsx:73-93` | **Gap:** Next gate detail does not render `provenance_note`. |
-| R5 | No readiness rows | Explicit unavailable state; no “pass” inferred from absence | `patient-client.tsx:281-283`, `web/lib/census.ts:106-107` | Code-backed; controlled missing-row fixture open. |
+| R5 | No readiness rows | Explicit unavailable state; no “pass” inferred from absence | `patient-client.tsx:281-283`, `frontend/lib/census.ts:106-107` | Code-backed; controlled missing-row fixture open. |
 
 The rule matrix is the click inventory. For **every row**, check the tile and side panel,
 including pass and every available non-pass outcome. Expected reason and evidence IDs come
@@ -236,14 +236,14 @@ fixture targets, not promises about today's live database.
 
 | ID | User action / state | Required visible result | Source | Status and proof needed |
 | --- | --- | --- | --- | --- |
-| C1 | Focus and type in composer | Single smooth surface and visible focus ring; typed text stays visible; send control reachable by keyboard | `patient-client.tsx:164-173`, `web/app/globals.css` | Code-backed; desktop/mobile focus screenshot and tab test open. |
+| C1 | Focus and type in composer | Single smooth surface and visible focus ring; typed text stays visible; send control reachable by keyboard | `patient-client.tsx:164-173`, `frontend/app/globals.css` | Code-backed; desktop/mobile focus screenshot and tab test open. |
 | C2 | Submit by Enter or Send | User message appears immediately, input clears, `Consulting the record…` appears, duplicate send disabled | `patient-client.tsx:131-143,197-215` | Code-backed; browser/network timeline open. |
-| C3 | Successful `ASK_SAARTHI` | Assistant text, `known_as_of`, cited gate outcomes/rules, tools/query IDs, suggested follow-ups visible | `web/lib/patient.ts:118-171`, `patient-client.tsx:146-162`, `patient-evidence.tsx:126-157` | Code-backed; controlled response and live query ID open. |
+| C3 | Successful `ASK_SAARTHI` | Assistant text, `known_as_of`, cited gate outcomes/rules, tools/query IDs, suggested follow-ups visible | `frontend/lib/patient.ts:118-171`, `patient-client.tsx:146-162`, `patient-evidence.tsx:126-157` | Code-backed; controlled response and live query ID open. |
 | C4 | Click suggested follow-up | Exact suggestion becomes visible user turn and new request; no patient ID in agent input | `patient-client.tsx:141-143,204-212` | Code-backed; browser request assertion open. |
 | C5 | Click answer `Evidence`, then unpin | Panel follows clicked rule; shows reason, evidence IDs, derivation, tool provenance; unpin returns to answer overview | `patient-client.tsx:290-303`, `patient-evidence.tsx:42-71` | Code-backed; click two rules in one category to catch key collisions. |
 | C6 | Expand reasoning | Disclosure opens; states reasoning is inspectable but not evidence | `patient-evidence.tsx:150-158` | Code-backed; fixture with thinking block open. |
 | C7 | Reload or switch patients | Turns restore for same patient in browser session; other patient has separate history | `patient-client.tsx:175-195,244-260` | Code-backed; reload and A→B→A assertions open. |
-| C8 | Malformed/empty agent response | User turn remains; no invented answer; specific `malformed_agent_json` or `nothing_found` shown | `web/lib/patient.ts:118-163`, `patient-client.tsx:18-22,153-159` | Code-backed; inject both response shapes. |
+| C8 | Malformed/empty agent response | User turn remains; no invented answer; specific `malformed_agent_json` or `nothing_found` shown | `frontend/lib/patient.ts:118-163`, `patient-client.tsx:18-22,153-159` | Code-backed; inject both response shapes. |
 | C9 | Transport/procedure error | User turn remains and actionable error is visible after failure and reload | `patient-client.tsx:208-215`; Streamlit `streamlit_app.py:356-362` | **Gap:** Next collapses errors to `agent_unreachable`; inline error is not saved as a turn, so reload loses it. |
 | C10 | Class A clinical question | Refusal with practitioner evidence-packet path; no clinical recommendation | Architecture `AGENTS.md` §5; `ASK_SAARTHI` behavior | Open; adversarial live or recorded agent response plus SQL evidence. |
 
@@ -252,21 +252,21 @@ fixture targets, not promises about today's live database.
 | ID | User action / state | Required visible result | Source | Status and proof needed |
 | --- | --- | --- | --- | --- |
 | F1 | Open Family checklist with visit and gates | Correct visit, deterministic rule-derived items, originating rule IDs, copyable message, disclaimer | `patient-client.tsx:36-70,88-129`; `frontend/core/navigator.py` | Code-backed; compare item keys/order and message against Python for same gates. |
-| F2 | Select English, Hindi, Tamil, Bengali, Marathi | Message and checklist text change; header/date/name and always-bring text match selected language | `web/lib/navigator-data.json`, `patient-client.tsx:108-127` | Code-backed; five-language text assertions open. |
+| F2 | Select English, Hindi, Tamil, Bengali, Marathi | Message and checklist text change; header/date/name and always-bring text match selected language | `frontend/lib/navigator-data.json`, `patient-client.tsx:108-127` | Code-backed; five-language text assertions open. |
 | F3 | Copy message; clipboard unavailable | Clipboard contains exact visible message; success or selectable-text fallback appears | `patient-client.tsx:99-127` | Code-backed; success and denied-clipboard runs open. |
 | F4 | No upcoming visit or readiness | Specific prerequisite message; no fabricated preparation advice | `patient-client.tsx:95-96`; Streamlit `streamlit_app.py:467-474` | Code-backed; two controlled fixtures open. |
-| A1 | Select actionable gate, choose Request document or Escalate | Task ID appears, tied to bound patient and rule; only these two actions are offered | `patient-evidence.tsx:95-123`, `web/lib/patient.ts:174-197` | Code-backed; one success per action with `REVIEW_TASK` row/query ID open. |
-| A2 | Retry same action | Same task returned; no duplicate row | `web/lib/patient.ts:189-195`, SQL `08_create_review_task.sql:58-69` | Code-backed; database count and `idempotent_replay` check open. |
-| A3 | Try pass gate, invalid action, wrong role, or revoked access | No task; precise refusal surfaced to user | `web/lib/patient.ts:180-187`, SQL `08_create_review_task.sql:21-55` | Code-backed for server checks; route/UI currently generalize some exceptions. Exercise each denial. |
+| A1 | Select actionable gate, choose Request document or Escalate | Task ID appears, tied to bound patient and rule; only these two actions are offered | `patient-evidence.tsx:95-123`, `frontend/lib/patient.ts:174-197` | Code-backed; one success per action with `REVIEW_TASK` row/query ID open. |
+| A2 | Retry same action | Same task returned; no duplicate row | `frontend/lib/patient.ts:189-195`, SQL `08_create_review_task.sql:58-69` | Code-backed; database count and `idempotent_replay` check open. |
+| A3 | Try pass gate, invalid action, wrong role, or revoked access | No task; precise refusal surfaced to user | `frontend/lib/patient.ts:180-187`, SQL `08_create_review_task.sql:21-55` | Code-backed for server checks; route/UI currently generalize some exceptions. Exercise each denial. |
 
 ## Patient scope, timing, and visual acceptance
 
 | ID | Invariant or measurement | Required evidence | Status |
 | --- | --- | --- | --- |
-| S1 | Every patient data request opens a fresh session, runs `USE SECONDARY ROLES NONE`, binds before reads/writes, releases binding, closes connection | Instrument GET, ask, review success/failure and assert session IDs differ with `released_at` set | Partial: eight recent `PAT-DC-04` rows had distinct session IDs and release times (V-09). Failure paths and connection-close completion remain open; `destroy()` is not awaited in `web/lib/snowflake.ts`. |
+| S1 | Every patient data request opens a fresh session, runs `USE SECONDARY ROLES NONE`, binds before reads/writes, releases binding, closes connection | Instrument GET, ask, review success/failure and assert session IDs differ with `released_at` set | Partial: eight recent `PAT-DC-04` rows had distinct session IDs and release times (V-09). Failure paths and connection-close completion remain open; `destroy()` is not awaited in `frontend/lib/snowflake.ts`. |
 | S2 | Concurrent patient A/B requests cannot cross scope | Overlap requests; compare Snowflake session IDs, bound IDs, responses, and post-request binding rows | Open; concurrency test required. |
-| S3 | Agent gets question only; tool input has no patient identifier | Capture `ASK_SAARTHI(?)` bind and agent tool calls; assert no `patient_id` tool input key | Code-backed at `web/lib/patient.ts:166-171`; live trace open. |
-| S4 | Census and patient access require active care team/consent; review role checked server-side | Authorized, revoked, foreign patient and navigator-role probes | **Gap:** `web/lib/snowflake.ts:20-27` opens with primary `ACCOUNTADMIN`, despite the app-role requirement. Explicit census filters, binding, and review checks exist, but the session's privilege boundary needs correction and live probes. |
+| S3 | Agent gets question only; tool input has no patient identifier | Capture `ASK_SAARTHI(?)` bind and agent tool calls; assert no `patient_id` tool input key | Code-backed at `frontend/lib/patient.ts:166-171`; live trace open. |
+| S4 | Census and patient access require active care team/consent; review role checked server-side | Authorized, revoked, foreign patient and navigator-role probes | **Gap:** `frontend/lib/snowflake.ts:20-27` opens with primary `ACCOUNTADMIN`, despite the app-role requirement. Explicit census filters, binding, and review checks exist, but the session's privilege boundary needs correction and live probes. |
 | S5 | No confidence score or clinical decision inferred in UI | Inspect loaded pages and Class A response | Code-backed in UI; response probe open. |
 | L1 | Homepage and patient are usable without a 20–30 second skeleton | Cold/warm navigation timings: request, first useful content, live readiness completion; p50/p95 and absolute sample counts | Open. Prior informal timing is not a repeatable benchmark. |
 | V1 | Streamlit/Next parity at same viewport | Computed fonts, copy, classes, bounding boxes (target about 2 px), screenshots; intentional homepage/composer design differences documented | Open; no comparison artifact yet. |

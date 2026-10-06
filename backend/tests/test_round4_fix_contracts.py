@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-WEB = REPO / "web"
+WEB = REPO / "frontend"
 
 
 class Round4(unittest.TestCase):

@@ -140,7 +140,7 @@ remained enabled with `NODE_USE_SYSTEM_CA=1`; no insecure certificate bypass was
 
 ## Local protections
 
-- `web/.env.local` is ignored by Git. Keep its file permissions at `600` and keep
+- `frontend/.env.local` is ignored by Git. Keep its file permissions at `600` and keep
   private keys outside the repository. Never paste a private key into chat.
 - `SAARTHI_SNOWFLAKE_ENABLED=false` blocks connections before key loading. Only
   the exact value `true` enables them. Missing settings also fail closed.
@@ -184,7 +184,7 @@ The user requested the earlier frontend's direct-table behavior for recording.
 `ACCOUNTADMIN` **only in development mode**. It fails closed in production/test
 or when `NODE_ENV` is absent. An arbitrary `SNOWFLAKE_ROLE` cannot elevate access.
 
-Run `NODE_USE_SYSTEM_CA=1 npm run dev:recording` from `web/`. That command binds
+Run `NODE_USE_SYSTEM_CA=1 npm run dev:recording` from `frontend/`. That command binds
 to `127.0.0.1`, not the LAN. Never publish or tunnel this server. Credentials stay
 in the ignored local environment and external private-key file. Current-user
 care-team/consent filtering and per-request patient binding remain, but this mode
@@ -334,7 +334,7 @@ Snowflake shutdown. A guaranteed global dollar cap has **not** been established.
 
 ## Normal development and demo startup
 
-Run `npm run dev` from `web/` after installing dependencies once. Restart the local
+Run `npm run dev` from `frontend/` after installing dependencies once. Restart the local
 server after configuration changes if necessary. This starts a local process; it
 does not require redeploying Snowflake. Closing that process or restarting the
 computer means starting it again. Permanent frontend hosting is separate work.

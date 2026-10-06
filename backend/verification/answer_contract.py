@@ -21,7 +21,7 @@ from typing import Any
 
 import jsonschema
 
-_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "contracts" / "answer_schema.json"
+_SCHEMA_PATH = Path(__file__).resolve().parents[2] / "frontend" / "contracts" / "answer_schema.json"
 
 
 @lru_cache(maxsize=1)

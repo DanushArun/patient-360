@@ -357,5 +357,5 @@ These appear on the homepage census rows:
 - `IMPLEMENTATION-STATUS.md` -- Per-component status with honest labels
 - `planning/research/design/DESIGN-SYSTEM.md` -- Full design system specification
 - `planning/research/design/screens/` -- Screenshots of the running app
-- `web/components/sa.tsx` -- Current design system components (colour tokens, chips, layout)
-- `web/app/saarthi.css` -- Full stylesheet with commented design decisions (315 lines, every decision explained)
+- `frontend/components/sa.tsx` -- Current design system components (colour tokens, chips, layout)
+- `frontend/app/saarthi.css` -- Full stylesheet with commented design decisions (315 lines, every decision explained)

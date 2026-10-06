@@ -99,7 +99,7 @@ The copilot never shows a confidence percentage. It shows evidence states instea
 
 ## 8. Live copilot (the floating layer)
 
-An optional layer over the dashboard that carries out a request on screen and brings the result into the same chat. Concept study: `copilot-concepts-2026-10-06/`. Code: `web/lib/copilot-intent.mjs` (planner), `web/lib/copilot-run.mjs` (runner), `web/components/copilot/copilot-live*.tsx` (dock, switch, receipt, step execution).
+An optional layer over the dashboard that carries out a request on screen and brings the result into the same chat. Concept study: `copilot-concepts-2026-10-06/`. Code: `frontend/lib/copilot-intent.mjs` (planner), `frontend/lib/copilot-run.mjs` (runner), `frontend/components/copilot/copilot-live*.tsx` (dock, switch, receipt, step execution).
 
 **Controls.** A **Copilot** switch in the top bar turns the layer on or off and is remembered per browser. Off: the dashboard and chat behave exactly as before, and the ⌘K launcher returns. On: a floating dock sits centred over the record card's bottom strip, never over the sidebar or the chat. The microphone starts only when the person presses it. **Hide** collapses the dock to a small pill and stops the microphone; work already running continues and its results stay in the chat.
 

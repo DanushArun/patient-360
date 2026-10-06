@@ -8,12 +8,12 @@
 **Offline, no Snowflake account** (needs Python 3 and Node 20+). Run from the repo root. Every command below was run on
 4 Oct 2026; outputs are in the results table.
 
-1. `python3 -m venv venv && ./venv/bin/pip install -r requirements.txt && cd web && npm ci && npx playwright install chromium && cd ..`
-2. `cd web && npm test` (unit tests, 257 expected) and `npm run typecheck`
+1. `python3 -m venv venv && ./venv/bin/pip install -r requirements.txt && cd frontend && npm ci && npx playwright install chromium && cd ..`
+2. `cd frontend && npm test` (unit tests, 257 expected) and `npm run typecheck`
 3. `SAARTHI_SNOWFLAKE_ENABLED=false npm run build` (production build, no live access)
 4. `npm run test:e2e` (Playwright against a stubbed API, 40 expected; **not live data**)
 5. `cd .. && ./venv/bin/python -m pytest -q` (backend and SQL-contract tests, 405 passed / 14 skipped expected)
-6. `SAARTHI_SNOWFLAKE_ENABLED=false npm run dev` in `web/`, then open `http://127.0.0.1:3000/design-preview/PAT-DC-07`:
+6. `SAARTHI_SNOWFLAKE_ENABLED=false npm run dev` in `frontend/`, then open `http://127.0.0.1:3000/design-preview/PAT-DC-07`:
    a **recorded fixture snapshot**, labelled as such. Live routes fail closed instead of substituting fixture data.
 7. Read, in this order: [`docs/platform/PLATFORM-FINDINGS.md`](docs/platform/PLATFORM-FINDINGS.md) (dated platform findings with query IDs),
    [`docs/testing/FAILURE-AND-FIX-INDEX.md`](docs/testing/FAILURE-AND-FIX-INDEX.md), [`docs/submission/JUDGE-WALKTHROUGH.md`](docs/submission/JUDGE-WALKTHROUGH.md)
@@ -21,7 +21,7 @@
 
 **Live path** (your own Snowflake account, synthetic data): paste the ten files in
 [`backend/sql/deploy/`](backend/sql/deploy/README.md) into Snowsight in order as ACCOUNTADMIN and read each VERIFY
-block, then configure `web/` as in Quickstart B below. **This bundle has not been run on a clean account.** Live
+block, then configure `frontend/` as in Quickstart B below. **This bundle has not been run on a clean account.** Live
 results in this repository were observed on other accounts and are reported, not reproducible offline.
 
 ### Measured results (absolute counts)
@@ -29,7 +29,7 @@ results in this repository were observed on other accounts and are reported, not
 | Measure | Result | Kind and date |
 |---|---|---|
 | Python tests (`./venv/bin/python -m pytest -q`) | 405 passed, 14 skipped, 0 failed | offline, re-run 4 Oct 2026 |
-| Web unit tests (`cd web && npm test`) | 257 passed, 0 failed | offline, re-run 4 Oct 2026 |
+| Web unit tests (`cd frontend && npm test`) | 257 passed, 0 failed | offline, re-run 4 Oct 2026 |
 | Playwright e2e (`npm run test:e2e`, stubbed API) | 40 of 40 passed in 2 of 3 captured full runs; 1 run passed 39 with `storyboard-visual` failing (cause not diagnosed) | offline, 4 Oct 2026 |
 | Typecheck, production build, `check_gate.py --manifest`, deploy-bundle drift check (11 files) | all pass | offline, 4 Oct 2026 |
 | QA rounds | 4 independent QA rounds, 5 fix rounds, 4 deploy-plan rounds, 1 code review; [34 recorded failures](docs/testing/FAILURE-AND-FIX-INDEX.md), 3 still open | [`evidence/qa/`](evidence/qa/) |
@@ -49,7 +49,7 @@ model. Clinical judgment ("should she proceed?", "is this safe?") stays with the
 are Class A and are refused (NMC Telemedicine Practice Guidelines 2020). Never an opaque prediction, never a confidence
 percentage.
 
-**Status in one paragraph (4 Oct 2026).** A local Next.js dashboard (`web/`) reads Snowflake through access-checked
+**Status in one paragraph (4 Oct 2026).** A local Next.js dashboard (`frontend/`) reads Snowflake through access-checked
 procedures on account OS69400 (single operator, `127.0.0.1` only). 12 synthetic patients, 16 SQL rules, 7 Tasks (created,
 suspended on purpose), 4 Dynamic Tables, 2 Cortex Search services. Nothing is hosted; a judge cannot run the live
 product without their own Snowflake account. Engineering checks on synthetic data are **not clinical validation**.
@@ -78,7 +78,7 @@ python3 -m venv venv && ./venv/bin/pip install -r requirements.txt
 ./venv/bin/python -m pytest -q                                   # backend + SQL-contract tests
 python3 backend/scripts/check_gate.py --manifest                 # deploy-manifest gate
 ./venv/bin/python -m backend.scripts.build_deploy_bundle --check # Snowsight bundle is not stale
-cd web && npm ci
+cd frontend && npm ci
 npm test && npm run typecheck                                    # unit tests, types
 SAARTHI_SNOWFLAKE_ENABLED=false npm run build
 npm run test:e2e                                                 # Playwright, stubbed API
@@ -91,14 +91,14 @@ from the live routes. Live routes fail closed rather than substituting fixture d
 **B. Live, against your own Snowflake account (synthetic data).** Paste the ten files of `backend/sql/deploy/`
 (`00_preflight.sql` to `09_verify.sql`) into Snowsight in order as ACCOUNTADMIN, reading each VERIFY block; see
 [`backend/sql/deploy/README.md`](backend/sql/deploy/README.md). **This bundle has never been run on a clean account**
-(see Limitations). Then in `web/`: `cp .env.example .env.local` and set the variable **names** listed there:
+(see Limitations). Then in `frontend/`: `cp .env.example .env.local` and set the variable **names** listed there:
 `SAARTHI_SNOWFLAKE_ENABLED`, `SNOWFLAKE_ACCOUNT`, `SAARTHI_SNOWFLAKE_ALLOWED_ACCOUNT`, `SNOWFLAKE_USER`,
 `SNOWFLAKE_PRIVATE_KEY_PATH` (or `SNOWFLAKE_PAT_PATH` with `SNOWFLAKE_AUTHENTICATOR`), `SNOWFLAKE_WAREHOUSE`,
 `SAARTHI_AI_WH`, `SAARTHI_ALLOWED_ORIGINS`. The session role is pinned to `SAARTHI_APP` with secondary roles disabled
-(`USE SECONDARY ROLES NONE`). Details and cost controls: [`web/README.md`](web/README.md),
+(`USE SECONDARY ROLES NONE`). Details and cost controls: [`frontend/README.md`](frontend/README.md),
 [`docs/platform/PROTOTYPE-COST-CONTROLS.md`](docs/platform/PROTOTYPE-COST-CONTROLS.md).
 
-## What exists in the web app (`web/app`)
+## What exists in the web app (`frontend/app`)
 
 Five product routes plus a fixture preview:
 
@@ -113,9 +113,7 @@ Five product routes plus a fixture preview:
 | `/design-preview/[id]` | Recorded fixture snapshot (not live data) |
 
 **There is no Judge Console UI.** The eight security probes exist as SQL only
-(`backend/sql/procedures/judge/judge_probes.sql`). There is no Streamlit app in the product path; `frontend/` holds
-frozen contracts, pure rendering helpers, fixtures and tests from an earlier Streamlit build, and `frontend/pages/` is
-empty.
+(`backend/sql/procedures/judge/judge_probes.sql`). There is no Streamlit app. `frontend/contracts/` and `frontend/fixtures/` hold the frozen answer contract and recorded fixtures that both the web app and the backend tests validate against.
 
 ## Class A / Class B
 
@@ -126,7 +124,7 @@ empty.
   `data/eval/` (40 dev, 40 held-out) and none has been scored.
 
 Enforced in three places: `backend/sql/procedures/classify_question.sql`, the agent instructions
-(`backend/sql/agent/saarthi_agent.sql`), and web routing (`web/lib/question-routing.mjs`, with tests).
+(`backend/sql/agent/saarthi_agent.sql`), and web routing (`frontend/lib/question-routing.mjs`, with tests).
 
 ## Built, partial, designed-only (absolute counts, 4 Oct 2026)
 
@@ -147,11 +145,10 @@ web unit 257 passed; Playwright e2e 40 passed in 2 of 3 captured runs and 39 in 
 | Path | What it is |
 |---|---|
 | `evidence/coco/` | CoCo lifecycle evidence by phase (`planning.yaml`, `development.yaml`, `execution.yaml`, `testing_validation.yaml`), `verification-query-ids.md` (platform findings with query IDs), `sessions-raw.csv`, failure-and-fix pairs. Live evidence is **reported** here; it is not re-runnable offline. |
-| `evidence/qa/` | Independent review trail, kept uncurated: `QA-ROUND-1..4`, `FIX-ROUND-1..5`, `FIX-ROUND-7`, `DEPLOY-ROUND-1..4`, `CODE-REVIEW-ROUND-1`, `JUDGE-EVALUATION.md` (self-assessment, open gaps), `live-sweep-*.txt` |
+| `evidence/qa/` | Independent review trail, kept uncurated: `QA-ROUND-1..4`, `FIX-ROUND-1..5`, `FIX-ROUND-7`, `DEPLOY-ROUND-1..4`, `CODE-REVIEW-ROUND-1`, `live-sweep-*.txt` |
 | `evidence/clinical/` | Sourced clinical thresholds; `backend/scripts/verify_clinical_proof.py` re-checks them |
 | `docs/compliance/DATASET-LICENCES.md` | Dataset and third-party licence inventory |
 | `docs/platform/PLATFORM-FINDINGS.md`, `docs/testing/FAILURE-AND-FIX-INDEX.md`, `docs/submission/JUDGE-WALKTHROUGH.md` | Dated platform findings with query IDs, failure index, timed reading path |
-| `docs/submission/DECK-OUTLINE.md` | Deck outline and demo script (deck and video themselves are produced by the team) |
 
 Labels: `QUERY_HISTORY` is used for live evidence, `ACCESS_HISTORY` (up to 180 minutes lag) for the written pack.
 
@@ -164,10 +161,9 @@ Labels: `QUERY_HISTORY` is used for live evidence, `ACCESS_HISTORY` (up to 180 m
 - `backend/skills/` — 4 skill definitions (authored, not loaded)
 - `backend/scripts/` — `check_gate.py`, `build_deploy_bundle.py`, `run_rule_fixtures.py`, MCP client, OS69400 deploy helpers
 - `backend/eval/harness/score_results.py` — offline scorer; `backend/eval/` otherwise a placeholder
-- `backend/tests/` — SQL-contract and pipeline tests, separate from `frontend/`
-- `web/` — Next.js dashboard (current UI)
-- `frontend/` — contracts, pure helpers, fixtures from the earlier Streamlit build (not the current UI)
-- `planning/revised-architecture/` — architecture (start with `ARCHITECTURE-HANDOFF.md`), 15 diagrams in `ARCHITECTURE-DIAGRAMS.md` and `drawio/`; `planning/plan.md` and `architecture.md` are superseded v1
+- `backend/tests/` — SQL-contract and pipeline tests, separate from the app in `frontend/`
+- `frontend/` — the Next.js app (UI, API routes, tests), plus `contracts/` and `fixtures/`: the frozen answer schema and recorded fixtures shared with the backend
+- `planning/revised-architecture/` — architecture (start with `ARCHITECTURE-HANDOFF.md`), 15 diagrams in `ARCHITECTURE-DIAGRAMS.md` and `drawio/`; `architecture.md` is the superseded v1
 - `tools/drawio/` — diagram generator; `tools/release_gate.py`
 - `AGENTS.md` — binding rules; `IMPLEMENTATION-STATUS.md` — honest ledger
 

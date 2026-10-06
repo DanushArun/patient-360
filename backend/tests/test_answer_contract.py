@@ -1,4 +1,4 @@
-"""Tests for frontend/core/contracts.py — Contract 3 (frontend/contracts/answer_schema.json).
+"""Tests for backend/verification/answer_contract.py — Contract 3 (frontend/contracts/answer_schema.json).
 
 Schema semantics under test come from COPILOT-SPEC.md 2 / ARCHITECTURE-HANDOFF.md
 Contract 3, as encoded in the frozen schema file itself:
@@ -14,7 +14,7 @@ import copy
 
 import pytest
 
-from frontend.core.contracts import validate_answer, _compiled_validator
+from backend.verification.answer_contract import validate_answer, _compiled_validator
 
 
 def _minimal_class_b_answer() -> dict:

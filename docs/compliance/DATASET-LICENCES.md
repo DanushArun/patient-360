@@ -67,17 +67,16 @@ facts used for synthetic engineering tests, not clinical guidance.
 
 | File | What it is | Status |
 |---|---|---|
-| `apollo-department-register.docx` (repo root, tracked) | A "public source register" of Apollo Hospitals departments prepared for the team (reviewed 8 Sept 2026); states it is not Apollo's official document | Third-party-derived text; no licence recorded. Not used as system data. Recommend removing from the submitted tree or recording its sources |
 | `dashboard-design/`, `planning/dashboard-release/evidence/` | Design screenshots and storyboards of the synthetic dashboard | Team-produced images of synthetic data |
-| `web/public/saarthi-mark.png`, `web/app/icon.png`, `web/app/apple-icon.png`, `web/app/favicon.ico` | SAARTHI heart-and-stethoscope logo (sidebar mark, browser-tab and Apple touch icons) | Supplied by the team on 5 Oct 2026 as a PNG; how it was produced and its licence are not recorded in the repo, to be confirmed by the team. Replaces the earlier `carethread-mark.svg` |
-| Fonts `web/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | Publisher licence notices added under `web/public/fonts/`; Inter/JetBrains notices also under `frontend/static/`. Local TTF name tables confirm SIL OFL 1.1 (Inter 4.000, JetBrains Mono 2.304). Google documents Material Symbols as Apache 2.0. Checked 5 Oct 2026; binary publisher identity for the WOFF2 remains unverified |
+| `frontend/public/saarthi-mark.png`, `frontend/app/icon.png`, `frontend/app/apple-icon.png`, `frontend/app/favicon.ico` | SAARTHI heart-and-stethoscope logo (sidebar mark, browser-tab and Apple touch icons) | Supplied by the team on 5 Oct 2026 as a PNG; how it was produced and its licence are not recorded in the repo, to be confirmed by the team. Replaces the earlier `carethread-mark.svg` |
+| Fonts `frontend/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | Publisher licence notices added under `frontend/public/fonts/`; Inter/JetBrains notices also under `frontend/static/`. Local TTF name tables confirm SIL OFL 1.1 (Inter 4.000, JetBrains Mono 2.304). Google documents Material Symbols as Apache 2.0. Checked 5 Oct 2026; binary publisher identity for the WOFF2 remains unverified |
 
 ## 5. Third-party software
 
-Read from `web/package.json`, `web/package-lock.json`, `web/node_modules/*/package.json` (`license` field) and
+Read from `frontend/package.json`, `frontend/package-lock.json`, `frontend/node_modules/*/package.json` (`license` field) and
 `importlib.metadata` in `./venv`, on 4 Oct 2026. Only a licence field is reported here; it is not legal advice.
 
-### Direct dependencies, `web/package.json` (19)
+### Direct dependencies, `frontend/package.json` (19)
 
 | Package | Installed | Licence |
 |---|---|---|
@@ -96,7 +95,7 @@ Read from `web/package.json`, `web/package-lock.json`, `web/node_modules/*/packa
 | shadcn (dev) | 4.21.0 | MIT |
 | typescript (dev) | 5.9.3 | Apache-2.0 |
 
-### Transitive tally, `web/package-lock.json` (579 packages)
+### Transitive tally, `frontend/package-lock.json` (579 packages)
 
 MIT 447, Apache-2.0 61, ISC 24, MPL-2.0 12 (all `lightningcss*`), LGPL-3.0-or-later 10 (all optional `@img/sharp-libvips-*`
 native binaries pulled in by Next for image optimisation), BSD-2-Clause 5, BSD-3-Clause 8, other composite or single
