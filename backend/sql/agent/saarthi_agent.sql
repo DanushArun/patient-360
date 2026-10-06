@@ -83,7 +83,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Structured facts for the bound patient by domain (demographics, labs, coverage, treatment_plan, encounters, identity). Takes no patient selector."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             domain:
               type: "string"
@@ -96,7 +95,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Returns readiness gates for the bound patient. Do not send encounter identifiers."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             known_as_of: {type: "string", description: "Optional ISO timestamp cutoff"}
           required: []
@@ -106,7 +104,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Searches the bound patient's documents only. Server-injects the scope filter. Takes no patient selector."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             query: {type: "string", description: "Natural language search query"}
             known_as_of: {type: "string", description: "Optional ISO timestamp cutoff"}
@@ -117,7 +114,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Searches real regulatory/clinical reference text only. Never contains patient data."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             query: {type: "string"}
             jurisdiction: {type: "string"}
@@ -129,7 +125,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Aggregate questions across the permitted patient set. Unavailable while a patient is bound - release the binding first."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             question: {type: "string"}
           required: ["question"]
@@ -139,7 +134,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Full chronology for the bound patient with all three time clocks. Takes no patient selector."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             known_as_of: {type: "string"}
           required: []
@@ -149,7 +143,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "Diffs two known_as_of states for the bound patient - answers 'what changed since X?'"
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             from_ts: {type: "string", description: "Required ISO timestamp"}
             to_ts: {type: "string", description: "Optional ISO timestamp, defaults to now"}
@@ -160,7 +153,6 @@ CREATE OR REPLACE AGENT SAARTHI.OPERATIONAL.SAARTHI_AGENT
         description: "The only write tool. Restricted to treating/coordinator roles. action must be one of escalate, close, reassign, request_document."
         input_schema:
           type: "object"
-          additionalProperties: false
           properties:
             issue_id: {type: "string"}
             action:
