@@ -129,7 +129,7 @@ function visitTime(scheduled: string): string {
 }
 
 function cycleLabel(cycle: number | null): string {
-  return cycle !== null ? ` · Cycle ${cycle}` : "";
+  return cycle !== null ? ` · Cycle\u00a0${cycle}` : ""; // never split "Cycle" from its number
 }
 
 function WorklistCard({ chair }: { chair: Chair }): ReactNode {

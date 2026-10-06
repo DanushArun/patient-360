@@ -31,7 +31,7 @@ test("rendered Visits table aligns visit details and preserves patient link navi
   assert.match(markup, /href="\/patient\/PAT-DC-04"/);
   assert.match(markup, /Fatima Begum/);
   assert.match(markup, /Carboplatin \+ Paclitaxel/);
-  assert.match(markup, /Cycle 3/);
+  assert.match(markup, /Cycle\u00a03/);
   assert.match(markup, /Platelet check below rule threshold/);
   assert.match(markup, /timezone not stored/);
 });
