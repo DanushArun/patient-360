@@ -229,10 +229,22 @@ BEGIN
 END;
 $$;
 
--- EXECUTE AS USER for the same DOC_PAGE row access policy reason as TASK_PARSE_DOCUMENTS.
-CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_EXTRACT_ASSERTIONS
-  WAREHOUSE = SAARTHI_AI_WH
-  AFTER SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
-  EXECUTE AS USER DAKSHA
-AS
-  CALL SAARTHI.OPERATIONAL.extract_assertions_proc();
+-- EXECUTE AS USER for the same DOC_PAGE row access policy reason as TASK_PARSE_DOCUMENTS, and
+-- resolved the same way: the user on practitioner PRAC-01, else the deploying user.
+EXECUTE IMMEDIATE $$
+DECLARE
+    v_task_user STRING;
+    v_sql STRING;
+BEGIN
+    SELECT COALESCE(MAX(snowflake_user), CURRENT_USER()) INTO :v_task_user
+      FROM SAARTHI.GOVERNANCE.PRACTITIONER
+     WHERE practitioner_id = 'PRAC-01';
+    v_sql := 'CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_EXTRACT_ASSERTIONS'
+        || ' WAREHOUSE = SAARTHI_AI_WH'
+        || ' AFTER SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS'
+        || ' EXECUTE AS USER "' || REPLACE(v_task_user, '"', '""') || '"'
+        || ' AS CALL SAARTHI.OPERATIONAL.extract_assertions_proc()';
+    EXECUTE IMMEDIATE :v_sql;
+    RETURN 'TASK_EXTRACT_ASSERTIONS executes as user ' || v_task_user;
+END;
+$$;

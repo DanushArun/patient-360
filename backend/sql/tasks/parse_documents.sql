@@ -211,10 +211,24 @@ $$;
 -- EXECUTE AS USER: chunk_documents_proc reads DOC_PAGE, whose row access policy keys on
 -- CURRENT_USER() (F3); a task with no user sees no patient pages. The named user must be an
 -- active practitioner on the relevant care teams, and the owner needs IMPERSONATE on it.
-CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
-  WAREHOUSE = SAARTHI_AI_WH
-  SCHEDULE = '5 MINUTE'
-  EXECUTE AS USER DAKSHA
-  WHEN SYSTEM$STREAM_HAS_DATA('SAARTHI.DOCUMENTS.DOC_STREAM')
-AS
-  CALL SAARTHI.OPERATIONAL.parse_documents_proc();
+-- The user is not hardcoded: it is the Snowflake user stored on practitioner PRAC-01 (the
+-- seed stamps it with CURRENT_USER()), falling back to the deploying user, so the same file
+-- deploys on any account.
+EXECUTE IMMEDIATE $$
+DECLARE
+    v_task_user STRING;
+    v_sql STRING;
+BEGIN
+    SELECT COALESCE(MAX(snowflake_user), CURRENT_USER()) INTO :v_task_user
+      FROM SAARTHI.GOVERNANCE.PRACTITIONER
+     WHERE practitioner_id = 'PRAC-01';
+    v_sql := 'CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS'
+        || ' WAREHOUSE = SAARTHI_AI_WH'
+        || ' SCHEDULE = ''5 MINUTE'''
+        || ' EXECUTE AS USER "' || REPLACE(v_task_user, '"', '""') || '"'
+        || ' WHEN SYSTEM$STREAM_HAS_DATA(''SAARTHI.DOCUMENTS.DOC_STREAM'')'
+        || ' AS CALL SAARTHI.OPERATIONAL.parse_documents_proc()';
+    EXECUTE IMMEDIATE :v_sql;
+    RETURN 'TASK_PARSE_DOCUMENTS executes as user ' || v_task_user;
+END;
+$$;

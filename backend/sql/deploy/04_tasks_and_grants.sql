@@ -20,7 +20,7 @@ $$;
 
 -- Round 6 (task dedupe): parse_documents_proc keys on DOCUMENT.source_path (stable stage path), not on etag.
 -- ADD COLUMN IF NOT EXISTS is additive; no table is dropped. TASK_PARSE_DOCUMENTS itself is NOT re-created here
--- (it names EXECUTE AS USER SITAR, an account-specific user); it stays suspended.
+-- (setup.sql creates it, resolving its EXECUTE AS USER from practitioner PRAC-01); it stays suspended.
 ALTER TABLE SAARTHI.DOCUMENTS.DOCUMENT ADD COLUMN IF NOT EXISTS source_path VARCHAR;
 
 -- ===== BEGIN tasks/parse_documents.sql (procedure part) =====
