@@ -31,6 +31,9 @@ Manifest status is copied from each file's own `status:` field (checked 4 Oct 20
 
 Also in this directory: `sessions-raw.csv` (raw export), `verification-query-ids.md`, `robustness-review-2026-10-04.md`, `snowflake-new-account-rca.md`.
 
+**6 Oct 2026 update.** `sessions-2026-10-06.md` lists the CoCo sessions that ran the first full `setup.sql` deploy on a clean
+account (XG46956): 1 main session, 3 subagents and 1 headless attempt, with 3 failure-and-fix pairs and read-only verification counts.
+
 **Provenance caveat.** Work after 22 Sept on the OS69400 account (rounds 1-6 of the QA/fix cycle, the deploy bundle, the web app) was done with
 other coding agents and by hand unless a session id above says otherwise. It is **not** CoCo lifecycle evidence and must not be presented as such.
 Session ids in the manifests have not been re-resolved with `cortex conversations transcript` since they were written (gap 20, `IMPLEMENTATION-STATUS.md`).
