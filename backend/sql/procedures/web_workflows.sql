@@ -265,6 +265,17 @@ IF (v_gates_response:error IS NOT NULL OR NOT IS_ARRAY(v_gates_response:gates)) 
             s.patient_id, s.encounter_id, s.gate, s.rule_id, s.rule_version,
             s.outcome, s.severity, s.reason, s.evidence_ids, s.known_as_of, CURRENT_TIMESTAMP()
         );
+-- Snapshot, not history: drop rules the evaluator no longer returns for this encounter
+-- (e.g. a rule version rescoped away). Skipped when the evaluation failed, so an error can
+-- never erase readiness. NOT IN over a NULL key matches nothing: also fails closed.
+IF (v_gates_response:error IS NULL AND ARRAY_SIZE(v_gates_response:gates) > 0) THEN
+    DELETE FROM SAARTHI.OPERATIONAL.READINESS_STATE
+     WHERE patient_id = :v_patient_id
+       AND encounter_id = :v_encounter_id
+       AND rule_id || ':' || rule_version::VARCHAR NOT IN (
+           SELECT g.value:rule_id::VARCHAR || ':' || g.value:rule_version::INTEGER::VARCHAR
+             FROM TABLE(FLATTEN(input => :v_gates_response:gates)) g);
+END IF;
 RETURN v_gates_response;
 END;
 $$;

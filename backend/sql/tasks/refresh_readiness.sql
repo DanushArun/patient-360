@@ -8,7 +8,8 @@
 -- the SQL rule outcomes; it never asks an LLM to decide.
 --
 -- Idempotency: MERGE keyed on (patient_id, encounter_id, rule_id, rule_version)
--- with UPDATE-on-match so repeat runs update rather than duplicate.
+-- with UPDATE-on-match so repeat runs update rather than duplicate; then rows for rules the
+-- evaluator no longer returns are deleted, so the table is the current snapshot (6 Oct 2026).
 --
 -- Scope: every encounter with a scheduled_time - the deep case's history and
 -- the day-care cohort's upcoming visits (data/load_daycare_cohort.sql). The
@@ -73,6 +74,18 @@ BEGIN
             s.patient_id, s.encounter_id, s.gate, s.rule_id, s.rule_version,
             s.outcome, s.severity, s.reason, s.evidence_ids, s.known_as_of, CURRENT_TIMESTAMP()
         );
+
+        -- Snapshot, not history: drop rules the evaluator no longer returns for this encounter
+        -- (e.g. a rule version rescoped away). Skipped when the evaluation failed, so an error can
+        -- never erase readiness. NOT IN over a NULL key matches nothing: also fails closed.
+        IF (v_gates_response:error IS NULL AND ARRAY_SIZE(v_gates_response:gates) > 0) THEN
+            DELETE FROM SAARTHI.OPERATIONAL.READINESS_STATE
+             WHERE patient_id = :v_patient_id
+               AND encounter_id = :v_encounter_id
+               AND rule_id || ':' || rule_version::VARCHAR NOT IN (
+                   SELECT g.value:rule_id::VARCHAR || ':' || g.value:rule_version::INTEGER::VARCHAR
+                     FROM TABLE(FLATTEN(input => :v_gates_response:gates)) g);
+        END IF;
 
         v_rows_written := v_rows_written + (SELECT COUNT(*)
             FROM TABLE(FLATTEN(input => :v_gates_response:gates)));
