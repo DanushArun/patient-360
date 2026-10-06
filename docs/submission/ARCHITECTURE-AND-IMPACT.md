@@ -171,7 +171,8 @@ read-only queries.
 - **Cohort documents not loaded.** The 22 cohort PDFs are not yet uploaded and parsed, and the structured-event CSV
   load processed 0 files, so two-pass extraction has not run on this account. Run
   `deploy/06_cohort_and_documents.sql` and `deploy/08_pipeline_kickoff.sql`.
-- **Task user is hardcoded.** PR #18 changed `EXECUTE AS USER SITAR` to `DAKSHA`, which fixes this account but breaks
-  setup on accounts without a `DAKSHA` user. The task user should become a deploy-time setting.
+- **Task user fix not yet deployed.** PR #18 hardcoded `EXECUTE AS USER DAKSHA`; PR #20 replaces that with a deploy-time
+  lookup (the user on practitioner `PRAC-01`, else the deploying user). Offline checks pass; re-run the two task files
+  on Snowflake after it merges.
 - **Web app not yet switched on.** `web/.env.local` points at XG46956 with user `DAKSHA`, role `SAARTHI_APP` and
   warehouse `SAARTHI_AI_WH`; live access stays off until the checks above pass.
