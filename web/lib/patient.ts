@@ -115,7 +115,7 @@ async function loadPatientSnapshotUncached(patientId: string): Promise<PatientDa
     ({ ...context, ...await readSnapshotGates(run) }));
 }
 
-async function readSnapshotGates(run: Run): Promise<{ knownAsOf: string | null; gates: Gate[] }> {
+export async function readSnapshotGates(run: Run): Promise<{ knownAsOf: string | null; gates: Gate[] }> {
   const rows = procedureRows(await run("CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('snapshot',NULL)"));
   const gates = rows.map(snapshotGate).sort((a,b) => a.gate.localeCompare(b.gate) || (a.rule_id ?? "").localeCompare(b.rule_id ?? ""));
   const knownAsOf = gates[0]?.known_as_of ?? null;
@@ -187,7 +187,7 @@ async function loadPatientTimelineUncached(patientId: string): Promise<PatientTi
   return withPatientSession(patientId, readTimeline);
 }
 
-async function readTimeline(run: Run): Promise<PatientTimeline> {
+export async function readTimeline(run: Run): Promise<PatientTimeline> {
   const rows = await run("CALL SAARTHI.OPERATIONAL.GET_TIMELINE(NULL)");
   const result = parseValue(Object.values(rows[0] ?? {})[0]);
   if (result.error) throw new Error(String(result.error));

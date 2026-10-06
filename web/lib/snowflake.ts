@@ -192,9 +192,13 @@ async function verifyPatientAccess(run: PatientQuery): Promise<string> {
   return checked.access_scope;
 }
 
+/** Re-checks patient access inside a session; throws if it changed since the session began.
+ * A caller that publishes part of its result early must pass a checkpoint first. */
+export type AccessCheckpoint = () => Promise<void>;
+
 export async function withPatientSession<T>(
   patientId: string,
-  fn: (run: PatientQuery) => Promise<T>
+  fn: (run: PatientQuery, checkpoint: AccessCheckpoint) => Promise<T>
 ): Promise<T> {
   // Malformed ids are a client error and never reach Snowflake (F-04/F-05).
   if (!isValidPatientId(patientId)) throw new Error("invalid_argument");
@@ -208,7 +212,10 @@ export async function withPatientSession<T>(
     if (!bindResult || typeof bindResult !== "object") throw new Error("binding_unavailable");
     if (bindResult.error) throw new Error(`bind failed: ${bindResult.error}`);
     const accessScope = await verifyPatientAccess(run);
-    const result = await fn(run);
+    const checkpoint: AccessCheckpoint = async () => {
+      if (await verifyPatientAccess(run) !== accessScope) throw new Error("access_scope_changed");
+    };
+    const result = await fn(run, checkpoint);
     if (await verifyPatientAccess(run) !== accessScope) {
       throw new Error("access_scope_changed");
     }
@@ -230,9 +237,10 @@ export async function withPatientSession<T>(
 
 export async function withPatientSessionAndContext<T>(
   patientId: string,
-  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>, context: PatientBinding) => Promise<T>
+  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>,
+    context: PatientBinding, checkpoint: AccessCheckpoint) => Promise<T>
 ): Promise<T> {
-  return withPatientSession(patientId, async (run) => {
+  return withPatientSession(patientId, async (run, checkpoint) => {
     const rawRows = await run(
       "CALL SAARTHI.OPERATIONAL.GET_WEB_PATIENT_DATA('context',NULL)"
     );
@@ -251,7 +259,7 @@ export async function withPatientSessionAndContext<T>(
       practitionerName: String(rows[0].PRACTITIONER_NAME ?? ""),
       treatingPractitionerName: typeof rows[0].TREATING_PRACTITIONER_NAME === "string"
         ? rows[0].TREATING_PRACTITIONER_NAME : null,
-    });
+    }, checkpoint);
   });
 }
 

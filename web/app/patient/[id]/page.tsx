@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { withUiReadDeadline } from "@/lib/ui-read-deadline.mjs";
 import { loadPatientSnapshot } from "@/lib/patient";
 import { after } from "next/server";
-import { warmPatientViews } from "@/lib/warm";
+import { keepWarm, warmPatientViews } from "@/lib/warm";
 import { Page, Rule } from "@/components/sa";
 import PatientClient from "./patient-client";
 import { fetchBindablePatients } from "@/lib/census";
@@ -24,7 +24,7 @@ export default async function PatientPage({ params }: PageProps<"/patient/[id]">
     const patient = await withUiReadDeadline(loadPatientSnapshot(id));
     const patients = await roster ?? [{ id: patient.patientId, name: patient.patientName }];
     // Read every tab ahead of the click, after this response is sent.
-    after(() => warmPatientViews(patient));
+    after(() => { warmPatientViews(patient); keepWarm(patients.map((entry) => entry.id)); });
     return <PatientClient key={id} patient={patient} patients={patients} />;
   } catch {
     return <Page>

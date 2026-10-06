@@ -43,3 +43,20 @@ test('errors are not cached', async () => {
   await assert.rejects(cachedRead('P1', 'x', async () => { throw new Error('down'); }), /down/);
   assert.equal(await cachedRead('P1', 'x', async () => 'ok'), 'ok');
 });
+
+test('a renewed read replaces the cached value and resets its age', async () => {
+  const { cachedRead, primeRead, readAge, readGeneration } = load();
+  assert.equal(await cachedRead('P1', 'snapshot', async () => 'old'), 'old');
+  assert.ok(readAge('P1', 'snapshot') < 1000);
+  primeRead('P1', 'snapshot', 'new', readGeneration('P1'));
+  assert.equal(await cachedRead('P1', 'snapshot', async () => 'unused'), 'new');
+});
+
+test('a renewal that began before a write never brings back pre-write data', async () => {
+  const { cachedRead, primeRead, invalidatePatient, readGeneration, readAge } = load();
+  const before = readGeneration('P1');
+  invalidatePatient('P1');
+  primeRead('P1', 'snapshot', 'stale', before);
+  assert.equal(readAge('P1', 'snapshot'), null);
+  assert.equal(await cachedRead('P1', 'snapshot', async () => 'fresh'), 'fresh');
+});

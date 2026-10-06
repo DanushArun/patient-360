@@ -8,7 +8,7 @@ import { PatientSearch } from '@/components/patient-search';
 import { withUiReadDeadline } from '@/lib/ui-read-deadline.mjs';
 import { apiError } from '@/lib/api-contracts.mjs';
 import { after } from 'next/server';
-import { warmPatients } from '@/lib/warm';
+import { keepWarm, warmPatients } from '@/lib/warm';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +53,12 @@ export default async function DayCarePage(): Promise<ReactNode> {
   const data = await readDayCare();
   const chairs = buildCensus(data.rows);
   // Open each patient ahead of the click: visits first, then the rest of the roster.
-  if (!data.error) after(() => warmPatients([...new Set([...chairs.map((chair) => chair.patientId),
-    ...data.patients.map((patient) => patient.id)])]));
+  if (!data.error) after(() => {
+    const ids = [...new Set([...chairs.map((chair) => chair.patientId),
+      ...data.patients.map((patient) => patient.id)])];
+    warmPatients(ids);
+    keepWarm(ids);
+  });
   const asOf = oldestKnownAsOf(data.rows);
   const loadedAt = new Date().toLocaleTimeString('en-IN', { hour12: false });
   return <main className="mx-auto max-w-7xl px-8 py-10">

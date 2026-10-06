@@ -41,6 +41,28 @@ export function peekRead<T>(patientId: string, name: string): Promise<T> | null 
     ? hit.value as Promise<T> : null;
 }
 
+/** The patient's write generation, to pass back to primeRead. */
+export function readGeneration(patientId: string): number {
+  return generationOf(patientId);
+}
+
+/** Store a value read and access-checked by a governed session, replacing an older entry.
+ * Ignored when a write happened since `generation` was taken (the value may predate it). */
+export function primeRead(patientId: string, name: string, value: unknown, generation: number): void {
+  if (generationOf(patientId) !== generation) return;
+  if (state.entries.size >= MAX_ENTRIES) state.entries.clear();
+  state.entries.set(`${patientId}\u0000${name}`, { at: Date.now(), generation,
+    value: Promise.resolve(value) });
+}
+
+/** Age in ms of a fresh cached read, or null when absent or expired. */
+export function readAge(patientId: string, name: string): number | null {
+  const hit = state.entries.get(`${patientId}\u0000${name}`);
+  if (!hit || hit.generation !== generationOf(patientId)) return null;
+  const age = Date.now() - hit.at;
+  return age < TTL_MS ? age : null;
+}
+
 /** Drop one cached read (a write that changes only that read, e.g. answer history). */
 export function forgetRead(patientId: string, name: string): void {
   state.entries.delete(`${patientId}\u0000${name}`);
