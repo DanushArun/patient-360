@@ -1,25 +1,10 @@
-<div align="center">
+<h1><img src="docs/assets/saarthi-mark.png" alt="" width="52" height="52" align="center" />&nbsp;Saarthi</h1>
 
-<img src="docs/assets/saarthi-mark.png" alt="Saarthi" width="112" />
-
-# Saarthi
-
-**Know before they arrive.**
-
-The care-readiness and evidence copilot for hospital care teams.<br />
-It tells you what is **missing**, **pending** or **conflicting** before every visit, and cites the page or row behind every claim.
+**Know before they arrive.** The care-readiness and evidence copilot for hospital care teams. It tells you what is **missing**, **pending** or **conflicting** before every visit, and cites the page or row behind every claim.
 
 [**Live app**](https://saarthi-360.vercel.app) · [Architecture](docs/architecture/SPEC.md) · [Judge walkthrough](docs/submission/JUDGE-WALKTHROUGH.md) · [Implementation status](IMPLEMENTATION-STATUS.md)
 
-![Snowflake](https://img.shields.io/badge/Snowflake-Cortex%20AI-29B5E8?logo=snowflake&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
-![Python tests](https://img.shields.io/badge/python%20tests-565%20passed-2ea44f)
-![Web tests](https://img.shields.io/badge/web%20tests-381%20passed-2ea44f)
-![Data](https://img.shields.io/badge/data-synthetic%20only-6f42c1)
-
-</div>
-
-<br />
+![Snowflake](https://img.shields.io/badge/Snowflake-Cortex%20AI-29B5E8?logo=snowflake&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white) ![Python tests](https://img.shields.io/badge/python%20tests-565%20passed-2ea44f) ![Web tests](https://img.shields.io/badge/web%20tests-381%20passed-2ea44f) ![Data](https://img.shields.io/badge/data-synthetic%20only-6f42c1)
 
 ![Saarthi day-care board: tomorrow's visits grouped by record state, each blocked visit showing the rule that blocked it](docs/assets/screens/day-care.png)
 
