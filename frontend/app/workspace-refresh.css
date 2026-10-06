@@ -122,6 +122,13 @@
   min-width: 0;
   font-size: var(--fs-footnote);
 }
+/* One focus ring on the rounded field, not a second box around the bare input. */
+.ct-search input:focus,
+.ct-search input:focus-visible { outline: none; box-shadow: none; }
+.ct-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
 .ct-patient-list {
   min-height: 0;
   overflow: auto;
