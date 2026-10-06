@@ -10,7 +10,32 @@
 
 ---
 
-## The problem
+## The challenge
+
+Saarthi is our submission to the **Snowflake CoCo CLI Hackathon 2026 (GCC Edition)**, for **Problem Statement 04: Patient and Member 360 and Clinical or Regulatory Document Copilot**. The brief, as published by the organisers:
+
+> Care and life sciences teams work across siloed EHR and claims data and dense unstructured documents.
+>
+> Build a copilot that unifies data into a patient or member 360 and answers clinical, safety, or regulatory questions with cited evidence. Use fully synthetic or de identified data only.
+>
+> - Combine structured records with unstructured clinical, regulatory, or legal documents
+> - Produce risk stratification, evidence retrieval, or a cited answer, never opaque predictions
+> - Deliver a question and answer experience with clear source evidence
+
+How Saarthi answers each requirement:
+
+| The brief asks for | What Saarthi does |
+|---|---|
+| A patient 360 from siloed EHR and claims data | One record per patient built from synthetic EHR/FHIR bundles, lab results, PM-JAY pre-authorisations and claims, with identity links checked by rule (ABHA-linked, manually verified or quarantined), never joined on name |
+| Structured records combined with unstructured documents | Lab, pathology and echo reports and authorisation letters are parsed with `AI_PARSE_DOCUMENT`, cross-checked by two model families and linked to the structured events they describe. Public regulatory and clinical documents (PM-JAY, FDA, ICMR, NCG, AIIMS) sit in a separate reference corpus |
+| Risk stratification, never opaque predictions | 16 versioned SQL rules stratify every visit as *blocked*, *waiting on evidence*, *advisory* or *ready*. Each outcome opens to its rule, version and evidence. There is no trained model and no confidence score |
+| Answers to clinical, safety or regulatory questions with cited evidence | The copilot answers record, safety-surveillance and coverage questions from SQL, and regulatory questions from verbatim reference passages with publisher, title and page. Questions that ask for a clinical decision are refused and routed to the treating practitioner, as Indian telemedicine rules require |
+| A Q&A experience with clear source evidence | Every claim in an answer links to the page or row it came from, with the time it happened, was recorded and was ingested |
+| Synthetic or de-identified data only | Synthetic only. No real patient data is loaded anywhere in the system |
+
+Judging focus: **Real-World Relevance** (30%), **Technical Execution** (40%) and **Solution Completeness** (30%). The full brief and CoCo usage guidelines are in [`docs/PROBLEM-STATEMENT.md`](docs/PROBLEM-STATEMENT.md).
+
+## The problem on the ward
 
 A cancer day-care visit depends on a dozen records arriving on time: a recent echo, a fresh blood count, a pre-authorisation, the right pathology addendum. They come from different hospitals, labs and insurers, as structured rows and scanned PDFs. When one is missing, stale or contradicts another, the team usually finds out at the bedside, and the family may have travelled 1,000 km for nothing.
 
