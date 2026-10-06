@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-10-06T15:21:38.214Z",
-  "base": "http://127.0.0.1:3231",
+  "recorded_at": "2026-10-06T15:28:17.597Z",
+  "base": "https://saarthi-360.vercel.app",
   "hero": {
     "id": "PAT-DC-12",
     "name": "Anjali Deshpande"
@@ -8,13 +8,13 @@
   "status": "PASS",
   "passed": 19,
   "total": 19,
-  "seconds": 102,
+  "seconds": 150,
   "checks": [
     {
       "beat": "Day care opens with tomorrow's list",
       "ok": true,
       "detail": "13 upcoming visits · 13 accessible patients; 13 cards",
-      "ms": 812
+      "ms": 6978
     },
     {
       "beat": "Hero is on the list, blocked, with its reason",
@@ -26,13 +26,13 @@
       "beat": "Voice: who is blocked today",
       "ok": true,
       "detail": "6 patients marked on the list",
-      "ms": 1410
+      "ms": 1830
     },
     {
       "beat": "Voice: open the hero's record (person confirms)",
       "ok": true,
       "detail": "confirmed by click, record opened",
-      "ms": 1879
+      "ms": 9720
     },
     {
       "beat": "Overview: blocked LVEF and pre-auth conflict with rule versions",
@@ -44,79 +44,79 @@
       "beat": "Facts section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 9128
+      "ms": 8131
     },
     {
       "beat": "Timeline section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 534
+      "ms": 8627
     },
     {
       "beat": "Documents section has content",
       "ok": true,
       "detail": "5 documents",
-      "ms": 545
+      "ms": 8167
     },
     {
       "beat": "Coverage section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 537
+      "ms": 7617
     },
     {
       "beat": "Family section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 62
+      "ms": 132
     },
     {
       "beat": "Copilot chat opens beside the record",
       "ok": true,
       "detail": "composer ready",
-      "ms": 45
+      "ms": 47
     },
     {
       "beat": "Ask: Why is she blocked?",
       "ok": true,
       "detail": "Safety · SURV-LVEF-002",
-      "ms": 12570
+      "ms": 9440
     },
     {
       "beat": "Ask: What does the echo show?",
       "ok": true,
       "detail": "Safety · SURV-LVEF-002",
-      "ms": 11809
+      "ms": 12111
     },
     {
       "beat": "Ask: Is her pre-authorisation approved?",
       "ok": true,
       "detail": "2 of 15 record checks need attention: 1 blocked, 1 conflict. 13 met.",
-      "ms": 10259
+      "ms": 16564
     },
     {
       "beat": "Ask: Show me the latest lab results",
       "ok": true,
       "detail": "Neutrophils (ANC)",
-      "ms": 13144
+      "ms": 11515
     },
     {
       "beat": "Ask: What medication is she on?",
       "ok": true,
       "detail": "Anjali Deshpande's recorded regimen is Paclitaxel + trastuzumab, weekly; cycle 7 is due 7 Oct 2026, 09:30.",
-      "ms": 10882
+      "ms": 10059
     },
     {
       "beat": "Ask: clinical judgement is refused with an evidence packet",
       "ok": true,
       "detail": "refused; packet offered to the treating practitioner",
-      "ms": 17504
+      "ms": 12918
     },
     {
       "beat": "Cited source opens on the echo report text",
       "ok": true,
       "detail": "LVEF (biplane Simpson): 49 % visible",
-      "ms": 9226
+      "ms": 23278
     },
     {
       "beat": "No page errors during the run",
