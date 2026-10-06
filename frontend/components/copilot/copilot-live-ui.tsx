@@ -40,7 +40,8 @@ const SPEECH_ERRORS: Record<string, string> = {
   "service-not-allowed": "Voice input is not available in this browser. Type in the chat.",
   "no-speech": "Nothing was heard. Try again, or type in the chat.",
   "audio-capture": "No microphone was found. Type in the chat.",
-  network: "The browser's speech service could not be reached. Type in the chat.",
+  // Chromium browsers other than Chrome and Edge ship the API without a speech backend.
+  network: "This browser has no speech service. Use Chrome, Edge or Safari for voice, or type in the chat.",
   "language-not-supported": "Voice input does not support this language here. Type in the chat.",
 };
 
