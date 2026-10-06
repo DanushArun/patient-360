@@ -1,4 +1,4 @@
-# SAARTHI -- End-to-End Testing Playbook
+# Saarthi -- End-to-End Testing Playbook
 
 **Purpose:** Systematically verify every frontend feature before hackathon evaluation. Record results in the table at the end. Share failures with the dev team for fix-and-retest cycles.
 
@@ -379,7 +379,7 @@ For each language:
 2. **Verify:** Three timestamps visible:
    - [ ] Event time (when it happened)
    - [ ] Source recorded at (when the source system recorded it)
-   - [ ] Ingested at (when SAARTHI received it)
+   - [ ] Ingested at (when Saarthi received it)
 
 **Pass criteria:** All three timestamps present. Labels clear.
 
@@ -548,7 +548,7 @@ For each language:
 ### L1. Judge page loads
 1. Click "Judge Console" on the homepage header
 2. **Verify:** Opens `/judge`
-3. **Verify:** Title "SAARTHI · Judge Console" visible
+3. **Verify:** Title "Saarthi · Judge Console" visible
 4. **Verify:** 8 probe buttons visible in a grid
 5. **Verify:** "Run all 8 probes" button visible
 

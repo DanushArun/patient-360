@@ -61,7 +61,7 @@ was written for). It does not cover the rest; use the Snowsight path.
     (so SURG-CLEAR-001 for PAT-DEEP-0001 flips from pass to `not_evaluated` until two model passes verify them; intended, changes the demo).
     Note: its practitioner row uses `CURRENT_USER()`, i.e. the Snowsight user running it. If the web app logs in as a different user, `UPDATE SAARTHI.GOVERNANCE.PRACTITIONER SET snowflake_user = '<app user>' WHERE practitioner_id = 'PRAC-01';` (exact case, AGENTS.md section 3.1).
 13. **Load documents**: paste `cohort_docs.sql` into a Snowsight worksheet and Run all.
-    - Optional, only if you want the original PDFs on the stage: Snowsight, Data, Databases, SAARTHI, STAGES, PATIENT_DOCS, "+ Files", upload each file into folder
+    - Optional, only if you want the original PDFs on the stage: Snowsight, Data, Databases, Saarthi, STAGES, PATIENT_DOCS, "+ Files", upload each file into folder
       `<patient_id>/` (e.g. `PAT-DC-04/DOC-LAB-DC-04`). Stage must be SNOWFLAKE_SSE (checklist). The pipeline does not need them: `DOCUMENT.source_path` already records `<patient>/<doc>`, so the parse task treats each as ingested.
     - Alternative without Snowsight (single script, you supply the connection at run time; never stored): 
       `SNOWFLAKE_ACCOUNT=<org-account> SNOWFLAKE_USER=<user> SNOWFLAKE_PASSWORD=<...> node backend/scripts/run-sql-from-env.mjs --apply backend/sql/data/load_synthetic.sql cohort_docs.sql`

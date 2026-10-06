@@ -108,6 +108,6 @@ Review and research documents are **point-in-time records**. Editing them to mat
 
 This text appears in the README, in `IMPLEMENTATION-STATUS.md`, and in the UI wherever a floater coverage figure is shown:
 
-> **Family-floater coverage is out of scope.** PM-JAY provides ₹5 lakh per family per year. SAARTHI tracks the patient-level figure only. Where a coverage record is flagged as a family floater, the system states that other members' consumption is not available to it and does not estimate the shared remaining balance. Modelling this correctly requires household membership, cross-member consumption events, and a consent basis for using one member's data to compute another's — none of which this system implements.
+> **Family-floater coverage is out of scope.** PM-JAY provides ₹5 lakh per family per year. Saarthi tracks the patient-level figure only. Where a coverage record is flagged as a family floater, the system states that other members' consumption is not available to it and does not estimate the shared remaining balance. Modelling this correctly requires household membership, cross-member consumption events, and a consent basis for using one member's data to compute another's — none of which this system implements.
 
 **Stated as a refusal, not discovered as a gap.**

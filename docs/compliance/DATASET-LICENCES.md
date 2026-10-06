@@ -67,7 +67,7 @@ facts used for synthetic engineering tests, not clinical guidance.
 
 | File | What it is | Status |
 |---|---|---|
-| `frontend/public/saarthi-mark.png`, `frontend/app/icon.png`, `frontend/app/apple-icon.png`, `frontend/app/favicon.ico` | SAARTHI heart-and-stethoscope logo (sidebar mark, browser-tab and Apple touch icons) | Supplied by the team on 5 Oct 2026 as a PNG; how it was produced and its licence are not recorded in the repo, to be confirmed by the team. Replaces the earlier `carethread-mark.svg` |
+| `frontend/public/saarthi-mark.png`, `frontend/app/icon.png`, `frontend/app/apple-icon.png`, `frontend/app/favicon.ico` | Saarthi heart-and-stethoscope logo (sidebar mark, browser-tab and Apple touch icons) | Supplied by the team on 5 Oct 2026 as a PNG; how it was produced and its licence are not recorded in the repo, to be confirmed by the team. Replaces the earlier `carethread-mark.svg` |
 | Fonts `frontend/public/fonts/` and `frontend/static/` | Inter (4 weights), JetBrains Mono (2 weights), Material Symbols Rounded (`MaterialSymbols-Rounded.woff2`) | Publisher licence notices added under `frontend/public/fonts/`; Inter/JetBrains notices also under `frontend/static/`. Local TTF name tables confirm SIL OFL 1.1 (Inter 4.000, JetBrains Mono 2.304). Google documents Material Symbols as Apache 2.0. Checked 5 Oct 2026; binary publisher identity for the WOFF2 remains unverified |
 
 ## 5. Third-party software

@@ -1,14 +1,14 @@
-# SAARTHI -- Project Overview
+# Saarthi -- Project Overview
 
 **Last updated: 27 September 2026**
 
 ---
 
-## What is SAARTHI?
+## What is Saarthi?
 
-SAARTHI is a **pre-treatment readiness system for cancer daycare centres** in India. Before a patient receives chemotherapy, a coordinator must verify approximately 16 things: blood counts are safe, documents exist, insurance is approved, and identity is verified. Today this is manual chart-flipping across multiple systems, often causing avoidable delays, repeat visits, and missed safety checks.
+Saarthi is a **pre-treatment readiness system for cancer daycare centres** in India. Before a patient receives chemotherapy, a coordinator must verify approximately 16 things: blood counts are safe, documents exist, insurance is approved, and identity is verified. Today this is manual chart-flipping across multiple systems, often causing avoidable delays, repeat visits, and missed safety checks.
 
-SAARTHI automates this by:
+Saarthi automates this by:
 1. Pulling clinical data from hospital systems into a governed Snowflake store
 2. Running 16 versioned SQL rules against that data (never AI -- Rule R1)
 3. Exposing a dashboard where coordinators see every check at a glance
@@ -63,7 +63,7 @@ These are the product. Violating one is a defect.
 | Rule | Statement |
 |---|---|
 | **R1** | The LLM never decides. It extracts, interprets, ranks, and phrases. Every status, number, threshold comparison, and gate outcome comes from SQL against a versioned rule. |
-| **R2** | Three clocks: `event_time` (when it happened), `source_recorded_at` (when the source recorded it), `ingested_at` (when SAARTHI received it). Every answer carries `known_as_of`. |
+| **R2** | Three clocks: `event_time` (when it happened), `source_recorded_at` (when the source recorded it), `ingested_at` (when Saarthi received it). Every answer carries `known_as_of`. |
 | **R3** | Missingness is a type, never a NULL: present, explicitly_negative, pending, not_received, conflicting, unreadable, superseded. "Not received" is never "negative". |
 | **R4** | Identity is ABHA-anchored and federated. Never join on name. Ambiguous matches quarantine and contribute no evidence. |
 | **R5** | Scope is enforced server-side before retrieval, in three layers: (1) binding from PATIENT_BINDING on CURRENT_SESSION, (2) care-team + consent check on CURRENT_USER, (3) per-query consent revalidation. |

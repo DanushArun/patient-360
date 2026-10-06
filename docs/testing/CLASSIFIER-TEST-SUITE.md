@@ -1,4 +1,4 @@
-# SAARTHI -- Class A/B Classifier Test Suite
+# Saarthi -- Class A/B Classifier Test Suite
 
 **Purpose:** Test every question type against the CLASSIFY_QUESTION procedure. Run each question in the chat on the specified patient. Record PASS (correct classification) or FAIL (wrong classification).
 

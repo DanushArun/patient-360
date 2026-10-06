@@ -1,4 +1,4 @@
-# SAARTHI — Build Execution Plan
+# Saarthi — Build Execution Plan
 
 ## Current follow up tasks for langextract_use
 
@@ -38,7 +38,7 @@ Added 2 October 2026. These are pending tasks, not completed features or permiss
 ### 5 Website performance and latency
 
 - [ ] Instrument page rendering, authorised patient-data loading, tab responsiveness, citation opening, document parsing, each extraction pass, verification, SQL refresh, retrieval and complete validated answers separately. Measure time to first answer text separately from time to a fully checked answer; unvalidated clinical claims must not appear as final.
-- [ ] Target [Core Web Vitals](https://web.dev/articles/vitals): LCP ≤2.5 seconds, INP ≤200 milliseconds and CLS ≤0.1 at the 75th percentile, segmented by device. These are reference targets, not current SAARTHI measurements or AI-answer deadlines.
+- [ ] Target [Core Web Vitals](https://web.dev/articles/vitals): LCP ≤2.5 seconds, INP ≤200 milliseconds and CLS ≤0.1 at the 75th percentile, segmented by device. These are reference targets, not current Saarthi measurements or AI-answer deadlines.
 - [ ] Record sample counts, failures, p50/p95 latency and cold versus warm runs. Distinguish local development-server behaviour from a production build and, later, hosted performance. Set backend/AI latency budgets after a baseline; do not invent completion times.
 - [ ] Keep extraction off ordinary dashboard/page-load paths. Process once per document/version/configuration, reuse approved stored results, and invalidate affected evidence/results when source data changes. Recheck access and consent even when cached results exist; preserve timestamps and freshness labels.
 - [ ] Verify processing, partial-load, empty, timeout and retry states without hiding stale results or blocking unrelated records. Evaluate autosuspend/cold-start tradeoffs without leaving paid services running to improve a demo benchmark.

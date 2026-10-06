@@ -1,7 +1,7 @@
 # Hospital software workflow study: India and international references
 
 **Research date:** 24 September 2026
-**Purpose:** Learn from hospital information systems and EHR products before shaping SAARTHI's UI.
+**Purpose:** Learn from hospital information systems and EHR products before shaping Saarthi's UI.
 
 ## Scope and evidence limits
 
@@ -14,7 +14,7 @@ Sources are product pages, manuals, health-system training material and governme
 Public product descriptions establish what vendors say their products support; they do not prove
 how consistently hospitals deploy them, their real-world usability, or advertised outcomes. I did
 not have authenticated access to live hospital instances. Recommendations are inferences from the
-documented workflows and SAARTHI's scope.
+documented workflows and Saarthi's scope.
 
 ## Executive finding
 
@@ -26,14 +26,14 @@ timelines and summaries help users navigate those records.
 
 Modern AI features are workflow-shaped too: summarize a chart before a visit, answer a bounded
 question with links to sources, surface follow-up from an imaging report, or draft documentation
-for a human to review. This points to SAARTHI as a **care-readiness and record-reconciliation layer
+for a human to review. This points to Saarthi as a **care-readiness and record-reconciliation layer
 alongside an existing hospital system**, not a general-purpose HIS. Its narrower job is
 cross-facility record reconciliation, pre-visit documentation/authorization completeness,
 provenance and tracked coordination work.
 
 ## Indian references
 
-| System | Publicly documented workflow | Lesson for SAARTHI | Evidence limit |
+| System | Publicly documented workflow | Lesson for Saarthi | Evidence limit |
 |---|---|---|---|
 | **NIC eHospital / NextGen eHospital** | Government HMIS covering registration, OPD/IPD, ADT, billing, clinic, lab, radiology, pharmacy and other modules; ORS exposes appointments and patient-facing report access. Clinic records visits, exams, diagnoses, history, treatment and prescriptions, and supports ordering tests and medicines. | Model the visit as a workflow across registration, clinical work, diagnostics and follow-up. Separate staff operations from citizen-facing access. | Government overview, not a live usability study. [NIC eHospital](https://www.nic.gov.in/project/ehospital/), [NextGen eHospital](https://nextgen.ehospital.nic.in/) |
 | **Bahmni / OpenMRS** | Open-source HIS/EMR integrating patient management, billing/inventory, lab and PACS. Clinical forms and patient dashboards are configurable; inpatient dashboards and bed workflows can reflect local needs. It targets settings where local hosting and unreliable internet matter. | One fixed dashboard will not suit every specialty or facility. Make role/task views adaptable, and account for connectivity and deployment constraints. | Product/project descriptions; implementations vary. [Bahmni](https://www.bahmni.org/), [Clinical Services](https://www.bahmni.org/clinical-services), [Inpatient Management](https://www.bahmni.org/inpatient-management) |
@@ -51,20 +51,20 @@ provenance and tracked coordination work.
   source/facility, record date and identity-link state; it must not hide unresolved identity or
   consent issues.
 - Clinic, hospital, lab, imaging and pharmacy software may be separate modules or products.
-  SAARTHI should show source and freshness instead of implying all systems are synchronized.
+  Saarthi should show source and freshness instead of implying all systems are synchronized.
 - Mobile, multilingual and low-connectivity use appear explicitly in Indian products. For
-  SAARTHI, first finish the clinician/coordinator desktop chart-review flow; keep family
+  Saarthi, first finish the clinician/coordinator desktop chart-review flow; keep family
   translation and bring-list support as a focused companion surface.
 
 ## International references
 
-| System | Publicly documented workflow | Lesson for SAARTHI | Evidence limit |
+| System | Publicly documented workflow | Lesson for Saarthi | Evidence limit |
 |---|---|---|---|
 | **Epic** | Storyboard gives access to the patient's story throughout the chart. Epic describes AI summaries, imaging follow-up identification, message context and documentation drafts. FHIR APIs support interoperability. | Persistent patient context and in-workflow summaries matter more than a standalone chatbot. Summaries should lead to deeper source inspection. | Vendor and health-system training material; local builds differ. [Iowa Storyboard guide](https://epicsupport.sites.uiowa.edu/epic-resources/storyboard), [Epic AI tools](https://www.epic.com/software/art/), [Epic FHIR](https://fhir.epic.com/) |
 | **Oracle Health EHR (formerly Cerner)** | User documentation covers schedules, inbox, orders, patient panel, problems and a Life Timeline for history, problems and medications. Organizer, pre-visit and patient summaries link back to source data. | Build a selective pre-visit summary with “see more” and links to the underlying record. Preserve time range and as-of context. | Product documentation does not prove accuracy or measured benefit. [Oracle summaries](https://docs.oracle.com/en/industries/health/oracle-health-ehr/ehrfg/summaries.html), [Oracle timeline](https://docs.oracle.com/en/industries/health/oracle-health-ehr/ehrug/timeline.html), [Oracle guide](https://docs.oracle.com/en/industries/health/oracle-health-ehr/) |
 | **MEDITECH Expanse** | Describes customizable physician workflows, chart reference panels, mobile tools, external-data summaries and search across structured/unstructured, scanned and legacy records. | Reduce chart retrieval work, let clinicians adapt high-frequency views, and preserve source context for outside records. | Vendor features and testimonials are not neutral outcome evaluations. [Expanse for Physicians](https://ehr.meditech.com/ehr-solutions/expanse-for-physicians), [Physician efficiency](https://home.meditech.com/en/d/mktcontent/otherfiles/physicianefficiencysinglepage.pdf) |
 | **InterSystems TrakCare** | Describes a shared electronic patient record populated across clinical and administrative data. Inpatient management follows bed requests, movements, discharge progress, handovers and status. | The relevant dashboard differs for a ward manager and a clinician preparing an outpatient visit. | Vendor overview. [TrakCare overview](https://www.intersystems.com/reimagining-care-intersystems-trakcare.pdf), [Fact sheet](https://www.intersystems.com/it/trakcare-overview-fact-sheet/) |
-| **Dedalus ORBIS / ORBIS U (Europe)** | Materials describe role-based workflows, patient chart/dashboard, orders/results/medication and departmental modules. | Specialty workflows belong inside a common record, but SAARTHI should borrow the separation of workspaces rather than the module count. | Vendor brochure/product page, no independent evaluation here. [ORBIS U](https://www.dedalus.com/uki/our-offer/products/orbis-u/), [Capabilities](https://www.dedalus.com/uki/wp-content/uploads/sites/7/2023/01/UK_Flyer_Orbis.pdf) |
+| **Dedalus ORBIS / ORBIS U (Europe)** | Materials describe role-based workflows, patient chart/dashboard, orders/results/medication and departmental modules. | Specialty workflows belong inside a common record, but Saarthi should borrow the separation of workspaces rather than the module count. | Vendor brochure/product page, no independent evaluation here. [ORBIS U](https://www.dedalus.com/uki/our-offer/products/orbis-u/), [Capabilities](https://www.dedalus.com/uki/wp-content/uploads/sites/7/2023/01/UK_Flyer_Orbis.pdf) |
 | **Philips Tasy (Brazil and international)** | Philips describes integrated care management and a patient portal for appointments, consultation details and results. | Patient access and clinician operations are related but distinct surfaces. Give families a focused bring-list, not the full clinician chart by default. | Public overview, not hands-on assessment. [Philips Tasy](https://www.philips.com.br/a-w/about/news/archive/standard/news/press/2018/20180611-philips-presents-tasy-as-an-efficient-and-safe-technology-solution-for-the-management-of-integral-patient-care.html) |
 | **OpenEMR (open source)** | Guides describe a provider calendar that opens a patient summary and past encounters/documents, appointment status indicators, recall/follow-up lists and configurable patient dashboard links. | A worklist should open directly into relevant patient/visit context; follow-up needs status, ownership and a return path. | Community documentation applies to specific versions/configurations. [Encounter workflow](https://www.open-emr.org/wiki/index.php/New_Encounters_%26_Coding), [Patient dashboard](https://www.open-emr.org/wiki/index.php/HOWTO%3A_Create_a_New_Patient_Record_-_OpenEMR_v7), [Calendar](https://www.open-emr.org/wiki/index.php/Using_the_Calendar) |
 | **NHS England EPR / Single Patient Record direction** | NHS documentation describes EPRs for diagnoses, treatment, medication and results. The proposed Single Patient Record aims to connect records across care settings and remains in development. | Interoperability is a long-running system programme. Design for provenance and source systems instead of presenting a partial data lake as complete. | The future programme is not a shipped capability. [NHS EPR programme](https://www.england.nhs.uk/digitaltechnology/digitising-the-frontline/), [Single Patient Record](https://www.england.nhs.uk/digitaltechnology/the-single-patient-record/) |
@@ -87,17 +87,17 @@ provenance and tracked coordination work.
    workflows need different priorities and permitted actions over a common record.
 7. **Interoperability does not guarantee a complete chart.** Preserve facility, source,
    timestamps, missingness, conflicts, consent and feed freshness.
-8. **Assistive AI is workflow-specific.** Search, summarize, draft and follow up recur. SAARTHI's
+8. **Assistive AI is workflow-specific.** Search, summarize, draft and follow up recur. Saarthi's
    citations and explicit conflict/missing states are more valuable than a generic chatbot style.
 
 The reviewed public materials emphasize worklists, patient context, timelines, records, orders,
 results and workflow-specific dashboards. They do not establish animated body maps as a core HIMS
 pattern. Defer anatomy visualization unless a validated need and structured location data exist.
 
-## What this means for SAARTHI
+## What this means for Saarthi
 
-SAARTHI should not reproduce every module of these systems. They manage hospital operations,
-including registration, encounters, orders, notes, medications, diagnostics and billing. SAARTHI's
+Saarthi should not reproduce every module of these systems. They manage hospital operations,
+including registration, encounters, orders, notes, medications, diagnostics and billing. Saarthi's
 narrower job is to help care teams prepare a cross-facility visit, reconcile records, identify
 operational gaps and track coordination work.
 
@@ -127,7 +127,7 @@ not replace implementation or usability sessions with clinicians, coordinators a
 
 | Direction | Meaning | Advantages | Cost/risk | Fit |
 |---|---|---|---|---|
-| **1. Full HIS/EHR imitation** | Add registration, orders, notes, medication, billing and departmental modules. | Broadly resembles incumbent products. | Massive scope; duplicates existing systems; delays proof of SAARTHI's core cross-facility evidence workflow. | Poor for this hackathon. |
+| **1. Full HIS/EHR imitation** | Add registration, orders, notes, medication, billing and departmental modules. | Broadly resembles incumbent products. | Massive scope; duplicates existing systems; delays proof of Saarthi's core cross-facility evidence workflow. | Poor for this hackathon. |
 | **2. Focused workflow copilot** | Make worklist, patient/visit context, readiness evidence, timeline and tracked task one complete flow. | Matches observed patterns and the product specification; can be demonstrated end to end. | Requires source traceability and task closure; breadth remains intentionally narrow. | **Recommended.** |
 | **3. Patient/family portal first** | Prioritize mobile records, appointments, translations and bring-lists. | Directly serves patient access and continuity. | Does not solve clinician review or care-team ownership first; risks implying advice or communication functions not built. | Supporting surface after clinician workflow. |
 
@@ -162,4 +162,4 @@ not replace implementation or usability sessions with clinicians, coordinators a
   [Australian Digital Health Agency](https://www.digitalhealth.gov.au/digital-health-standards/clinical-information-system-standards).
 - Standards: [ABDM FHIR Guide](https://nrces.in/ndhm/fhir/r4/3.0.0/); [India EHR Standards](https://www.mohfw.gov.in/sites/default/files/EMR-EHR_Standards_for_India_as_notified_by_MOHFW_2016.pdf).
 - Existing research: [PS-04 competitor field report](clinical/ps04-competitive-landscape.md),
-  [SAARTHI completeness map](../project/COMPLETENESS-MAP.md).
+  [Saarthi completeness map](../project/COMPLETENESS-MAP.md).

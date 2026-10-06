@@ -1,8 +1,8 @@
 # Clinical completeness: proof, not claims
 
-This folder answers one question: **before a chemotherapy cycle, what must be true, and does SAARTHI check it?**
+This folder answers one question: **before a chemotherapy cycle, what must be true, and does Saarthi check it?**
 
-You don't need medical training to verify the answer, and you don't need to trust whoever wrote it. Every requirement is copied word for word from the documents that govern cancer treatment: the regimen protocol, the drug's label, a published nursing checklist, and the PM-JAY manual. A script proves the copying is exact, compares every number against SAARTHI's rules, and computes coverage.
+You don't need medical training to verify the answer, and you don't need to trust whoever wrote it. Every requirement is copied word for word from the documents that govern cancer treatment: the regimen protocol, the drug's label, a published nursing checklist, and the PM-JAY manual. A script proves the copying is exact, compares every number against Saarthi's rules, and computes coverage.
 
 ## Verify it yourself
 
@@ -15,7 +15,7 @@ The script:
 
 1. **Downloads the official documents** and checks each file's fingerprint (sha256). If a publisher has revised a document since it was cited, the report says so.
 2. **Finds every quote, word for word, on the stated page.** If one word or number is wrong, it fails. It tells you if the quote is on a different page, or not in the document at all.
-3. **Reads each SAARTHI rule's numbers from `backend/sql/data/rules.sql`** and compares them to the document's numbers. The script decides "match", "stricter" or "looser", and says which patients are affected.
+3. **Reads each Saarthi rule's numbers from `backend/sql/data/rules.sql`** and compares them to the document's numbers. The script decides "match", "stricter" or "looser", and says which patients are affected.
 4. **Refuses dishonest labels.** If a rule is looser than its source, the requirement must be marked `unsafe`. The script fails if it is marked anything kinder.
 5. **Writes [`REPORT.md`](REPORT.md)** with the coverage numbers, and [`clinician_review.csv`](clinician_review.csv) for expert review.
 
@@ -26,21 +26,21 @@ To see that the checks can fail, change a digit inside any quote in `requirement
 | Proven by the script | Not proven by the script |
 |---|---|
 | Each requirement really is in a named, dated, official document | That these documents are the right ones for Indian practice |
-| SAARTHI's numbers match, or don't match, those documents | That the evaluator code behaves like the rule's numbers (see the `implementation` findings, which are read from code and need a live test) |
+| Saarthi's numbers match, or don't match, those documents | That the evaluator code behaves like the rule's numbers (see the `implementation` findings, which are read from code and need a live test) |
 | Coverage is a count, not an opinion | Clinical validity. Engineering checks against published protocols are not clinical validation. |
 
 Closing the right-hand column takes three steps:
 
-1. **Expert proof.** Give `clinician_review.csv` to two or three clinicians: an oncologist, an oncology nurse and, ideally, a pharmacist. For each row they answer "required before a cycle in your practice?" and "is SAARTHI's status right?", and they add anything missing at the bottom. The share of reviewers who say "required" is the item's content validity index. That is the same method the AIIMS Jodhpur checklist used (its validity index was 0.97). Record their names and roles in the sheet.
+1. **Expert proof.** Give `clinician_review.csv` to two or three clinicians: an oncologist, an oncology nurse and, ideally, a pharmacist. For each row they answer "required before a cycle in your practice?" and "is Saarthi's status right?", and they add anything missing at the bottom. The share of reviewers who say "required" is the item's content validity index. That is the same method the AIIMS Jodhpur checklist used (its validity index was 0.97). Record their names and roles in the sheet.
 2. **Behaviour proof.** Every `implementation` finding has an `expect` case, for example "cisplatin regimen, creatinine clearance 40 mL/min → fail, not pass". Run each case through `evaluate_gates` on a live account using the scratch-patient harness in `backend/scripts/run_rule_fixtures.py`.
-3. **Indian sources.** Add National Cancer Grid or Tata Memorial regimen protocols to `sources.yaml` where they are published. The verifier will then compare SAARTHI against both.
+3. **Indian sources.** Add National Cancer Grid or Tata Memorial regimen protocols to `sources.yaml` where they are published. The verifier will then compare Saarthi against both.
 
 ## Files
 
 | File | What it is |
 |---|---|
 | `sources.yaml` | Every document quoted, with URL or repo path, revision date and sha256. Also lists the sources not yet verified. |
-| `requirements.yaml` | The ledger: quote, page, plain-English meaning, which regimens it applies to, SAARTHI's status, numeric comparisons. |
+| `requirements.yaml` | The ledger: quote, page, plain-English meaning, which regimens it applies to, Saarthi's status, numeric comparisons. |
 | `REPORT.md` | Generated. The coverage numbers and every finding. |
 | `clinician_review.csv` | Generated. The sheet for clinician sign-off. |
 | `.cache/` | Downloaded documents (git-ignored). |

@@ -1,4 +1,4 @@
-# SAARTHI -- Designer Brief
+# Saarthi -- Designer Brief
 
 **For the product designer. No backend or frontend knowledge assumed.**
 **Updated: 28 September 2026 -- all 6 screens are now built and working.**
@@ -7,7 +7,7 @@
 
 ## What is this product?
 
-SAARTHI helps hospital staff prepare cancer patients for chemotherapy. Before treatment, a coordinator must check ~16 things: blood values are safe, insurance is approved, documents exist, identity is verified. Today this is manual and error-prone. SAARTHI automates the checks and shows the results on a dashboard.
+Saarthi helps hospital staff prepare cancer patients for chemotherapy. Before treatment, a coordinator must check ~16 things: blood values are safe, insurance is approved, documents exist, identity is verified. Today this is manual and error-prone. Saarthi automates the checks and shows the results on a dashboard.
 
 **Three types of users:**
 1. **Coordinator** -- the main user. Manages the day's patient list, resolves blockers, files tasks, prepares families.
@@ -40,7 +40,7 @@ SAARTHI helps hospital staff prepare cancer patients for chemotherapy. Before tr
 ### Layout (top to bottom)
 
 **Header bar:**
-- Left: App name "SAARTHI", subtitle "Care readiness", text "no patient selected"
+- Left: App name "Saarthi", subtitle "Care readiness", text "no patient selected"
 - Right: "Judge Console" button (links to `/judge`), "Select patient" dropdown, Practitioner name (from the database, shows the logged-in doctor's name)
 
 **Info bar** (below header):
@@ -150,7 +150,7 @@ Tab 2: **Record Timeline**
   - Three timestamps:
     - **Event time** -- when it happened (e.g., lab was drawn)
     - **Source recorded** -- when the hospital system recorded it
-    - **Ingested** -- when SAARTHI received it
+    - **Ingested** -- when Saarthi received it
   - These three clocks are a core architecture requirement (Rule R2)
 
 Tab 3: **Family Checklist**
@@ -234,7 +234,7 @@ Tab 3: **Family Checklist**
 ### Layout (top to bottom)
 
 **Header:**
-- "SAARTHI · Judge Console"
+- "Saarthi · Judge Console"
 - "← Census" link back to homepage
 - Description: "Live security and correctness probes against the production database"
 

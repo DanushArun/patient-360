@@ -1,8 +1,8 @@
 # Platform findings: where the obvious Snowflake design leaks
 
-Seven findings about Snowflake behaviour that decided SAARTHI's security and AI design. Each one was established by a
+Seven findings about Snowflake behaviour that decided Saarthi's security and AI design. Each one was established by a
 query that can be looked up by ID. They are the part of this repository most useful to another team, whether or not
-SAARTHI is judged well.
+Saarthi is judged well.
 
 **Read this first: what these are and are not.**
 

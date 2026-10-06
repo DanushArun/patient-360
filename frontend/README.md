@@ -1,4 +1,4 @@
-# SAARTHI dashboard development
+# Saarthi dashboard development
 
 Use Node.js 20 or newer. From this directory:
 

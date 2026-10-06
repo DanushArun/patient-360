@@ -1,4 +1,4 @@
-# SAARTHI: architecture and impact
+# Saarthi: architecture and impact
 
 Submission answers for **Section 2 (Architecture Diagram)** and **Section 3 (Impact Statement)**. Compiled from
 `README.md`, `docs/project/PROJECT-OVERVIEW.md`, `docs/architecture/ARCHITECTURE-HANDOFF.md`,
@@ -94,7 +94,7 @@ patient scope lives in owner's-rights procedures the agent cannot reach.
 
 ## 3. Impact
 
-The patient journey fails when the record fails. The published figures below describe the gap SAARTHI targets; the
+The patient journey fails when the record fails. The published figures below describe the gap Saarthi targets; the
 engineering results show what the prototype already does on synthetic data.
 
 ### The problem today

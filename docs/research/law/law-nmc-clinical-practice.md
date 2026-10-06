@@ -18,7 +18,7 @@ The guidelines contain **no section on AI, ML, clinical decision support, or aut
 
 The relevant principle is implicit rather than explicit: **only an RMP may diagnose, prescribe, or advise treatment.** Anything that performs these functions without an RMP is practising medicine without registration — which is a criminal offence under the NMC Act.
 
-### What this means for SAARTHI
+### What this means for Saarthi
 - A system that **shows record state** (what reports exist, what's missing, what contradicts what) is not practising medicine — it is an information retrieval and reconciliation tool.
 - A system that **answers "should the patient take the treatment?"** is practising medicine — even if the answer is qualified. This is Class A in our taxonomy and must be refused.
 - A system that **answers "is the authorization approved?"** or **"when was the last echo?"** is answering a factual record-state question. This is Class B.

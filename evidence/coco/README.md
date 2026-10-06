@@ -1,4 +1,4 @@
-# CoCo Lifecycle Evidence — SAARTHI
+# CoCo Lifecycle Evidence — Saarthi
 
 **Required by the hackathon rules:** *"All hackathon solutions must use CoCo (CLI, Desktop app) across the full lifecycle, from planning through development to execution and testing. Teams should be able to show CoCo in each phase below, and judges will look for evidence of it at every stage."*
 

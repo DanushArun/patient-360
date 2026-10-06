@@ -1,4 +1,4 @@
-# SAARTHI — Architecture Handoff
+# Saarthi — Architecture Handoff
 
 **For the three people building this. Read §1 and §2 before writing a line of code.**
 

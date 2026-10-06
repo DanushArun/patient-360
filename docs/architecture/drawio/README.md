@@ -1,4 +1,4 @@
-# SAARTHI — draw.io architecture diagrams
+# Saarthi — draw.io architecture diagrams
 
 **`SAARTHI-architecture.drawio` — one document, 15 pages.** Open in [app.diagrams.net](https://app.diagrams.net), the draw.io desktop app, or the VS Code *Draw.io Integration* extension.
 

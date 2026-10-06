@@ -1,4 +1,4 @@
-# SAARTHI Next.js completeness map
+# Saarthi Next.js completeness map
 
 Scope: `/` and `/patient/[id]`, compared with `frontend/streamlit_app.py` and
 `frontend/core/navigator.py`. This is a validation contract, not a claim that the app is

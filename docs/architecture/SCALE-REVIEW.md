@@ -1,4 +1,4 @@
-# Scale Review — Is SAARTHI's architecture good enough for a pan-India multi-facility system?
+# Scale Review — Is Saarthi's architecture good enough for a pan-India multi-facility system?
 
 **Reviewed 2026-09-17. This is a second-order review: not "is the spec internally correct" (see SPEC-REVIEW.md, 21 issues) but "is the architecture the right shape for the system the problem statement describes."**
 

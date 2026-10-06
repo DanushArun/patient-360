@@ -1,4 +1,4 @@
-# SAARTHI — AI & Integration Architecture
+# Saarthi — AI & Integration Architecture
 
 ### The model layer, the agent, the prompts, and the end-to-end call path.
 

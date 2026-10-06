@@ -1,10 +1,10 @@
-# SAARTHI Dashboard Supervisor — Capabilities, Models, and Delivery Requirements
+# Saarthi Dashboard Supervisor — Capabilities, Models, and Delivery Requirements
 
 **Research date: 6 October 2026. Decision document, not a claim of deployed completeness.**
 
 ## 1. The product to build
 
-SAARTHI should be an evidence and workflow supervisor across the entire authorized care workspace. A user should be able to ask what needs attention, inspect why, navigate to the exact evidence, prepare the appropriate operational action, execute an authorized action, and see proof that it completed. It should retain the task through navigation and long-running processing while respecting patient selection, consent, and the current evidence snapshot.
+Saarthi should be an evidence and workflow supervisor across the entire authorized care workspace. A user should be able to ask what needs attention, inspect why, navigate to the exact evidence, prepare the appropriate operational action, execute an authorized action, and see proof that it completed. It should retain the task through navigation and long-running processing while respecting patient selection, consent, and the current evidence snapshot.
 
 The distinctive experience is **question → evidence → operational action → verified outcome**, with a visible source and audit trail at each step. “Godlike” is an ambition for breadth and usability; it is not a technical guarantee. No provider establishes that its model can reliably do every dashboard task. Industry impact must be demonstrated through completed workflows and measured benefit.
 
@@ -12,13 +12,13 @@ Recommendation: retain the working Opus 5.5 deployment as the baseline; build th
 
 ## 2. Clinician experience contract
 
-**The copilot is an optional layer of service over a complete dashboard.** Clinicians retain direct access to every authorized record, source, check, filter, and permitted workflow through the dashboard. They can inspect and act manually, delegate software steps to SAARTHI, or move between both approaches during the same task. Closing the copilot leaves the workspace fully usable.
+**The copilot is an optional layer of service over a complete dashboard.** Clinicians retain direct access to every authorized record, source, check, filter, and permitted workflow through the dashboard. They can inspect and act manually, delegate software steps to Saarthi, or move between both approaches during the same task. Closing the copilot leaves the workspace fully usable.
 
 The two interaction paths must share the same data, authorization, SQL rules, workflow APIs, and receipts. A change made through the copilot appears in the dashboard after verified read-back; a manual change invalidates or refreshes the copilot's affected context. The copilot should show where it is working and provide direct links to the corresponding dashboard view. Its convenience must not create a hidden record state or a separate source of truth.
 
 The design should feel like a layer of luxury: readily available, context-aware, and effortless to use when desired. Preserve manual controls and clear navigation. Avoid forced chat entry points, automatic panel opening that interrupts work, or requiring a conversation to reach an existing dashboard function. Model or connector failure must leave manual workflows available wherever their underlying dependencies remain healthy.
 
-**The software work should disappear behind a clear request.** The clinician describes the outcome; SAARTHI handles finding, filtering, opening, comparing, preparing, and tracking through the registered capabilities. It preserves the professional's attention for reviewing evidence and making clinical decisions.
+**The software work should disappear behind a clear request.** The clinician describes the outcome; Saarthi handles finding, filtering, opening, comparing, preparing, and tracking through the registered capabilities. It preserves the professional's attention for reviewing evidence and making clinical decisions.
 
 The interface should feel like one capable colleague who stays with the work. The user should not need to choose an AI model, select tools, understand connectors, manage a prompt, or learn a special command syntax. Provider and infrastructure choices belong in administration. Internal terms such as RAG, MCP, token budgets, and SQL should not appear in ordinary care workflows.
 
@@ -85,7 +85,7 @@ Configuration presence, source code, one successful call, and repeatable live ca
 
 Provider descriptions below are documented capabilities, not measured superiority on SAARTHI. Direct API pricing is not Snowflake pricing. Availability must be probed independently for the endpoint, region, account, and agent feature.
 
-| Model or service | Documented capability | Recommended SAARTHI role | Access and limitations |
+| Model or service | Documented capability | Recommended Saarthi role | Access and limitations |
 |---|---|---|---|
 | Claude Opus 5.5 | Long-running agentic coding and knowledge work; text/image inputs and tools | Current planning and evidence synthesis baseline | Live in this Snowflake account. Direct API computer use still requires a runtime; native provider features do not automatically exist inside Cortex |
 | GPT‑6.1 Sol | Complex professional work, tools, structured outputs, image input, computer use, MCP | First challenger for the dashboard supervisor | Use OpenAI Responses API for tools. Prior Snowflake probe rejected `openai-gpt-6.1-sol`; external account access remains unverified |
@@ -100,7 +100,7 @@ Provider descriptions below are documented capabilities, not measured superiorit
 
 OpenAI documents Sol’s 1,050,000-token context, 128,000-token maximum output, text/image input, and no native audio/video input. It supports computer use, MCP, function calls, and structured outputs through Responses. These features establish integration options, not permission to execute arbitrary operations. [GPT‑6.1 Sol model page](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
-The Astra/Sol/Luna roles above follow OpenAI’s own family guidance. The recommendation to benchmark them on SAARTHI is our engineering judgment. [GPT‑6 guide](https://developers.openai.com/api/docs/guides/latest-model).
+The Astra/Sol/Luna roles above follow OpenAI’s own family guidance. The recommendation to benchmark them on Saarthi is our engineering judgment. [GPT‑6 guide](https://developers.openai.com/api/docs/guides/latest-model).
 
 Anthropic lists Fable, Opus, Sonnet, and Haiku and their respective workload positioning. Opus 5.5 has integration changes: thinking cannot be disabled; forced tool use errors; replayed thinking is conversation/model-bound; its earlier computer tool is unsupported on the Claude API and Google Cloud. A provider adapter must handle these differences rather than copy an older request. [Claude models](https://platform.claude.com/docs/en/models/overview), [Opus 5.5 changes](https://platform.claude.com/docs/en/models/opus-5-5/whats-new-opus-5-5).
 
@@ -175,7 +175,7 @@ Use one supervisor initially. Parallel workers are useful for independent refere
 | External Claude supervisor | Direct Claude tools and computer-use integration | Separate API setup and current Opus adapter behavior | Alternative when direct runtime features justify it |
 | Browser-led supervisor | Can operate systems lacking APIs | Isolated browser, screenshots/DOM, session isolation, destination/action controls | Later fallback for legacy systems |
 
-Cortex documents custom tools, skills, MCP connectors, and agent toolsets. Their availability does not prove account configuration or execution. Native tools must still pass SAARTHI’s restrictions. [Create and manage Cortex Agents](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-manage).
+Cortex documents custom tools, skills, MCP connectors, and agent toolsets. Their availability does not prove account configuration or execution. Native tools must still pass Saarthi’s restrictions. [Create and manage Cortex Agents](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-manage).
 
 Computer use requires an execution environment and a tool loop. OpenAI supports application-provided UI tools and isolated execution; Anthropic describes an application that turns requested actions into input and returns observations. Our dashboard already exposes APIs, so direct governed calls and semantic navigation are the first choice; browser automation serves unavailable interfaces. [OpenAI computer use](https://developers.openai.com/api/docs/guides/tools-computer-use), [Claude computer use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool).
 

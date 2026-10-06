@@ -1,4 +1,4 @@
-# AGENTS.md — SAARTHI project rules
+# AGENTS.md — Saarthi project rules
 
 **Binding on any agent working in this repository. Read before acting.**
 

@@ -118,7 +118,7 @@ So: R4 is justified on the grounds that India is federated, while the implementa
 | Layer | Where it lives | What it holds |
 |---|---|---|
 | Source clinical data | At the facility (HIP) | The authoritative record |
-| Evidence index | Central (SAARTHI) | Assertions, pointers, hashes, gate state, consent state — **not** the source-of-truth payload |
+| Evidence index | Central (Saarthi) | Assertions, pointers, hashes, gate state, consent state — **not** the source-of-truth payload |
 | Retrieval | Consent-mediated | Content fetched under a valid consent, cached only for the consent window |
 
 This is exactly what ABDM's HIP/HIU model describes, it makes `CONSENT` (F1) load-bearing rather than decorative, and it makes `DERIVED_ARTIFACT` retention (K1) necessary rather than optional. Our `ANSWER_RUN` "pointers not content" decision — made for DPDP erasure reasons — turns out to be the same shape. That is a genuinely strong architectural story.

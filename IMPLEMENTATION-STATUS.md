@@ -40,7 +40,7 @@
 > behavior passed; hosted 200/readiness is unverified. Five reference origins byte-matched.
 > This checkpoint overrides conflicting current-state statements in the dated history below.
 
-# SAARTHI — Implementation Status
+# Saarthi — Implementation Status
 
 **Latest checkpoint, superseded 6 October 2026:** the active execution account and current
 verification are summarized above. **Historical checkpoint, 4 October 2026, 21:13 IST:** the user confirmed submission account
@@ -499,7 +499,7 @@ Legend: 🟢 built + live on JN89282 · 🟡 partial · ⚪ designed-only.
 
 | Type | Designed | Built |
 |---|---|---|
-| Database / schemas | 1 / 7 | 🟢 **1 / 7 — SAARTHI + 7 schemas live on JN89282** |
+| Database / schemas | 1 / 7 | 🟢 **1 / 7 — Saarthi + 7 schemas live on JN89282** |
 | Tables | 34 | 🟢 **35 built and populated** — 34 per SPEC + `SCHEME_REGISTRY`, `PRE_AUTHORIZATION` retired 23 Sept (columns merged into `AUTHORIZATION`) |
 | Stages | 3 | 🟢 **3 built** — `PATIENT_DOCS`, `REFERENCE_DOCS`, `SKILLS` (all `SNOWFLAKE_SSE`) |
 | Roles | 5 | 🟢 **5 built** — SAARTHI_APP, SAARTHI_COORDINATOR, SAARTHI_ONCOLOGIST, SAARTHI_NAVIGATOR, SAARTHI_JUDGE (+ SAARTHI_MCP_CLIENT least-priv for external MCP callers) |
@@ -563,7 +563,7 @@ The brief requires evidence at **every** phase. Legend: 🟢 complete · 🟡 pa
 | Search sharding beyond 400M chunks | Documented in `SCALE-REVIEW.md`; out of scope at 100 patients. |
 | FRAX fracture-risk scoring | Requires inputs we do not model. The T-score gate is the tractable one. |
 | Real patient data in the system | 19 real reports informed **format research only**. Consent held; the patient's son is on the team. |
-| Healthcare supply-chain / drug-substitute recommendation | Different clinician's question. Tools like SupplyFlowQC answer *"drug X is out — what substitute?"* for pharmacy/ops; SAARTHI answers *"is this patient ready for this procedure?"* for the treating team. Substitute-recommendation is also Class A under NMC TPG 2020, which we refuse for every role. Related shape we **do** build: `AUTHORIZATION.denial_is_curable` — flags procedurally recoverable insurance denials before admission (60–70% per RWR). |
+| Healthcare supply-chain / drug-substitute recommendation | Different clinician's question. Tools like SupplyFlowQC answer *"drug X is out — what substitute?"* for pharmacy/ops; Saarthi answers *"is this patient ready for this procedure?"* for the treating team. Substitute-recommendation is also Class A under NMC TPG 2020, which we refuse for every role. Related shape we **do** build: `AUTHORIZATION.denial_is_curable` — flags procedurally recoverable insurance denials before admission (60–70% per RWR). |
 
 ---
 

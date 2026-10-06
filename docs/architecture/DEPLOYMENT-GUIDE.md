@@ -1,13 +1,13 @@
-# SAARTHI — Snowflake Deployment Guide
+# Saarthi — Snowflake Deployment Guide
 
-**Who this is for:** anyone deploying SAARTHI, even if you have never used Snowflake before.
+**Who this is for:** anyone deploying Saarthi, even if you have never used Snowflake before.
 **Rule of thumb:** one Git commit + one SQL script = one deployment. Nothing manual.
 
 ---
 
 ## 1. What "deploying" means here
 
-Most apps you have seen work like this: you build a Docker image, push it to Kubernetes, and pods start running. SAARTHI is different. The whole application — the database, the security rules, the pipeline, the AI agent, the Streamlit screens — **runs inside Snowflake itself**. There is no separate server anywhere.
+Most apps you have seen work like this: you build a Docker image, push it to Kubernetes, and pods start running. Saarthi is different. The whole application — the database, the security rules, the pipeline, the AI agent, the Streamlit screens — **runs inside Snowflake itself**. There is no separate server anywhere.
 
 So "deploying" is very simple:
 

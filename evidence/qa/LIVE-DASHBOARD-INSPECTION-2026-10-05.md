@@ -18,7 +18,7 @@ blocked. Passing source checks do not establish a usable submission.
 - Metadata reports quota **3.00**, used **2.74**, remaining **0.26**, and
   **90% SUSPEND_IMMEDIATE**, `FREQUENCY=NEVER`. The effective suspension
   threshold is **2.70**, explaining suspension before the nominal 3-credit total.
-- ACCOUNTADMIN metadata returned **zero Cortex Search services** in SAARTHI
+- ACCOUNTADMIN metadata returned **zero Cortex Search services** in Saarthi
   and **three tasks**, all suspended. These are current-account observations;
   services/tasks reported on earlier accounts must not be transferred here.
 - Deployed `VALIDATE_ANSWER(VARIANT,VARCHAR)` lacks `access_scope`. The current

@@ -1,4 +1,4 @@
-# SAARTHI — Architecture
+# Saarthi — Architecture
 
 **Care-readiness and evidence copilot for Indian oncology and allied specialties.**
 Snowflake CoCo CLI Hackathon 2026 GCC Edition · Problem Statement 04.

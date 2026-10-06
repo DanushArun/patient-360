@@ -1,4 +1,4 @@
-# SAARTHI — Architecture Specification v2 (FINAL)
+# Saarthi — Architecture Specification v2 (FINAL)
 
 ### The buildable contract. Every object justified against the rubric.
 
@@ -248,7 +248,7 @@ AUTHORIZATION           [B]  auth_id PK · coverage_id FK · encounter_id FK
 
 `denial_is_curable` encodes the ₹30,000 cr finding: **60–70% of denials are procedurally curable and knowable pre-admission.** `[RWR]`
 
-**`is_family_floater` is a flag, not an arithmetic input.** When true, the UI states that the limit is shared across a family and that **SAARTHI tracks the patient-level figure only**. `annual_limit` and `used_amount` are patient-scoped. A floater's true remaining balance depends on other members' consumption, which we do not model — so the system reports what it knows and says what it does not. This is R3 applied to coverage: an unknown is declared, never estimated.
+**`is_family_floater` is a flag, not an arithmetic input.** When true, the UI states that the limit is shared across a family and that **Saarthi tracks the patient-level figure only**. `annual_limit` and `used_amount` are patient-scoped. A floater's true remaining balance depends on other members' consumption, which we do not model — so the system reports what it knows and says what it does not. This is R3 applied to coverage: an unknown is declared, never estimated.
 
 ### 2.6 Documents & evidence
 

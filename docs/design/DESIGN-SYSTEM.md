@@ -1,4 +1,4 @@
-# SAARTHI — Design System
+# Saarthi — Design System
 
 **The interface is a dated, signed, cited document. Not a dashboard.**
 

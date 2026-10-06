@@ -178,9 +178,9 @@ DOC: Corrected lab report (LAB-441 v2)
 |---|---|---|
 | `event_time` | When the clinical event happened | Blood drawn at 08:00 on Sep 8 |
 | `source_recorded_at` | When the source system recorded it | Lab result finalized at 14:00 on Sep 8 |
-| `ingested_at` | When SAARTHI received it | Report uploaded at 10:00 on Sep 9 (next day, brought in folder) |
+| `ingested_at` | When Saarthi received it | Report uploaded at 10:00 on Sep 9 (next day, brought in folder) |
 
-**Why all three matter**: A query at `known_as_of = Sep 8 18:00` should see the lab result (event happened, source recorded). A query at `known_as_of = Sep 8 09:00` should NOT — the event happened but SAARTHI didn't know yet. A query at `known_as_of = Sep 9 11:00` sees everything.
+**Why all three matter**: A query at `known_as_of = Sep 8 18:00` should see the lab result (event happened, source recorded). A query at `known_as_of = Sep 8 09:00` should NOT — the event happened but Saarthi didn't know yet. A query at `known_as_of = Sep 9 11:00` sees everything.
 
 The corrected report scenario: at `known_as_of = Sep 9` the answer uses v1 (ANC 2100). At `known_as_of = Sep 12` (after v2 arrived) the answer uses v2 (ANC 1100) and marks v1 as superseded. Both answers are correct for their moment.
 

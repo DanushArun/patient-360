@@ -1,4 +1,4 @@
-# SAARTHI — Architecture Diagrams
+# Saarthi — Architecture Diagrams
 
 **Structured to the C4 model (Simon Brown), with supporting views drawn to established industry conventions.** Every diagram declares its type, scope, audience and key, per the [C4 diagram review checklist](https://c4model.com/diagrams/checklist).
 
@@ -72,9 +72,9 @@ Applies to every diagram unless the diagram states otherwise.
 
 | #   | Diagram                                  | C4 type       | Scope                                              | Primary audience    |
 | --- | ---------------------------------------- | ------------- | -------------------------------------------------- | ------------------- |
-| 1   | System landscape                         | Landscape     | SAARTHI in the Indian health-data ecosystem        | All                 |
-| 2   | System context                           | **Level 1**   | SAARTHI and everyone/everything it touches         | All                 |
-| 3   | Containers                               | **Level 2**   | Inside SAARTHI — deployable units and data stores  | Technical           |
+| 1   | System landscape                         | Landscape     | Saarthi in the Indian health-data ecosystem        | All                 |
+| 2   | System context                           | **Level 1**   | Saarthi and everyone/everything it touches         | All                 |
+| 3   | Containers                               | **Level 2**   | Inside Saarthi — deployable units and data stores  | Technical           |
 | 4   | Components — Evidence & Readiness Engine | **Level 3**   | Inside the one container that decides answers      | Technical           |
 | 5 | Deployment — **5a** where objects live · **5b** creation order | Deployment | Snowflake account `FV11738`, hackathon environment | Technical, ops, **whoever runs `setup.sql`** |
 | 6   | Trust boundaries (DFD)                   | Security view | Data flow across privilege changes                 | Security, judges    |
@@ -117,7 +117,7 @@ Diagrams show *what*. These records hold *why*, in Nygard ADR form — context, 
 
 ## 1. System landscape
 
-> **Type** — System landscape · **Scope** — SAARTHI's place in the Indian health-data ecosystem, including systems we do not own · **Audience** — everyone, technical and non-technical
+> **Type** — System landscape · **Scope** — Saarthi's place in the Indian health-data ecosystem, including systems we do not own · **Audience** — everyone, technical and non-technical
 
 ```mermaid
 flowchart TB
@@ -159,7 +159,7 @@ flowchart TB
 
 
 
-**What this diagram is for:** showing that SAARTHI is a **consumer** of six external systems and the authority for none of them. It owns no source of truth about a patient — it owns the *evidence index* over sources it does not control.
+**What this diagram is for:** showing that Saarthi is a **consumer** of six external systems and the authority for none of them. It owns no source of truth about a patient — it owns the *evidence index* over sources it does not control.
 
 That constraint drives R2 and R4. If we cannot control when a source records a fact or which identifier it uses, we must model both explicitly rather than assume either.
 
@@ -169,7 +169,7 @@ That constraint drives R2 and R4. If we cannot control when a source records a f
 
 ## 2. System context — C4 Level 1
 
-> **Type** — C4 Level 1, system context · **Scope** — SAARTHI as one box, with all users and integrations · **Audience** — everyone. This is the diagram to show first.
+> **Type** — C4 Level 1, system context · **Scope** — Saarthi as one box, with all users and integrations · **Audience** — everyone. This is the diagram to show first.
 
 ```mermaid
 flowchart TB
@@ -211,7 +211,7 @@ flowchart TB
 
 **Every user is a medical professional.** The system is exclusively professional-facing. `patient_navigator` is a hospital-appointed role — institutionally accountable, employed by the facility, with a `practitioner_id` in the governance model. No patient-side access exists. NMC Telemedicine Practice Guidelines 2020 compliance is structural: every `CURRENT_USER()` resolves to a professional with institutional accountability, not by policy instruction but by the absence of any non-professional user path. The real patient whose 19 reports informed this design was coordinated by her son across four facilities — the navigator role is modelled on exactly that function, moved inside the hospital's governance boundary.
 
-**Only one arrow leaves SAARTHI carrying an action** — `create_review_task` to the ticketing system, and it is idempotent. Everything else is read. A system that answers questions about a patient should not be able to change her care, and the container diagram shows that this is structural rather than a policy.
+**Only one arrow leaves Saarthi carrying an action** — `create_review_task` to the ticketing system, and it is idempotent. Everything else is read. A system that answers questions about a patient should not be able to change her care, and the container diagram shows that this is structural rather than a policy.
 
 ---
 
@@ -219,7 +219,7 @@ flowchart TB
 
 ## 3. Containers — C4 Level 2
 
-> **Type** — C4 Level 2, container · **Scope** — inside SAARTHI: every separately deployable or runnable unit and every data store · **Audience** — technical. This is the most useful single diagram in the set.
+> **Type** — C4 Level 2, container · **Scope** — inside Saarthi: every separately deployable or runnable unit and every data store · **Audience** — technical. This is the most useful single diagram in the set.
 
 ```mermaid
 flowchart TB

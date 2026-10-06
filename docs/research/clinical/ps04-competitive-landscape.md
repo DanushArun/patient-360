@@ -8,22 +8,22 @@
 
 Competitive intelligence on the PS-04 hackathon field, researched 2026-09-16, updated same day with a fourth confirmed competitor found via GitHub search (`carecompass-app`, missed in the original manual list). Method: ~30 public GitHub repos surveyed — deep source review for the four confirmed PS-04 threats (Verity, ATLAS, SynapseCortex, CareCompass), lighter passes for adjacent PS-02 entries, the official Snowflake HCLS baseline, and unrelated hackathon submissions scanned only for transferable patterns. Confirmed via the official event page (hack2skill.com/event/cococlihack-gccedition) that this is the "GCC Edition," prototype submission window is **13 Sept – 4 Oct 2026**, and there is no public submissions gallery — so this list can never be guaranteed complete; re-search periodically. This is a snapshot; competitor repos are active and will drift — re-run closer to the 4 Oct deadline if time allows.
 
-**Thesis:** SAARTHI's six architectural rules (`plan.md`) are, rule for rule, more rigorous than any confirmed competitor. The problem is SAARTHI is also the only serious entrant with zero shipped code. Verity has a deployed $7 demo run. ATLAS has a live public URL, CI, and 23 tests. The field is won on the intersection of rigor and evidence, not rigor alone.
+**Thesis:** Saarthi's six architectural rules (`plan.md`) are, rule for rule, more rigorous than any confirmed competitor. The problem is Saarthi is also the only serious entrant with zero shipped code. Verity has a deployed $7 demo run. ATLAS has a live public URL, CI, and 23 tests. The field is won on the intersection of rigor and evidence, not rigor alone.
 
 ## Verdict: who wins right now
 
-Judged on four axes — architectural rigor, demonstrated evidence (shipped/deployed vs. designed), security/compliance discipline, and narrative clarity — none of the five systems surveyed (Verity, ATLAS, SynapseCortex, CareCompass, SAARTHI) is unambiguously best across all four. The honest ranking splits by what "winning" means at this stage:
+Judged on four axes — architectural rigor, demonstrated evidence (shipped/deployed vs. designed), security/compliance discipline, and narrative clarity — none of the five systems surveyed (Verity, ATLAS, SynapseCortex, CareCompass, Saarthi) is unambiguously best across all four. The honest ranking splits by what "winning" means at this stage:
 
 - **If judged today, on what's actually running: ATLAS wins.** It is the only system with a live public URL, a CI pipeline, and 23 passing tests — a judge can open it in a browser right now. Deployment maturity is the one axis where "designed correctly" cannot substitute for "works," and ATLAS is the only entrant that has closed that gap. Its architecture is the weakest of the four working systems (single mixed Cortex Search corpus, one shared role, no time modeling), but a working weak system beats a well-designed absent one in a live demo.
 - **On engineering discipline and polish of what's actually built: Verity wins.** The deterministic SQL rollup with a structurally impossible false-negative path, the two-stage search-then-polarity-check retrieval, and the $7/43-second reproducible run are the tightest, most defensible piece of engineering in the field. It's the system most likely to survive a judge trying to break it live.
 - **On feature breadth and narrative: CareCompass and SynapseCortex trade blows.** CareCompass has the sharper single story (cross-specialty contraindication, a real HL7/FHIR pipeline, the most realistic synthetic data of anyone surveyed) but its access control is provably cosmetic — a UI role-picker, confirmed from source, not enforcement. SynapseCortex has the widest clinical-rule surface (FDA + HEDIS + drug-safety) but is built on a dataset with zero row-level security, also confirmed from source.
-- **On architecture alone, before a line of code: SAARTHI wins outright.** It is the only design in the field that would pass all six rules simultaneously if built as specified — in particular, it is the only one with any answer at all for R2 (multi-clock time) and the only one with a real answer for R6 (dual, never-mixed corpora). Every one of the four working competitors fails R5, R6, or both, confirmed from their own source code, not assumed from gaps in their READMEs.
+- **On architecture alone, before a line of code: Saarthi wins outright.** It is the only design in the field that would pass all six rules simultaneously if built as specified — in particular, it is the only one with any answer at all for R2 (multi-clock time) and the only one with a real answer for R6 (dual, never-mixed corpora). Every one of the four working competitors fails R5, R6, or both, confirmed from their own source code, not assumed from gaps in their READMEs.
 
-**What actually wins the competition** is neither "most rigorous design" nor "most deployed code" in isolation — it's whichever team closes that gap first. SAARTHI's rules are real differentiation only once they're demonstrated; until then, on the judging floor, ATLAS's live URL and Verity's tight execution both currently outrank a plan, however good. The path to actually winning is in the "Where to spend the remaining build window" section below: ship a thin, working, R5/R6-provable slice, because that is the one thing every other serious competitor — without exception — cannot currently show.
+**What actually wins the competition** is neither "most rigorous design" nor "most deployed code" in isolation — it's whichever team closes that gap first. Saarthi's rules are real differentiation only once they're demonstrated; until then, on the judging floor, ATLAS's live URL and Verity's tight execution both currently outrank a plan, however good. The path to actually winning is in the "Where to spend the remaining build window" section below: ship a thin, working, R5/R6-provable slice, because that is the one thing every other serious competitor — without exception — cannot currently show.
 
 ## Threat matrix
 
-| Team | Problem statement | Stack | Maturity | Threat | Sharpest gap vs. SAARTHI |
+| Team | Problem statement | Stack | Maturity | Threat | Sharpest gap vs. Saarthi |
 |---|---|---|---|---|---|
 | Verity | PS-04 · prior auth | Cortex Search + Analyst + Agent, AI_FILTER, Streamlit-in-Snowflake | Deployed demo | High | Single Cortex Search corpus (R6); payer member-ID linkage, not a national health ID (R4) |
 | ATLAS | PS-04 · trial eligibility | React + FastAPI, Cortex Search, SPCS + Cloudflare Worker | Live public URL | High | Mixed corpus in one Cortex Search index (R6); one shared role, no RLS (R5) |
@@ -55,7 +55,7 @@ A criteria tree (21 nodes, ALL_OF/ANY_OF/NONE_OF) resolves each leaf via SQL or 
 - Access control is coarse: 2 roles + PHI-masking, filtering happens at request time, not as a hard pre-retrieval SQL gate
 
 **Moves**
-1. Adopt the two-stage search-then-polarity-check pattern for SAARTHI's own evidence citations.
+1. Adopt the two-stage search-then-polarity-check pattern for Saarthi's own evidence citations.
 2. Frame ABHA anchoring explicitly against Verity's payer-ID linkage in the pitch — a stronger, more defensible identity story.
 3. Open the demo with a cross-corpus contamination test Verity's single-index architecture cannot pass.
 
@@ -76,8 +76,8 @@ Deterministic eligibility evaluation (`evaluate_criterion` → typed enum status
 
 **Moves**
 1. Ship something deployed — even minimal — before the deadline. A live URL beats a more rigorous design on the judging floor.
-2. Steal the per-answer trace UI pattern to surface SAARTHI's own R1–R6 enforcement visibly.
-3. Demo a scoped-retrieval attempt ATLAS's shared-role model would let through and SAARTHI's pre-retrieval SQL gate blocks.
+2. Steal the per-answer trace UI pattern to surface Saarthi's own R1–R6 enforcement visibly.
+3. Demo a scoped-retrieval attempt ATLAS's shared-role model would let through and Saarthi's pre-retrieval SQL gate blocks.
 
 ### SynapseCortex AI — patient 360 + clinical rules
 `nishnarudkar/SynapseCortex-AI...` · AI_PARSE_DOCUMENT, FDA contraindication + HEDIS care-gap detection
@@ -118,15 +118,15 @@ The most complete data-engineering effort in the field. A real HL7/FHIR parsing 
 - No stated dual-corpus separation — referral letters, notes, and structured data are not described as segregated retrieval corpora (R6)
 
 **Moves**
-1. This is the sharpest clinical narrative in the field ("one missing connection, serious consequences") — study its framing even though SAARTHI's oncology angle is different; a single vivid cross-specialty/cross-clock failure story is worth more than broad feature coverage.
-2. The gap between CareCompass's *named* RBAC roles and its *actual* enforcement (a UI picker) is the cleanest "beat this" of any competitor surveyed — SAARTHI enforcing scope in real SQL before retrieval, live on stage, directly contradicts a competitor whose access control is provably cosmetic.
-3. Borrow the skill-file pattern (a markdown playbook per deterministic clinical check, with explicit SQL per rule) as a template for how SAARTHI's own rule engine could be organized and versioned.
+1. This is the sharpest clinical narrative in the field ("one missing connection, serious consequences") — study its framing even though Saarthi's oncology angle is different; a single vivid cross-specialty/cross-clock failure story is worth more than broad feature coverage.
+2. The gap between CareCompass's *named* RBAC roles and its *actual* enforcement (a UI picker) is the cleanest "beat this" of any competitor surveyed — Saarthi enforcing scope in real SQL before retrieval, live on stage, directly contradicts a competitor whose access control is provably cosmetic.
+3. Borrow the skill-file pattern (a markdown playbook per deterministic clinical check, with explicit SQL per rule) as a template for how Saarthi's own rule engine could be organized and versioned.
 
 ## Rule ledger
 
-SAARTHI's six non-negotiable rules, checked against what each competitor's source actually does — not what their README claims.
+Saarthi's six non-negotiable rules, checked against what each competitor's source actually does — not what their README claims.
 
-| Rule | SAARTHI (planned) | Verity | ATLAS | SynapseCortex | CareCompass |
+| Rule | Saarthi (planned) | Verity | ATLAS | SynapseCortex | CareCompass |
 |---|---|---|---|---|---|
 | **R1** — LLM never decides, only phrases SQL facts | ✓ designed | ✓ | ✓ | ✓ | ✓ |
 | **R2** — Three clocks: event / record / known-as-of | ✓ designed | ✗ | ✗ | ✗ | ✗ |
@@ -135,7 +135,7 @@ SAARTHI's six non-negotiable rules, checked against what each competitor's sourc
 | **R5** — Server-side scope enforcement before retrieval | ✓ designed | ◐ request-time filter | ✗ one shared role | ✗ confirmed zero RLS | ✗ confirmed cosmetic (UI role picker only) |
 | **R6** — Two corpora, never mixed in one ranked list | ✓ designed | — single corpus | ✗ confirmed mixed | ✗ confirmed mixed | — no stated corpus separation |
 
-**Core finding:** not one of the four confirmed competitors implements R2 at all, and none properly implements R5+R6 together. This is real, provable differentiation — but only if SAARTHI ships code to demonstrate it.
+**Core finding:** not one of the four confirmed competitors implements R2 at all, and none properly implements R5+R6 together. This is real, provable differentiation — but only if Saarthi ships code to demonstrate it.
 
 ## Patterns worth borrowing
 
@@ -144,7 +144,7 @@ Pulled from the official Snowflake baseline, adjacent PS-02 entries, and a fast 
 - **sf-hcls-solutions (official baseline)** — the judge's quality floor: a real multi-table clinical semantic model, Cortex Search grounded in an actual literature corpus (38M+ PubMed articles, not just synthetic notes), a genuine multi-tool Cortex Agent, and a single idempotent setup/teardown script.
 - **PolicySense AI (PS-02)** — medallion data layers on Dynamic Tables: raw → curated (AI-enriched) → analytics (semantic views), refreshed by Streams/Tasks instead of batch scripts — reads as "live," not static, in a demo.
 - **scopeleak / tsathya98 (unrelated PS)** — structural governance: keep every state-changing action in deterministic SQL, never expose an "approve" tool to the agent's spec at all, and test-enforce its absence. Directly applicable to any future clinical order-entry surface.
-- **Chirag-01 (unrelated PS)** — document ingestion: AI_PARSE_DOCUMENT → Bronze/Silver/Gold medallion → a self-healing chunk-repair job. The closest reference architecture in the whole field to SAARTHI's own document pipeline.
+- **Chirag-01 (unrelated PS)** — document ingestion: AI_PARSE_DOCUMENT → Bronze/Silver/Gold medallion → a self-healing chunk-repair job. The closest reference architecture in the whole field to Saarthi's own document pipeline.
 - **praman (unrelated PS)** — eval discipline: an isolated EVAL schema hidden from the agent itself (prevents answer-key leakage), with synthetic data reconciled against real published figures via tests.
 - **rabin-labs (unrelated PS)** — safety gate: dry-run-before-live execution plus deterministic idempotency keys, so re-running an action never double-fires it.
 
@@ -152,9 +152,9 @@ Pulled from the official Snowflake baseline, adjacent PS-02 entries, and a fast 
 
 Ranked by how much field-position it buys per hour of build time left before the 30 Sept deadline.
 
-1. **Ship a working vertical slice, even a thin one — urgent.** Every serious PS-04 competitor already has running code; two have live URLs. SAARTHI's rigor is currently undemonstrated. One end-to-end path — ingest → SQL fact → cited answer on one screen — outweighs finishing the other three planned screens.
+1. **Ship a working vertical slice, even a thin one — urgent.** Every serious PS-04 competitor already has running code; two have live URLs. Saarthi's rigor is currently undemonstrated. One end-to-end path — ingest → SQL fact → cited answer on one screen — outweighs finishing the other three planned screens.
 2. **Build the R5/R6 red-team demo now, not at the end.** Every confirmed competitor fails R5 or R6 outright — this is the one differentiator that's provable live, on stage, in seconds. A scripted "blocked cross-scope query" and "corpora stay separate" moment is cheap to build and the highest-leverage demo beat available.
-3. **Adopt the rigid inline citation contract.** SynapseCortex's `[Doc: file, Page: n]` format with an exact "Insufficient evidence" fallback is cheap to build and makes R1 visually obvious to a judge skimming fast — steal the format, keep SAARTHI's own enforcement underneath it.
-4. **Surface a per-answer provenance trace.** ATLAS's `agent_trace` — which pipeline stage ran, fallback vs. completed — is a UI pattern SAARTHI's design doesn't have yet. It turns the six rules from a design doc into something a judge can watch execute.
+3. **Adopt the rigid inline citation contract.** SynapseCortex's `[Doc: file, Page: n]` format with an exact "Insufficient evidence" fallback is cheap to build and makes R1 visually obvious to a judge skimming fast — steal the format, keep Saarthi's own enforcement underneath it.
+4. **Surface a per-answer provenance trace.** ATLAS's `agent_trace` — which pipeline stage ran, fallback vs. completed — is a UI pattern Saarthi's design doesn't have yet. It turns the six rules from a design doc into something a judge can watch execute.
 5. **Ground Cortex Search in one real document, not only synthetic notes.** The official Snowflake baseline leans on a real 38M-article corpus; Verity parses a real PDF policy. A single real regulatory or clinical-guideline document alongside the synthetic patient notes meets that expectation without derailing scope.
 6. **Hold the line on R2 and R4 — don't cut them for time.** Not one confirmed competitor implements multi-clock time tracking, and only Verity has any identity-linkage story at all (and it's weaker than ABHA anchoring). These two rules are pure differentiation with zero field pressure to match — the risk is cutting them under deadline stress, not losing them to a competitor.

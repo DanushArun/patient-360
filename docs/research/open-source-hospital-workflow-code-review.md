@@ -2,7 +2,7 @@
 
 **Research date:** 24 September 2026
 **Purpose:** Inspect public repositories that implement real patient, encounter, chart and hospital
-workflows; extract product lessons relevant to SAARTHI without copying an entire HIS.
+workflows; extract product lessons relevant to Saarthi without copying an entire HIS.
 
 ## Scope and method
 
@@ -53,7 +53,7 @@ orders, tests, procedures, vitals, forms and other widgets.
 
 **Implication:** keep identity, identifier/link state, current visit and as-of date in a persistent
 header. Use compact sections and drill-down; don't put the entire chart on one dashboard. For
-SAARTHI, source and evidence status need to be persistent alongside identity because cross-facility
+Saarthi, source and evidence status need to be persistent alongside identity because cross-facility
 reconciliation is the product's core work.
 
 ### 3. Encounter history is a navigable record, not a generated story
@@ -105,7 +105,7 @@ start with a clinician-validated static diagram attached to a source-backed obse
 body site, with a link back to the source. Do not infer location from a free-text diagnosis or use an
 animation as a clinical finding.
 
-## SAARTHI workflow recommendation
+## Saarthi workflow recommendation
 
 The code patterns support this narrow end-to-end flow:
 
@@ -121,7 +121,7 @@ The code patterns support this narrow end-to-end flow:
 6. **Ask the record:** bounded Class B questions with citations; ambiguous or Class A questions are
    routed to the named treating practitioner as an evidence packet.
 
-This aligns with SAARTHI's current architecture and completeness map. It is an implementation
+This aligns with Saarthi's current architecture and completeness map. It is an implementation
 priority recommendation, not evidence that the workflow is already complete.
 
 ## Evidence quality and limitations

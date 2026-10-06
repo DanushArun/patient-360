@@ -1,4 +1,4 @@
-# SAARTHI — Final Architecture Validation
+# Saarthi — Final Architecture Validation
 
 > **Honesty note added 4 Oct 2026 (FIX-ROUND-5).** This is a historical 16-17 Sept snapshot. Competitor source code is **not
 > vendored in this repository**; statements about competitors are a researcher's file-level reading recorded in
@@ -127,7 +127,7 @@ Judges spend **18 days alone with the repository** (5–22 Oct) before any live 
 
 Rule-by-rule, against what their **source code** does — not their READMEs.
 
-| Rule | SAARTHI | Verity | ATLAS | SynapseCortex | CareCompass |
+| Rule | Saarthi | Verity | ATLAS | SynapseCortex | CareCompass |
 |---|---|---|---|---|---|
 | **R1** LLM never decides | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **R2** Three clocks | **✓ verified natively expressible in FHIR** | ✗ | ✗ | ✗ | ✗ |

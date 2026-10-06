@@ -32,7 +32,7 @@ Dynamic tables are Snowflake's declarative pipeline primitive. Using them signal
 - You trust the platform to manage pipeline freshness.
 - Your pipeline is a living system, not a one-time load.
 
-### Recommended pattern for SAARTHI
+### Recommended pattern for Saarthi
 ```
 RAW tables (immutable source)
   → Dynamic Table: HARMONIZED_CLINICAL_EVENT (parsed, normalized, typed)
@@ -60,7 +60,7 @@ Target lag options:
 - They propagate row access policies and masking from underlying tables.
 - Verified Query Repository (VQR) attaches human-verified SQL to specific question patterns — this is the "accuracy" story judges look for.
 
-### Recommended semantic view structure for SAARTHI
+### Recommended semantic view structure for Saarthi
 One semantic view over the curated/consumption layer covering:
 - **Entities**: patients, encounters, clinical events, documents, review issues
 - **Metrics**: gate pass/fail counts, open issues per patient, days to next visit, time since last assessment
@@ -106,7 +106,7 @@ Medical documents (pathology reports, discharge summaries) have:
 - Keep tools narrow and well-named — the agent selects tools based on the tool description.
 - Don't give the agent a "do anything" tool. Give it specific, scoped tools.
 
-### For SAARTHI: 6 tools (matching plan.md §6)
+### For Saarthi: 6 tools (matching plan.md §6)
 1. `get_patient_facts` — SQL function, returns structured clinical data for a patient
 2. `get_readiness` — SQL function, returns gate states with rule versions and evidence IDs
 3. `search_patient_documents` — Cortex Search (patient-scope service), scope injected
@@ -126,7 +126,7 @@ Even without the agent, these 6 tools can be called directly by a deterministic 
 - `EXECUTE IMMEDIATE FROM @repo/branches/main/setup.sql` — one command deploys everything.
 - Teardown script for clean removal.
 
-### For SAARTHI
+### For Saarthi
 ```sql
 CREATE GIT REPOSITORY saarthi_repo
   API_INTEGRATION = github_api_integration

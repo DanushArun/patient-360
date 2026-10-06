@@ -1,4 +1,4 @@
-# SAARTHI documentation
+# Saarthi documentation
 
 Start with [`../README.md`](../README.md), then [`submission/JUDGE-WALKTHROUGH.md`](./submission/JUDGE-WALKTHROUGH.md)
 for a 15-minute reading path. [`../IMPLEMENTATION-STATUS.md`](../IMPLEMENTATION-STATUS.md) marks every component
@@ -13,6 +13,7 @@ for a 15-minute reading path. [`../IMPLEMENTATION-STATUS.md`](../IMPLEMENTATION-
 | [`platform/`](./platform/) | Verified Snowflake behaviour, cost controls, MCP quickstart |
 | [`testing/`](./testing/) | Testing playbook, classifier suite, release gates, failure-and-fix index |
 | [`compliance/`](./compliance/) | Dataset licences and the real-report research statement |
+| [`SUPERVISOR-CAPABILITIES.md`](./SUPERVISOR-CAPABILITIES.md) | What the copilot can do across every dashboard surface |
 | [`project/`](./project/) | Project overview and completeness map |
 | [`submission/`](./submission/) | Judge walkthrough, architecture and impact statement, deck, independent evaluation runbook |
 

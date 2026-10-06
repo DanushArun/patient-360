@@ -1,4 +1,4 @@
-# SAARTHI — Copilot Specification
+# Saarthi — Copilot Specification
 
 **The copilot is the deliverable. Everything else in this repository exists to make its answers trustworthy.**
 

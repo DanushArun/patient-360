@@ -3,7 +3,7 @@
 Why this is manual: the CLI profile is blocked by the account network policy and SAARTHI_APP cannot run DDL.
 All files below are idempotent (`CREATE OR REPLACE`). Do NOT run `setup.sql`: `tables/20_core.sql` drops CORE.PATIENT, ID_MAP,
 ENCOUNTER, COVERAGE and AUTHORIZATION on every run. Paths are relative to `backend/sql/`.
-Use one worksheet context (role ACCOUNTADMIN, database SAARTHI, warehouse SAARTHI_AI_WH). These changes are authored and source-tested offline; none has been executed on Snowflake.
+Use one worksheet context (role ACCOUNTADMIN, database Saarthi, warehouse SAARTHI_AI_WH). These changes are authored and source-tested offline; none has been executed on Snowflake.
 
 ## A. Objects (run in this order)
 

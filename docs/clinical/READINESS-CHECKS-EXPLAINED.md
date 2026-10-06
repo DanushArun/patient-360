@@ -1,6 +1,6 @@
-cre# SAARTHI -- Readiness Checks Explained
+cre# Saarthi -- Readiness Checks Explained
 
-**What are these checks?** Before a cancer patient receives chemotherapy, 16 things must be verified. SAARTHI runs these checks automatically against the patient's record and shows the result as tiles on the patient page. Each tile shows one of four outcomes:
+**What are these checks?** Before a cancer patient receives chemotherapy, 16 things must be verified. Saarthi runs these checks automatically against the patient's record and shows the result as tiles on the patient page. Each tile shows one of four outcomes:
 
 | Outcome | What it means | What the coordinator does |
 |---|---|---|
@@ -32,7 +32,7 @@ cre# SAARTHI -- Readiness Checks Explained
 - **Fail:** "ANC is 1160, below threshold 1500" (seen on Suresh Patil)
 - **Not evaluated:** "ANC assessment is 11 days old, exceeds 7-day limit" (lab too old) or "no ANC evidence found" (never done)
 
-**Note:** ANC is often not directly printed on the lab report. SAARTHI calculates it as WBC × neutrophil% / 100. When it does this, the evidence panel shows "Derived, not printed" with the formula.
+**Note:** ANC is often not directly printed on the lab report. Saarthi calculates it as WBC × neutrophil% / 100. When it does this, the evidence panel shows "Derived, not printed" with the formula.
 
 ---
 
@@ -73,7 +73,7 @@ cre# SAARTHI -- Readiness Checks Explained
 - **Pass:** "CrCl 89 mL/min (Cockcroft-Gault, age=44 weight=55 cr=0.7) — clears strictest per-agent minimum (60 for cisplatin)"
 - The evidence panel shows the full Cockcroft-Gault calculation as a derived value
 
-**Note:** CrCl is calculated, not directly measured. The formula uses age, weight, sex, and creatinine. SAARTHI shows the calculation explicitly so the doctor can verify it.
+**Note:** CrCl is calculated, not directly measured. The formula uses age, weight, sex, and creatinine. Saarthi shows the calculation explicitly so the doctor can verify it.
 
 ---
 

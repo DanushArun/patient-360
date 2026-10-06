@@ -1,4 +1,4 @@
-# SAARTHI Copilot: experience specification
+# Saarthi Copilot: experience specification
 
 How the copilot looks and behaves, translated from ChatGPT's interface for a clinical record tool. Visual rules come from `INTERFACE-GUIDELINES.md`. Safety rules come from `AGENTS.md` (R1–R7, Class A/B) and `docs/architecture/COPILOT-SPEC.md`, and they always win over any pattern below.
 
@@ -8,13 +8,13 @@ How the copilot looks and behaves, translated from ChatGPT's interface for a cli
 - Composer and chat-anatomy teardowns: aiuxplayground.com ChatGPT composer; setproduct.com AI chat anatomy; 925studios ChatGPT breakdown.
 - The ChatGPT desktop app's conversation inspector (Changes, Outputs, Subagents, Sources).
 
-ChatGPT's own tokens agree with SAARTHI's: system font stack, 14/20 body, 12 px small text, 20/26 heading, 32 px default control, 4 px spacing grid. The copilot needs no separate visual language.
+ChatGPT's own tokens agree with Saarthi's: system font stack, 14/20 body, 12 px small text, 20/26 heading, 32 px default control, 4 px spacing grid. The copilot needs no separate visual language.
 
 ---
 
-## 1. What makes ChatGPT feel "put together", and the SAARTHI equivalent
+## 1. What makes ChatGPT feel "put together", and the Saarthi equivalent
 
-| ChatGPT pattern | Why it works | SAARTHI translation |
+| ChatGPT pattern | Why it works | Saarthi translation |
 |---|---|---|
 | **Calm default.** A blank composer and a few starter pills | Assumes competence; the blank field invites a question | The composer opens empty, with three starters written for the current page (§4) |
 | **One input for everything** (+ menu, chips) | Users learn one surface; capability grows without new screens | One composer. The + menu attaches context from the page. Chips show what's attached. |

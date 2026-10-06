@@ -109,7 +109,7 @@ The procedure runs AFTER the LLM generates the answer and BEFORE it's displayed.
 
 ## 5. Verity's approach vs ours
 
-| Dimension | Verity | SAARTHI |
+| Dimension | Verity | Saarthi |
 |---|---|---|
 | Polarity check | AI_FILTER on search results | AI_FILTER on search results (same) |
 | Scope check | Request-time member-ID filter | Pre-retrieval SQL gate + content re-fetch through RAP |

@@ -1,4 +1,4 @@
-# SAARTHI MCP — Quickstart for external clients
+# Saarthi MCP — Quickstart for external clients
 
 **Endpoint.** `https://IFTDBGM-EA72552.snowflakecomputing.com/api/v2/databases/SAARTHI/schemas/OPERATIONAL/mcp-servers/SAARTHI_MCP`
 

@@ -1,4 +1,4 @@
-# FHIR R4 → SAARTHI Field-Level Mapping
+# FHIR R4 → Saarthi Field-Level Mapping
 
 **Written 2026-09-17. Closes research gap G2 — `abdm-architecture.md` §3 mapped FHIR *resources* to tables but only one field-level path (`Patient.identifier`) existed anywhere in the corpus.**
 

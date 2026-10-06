@@ -1,4 +1,4 @@
-# SAARTHI — Role-based screen inventory
+# Saarthi — Role-based screen inventory
 
 This inventory follows `DESIGNER-BRIEF.md`, `PROJECT-OVERVIEW.md`, the existing Next.js
 interface and the supplied captures. It deliberately excludes the Judge Console and every
@@ -49,7 +49,7 @@ SAARTHI
 
 ## Design patterns informing the implementation
 
-- NHS patterns distinguish task lists from summary lists. SAARTHI uses the day-care list
+- NHS patterns distinguish task lists from summary lists. Saarthi uses the day-care list
   and review queue as operational task lists, while patient/visit/consent facts are compact
   labelled fields rather than dashboard metrics. This makes ownership and next action
   scannable without hiding evidence.
@@ -57,7 +57,7 @@ SAARTHI
   between related information. The three existing patient modes are retained, with the
   evidence panel persistent so citations stay visible beside the selected claim.
 - AHRQ's clinical decision-support guidance recommends patient-specific, clear and
-  workflow-aligned information, with interruptiveness proportionate to severity. SAARTHI
+  workflow-aligned information, with interruptiveness proportionate to severity. Saarthi
   therefore uses quiet, rule-specific rows rather than alert banners, and makes the SQL
   outcome/reason/evidence path explicit without recommending a clinical decision.
 - Status remains glyph + word + border treatment throughout; colour adds reinforcement only.

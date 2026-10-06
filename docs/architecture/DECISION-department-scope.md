@@ -16,7 +16,7 @@ This decision is derived from the event-page rubric. **If the T&C's four-dimensi
 
 ## Decision
 
-**SAARTHI is a department-agnostic patient-360 readiness engine. Oncology is the depth case, not the boundary.**
+**Saarthi is a department-agnostic patient-360 readiness engine. Oncology is the depth case, not the boundary.**
 
 The engine, the five gates, and the five rule shapes are specialty-neutral by construction. The rule catalog makes that neutrality **visible** across four organ systems already present, plus one light addition — rather than inventing breadth.
 

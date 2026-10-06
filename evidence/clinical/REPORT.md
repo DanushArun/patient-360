@@ -50,23 +50,23 @@ Read from each rule's `threshold_json`; the outcome is computed by the script.
 | req | rule | source says | rule says | outcome | who is affected |
 |---|---|---|---|---|---|
 | R-AC-02 | `CLIN-ANC-001` | 1,500 /uL | 1,500 /uL | match | - |
-| R-AC-02 | `CLIN-PLT-001` | 90,000 /uL | 100,000 /uL | rule stricter | platelets from 90,000 to just under 100,000 /uL: source treats, SAARTHI blocks |
+| R-AC-02 | `CLIN-PLT-001` | 90,000 /uL | 100,000 /uL | rule stricter | platelets from 90,000 to just under 100,000 /uL: source treats, Saarthi blocks |
 | R-AC-03 | `CLIN-BILI-001` | 1.17 mg/dL | 1.2 mg/dL | match | - |
-| R-TH-02 | `CLIN-ANC-001` | 1,000 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 1,000 to just under 1,500 /uL: source treats, SAARTHI blocks |
-| R-TH-02 | `CLIN-PLT-001` | 90,000 /uL | 100,000 /uL | rule stricter | platelets from 90,000 to just under 100,000 /uL: source treats, SAARTHI blocks |
-| R-TH-03 | `CLIN-BILI-001` | 1.25 x ULN | 1.5 x ULN | rule looser | bilirubin for paclitaxel above 1.25 up to 1.5 x ULN: source holds or reduces, SAARTHI passes |
-| R-HM-01 | `SURV-LVEF-001` | 120 days | 90 days | rule stricter | echo age of 91 to 120 days: source accepts, SAARTHI blocks |
-| R-FF-02 | `CLIN-ANC-001` | 1,200 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 1,200 to just under 1,500 /uL: source treats, SAARTHI blocks |
-| R-FF-03 | `CLIN-PLT-001` | 75,000 /uL | 100,000 /uL | rule stricter | platelets from 75,000 to just under 100,000 /uL: source treats, SAARTHI blocks |
-| R-CX-02 | `CLIN-ANC-001` | 1,200 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 1,200 to just under 1,500 /uL: source treats, SAARTHI blocks |
-| R-CX-03 | `CLIN-PLT-001` | 75,000 /uL | 100,000 /uL | rule stricter | platelets from 75,000 to just under 100,000 /uL: source treats, SAARTHI blocks |
+| R-TH-02 | `CLIN-ANC-001` | 1,000 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 1,000 to just under 1,500 /uL: source treats, Saarthi blocks |
+| R-TH-02 | `CLIN-PLT-001` | 90,000 /uL | 100,000 /uL | rule stricter | platelets from 90,000 to just under 100,000 /uL: source treats, Saarthi blocks |
+| R-TH-03 | `CLIN-BILI-001` | 1.25 x ULN | 1.5 x ULN | rule looser | bilirubin for paclitaxel above 1.25 up to 1.5 x ULN: source holds or reduces, Saarthi passes |
+| R-HM-01 | `SURV-LVEF-001` | 120 days | 90 days | rule stricter | echo age of 91 to 120 days: source accepts, Saarthi blocks |
+| R-FF-02 | `CLIN-ANC-001` | 1,200 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 1,200 to just under 1,500 /uL: source treats, Saarthi blocks |
+| R-FF-03 | `CLIN-PLT-001` | 75,000 /uL | 100,000 /uL | rule stricter | platelets from 75,000 to just under 100,000 /uL: source treats, Saarthi blocks |
+| R-CX-02 | `CLIN-ANC-001` | 1,200 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 1,200 to just under 1,500 /uL: source treats, Saarthi blocks |
+| R-CX-03 | `CLIN-PLT-001` | 75,000 /uL | 100,000 /uL | rule stricter | platelets from 75,000 to just under 100,000 /uL: source treats, Saarthi blocks |
 | R-CX-04 | `CLIN-CRCL-001` | 30 mL/min | 30 mL/min | match | - |
 | R-HN-02 | `CLIN-ANC-001` | 1,500 /uL | 1,500 /uL | match | - |
 | R-HN-02 | `CLIN-PLT-001` | 100,000 /uL | 100,000 /uL | match | - |
 | R-HN-03 | `CLIN-CRCL-001` | 60 mL/min | 60 mL/min | match | - |
-| R-GO-02 | `CLIN-ANC-001` | 800 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 800 to just under 1,500 /uL: source treats, SAARTHI blocks |
-| R-GO-02 | `CLIN-PLT-001` | 80,000 /uL | 100,000 /uL | rule stricter | platelets from 80,000 to just under 100,000 /uL: source treats, SAARTHI blocks |
-| R-GO-03 | `CLIN-CRCL-001` | 50 mL/min | 60 mL/min | rule stricter | creatinine clearance for cisplatin from 50 to just under 60 mL/min: source treats, SAARTHI blocks |
+| R-GO-02 | `CLIN-ANC-001` | 800 /uL | 1,500 /uL | rule stricter | neutrophils (ANC) from 800 to just under 1,500 /uL: source treats, Saarthi blocks |
+| R-GO-02 | `CLIN-PLT-001` | 80,000 /uL | 100,000 /uL | rule stricter | platelets from 80,000 to just under 100,000 /uL: source treats, Saarthi blocks |
+| R-GO-03 | `CLIN-CRCL-001` | 50 mL/min | 60 mL/min | rule stricter | creatinine clearance for cisplatin from 50 to just under 60 mL/min: source treats, Saarthi blocks |
 | R-LU-02 | `CLIN-ANC-001` | 1,500 /uL | 1,500 /uL | match | - |
 | R-LU-02 | `CLIN-PLT-001` | 100,000 /uL | 100,000 /uL | match | - |
 | R-LU-03 | `CLIN-CRCL-001` | 45 mL/min | 45 mL/min | match | - |
@@ -81,7 +81,7 @@ Read from source code, not computed. Confirm each on a live account with the sta
 - **R-GO-03** `backend/sql/procedures/evaluate_gates.sql:373-402` - The rule's JSON (60) is stricter than this protocol (50), but the evaluator actually passes anyone at 30 or above. A cervix patient at 40 mL/min is shown as ready. *Test:* cisplatin regimen, creatinine clearance 40 mL/min → expect fail, not pass.
 - **R-LU-03** `backend/sql/procedures/evaluate_gates.sql:373-402` - The rule's JSON (45) matches the protocol, but the evaluator passes anyone at 30 or above. DC-07 at 40 mL/min would be shown as ready. The rule's 'carboplatin: 30' entry has no basis in this protocol: carboplatin is dosed from kidney function (AUC formula), not gated by it. *Test:* pemetrexed regimen, creatinine clearance 40 mL/min → expect fail, not pass.
 
-## Unsafe - SAARTHI can pass a patient the source says to hold or reduce (5)
+## Unsafe - Saarthi can pass a patient the source says to hold or reduce (5)
 
 **R-AC-03** · AC · DOXO_MONO p.9 · rules: `CLIN-BILI-001`  
 > >3 x ULN or 20-50 50% … - >85 do not administer  
@@ -104,11 +104,11 @@ Delay cisplatin if creatinine clearance is below 50 mL/min.
 Hold pemetrexed if creatinine clearance is below 45 mL/min, whichever platinum drug is paired with it.
 
 
-## Conflict - SAARTHI blocks or applies where the source does not (9)
+## Conflict - Saarthi blocks or applies where the source does not (9)
 
 **R-AC-02** · AC · BRAJAC p.2 · rules: `CLIN-ANC-001`, `CLIN-PLT-001`  
 > Greater than or equal to 1.5 Greater than or equal to 90 100%  
-Give the full dose if neutrophils (infection-fighting white cells) are at least 1,500 per microlitre AND platelets (clotting cells) are at least 90,000. Between 70,000 and 89,000 platelets, give 75%. *One flat platelet cut-off (100,000) for every regimen. The protocol's reduced-dose band (75% dose) is not modelled; SAARTHI can only say pass or fail.*
+Give the full dose if neutrophils (infection-fighting white cells) are at least 1,500 per microlitre AND platelets (clotting cells) are at least 90,000. Between 70,000 and 89,000 platelets, give 75%. *One flat platelet cut-off (100,000) for every regimen. The protocol's reduced-dose band (75% dose) is not modelled; Saarthi can only say pass or fail.*
 
 **R-TH-02** · TH · BRAJTTW p.5 · rules: `CLIN-ANC-001`, `CLIN-PLT-001`  
 > Greater than or equal to 90 80 mg/m2 65 mg/m2 … ANC (x109/L) Greater than or equal to 1.0  
@@ -116,7 +116,7 @@ Weekly paclitaxel is given at full dose if neutrophils are at least 1,000 and pl
 
 **R-HM-01** · H-MAINT · BRAJTR p.2 · rules: `SURV-LVEF-001`  
 > The maximum time between cardiac monitoring should be 4 months  
-While on trastuzumab, the heart must be checked by echo at least every 4 months. *Two sources disagree: the FDA label (L-H-02) says every 3 months, BC Cancer allows up to 4. SAARTHI follows the label. Decide which governs in India and cite it in the rule.*
+While on trastuzumab, the heart must be checked by echo at least every 4 months. *Two sources disagree: the FDA label (L-H-02) says every 3 months, BC Cancer allows up to 4. Saarthi follows the label. Decide which governs in India and cite it in the rule.*
 
 **R-HM-02** · H-MAINT · BRAJTR p.2 · rules: `CLIN-ANC-001`, `CLIN-PLT-001`  
 > CBC & Diff (optional and only if indicated)  
@@ -195,7 +195,7 @@ Pemetrexed is only safe if the patient has been taking folic acid for a week and
 
 **L-H-04** · TH, H-MAINT · HERCEPTIN_LABEL p.3 · rules: none  
 > Verify the pregnancy status of females of reproductive potential prior to the initiation of Herceptin  
-Trastuzumab harms an unborn baby (a boxed warning), so a pregnancy test is required before a woman who could be pregnant starts it. This is the same document SAARTHI already uses for its heart rules.
+Trastuzumab harms an unborn baby (a boxed warning), so a pregnancy test is required before a woman who could be pregnant starts it. This is the same document Saarthi already uses for its heart rules.
 
 **A-01** · ALL · AIIMS_CHECKLIST · rules: none  
 > Confirm the chemotherapy admission form/prescription form.  
@@ -226,7 +226,7 @@ Each PM-JAY package has a fixed list of documents that must be uploaded before p
 
 **R-TH-04** · TH · BRAJTTW p.1 · rules: `SURV-LVEF-001`, `SURV-LVEF-002`  
 > LVEF greater than or equal to 50%  
-The heart's pumping strength (LVEF, measured by echo scan) must be at least 50% to be eligible for this regimen. *SAARTHI checks the echo is recent and that LVEF has not dropped from baseline; it does not check the value itself is at least 50%.*
+The heart's pumping strength (LVEF, measured by echo scan) must be at least 50% to be eligible for this regimen. *Saarthi checks the echo is recent and that LVEF has not dropped from baseline; it does not check the value itself is at least 50%.*
 
 **R-FF-01** · FOLFOX · GIAJFFOX p.1 · rules: `CLIN-ANC-001`, `CLIN-PLT-001`, `CLIN-CRCL-001`, `CLIN-BILI-001`  
 > Prior to each cycle: CBC & Diff, creatinine, total bilirubin, ALT  
@@ -293,7 +293,7 @@ Stop trastuzumab if the heart's pumping strength falls 16 points or more from wh
 
 **A-05** · ALL · AIIMS_CHECKLIST · rules: `ID-LINK-001`, `ID-QUAR-001`  
 > Reconfirm the patient's identity and reassure the patient about the procedure.  
-Make sure this is the right patient. *SAARTHI guarantees every record belongs to one patient. The bedside check itself is physical.*
+Make sure this is the right patient. *Saarthi guarantees every record belongs to one patient. The bedside check itself is physical.*
 
 **G-NCG-01** · AC, TH, H-MAINT · NCG_BREAST_2019 p.5 · rules: `DOC-PATH-001`  
 > Histo/cyto pathology confirmation is a MUST before initiating cancer directed treatment (surgery/ chemotherapy/ other systemic treatment).  
