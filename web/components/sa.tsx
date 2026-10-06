@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
-import { ClipboardList, LayoutDashboard, PanelLeft, Users } from "lucide-react";
+import { BookOpen, ClipboardList, LayoutDashboard, Settings, UserRound, Users } from "lucide-react";
 import { PatientRoster, type RosterPatient } from "./patient-roster";
 import { SidebarToggle } from "./ui/sidebar-toggle";
 import { CopilotTrigger } from "./copilot/copilot-trigger";
@@ -80,7 +80,7 @@ export function SaButton({ href, children, weight = 500 }: {
 }
 
 type WorkspaceNavProps = {
-  current?: 'census' | 'queue' | 'history' | 'navigator';
+  current?: 'census' | 'queue' | 'history' | 'navigator' | 'guide' | 'settings';
   patients?: RosterPatient[];
   patientsAvailable?: boolean;
   patientId?: string;
@@ -106,9 +106,13 @@ export function WorkspaceNav({
     {patients && <PatientRoster patients={patients} selectedId={patientId} preview={preview}
       available={patientsAvailable} />}
     {patientId && !preview && <WorkspaceAsk patientId={patientId} onAsk={onAsk} />}
-    <span className="sa-workspace-context">
-      <PanelLeft size={15} aria-hidden="true" />{practitioner ?? "Practitioner"}
-    </span>
+    <div className="sa-workspace-context">
+      <UserRound size={15} aria-hidden="true" />
+      <span className="sa-workspace-practitioner">{practitioner ?? "Practitioner"}</span>
+      <Link href="/settings" prefetch={false} className="sa-settings-button"
+        aria-current={current === "settings" ? "page" : undefined}
+        aria-label="Settings" title="Settings"><Settings size={16} strokeWidth={1.8} aria-hidden /></Link>
+    </div>
   </nav>;
 }
 
@@ -123,6 +127,7 @@ function WorkspaceLinks({ current }: Pick<WorkspaceNavProps, "current">): ReactN
   const items = [
     { href: "/", label: "Day care", key: "census", icon: LayoutDashboard },
     { href: "/review-queue", label: "Review queue", key: "queue", icon: ClipboardList },
+    { href: "/guide", label: "Guide", key: "guide", icon: BookOpen },
   ];
   return <div className="sa-workspace-links">{items.map((item) => {
     const Icon = item.icon;

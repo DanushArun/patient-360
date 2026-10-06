@@ -1,0 +1,29 @@
+/* Settings: grouped rows in the macOS System Settings pattern. Tokens only. */
+.page { display: grid; gap: var(--space-8); max-width: 720px; }
+.intro { display: grid; gap: var(--space-2); }
+.intro h1 { margin: 0; font: var(--text-large-title); color: var(--label); }
+.intro p { margin: 0; font: var(--text-body); color: var(--label-secondary); }
+.group { display: grid; gap: var(--space-2); }
+.group h2 { margin: 0; font: var(--text-caption); color: var(--label-tertiary); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+.rows { border: 1px solid var(--separator); border-radius: var(--radius-panel); background: var(--bg); overflow: hidden; }
+.row, .linkRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  min-height: var(--control-height); padding: var(--space-3) var(--space-4); font: var(--text-callout); color: var(--label); }
+.row + .row, .linkRow + .linkRow { border-top: 1px solid var(--separator); }
+.row > span { color: var(--label-secondary); }
+.row > strong { font-weight: 500; text-align: right; }
+.label { display: grid; gap: var(--space-1); min-width: 0; cursor: pointer; }
+.label strong, .linkRow strong { font: var(--text-headline); }
+.label small, .linkRow small { font: var(--text-footnote); color: var(--label-secondary); }
+.linkRow { justify-content: flex-start; text-decoration: none; }
+.linkRow span { display: grid; gap: var(--space-1); }
+.linkRow:hover { background: var(--bg-secondary); }
+.linkRow:focus-visible, .switch:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.switch { position: relative; flex: none; width: 40px; height: 24px; padding: 0; border: 0;
+  border-radius: var(--radius-pill); background: var(--separator-strong); cursor: pointer;
+  transition: background var(--motion-standard) var(--ease-standard); }
+.switch:disabled { cursor: not-allowed; opacity: 0.5; }
+.switch[aria-checked="true"] { background: var(--accent); }
+.thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: var(--radius-pill);
+  background: var(--bg); box-shadow: var(--shadow-control); transition: transform var(--motion-standard) var(--ease-shell); }
+.switch[aria-checked="true"] .thumb { transform: translateX(16px); }
+@media (max-width: 640px) { .row { align-items: flex-start; } }

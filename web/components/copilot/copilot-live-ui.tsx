@@ -80,6 +80,13 @@ function bestAlternative(result: ArrayLike<{ transcript: string }>): string {
   return best.trim();
 }
 
+export const VOICE_KEY = "saarthi-voice";
+export const SETTINGS_EVENT = "saarthi:settings";
+
+export function voicePreference(): boolean {
+  try { return localStorage.getItem(VOICE_KEY) !== "off"; } catch { return true; }
+}
+
 export function useSpeech(onFinal: (text: string) => void) {
   const recognition = useRef<SpeechRecognitionLike | null>(null);
   const finalRef = useRef(onFinal);
@@ -90,7 +97,13 @@ export function useSpeech(onFinal: (text: string) => void) {
   const [interim, setInterim] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [onDevice, setOnDevice] = useState(false);
-  useEffect(() => { setSupported(Boolean(speechCtor())); }, []);
+  // Voice can be turned off in Settings; the dock then offers typing instead.
+  useEffect(() => {
+    const sync = () => setSupported(Boolean(speechCtor()) && voicePreference());
+    sync();
+    window.addEventListener(SETTINGS_EVENT, sync);
+    return () => window.removeEventListener(SETTINGS_EVENT, sync);
+  }, []);
   useEffect(() => () => recognition.current?.abort(), []);
 
   const start = useCallback(async () => {

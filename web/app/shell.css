@@ -170,3 +170,15 @@ body > * { pointer-events: auto; }
     cursor: pointer;
   }
 }
+
+/* Sidebar footer: who is signed in, and Settings beside the name. */
+.sa-workspace-context { display: flex; align-items: center; gap: var(--space-2); }
+.sa-workspace-practitioner { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sa-settings-button {
+  display: inline-grid; flex: none; place-items: center;
+  width: var(--control-height); height: var(--control-height);
+  border-radius: var(--radius-control); color: var(--label-secondary);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+.sa-settings-button:hover, .sa-settings-button[aria-current="page"] { background: var(--bg-tertiary); color: var(--label); }
+.sa-settings-button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
