@@ -1,30 +1,30 @@
-# Judge walkthrough
+# Evaluation guide
 
-A reading path for a reviewer working alone with this repository. It follows the judging focus published for
-Problem Statement 04: **Real-World Relevance** (30%), **Technical Execution** (40%) and **Solution Completeness** (30%)
+This guide sets out how to evaluate Saarthi from the repository and the hosted application. It is organised by the
+judging criteria for Problem Statement 04: **Real-World Relevance** (30%), **Technical Execution** (40%) and **Solution Completeness** (30%)
 ([`docs/PROBLEM-STATEMENT.md`](../PROBLEM-STATEMENT.md)).
 
-Results marked *live* were observed on a named Snowflake account and cannot be re-run offline. Results marked *offline*
-you can re-run yourself. Synthetic data only; engineering checks are not clinical validation.
+Results marked *live* were recorded on a named Snowflake account; results marked *offline* can be reproduced from the
+repository. All data is synthetic, and the engineering checks described here do not constitute clinical validation.
 
-## 1. See it working
+## 1. Hosted application
 
-- Open the live app at [saarthi-360.vercel.app](https://saarthi-360.vercel.app). It runs against a live Snowflake
-  account with synthetic patients.
-- Start on **Day care**: tomorrow's visits grouped as *needs review*, *waiting on evidence*, *advisory* and *checks
+- The application is hosted at [saarthi-360.vercel.app](https://saarthi-360.vercel.app) and connected to a live
+  Snowflake account populated with synthetic patients.
+- **Day care** lists the next day's visits, grouped as *needs review*, *waiting on evidence*, *advisory* and *checks
   met*. Each blocked visit names the rule that blocked it.
-- Open **Anjali Deshpande** (`PAT-DC-12`). The overview shows a failing LVEF surveillance check and a pre-authorisation
+- The record for **Anjali Deshpande** (`PAT-DC-12`) shows a failing LVEF surveillance check and a pre-authorisation
   that is *pending* in the table but *approved* in the letter, each with its rule version and evidence IDs.
-- Open the copilot and ask *"Why is she blocked?"*, then *"Should we hold her trastuzumab?"*. The first is answered
-  from SQL with citations. The second is refused, with an evidence packet offered to the treating practitioner.
-- Follow a citation to the source document: the echo report page, with its event, recorded and ingested times.
+- In the copilot, *"Why is she blocked?"* is answered from SQL with citations. *"Should we hold her trastuzumab?"*
+  is declined as a clinical decision, and an evidence packet is offered to the treating practitioner.
+- Each citation opens the source document, here the echo report page, with its event, recorded and ingested times.
 
-The same path is automated as the hosted demo check (`npm run demo:check` in `frontend/`): 19 of 19 steps passed on
+This sequence is automated as the hosted demo check (`npm run demo:check` in `frontend/`): 19 of 19 steps passed on
 the hosted app, with screenshots in [`evidence/demo/preflight/`](../../evidence/demo/preflight/).
 
-## 2. Run what can be run offline
+## 2. Offline verification
 
-Follow **Getting started** in the [README](../../README.md). Expected results: Python 565 passed / 14 skipped / 0
+The commands are listed under **Getting started** in the [README](../../README.md). Expected results: Python 565 passed / 14 skipped / 0
 failed; web unit tests 381 passed; Playwright end-to-end 39 of 41 (stubbed API; the two failures are named in the
 README); typecheck and production build clean. With live access off, `/design-preview/PAT-DC-07` shows a recorded
 fixture, labelled as such.

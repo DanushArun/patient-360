@@ -1,8 +1,8 @@
 <h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/saarthi-wordmark-dark.png" /><img src="docs/assets/saarthi-wordmark-light.png" alt="Saarthi" height="56" /></picture></h1>
 
-**Know before they arrive.** The care-readiness and evidence copilot for hospital care teams. It tells you what is **missing**, **pending** or **conflicting** before every visit, and cites the page or row behind every claim.
+**Know before they arrive.** The care-readiness and evidence copilot for hospital care teams. It identifies what is **missing**, **pending** or **conflicting** before every visit, and cites the source page or record behind every claim.
 
-[**Live app**](https://saarthi-360.vercel.app) · [Architecture](docs/architecture/SPEC.md) · [Judge walkthrough](docs/submission/JUDGE-WALKTHROUGH.md) · [Implementation status](IMPLEMENTATION-STATUS.md)
+[**Live app**](https://saarthi-360.vercel.app) · [Architecture](docs/architecture/SPEC.md) · [Evaluation guide](docs/submission/JUDGE-WALKTHROUGH.md) · [Implementation status](IMPLEMENTATION-STATUS.md)
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-Cortex%20AI-29B5E8?logo=snowflake&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white) ![Python tests](https://img.shields.io/badge/python%20tests-565%20passed-2ea44f) ![Web tests](https://img.shields.io/badge/web%20tests-381%20passed-2ea44f) ![Data](https://img.shields.io/badge/data-synthetic%20only-6f42c1)
 
@@ -12,7 +12,7 @@
 
 ## The challenge
 
-Saarthi is our submission to the **Snowflake CoCo CLI Hackathon 2026 (GCC Edition)**, for **Problem Statement 04: Patient and Member 360 and Clinical or Regulatory Document Copilot**. The brief, as published by the organisers:
+Saarthi is a submission to the **Snowflake CoCo CLI Hackathon 2026 (GCC Edition)**, for **Problem Statement 04: Patient and Member 360 and Clinical or Regulatory Document Copilot**. The brief, as published by the organisers:
 
 > Care and life sciences teams work across siloed EHR and claims data and dense unstructured documents.
 >
@@ -37,7 +37,7 @@ Judging focus: **Real-World Relevance** (30%), **Technical Execution** (40%) and
 
 ## The problem on the ward
 
-A cancer day-care visit depends on a dozen records arriving on time: a recent echo, a fresh blood count, a pre-authorisation, the right pathology addendum. They come from different hospitals, labs and insurers, as structured rows and scanned PDFs. When one is missing, stale or contradicts another, the team usually finds out at the bedside, and the family may have travelled 1,000 km for nothing.
+A cancer day-care visit depends on a dozen records arriving on time: a recent echo, a fresh blood count, a pre-authorisation, the right pathology addendum. They come from different hospitals, labs and insurers, as structured rows and scanned PDFs. When one is missing, stale or contradicts another, the team usually finds out at the bedside, and a family may have travelled more than 1,000 km for a visit that cannot proceed.
 
 ## What Saarthi does
 
@@ -47,7 +47,7 @@ Saarthi brings every source into one patient record and runs the readiness check
 - **One patient record.** Overview, facts, timeline, documents, coverage and family views, all drawn from the same governed reads.
 - **A copilot that cites everything.** Ask "why is she blocked?" and get the failing checks, their rule versions, and links to the exact evidence. Voice or typed.
 - **A source view for every claim.** One click opens the report page the fact came from, with all three clocks: when it happened, when it was recorded, and when Saarthi ingested it.
-- **A hard line on clinical judgment.** "Should we hold her trastuzumab?" is refused for every role. Saarthi offers to prepare an evidence packet for the named treating practitioner instead.
+- **A defined clinical boundary.** Questions that ask for a clinical decision, such as "Should we hold her trastuzumab?", are declined for every role. Saarthi offers an evidence packet for the named treating practitioner instead.
 
 <table>
 <tr>
@@ -124,7 +124,7 @@ flowchart LR
 
 ## How every answer is checked against its evidence
 
-Saarthi never asks you to trust the model. A model's answer is a set of **typed claims** (numeric, date, status or text), each pointing at exactly one piece of evidence. Before anything reaches the screen, [`VALIDATE_ANSWER`](backend/sql/procedures/validate_answer.sql) runs six checks on every claim, in SQL:
+No model output is shown without verification. A model's answer is a set of **typed claims** (numeric, date, status or text), each pointing at exactly one piece of evidence. Before anything reaches the screen, [`VALIDATE_ANSWER`](backend/sql/procedures/validate_answer.sql) runs six checks on every claim, in SQL:
 
 ```mermaid
 flowchart LR
@@ -218,7 +218,7 @@ With live access off, `/design-preview/PAT-DC-07` shows a recorded snapshot, lab
 | Two-family extraction on 16 synthetic PDFs | 81 assertions verified, 9 left unverified, none forced to verified | live, 6 Oct 2026 |
 | Deploy manifest gate (`check_gate.py --manifest`) | 71 active steps, all resolve | offline, 6 Oct 2026 |
 
-Every failure we hit and how it was fixed is indexed in [`docs/testing/FAILURE-AND-FIX-INDEX.md`](docs/testing/FAILURE-AND-FIX-INDEX.md), with the raw review rounds in [`evidence/qa/`](evidence/qa/). Platform behaviour we verified empirically, with query IDs, is in [`docs/platform/PLATFORM-FINDINGS.md`](docs/platform/PLATFORM-FINDINGS.md).
+Every recorded failure, with its root cause and fix, is indexed in [`docs/testing/FAILURE-AND-FIX-INDEX.md`](docs/testing/FAILURE-AND-FIX-INDEX.md), with the raw review rounds in [`evidence/qa/`](evidence/qa/). Platform behaviour we verified empirically, with query IDs, is in [`docs/platform/PLATFORM-FINDINGS.md`](docs/platform/PLATFORM-FINDINGS.md).
 
 ## Repository
 

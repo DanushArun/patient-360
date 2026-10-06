@@ -1,7 +1,7 @@
 # Saarthi documentation
 
 Start with [`../README.md`](../README.md), then [`submission/JUDGE-WALKTHROUGH.md`](./submission/JUDGE-WALKTHROUGH.md)
-for a guided reading path. [`../IMPLEMENTATION-STATUS.md`](../IMPLEMENTATION-STATUS.md) marks every component
+for the evaluation guide. [`../IMPLEMENTATION-STATUS.md`](../IMPLEMENTATION-STATUS.md) marks every component
 `built`, `partial` or `designed-only`.
 
 | Directory | What it holds |
