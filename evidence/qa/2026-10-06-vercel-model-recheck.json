@@ -1,0 +1,75 @@
+[
+  {
+    "question": "What does the record show about Ki-67 staining?",
+    "http_status": 502,
+    "elapsed_seconds": 115.76,
+    "body": {
+      "error": "agent_unreachable",
+      "category": "unavailable",
+      "purge_patient_state": false
+    }
+  },
+  {
+    "question": "What is on file about the upcoming encounter?",
+    "http_status": 200,
+    "elapsed_seconds": 19.37,
+    "body": {
+      "text": "2 documents on record; no expected document is outstanding.",
+      "thinking": "",
+      "suggested": [
+        "Show me the conflicts in the record",
+        "What is missing in the record?"
+      ],
+      "tools": [
+        {
+          "name": "record.documents",
+          "query_id": null,
+          "took_patient_id": false
+        }
+      ],
+      "gates": [],
+      "known_as_of": "2026-10-06T15:07:40",
+      "error": null,
+      "record": {
+        "tool": "documents",
+        "title": "Documents",
+        "summary": "2 documents on record; no expected document is outstanding.",
+        "items": [
+          {
+            "id": "DOC-LAB-DC-04",
+            "label": "Lab report",
+            "value": "Tata Memorial Hospital \u00b7 6 Oct 2026, 05:48",
+            "state": "Received",
+            "tone": "neutral",
+            "note": "6 values verified of 6 extracted \u00b7 1 page",
+            "documentId": "DOC-LAB-DC-04"
+          },
+          {
+            "id": "DOC-PATH-DC-04",
+            "label": "Pathology",
+            "value": "Tata Memorial Hospital \u00b7 24 Jul 2026, 09:30",
+            "state": "Received",
+            "tone": "neutral",
+            "note": "1 value verified of 1 extracted \u00b7 1 page",
+            "documentId": "DOC-PATH-DC-04"
+          }
+        ],
+        "more": 0,
+        "actions": [
+          {
+            "label": "Open documents",
+            "section": "Documents"
+          }
+        ],
+        "known_as_of": "2026-10-06T15:05:47",
+        "sources": [
+          "DOC-LAB-DC-04",
+          "DOC-PATH-DC-04"
+        ],
+        "basis": "Values are verified only when two independent extraction passes agree."
+      },
+      "run_id": "71baa087-2520-4df0-ac01-b8c1c1a50eed",
+      "history_saved": true
+    }
+  }
+]

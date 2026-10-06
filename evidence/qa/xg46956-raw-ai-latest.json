@@ -1,0 +1,49 @@
+{
+  "mode": "raw-ai",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78d19-0204-df95-0005-7552001610fa",
+      "elapsed_ms": 175.4018749925308
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78d19-0204-e087-0005-75520016094a",
+      "elapsed_ms": 175.03924999618903
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78d19-0204-df95-0005-75520016111e",
+      "elapsed_ms": 172.80266698799096
+    },
+    {
+      "label": "ANSWER_GATEWAY_CONTEXT",
+      "sql_sha256": "f9ee1de26ef1a4226043ffbd4237ebae4e8d92b9cec4a7da62c63578b838a50e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78d19-0204-e087-0005-755200160966",
+      "elapsed_ms": 829.9285419925582
+    },
+    {
+      "label": "query",
+      "sql_sha256": "9505aa722a2d4d038b664618542dcb6ed7a017cd737071971fa7ea324760dce6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78d19-0204-e087-0005-7552001609b2",
+      "elapsed_ms": 2957.804625009885
+    }
+  ]
+}

@@ -28,6 +28,7 @@ import {
   updateChatContext,
 } from "@/lib/chat-lifecycle.mjs";
 import { readStoredTurns, writeStoredTurns } from "@/lib/chat-storage.mjs";
+import { touchCopilotHistory } from "@/lib/copilot-history.mjs";
 import type { ContextReference } from "@/lib/api-contracts.mjs";
 import { PatientAnswerArtifact } from "@/app/patient/[id]/patient-answer-artifact";
 import { GateCitation, type Turn } from "@/app/patient/[id]/patient-evidence";
@@ -98,6 +99,7 @@ export function useStoredTurns(
   useEffect(() => {
     if (hydrated && stored.key === storageKey) {
       writeTurnsSafely(storageKey, turns);
+      touchHistorySafely(storageKey, turns);
     }
   }, [hydrated, storageKey, stored.key, turns]);
   const updateTurns = useCallback<Dispatch<SetStateAction<Turn[]>>>((action) => {
@@ -110,6 +112,12 @@ export function useStoredTurns(
     });
   }, [storageKey]);
   return [turns, updateTurns] as const;
+}
+
+function touchHistorySafely(storageKey: string, turns: Turn[]): void {
+  if (!turns.length) return;
+  try { touchCopilotHistory(sessionStorage, storageKey); }
+  catch (error) { console.error("Could not update copilot history.", error); }
 }
 
 function appendTurn(

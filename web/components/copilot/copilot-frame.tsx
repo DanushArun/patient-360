@@ -3,12 +3,13 @@
 import { Fragment, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Info, Maximize2, Minimize2, Plus, Sparkles, X } from "lucide-react";
+import { ArrowLeft, History, Info, Maximize2, Minimize2, Plus, Sparkles, X } from "lucide-react";
 import { CensusChip, type CensusStatus } from "@/components/sa";
 import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import { useCopilot, type CopilotChip } from "./copilot-provider";
 import { COHORT_STARTERS } from "@/lib/copilot-cohort.mjs";
 import type { CohortRow, CohortTurn } from "@/lib/copilot-session.mjs";
+import { formatHistoryAge, listCopilotHistory } from "@/lib/copilot-history.mjs";
 import { CopilotComposer, CopilotStarters, useStickToBottom } from "./copilot-parts";
 import { LiveDock, LiveReceipt, receiptVisible } from "./copilot-live-ui";
 import styles from "./copilot.module.css";
@@ -36,9 +37,29 @@ export function CopilotFrame(): ReactNode {
 
 function CopilotPanel(): ReactNode {
   const copilot = useCopilot();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyNow, setHistoryNow] = useState(Date.now);
+  const [history, setHistory] = useState<ReturnType<typeof listCopilotHistory>>([]);
+  useEffect(() => {
+    if (!historyOpen) return;
+    const timer = setInterval(() => setHistoryNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [historyOpen]);
   // A patient page owns this panel's conversation. Until it has scoped the copilot (or after
   // access is withdrawn) the panel shows nothing about any patient and never the day-care chat.
-  const patientRoute = /^\/patient\/[^/]+\/?$/.test(usePathname());
+  const patientRoute = /^\/patient\/[^/]+\/?$/.test(pathname);
+  const showHistory = () => {
+    setHistoryNow(Date.now());
+    const authorizedPatientIds = new Set(Array.from(document.querySelectorAll<HTMLAnchorElement>(
+      '#patient-roster a[href^="/patient/"]'), (link) =>
+      link.getAttribute("href")?.match(/^\/patient\/([^/?#]+)/)?.[1] ?? "").filter(Boolean));
+    if (copilot.patient?.patientId) authorizedPatientIds.add(copilot.patient.patientId);
+    try { setHistory(listCopilotHistory(sessionStorage, [...authorizedPatientIds])); }
+    catch { setHistory([]); }
+    setHistoryOpen(true);
+  };
   return <>
   {/* Below 900 px the copilot is a sheet over the page; the scrim dismisses it. */}
   <div className={styles.scrim} aria-hidden onClick={() => copilot.setOpen(false)} />
@@ -53,6 +74,13 @@ function CopilotPanel(): ReactNode {
         <span>{copilot.patient ? `Patient record · ${copilot.patient.patientId}`
           : patientRoute ? "Patient record" : "Record state across your care team"}</span>
       </div>
+      {historyOpen
+        ? <button type="button" className={styles.iconButton} aria-label="Back to conversation"
+          title="Back to conversation" onClick={() => setHistoryOpen(false)}>
+          <ArrowLeft size={16} aria-hidden />
+        </button>
+        : <button type="button" className={styles.iconButton} aria-label="Conversation history"
+          title="History" onClick={showHistory}><History size={16} aria-hidden /></button>}
       <button type="button" className={styles.iconButton} aria-pressed={copilot.inspector}
         aria-label="Conversation context" title="Conversation context"
         onClick={() => copilot.setInspector(!copilot.inspector)}><Info size={16} aria-hidden />
@@ -68,10 +96,28 @@ function CopilotPanel(): ReactNode {
       </button>
     </header>
     <div className={styles.body}>
-      <div ref={copilot.setSlot} className={styles.slot} />
-      {!copilot.patient && !patientRoute && <CohortConversation />}
-      {!copilot.patient && patientRoute && <p className={styles.placeholder} role="status">
-        Opening the patient record…</p>}
+      {historyOpen ? <section className={styles.history} aria-label="Conversation history">
+        <h2>History</h2>
+        <p>Recent patient conversations in this browser session.</p>
+        {history.length ? <div className={styles.historyList}>{history.map((item) =>
+          <button type="button" className={styles.historyItem} key={item.storageKey}
+            onClick={() => {
+              setHistoryOpen(false);
+              copilot.setOpen(true);
+              router.push(`/patient/${encodeURIComponent(item.patientId)}?copilotScope=${item.scope}`);
+            }}>
+            <span className={styles.historyAge}>{formatHistoryAge(item.updatedAt, historyNow)}</span>
+            <span className={styles.historyText}>
+              <strong>{item.title}</strong>
+              <span>{item.patientId} · {item.scope === "reference" ? "Guidelines" : "Patient record"}</span>
+            </span>
+          </button>)}</div> : <p className={styles.historyEmpty}>No saved patient conversations yet.</p>}
+      </section> : <>
+        <div ref={copilot.setSlot} className={styles.slot} />
+        {!copilot.patient && !patientRoute && <CohortConversation />}
+        {!copilot.patient && patientRoute && <p className={styles.placeholder} role="status">
+          Opening the patient record…</p>}
+      </>}
     </div>
   </aside>
   </>;

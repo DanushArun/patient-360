@@ -1,5 +1,5 @@
 {
-  "mode": "ask",
+  "mode": "infer-probe",
   "identity": {
     "A": "WH11571",
     "U": "DAKSHA"
@@ -10,48 +10,49 @@
       "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78d19-0204-df67-0005-75520016278a",
-      "elapsed_ms": 207.9844999825582
+      "query_id": "01c78d18-0204-e087-0005-75520015ce8a",
+      "elapsed_ms": 178.84766700444743
     },
     {
       "label": "session_identity",
       "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78d19-0204-df67-0005-7552001627a2",
-      "elapsed_ms": 176.8001249874942
+      "query_id": "01c78d18-0204-df67-0005-75520015f282",
+      "elapsed_ms": 161.9667499908246
     },
     {
       "label": "query",
       "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78d19-0204-df67-0005-7552001627a6",
-      "elapsed_ms": 177.43954199249856
+      "query_id": "01c78d18-0204-df67-0005-75520015f292",
+      "elapsed_ms": 156.32224999717437
     },
     {
       "label": "query",
       "sql_sha256": "cd17004d81d0bd2854ab7c023ea22304b17dbf054e640ddf32393d6950ee04bb",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78d19-0204-df95-0005-755200161c26",
-      "elapsed_ms": 1106.7417089943774
+      "query_id": "01c78d18-0204-df67-0005-75520015f2a2",
+      "elapsed_ms": 178.20449999999255
     },
     {
       "label": "BIND_PATIENT",
       "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78d19-0204-df67-0005-7552001627ce",
-      "elapsed_ms": 4360.765541001456
+      "query_id": "01c78d18-0204-e087-0005-75520015ce96",
+      "elapsed_ms": 2095.2083750162274
     },
     {
       "label": "query",
-      "sql_sha256": "fd184b8bee3f9fa396da773fec0606e93b3af3468ec0fce660d06307db1de12b",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78d19-0204-df95-0005-755200161d92",
-      "elapsed_ms": 37703.54720798787
+      "sql_sha256": "ed4abfdc0f492bacc225c07dd26fb6bd1ce1c25262825db1b52c4b2c893ca074",
+      "status": "FAIL",
+      "error_type": "ProgrammingError",
+      "error_code": 2141,
+      "query_id": "01c78d18-0204-e087-0005-75520015cefe",
+      "elapsed_ms": 165.21787500823848
     }
   ]
 }

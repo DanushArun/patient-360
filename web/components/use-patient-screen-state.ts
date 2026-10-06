@@ -45,7 +45,8 @@ function resetSectionState({ patient, setSection, setAskOpen, setScope, setLangu
   const section = hash.charAt(0).toUpperCase() + hash.slice(1);
   setSection(resolvePatientSection(hash === "coverage-comparison" ? hash : section));
   setAskOpen(hash === "ask-record");
-  setScope("patient");
+  const requestedScope = new URLSearchParams(window.location.search).get("copilotScope");
+  setScope(requestedScope === "reference" ? "reference" : "patient");
   setLanguage(languageCode(patient.language));
 }
 

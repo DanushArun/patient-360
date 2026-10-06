@@ -1,0 +1,813 @@
+[
+  {
+    "name": "health",
+    "http_status": 200,
+    "elapsed_seconds": 4.28,
+    "body": {
+      "status": "ready",
+      "service": "saarthi-web-backend",
+      "release_revision": "edd0657f60b239331f07f0cb14b4d9f1dbf7b099ffdd0367559488341dac77ca",
+      "database": {
+        "status": "ready",
+        "query_id": "01c78d05-0204-df67-0005-755200140522"
+      }
+    }
+  },
+  {
+    "name": "patient",
+    "http_status": 200,
+    "elapsed_seconds": 13.49,
+    "body": {
+      "patientId": "PAT-DC-04",
+      "patientName": "Fatima Begum",
+      "consentId": "CON-DC-04",
+      "language": "Bengali",
+      "nextVisit": "2026-10-07",
+      "scheduledAt": "2026-10-07T09:30:00",
+      "cycleNumber": 3,
+      "regimen": "Doxorubicin + cyclophosphamide, 3-weekly",
+      "practitionerName": "Dr. Oncologist",
+      "treatingPractitionerName": "Dr. Oncologist",
+      "knownAsOf": "2026-10-06T15:00:45",
+      "gates": [
+        {
+          "gate": "clinical",
+          "rule_id": "CLIN-ANC-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "ANC is 2208, meets threshold 1500",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-WBC-ANC-DERIVED"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "clinical",
+          "rule_id": "CLIN-BILI-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "bilirubin 0.6 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 29 U/L for context",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-AST",
+            "EVT-DC-04-BILI"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "clinical",
+          "rule_id": "CLIN-CRCL-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "CrCl 89 mL/min (Cockcroft-Gault, age=44 weight=55 cr=0.7) - clears strictest per-agent minimum (60 for cisplatin)",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-CREAT",
+            "EVT-DC-04-WT"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "clinical",
+          "rule_id": "CLIN-PLT-001",
+          "rule_version": 1,
+          "outcome": "fail",
+          "reason": "PLT is 82000, below threshold 100000",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-PLT",
+            "c93f7235-546f-4d6d-8c4f-b3db8744d60a"
+          ],
+          "source_spans": [
+            {
+              "assertion_id": "c93f7235-546f-4d6d-8c4f-b3db8744d60a",
+              "char_end": 175,
+              "char_start": 147,
+              "doc_id": "DOC-LAB-DC-04",
+              "excerpt": "RATORY REPORT - SYNTHETIC\nPatient: PAT-DC-04\nReport date: 2026-10-06\n\nWBC: 4,600 /cumm\nNeutrophils (differential): 48 %\nPlatelet count: 82,000 /cumm\nSerum creatinine: 0.7 mg/dL\nTotal bilirubin: 0.6 mg/dL\nAST: 29 U/L",
+              "excerpt_start": 27,
+              "known_as_of": "2026-10-06T15:00:45",
+              "page_index": 0,
+              "patient_id": "PAT-DC-04",
+              "scope": "patient",
+              "verification_status": "verified",
+              "version": 1
+            }
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "coverage",
+          "rule_id": "COV-AUTH-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "pre-authorisation approved and current",
+          "severity": "blocker",
+          "evidence_ids": [
+            "PA-DC-04"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "coverage",
+          "rule_id": "COV-LIMIT-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)",
+          "severity": "advisory",
+          "evidence_ids": [
+            "COV-DC-04"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "documentation",
+          "rule_id": "DOC-DISC-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "no cross-source discordance detected",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-HER2"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "documentation",
+          "rule_id": "DOC-HER2-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "HER2 status final from IHC alone: grade=II ihc=1+",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-HER2"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "documentation",
+          "rule_id": "DOC-PATH-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "1 pathology report(s) in final status",
+          "severity": "blocker",
+          "evidence_ids": [
+            "EVT-DC-04-HER2"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "identity",
+          "rule_id": "ID-LINK-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "2 verified identifier link(s) present (abha_linked or manually_verified)",
+          "severity": "blocker",
+          "evidence_ids": [
+            "DC-04-MRN",
+            "DC-04-ABHA"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "identity",
+          "rule_id": "ID-QUAR-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "no quarantined identity matches on record",
+          "severity": "blocker",
+          "evidence_ids": [],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "safety",
+          "rule_id": "ENDO-DEXA-001",
+          "rule_version": 2,
+          "outcome": "pass",
+          "reason": "DEXA T-score -0.5 (normal, T>=-1.0) - 24-month interval, last scan 90 days old, within interval",
+          "severity": "advisory",
+          "evidence_ids": [
+            "EVT-DC-04-DEXA"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        },
+        {
+          "gate": "safety",
+          "rule_id": "ENDO-HBA1C-001",
+          "rule_version": 1,
+          "outcome": "pass",
+          "reason": "HBA1C is 5.4, within threshold 8.5",
+          "severity": "advisory",
+          "evidence_ids": [
+            "EVT-DC-04-A1C"
+          ],
+          "known_as_of": "2026-10-06T15:00:45"
+        }
+      ]
+    }
+  },
+  {
+    "name": "cohort",
+    "http_status": 200,
+    "elapsed_seconds": 8.27,
+    "body": {
+      "kind": "cohort",
+      "known_as_of": "2026-10-06T14:51:57",
+      "error": null,
+      "title": "Blocked",
+      "rows": [
+        {
+          "encounterId": "ENC-DC-03",
+          "patientId": "PAT-DC-03",
+          "name": "Rakesh Kumar Yadav",
+          "place": "Gaya, Bihar",
+          "language": "Hindi",
+          "regimen": "FOLFOX, 2-weekly",
+          "cycle": 5,
+          "scheduled": "2026-10-07T09:30:00",
+          "status": "blocked",
+          "headlineRule": "CLIN-ANC-001",
+          "headline": "ANC assessment is 11 days old, exceeds 7-day limit",
+          "otherIssues": 1
+        },
+        {
+          "encounterId": "ENC-DC-02",
+          "patientId": "PAT-DC-02",
+          "name": "Lakshmi Narayanan",
+          "place": "Madurai, Tamil Nadu",
+          "language": "Tamil",
+          "regimen": "Trastuzumab maintenance, 3-weekly",
+          "cycle": 9,
+          "scheduled": "2026-10-07T09:30:00",
+          "status": "blocked",
+          "headlineRule": "SURV-LVEF-001",
+          "headline": "LVEF last measured 118 days ago, exceeds 90-day surveillance interval",
+          "otherIssues": 0
+        },
+        {
+          "encounterId": "EVT-CHEMO-07",
+          "patientId": "PAT-DEEP-0001",
+          "name": "Meera Iyer",
+          "place": "Mumbai, Maharashtra",
+          "language": "Marathi",
+          "regimen": "AC-TH (paclitaxel + trastuzumab) + zoledronic acid (DEXA-confirmed osteopenia)",
+          "cycle": 7,
+          "scheduled": "2026-10-07T09:30:00",
+          "status": "blocked",
+          "headlineRule": "CLIN-ANC-001",
+          "headline": "ANC assessment is 559 days old, exceeds 7-day limit",
+          "otherIssues": 7
+        },
+        {
+          "encounterId": "ENC-DC-12",
+          "patientId": "PAT-DC-12",
+          "name": "Anjali Deshpande",
+          "place": "Pune, Maharashtra",
+          "language": "Marathi",
+          "regimen": "Paclitaxel + trastuzumab, weekly",
+          "cycle": 7,
+          "scheduled": "2026-10-07T09:30:00",
+          "status": "blocked",
+          "headlineRule": "SURV-LVEF-002",
+          "headline": "LVEF 49 below 50 AND dropped 14pp from baseline (>=10pp threshold when current<50) - hold trastuzumab",
+          "otherIssues": 1
+        },
+        {
+          "encounterId": "ENC-DC-04",
+          "patientId": "PAT-DC-04",
+          "name": "Fatima Begum",
+          "place": "Murshidabad, West Bengal",
+          "language": "Bengali",
+          "regimen": "Doxorubicin + cyclophosphamide, 3-weekly",
+          "cycle": 3,
+          "scheduled": "2026-10-07T09:30:00",
+          "status": "blocked",
+          "headlineRule": "CLIN-PLT-001",
+          "headline": "PLT is 82000, below threshold 100000",
+          "otherIssues": 0
+        },
+        {
+          "encounterId": "ENC-DC-05",
+          "patientId": "PAT-DC-05",
+          "name": "Suresh Patil",
+          "place": "Latur, Maharashtra",
+          "language": "Marathi",
+          "regimen": "Cisplatin weekly with radiotherapy",
+          "cycle": 4,
+          "scheduled": "2026-10-07T09:30:00",
+          "status": "blocked",
+          "headlineRule": "CLIN-ANC-001",
+          "headline": "ANC is 1160, below threshold 1500",
+          "otherIssues": 0
+        }
+      ],
+      "counts": {
+        "blocked": 6,
+        "conflict": 1,
+        "waiting": 3,
+        "advisory": 1,
+        "ready": 2
+      },
+      "basis": null
+    }
+  },
+  {
+    "name": "model_answer",
+    "http_status": 502,
+    "elapsed_seconds": 130.59,
+    "body": {
+      "error": "agent_unreachable",
+      "category": "unavailable",
+      "purge_patient_state": false
+    }
+  },
+  {
+    "name": "reference",
+    "http_status": 200,
+    "elapsed_seconds": 25.52,
+    "body": {
+      "text": "",
+      "thinking": "",
+      "suggested": [],
+      "gates": [],
+      "known_as_of": "2026-10-06T15:02:00",
+      "error": null,
+      "tools": [
+        {
+          "name": "reference.search",
+          "query_id": null,
+          "took_patient_id": false
+        }
+      ],
+      "artifact": {
+        "classification": "CLASS_B",
+        "overall_status": "supported",
+        "known_as_of": "2026-10-06T15:02:00",
+        "claims": [
+          {
+            "text": "\u201cCardiac Monitoring Conduct thorough cardiac assessment, including history, physical examination, and determination of LVEF by echocardiogram or MUGA scan.\u201d",
+            "claim_type": "textual",
+            "provenance_note": "U.S. Food and Drug Administration \u00b7 HERCEPTIN (trastuzumab) prescribing information, page 6",
+            "evidence": [
+              {
+                "kind": "reference_clause",
+                "id": "REF-859f45ac6425f98a51576f2d-5",
+                "doc_id": "REF-859f45ac6425f98a51576f2d",
+                "page_index": 5,
+                "publisher": "U.S. Food and Drug Administration",
+                "document_title": "HERCEPTIN (trastuzumab) prescribing information",
+                "version": "06/2024; Reference ID 5399895",
+                "jurisdiction": "US",
+                "effective_date": "Not stated in the document",
+                "clause": "Cardiac Monitoring Conduct thorough cardiac assessment, including history, physical examination, and determination of LVEF by echocardiogram or MUGA scan."
+              }
+            ]
+          },
+          {
+            "text": "\u201c2 DOSAGE AND ADMINISTRATION 2.1 Evaluation and Testing Before Initiating Herceptin Assess left ventricular ejection fraction (LVEF) prior to initiation of Herceptin and at regular intervals during treatment. [see Boxed Warning, Dosage and Administration (2.5), Warnings and Precautions (5.1)].\u201d",
+            "claim_type": "textual",
+            "provenance_note": "U.S. Food and Drug Administration \u00b7 HERCEPTIN (trastuzumab) prescribing information, page 3",
+            "evidence": [
+              {
+                "kind": "reference_clause",
+                "id": "REF-859f45ac6425f98a51576f2d-2",
+                "doc_id": "REF-859f45ac6425f98a51576f2d",
+                "page_index": 2,
+                "publisher": "U.S. Food and Drug Administration",
+                "document_title": "HERCEPTIN (trastuzumab) prescribing information",
+                "version": "06/2024; Reference ID 5399895",
+                "jurisdiction": "US",
+                "effective_date": "Not stated in the document",
+                "clause": "2 DOSAGE AND ADMINISTRATION 2.1 Evaluation and Testing Before Initiating Herceptin Assess left ventricular ejection fraction (LVEF) prior to initiation of Herceptin and at regular intervals during treatment. [see Boxed Warning, Dosage and Administration (2.5), Warnings and Precautions (5.1)]."
+              }
+            ]
+          },
+          {
+            "text": "\u201cCardiomyopathy: Herceptin can result in subclinical and clinical cardiac failure manifesting as CHF, and decreased LVEF, with greatest risk when administered concurrently with anthracyclines.\u201d",
+            "claim_type": "textual",
+            "provenance_note": "U.S. Food and Drug Administration \u00b7 HERCEPTIN (trastuzumab) prescribing information, page 1",
+            "evidence": [
+              {
+                "kind": "reference_clause",
+                "id": "REF-859f45ac6425f98a51576f2d-0",
+                "doc_id": "REF-859f45ac6425f98a51576f2d",
+                "page_index": 0,
+                "publisher": "U.S. Food and Drug Administration",
+                "document_title": "HERCEPTIN (trastuzumab) prescribing information",
+                "version": "06/2024; Reference ID 5399895",
+                "jurisdiction": "US",
+                "effective_date": "Not stated in the document",
+                "clause": "Cardiomyopathy: Herceptin can result in subclinical and clinical cardiac failure manifesting as CHF, and decreased LVEF, with greatest risk when administered concurrently with anthracyclines."
+              }
+            ]
+          },
+          {
+            "text": "\u201cCardiomyopathy [See Boxed Warning, Warnings and Precautions (5.1)] Assess left ventricular ejection fraction (LVEF) prior to initiation of Herceptin and at regular intervals during treatment.\u201d",
+            "claim_type": "textual",
+            "provenance_note": "U.S. Food and Drug Administration \u00b7 HERCEPTIN (trastuzumab) prescribing information, page 4",
+            "evidence": [
+              {
+                "kind": "reference_clause",
+                "id": "REF-859f45ac6425f98a51576f2d-3",
+                "doc_id": "REF-859f45ac6425f98a51576f2d",
+                "page_index": 3,
+                "publisher": "U.S. Food and Drug Administration",
+                "document_title": "HERCEPTIN (trastuzumab) prescribing information",
+                "version": "06/2024; Reference ID 5399895",
+                "jurisdiction": "US",
+                "effective_date": "Not stated in the document",
+                "clause": "Cardiomyopathy [See Boxed Warning, Warnings and Precautions (5.1)] Assess left ventricular ejection fraction (LVEF) prior to initiation of Herceptin and at regular intervals during treatment."
+              }
+            ]
+          }
+        ],
+        "limitations": [
+          "Reference guidance, quoted from the source. It is not a finding about this patient.",
+          "Clinical decisions belong to the treating practitioner."
+        ]
+      },
+      "run_id": "38af3bd1-4d7a-49a1-8d2f-c1008d99363e",
+      "history_saved": true
+    }
+  },
+  {
+    "name": "clinical_refusal",
+    "http_status": 200,
+    "elapsed_seconds": 13.91,
+    "body": {
+      "text": "Clinical judgment requires the named treating practitioner.",
+      "thinking": "",
+      "tools": [],
+      "tool_results": [],
+      "gates": [],
+      "suggested": [],
+      "known_as_of": "2026-10-06T15:02:03",
+      "error": null,
+      "artifact": {
+        "claims": [],
+        "classification": "CLASS_A",
+        "known_as_of": "2026-10-06T15:02:03",
+        "limitations": [],
+        "overall_status": "refused",
+        "refusal": {
+          "evidence_packet_offered": true,
+          "message": "Clinical judgment requires the named treating practitioner.",
+          "practitioner": {
+            "name": "Dr. Oncologist",
+            "nmc_registration_no": "NMC-TEST-0001",
+            "practitioner_id": "PRAC-01"
+          },
+          "reason_code": "class_a_clinical_judgment"
+        }
+      },
+      "run_id": "5d87ee6e-6741-44c8-8b82-ddfc2ac137fc",
+      "history_saved": true
+    }
+  },
+  {
+    "name": "documents",
+    "http_status": 200,
+    "elapsed_seconds": 0.32,
+    "body": {
+      "rows": [
+        {
+          "assertion_count": 6,
+          "conflicting_assertions": 0,
+          "doc_id": "DOC-LAB-DC-04",
+          "doc_type": "lab_report",
+          "event_time": "2026-10-06T05:48:10",
+          "ingested_at": "2026-10-06T04:26:42",
+          "missingness_state": "present",
+          "page_count": 1,
+          "scope": "patient",
+          "source_facility": "Tata Memorial Hospital",
+          "source_quality": "clean_pdf",
+          "source_recorded_at": "2026-10-06T08:48:10",
+          "verification_observed_at": "2026-10-06T15:00:45",
+          "verified_assertions": 6,
+          "version": 1
+        },
+        {
+          "assertion_count": 1,
+          "conflicting_assertions": 0,
+          "doc_id": "DOC-PATH-DC-04",
+          "doc_type": "pathology",
+          "event_time": "2026-07-24T09:30:00",
+          "ingested_at": "2026-10-06T04:26:44",
+          "missingness_state": "present",
+          "page_count": 1,
+          "scope": "patient",
+          "source_facility": "Tata Memorial Hospital",
+          "source_quality": "clean_pdf",
+          "source_recorded_at": "2026-07-24T12:30:00",
+          "verification_observed_at": "2026-10-06T15:00:45",
+          "verified_assertions": 1,
+          "version": 1
+        }
+      ],
+      "expected_documents": [],
+      "known_as_of": "2026-10-06T15:00:45"
+    }
+  },
+  {
+    "name": "timeline",
+    "http_status": 200,
+    "elapsed_seconds": 9.21,
+    "body": {
+      "timeline": [
+        {
+          "concept": "T_SCORE",
+          "event_type": "imaging",
+          "value": -0.5,
+          "value_text": null,
+          "unit": null,
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-07-09 09:30:00.000",
+          "source_recorded_at": "2026-07-09 12:30:00.000",
+          "ingested_at": "2026-10-06 08:17:09.993",
+          "event_id": "EVT-DC-04-DEXA",
+          "source_event_ids": [
+            "EVT-DC-04-DEXA"
+          ],
+          "source_assertion_ids": [],
+          "source_document_ids": [],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "HER2_IHC",
+          "event_type": "pathology",
+          "value": null,
+          "value_text": "grade=II ihc=1+",
+          "unit": null,
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-07-24 09:30:00.000",
+          "source_recorded_at": "2026-07-24 12:30:00.000",
+          "ingested_at": "2026-10-06 08:17:09.993",
+          "event_id": "EVT-DC-04-HER2",
+          "source_event_ids": [
+            "EVT-DC-04-HER2"
+          ],
+          "source_assertion_ids": [],
+          "source_document_ids": [],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "Carcinoma breast",
+          "event_type": "diagnosis",
+          "value": null,
+          "value_text": null,
+          "unit": null,
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-07-29 09:30:00.000",
+          "source_recorded_at": "2026-07-29 12:30:00.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "event_id": "EVT-DC-04-DX",
+          "source_event_ids": [
+            "EVT-DC-04-DX"
+          ],
+          "source_assertion_ids": [],
+          "source_document_ids": [],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "HBA1C",
+          "event_type": "lab",
+          "value": 5.4,
+          "value_text": null,
+          "unit": "%",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-09-12 09:30:00.000",
+          "source_recorded_at": "2026-09-12 12:30:00.000",
+          "ingested_at": "2026-10-06 08:17:09.993",
+          "event_id": "EVT-DC-04-A1C",
+          "source_event_ids": [
+            "EVT-DC-04-A1C"
+          ],
+          "source_assertion_ids": [],
+          "source_document_ids": [],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "AST",
+          "event_type": "lab",
+          "value": 29,
+          "value_text": null,
+          "unit": "U/L",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-AST",
+          "source_event_ids": [
+            "EVT-DC-04-AST"
+          ],
+          "source_assertion_ids": [
+            "be38d305-45ed-4bad-b031-a6a9315ae8de"
+          ],
+          "source_document_ids": [
+            "DOC-LAB-DC-04"
+          ],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "BILIRUBIN",
+          "event_type": "lab",
+          "value": 0.6,
+          "value_text": null,
+          "unit": "mg/dL",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-BILI",
+          "source_event_ids": [
+            "EVT-DC-04-BILI"
+          ],
+          "source_assertion_ids": [
+            "6c23fed7-bcc3-4056-a35b-c8b5e9297de6"
+          ],
+          "source_document_ids": [
+            "DOC-LAB-DC-04"
+          ],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "CREATININE",
+          "event_type": "lab",
+          "value": 0.7,
+          "value_text": null,
+          "unit": "mg/dL",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-CREAT",
+          "source_event_ids": [
+            "EVT-DC-04-CREAT"
+          ],
+          "source_assertion_ids": [
+            "63eea2e4-fecd-49f7-a1d3-44b1aa34a9ad"
+          ],
+          "source_document_ids": [
+            "DOC-LAB-DC-04"
+          ],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "NEUTROPHIL_PCT",
+          "event_type": "lab",
+          "value": 48,
+          "value_text": null,
+          "unit": "%",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-NEUT",
+          "source_event_ids": [
+            "EVT-DC-04-NEUT"
+          ],
+          "source_assertion_ids": [
+            "2795cb99-b84e-4580-a974-00d1938d9785"
+          ],
+          "source_document_ids": [
+            "DOC-LAB-DC-04"
+          ],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "PLT",
+          "event_type": "lab",
+          "value": 82000,
+          "value_text": null,
+          "unit": "/cumm",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-PLT",
+          "source_event_ids": [
+            "EVT-DC-04-PLT"
+          ],
+          "source_assertion_ids": [
+            "c93f7235-546f-4d6d-8c4f-b3db8744d60a"
+          ],
+          "source_document_ids": [
+            "DOC-LAB-DC-04"
+          ],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "WBC",
+          "event_type": "lab",
+          "value": 4600,
+          "value_text": null,
+          "unit": "/cumm",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-WBC",
+          "source_event_ids": [
+            "EVT-DC-04-WBC"
+          ],
+          "source_assertion_ids": [
+            "ff0d0f66-ad01-4e0f-a98f-6e8896d7f750"
+          ],
+          "source_document_ids": [
+            "DOC-LAB-DC-04"
+          ],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "ANC",
+          "event_type": "lab",
+          "value": 2208,
+          "value_text": null,
+          "unit": "/cumm",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": true,
+          "derivation": "ANC computed as WBC x neutrophil% / 100",
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-WBC-ANC-DERIVED",
+          "source_event_ids": [],
+          "source_assertion_ids": [],
+          "source_document_ids": [],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        },
+        {
+          "concept": "WEIGHT",
+          "event_type": "vitals",
+          "value": 55,
+          "value_text": null,
+          "unit": "kg",
+          "abnormal_flag": null,
+          "value_state": "present",
+          "is_derived": false,
+          "derivation": null,
+          "valid_until": null,
+          "event_time": "2026-10-06 05:48:10.463",
+          "source_recorded_at": "2026-10-06 08:48:10.463",
+          "ingested_at": "2026-10-06 08:48:10.463",
+          "event_id": "EVT-DC-04-WT",
+          "source_event_ids": [
+            "EVT-DC-04-WT"
+          ],
+          "source_assertion_ids": [],
+          "source_document_ids": [],
+          "source_links_observed_at": "2026-10-06T15:04:04"
+        }
+      ],
+      "known_as_of": "2026-10-06T15:04:04",
+      "provenance_observed_at": "2026-10-06T15:04:04",
+      "total_events": 12,
+      "timeline_limit": 200,
+      "truncated": false
+    }
+  }
+]

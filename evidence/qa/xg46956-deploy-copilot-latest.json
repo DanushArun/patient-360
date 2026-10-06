@@ -10,44 +10,49 @@
       "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78abf-0204-d86c-0005-75520003bdf6",
-      "elapsed_ms": 221.38199998880737
+      "query_id": "01c78d19-0204-e087-0005-755200163572",
+      "elapsed_ms": 184.2907080135774
     },
     {
       "label": "session_identity",
       "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78abf-0204-d7c4-0005-75520003c03a",
-      "elapsed_ms": 171.23037501005456
+      "query_id": "01c78d19-0204-df67-0005-7552001625fa",
+      "elapsed_ms": 182.03258400899358
     },
     {
       "label": "query",
       "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78abf-0204-d86c-0005-75520003bdfa",
-      "elapsed_ms": 258.0605419934727
+      "query_id": "01c78d19-0204-df95-0005-755200161afe",
+      "elapsed_ms": 257.3426250019111
     },
     {
       "label": "query",
       "sql_sha256": "bc312d6e8c3599238b774a3365473d8e14921bf0707fe2258908240e5135119e",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78abf-0204-d868-0005-755200039ee6",
-      "elapsed_ms": 363.20733299362473
+      "query_id": "01c78d19-0204-df67-0005-755200162626",
+      "elapsed_ms": 321.05666599818505
     },
     {
       "label": "query",
-      "sql_sha256": "bf2410283350db0cfb210b5c7979e835943df511fb4d8e8841deeb97d5d010cc",
+      "sql_sha256": "db049799afda36658c2582e6e3b374e3c664cae959378639f4601bf3c44ef6e2",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78abf-0204-d7c4-0005-75520003c052",
-      "elapsed_ms": 423.5942920058733
+      "query_id": "01c78d19-0204-df67-0005-755200162642",
+      "elapsed_ms": 1109.3942079751287
     },
     {
       "label": "backend/sql/procedures/answer_gateway_infer.sql",
-      "query_id": "01c78abf-0204-d868-0005-755200039eee",
+      "query_id": "01c78d19-0204-e087-0005-7552001635c2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_context.sql",
+      "query_id": "01c78d19-0204-df95-0005-755200161b2a",
       "status": "PASS"
     }
   ]

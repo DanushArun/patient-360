@@ -27,7 +27,7 @@ ChatGPT's own tokens agree with SAARTHI's: system font stack, 14/20 body, 12 px 
 | **Per-message actions on hover** | Power without clutter | Copy, Open in history (run ID), and, for refused clinical questions, **Prepare evidence packet** |
 | **Stop while generating, Retry after an error** | Respects the user's time and control | Stop aborts the request. Errors show the reason next to the message, with Retry when a retry can help. |
 | **Scroll-to-latest button** | Never lose your place in a long thread | A ↓ button appears when the newest message is out of view |
-| **History as memory** (the sidebar timeline) | The product feels like it remembers | Each patient's conversation persists for the session and is listed in **History**. It is cleared when the patient changes (COPILOT-SPEC §1), because carrying one patient's facts into another's conversation is clinically unsafe. |
+| **History as memory** (the sidebar timeline) | The product feels like it remembers | Patient conversations remain separately keyed by patient and source scope for the browser session, and appear in **History** only for the currently authorized roster (or currently bound patient). Reopening restores that scope. The visible conversation never carries over when switching patients (COPILOT-SPEC §1). |
 | **Outcome-labelled modes** (Auto / Fast / Thinking) | Users pick a result, not a mechanism | Users choose the **source** (record or guidelines), never a model or a tool |
 
 ## 2. Layout
@@ -47,7 +47,7 @@ ChatGPT's own tokens agree with SAARTHI's: system font stack, 14/20 body, 12 px 
 
 - **Launcher.** A 44 px circular button, bottom-right, on every page. ⌘K / Ctrl+K opens the copilot and focuses the composer. Esc closes it.
 - **Docked panel.** It narrows the record; it never covers it. ⤢ widens it to 720 px. Below 900 px it becomes an overlay sheet, and at phone width a full-screen sheet.
-- **Header.** The scope pill (patient name, or *All my patients*) opens a menu to switch. Switching patient asks first, then clears the conversation. ⓘ opens the inspector. ✕ closes the panel.
+- **Header.** The scope pill (patient name, or *All my patients*) opens a menu to switch. Switching patient asks first, then clears the visible conversation. **History** lists resumable patient chats by latest activity, with a compact relative time, title and patient/source scope. Selecting one routes through the existing patient page, which rechecks access and restores the matching patient or guidelines transcript. History stays in `sessionStorage`; its small index stores only chat keys and update timestamps, never message text. ⓘ opens the inspector. ✕ closes the panel.
 
 ## 3. Scopes (all on existing governed paths)
 

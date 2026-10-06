@@ -8,6 +8,8 @@
 
 **6 Oct implementation checkpoint:** The day-care conversation now lives in the shared root copilot provider, so turns and active requests survive client-side navigation into a patient route and back. Stop aborts the read. This is in-memory browser-session state: reload persistence is not claimed. Focused Node tests (2) and TypeScript pass; Chrome confirmed the live worklist answer (5 blocked) and its preservation after route round-trip. Broader tests below are still open.
 
+**6 Oct History checkpoint:** The shared panel has a History view for patient chats persisted in the existing session-scoped per-patient/per-source turn stores. It lists only patient IDs visible in the current authorized roster, sorts by last update, and formats relative age; a key/timestamp-only index avoids copying chat text. Selecting a row reopens the matching patient route and source scope. Chrome confirmed the patient chat reloads after its record request completes (~25 s in this run), and the Guidelines chat restored under the `Reference documents` source selector. Five focused History tests, TypeScript, and design-token checks pass.
+
 **Tech Stack:** Next.js, React, Snowflake Cortex, existing SQL procedures, JSON Schema, Python and Node verification, Chrome through computer use.
 
 ## Current evidence
@@ -44,6 +46,7 @@
 - [ ] Supply current route/section, selected entity references and clock as context, never as authority.
 - [x] Support authorized worklist questions outside patient pages; preserve their conversation/result while navigating to a patient and back.
 - [ ] Keep patient-specific context freshly bound after navigation; add broader dashboard surface context.
+- [x] Add a scoped History view so clinicians can reopen and continue session-stored patient conversations.
 - [ ] Reuse existing navigation, evidence, task and packet APIs. Clinical decisions and gate overrides remain refused.
 - [ ] Execute writes only from explicit operator requests with existing scope, version and idempotency checks; document text cannot authorize an action.
 - [ ] Do not create new clinical tables/rules or external messaging integrations outside the authorized workflow.

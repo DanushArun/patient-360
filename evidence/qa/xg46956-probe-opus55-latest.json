@@ -10,32 +10,32 @@
       "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78ab7-0204-d86c-0005-75520003b08a",
-      "elapsed_ms": 240.55187500198372
+      "query_id": "01c78d11-0204-df67-0005-755200150ae2",
+      "elapsed_ms": 203.4637089818716
     },
     {
       "label": "session_identity",
       "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78ab7-0204-d7c4-0005-755200038466",
-      "elapsed_ms": 284.6885829931125
+      "query_id": "01c78d11-0204-df95-0005-75520014fc6a",
+      "elapsed_ms": 174.153625004692
     },
     {
       "label": "query",
       "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78ab7-0204-d868-0005-7552000392f2",
-      "elapsed_ms": 229.75866601336747
+      "query_id": "01c78d11-0204-e087-0005-75520015177e",
+      "elapsed_ms": 163.3736669900827
     },
     {
       "label": "query",
       "sql_sha256": "10b52b104f81f55ef918f621ccb71452709e8a9d9e0be2659080a91fa47d10f1",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78ab7-0204-d868-0005-7552000392fa",
-      "elapsed_ms": 2387.614500010386
+      "query_id": "01c78d11-0204-e087-0005-755200151782",
+      "elapsed_ms": 29521.516042004805
     }
   ]
 }

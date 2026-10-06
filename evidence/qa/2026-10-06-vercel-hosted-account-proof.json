@@ -1,0 +1,25 @@
+{
+  "identity": {
+    "query_id": "01c78d0c-0204-df67-0005-7552001491aa",
+    "rows": [
+      {
+        "ACCOUNT_LOCATOR": "WH11571",
+        "ACCOUNT_NAME": "XG46956",
+        "APP_USER": "DAKSHA",
+        "APP_ROLE": "SAARTHI_APP"
+      }
+    ]
+  },
+  "hosted_health_query": {
+    "query_id": "01c78d0c-0204-e087-0005-755200147eda",
+    "rows": [
+      {
+        "QUERY_ID": "01c78d07-0204-df95-0005-75520014190e",
+        "EXECUTION_STATUS": "SUCCESS",
+        "USER_NAME": "DAKSHA",
+        "ROLE_NAME": "SAARTHI_APP",
+        "QUERY_TAG": "saarthi_web_prototype"
+      }
+    ]
+  }
+}

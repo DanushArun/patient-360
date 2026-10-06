@@ -1,0 +1,57 @@
+{
+  "project": "prj_A5FdRK0mtqUZrUiSXjEgx1zB74Q9",
+  "team": "team_l9bl0oWRSJFIFqVesUVN7dUe",
+  "snowflake_account": "PVYRHHT-XG46956",
+  "release_revision": "edd0657f60b239331f07f0cb14b4d9f1dbf7b099ffdd0367559488341dac77ca",
+  "source_files": 402,
+  "stage": "/private/tmp/saarthi-vercel-release-20261006",
+  "credential": "current DAKSHA private key uploaded to Vercel production sensitive secret with explicit user approval",
+  "deployment_id": "dpl_7itwoYat2NaKfG4nr4uxuHAXPH3B",
+  "url": "https://saarthi-360.vercel.app",
+  "state": "latest release live; backend ready; functional checks running",
+  "checks": {
+    "local_production_build": "passed",
+    "hosted_production_build": "passed",
+    "web_tests": {
+      "passed": 379,
+      "failed": 0
+    },
+    "hosted_health": 200
+  },
+  "failure_and_fix": [
+    {
+      "failure": "Initial staging omitted frontend/contracts/answer_schema.json and data/reference/catalog.json",
+      "fix": "Included both shared dependencies; hosted build passed"
+    },
+    {
+      "failure": "New production database connection returned HTTP 503 using the existing hosted key",
+      "fix": "Specific credential export authorization requested; previous healthy release being restored"
+    }
+  ],
+  "fallback": {
+    "deployment_id": "dpl_HAuMS43hosSmQtETRjVHCRnxpREq",
+    "public_health": "ready",
+    "query_id": "01c78d02-0004-0662-0001-fe5a001c5622"
+  },
+  "local_snowflake_identity": {
+    "query_id": "01c78d02-0204-df67-0005-75520013cd66",
+    "rows": [
+      {
+        "ACCOUNT_LOCATOR": "WH11571",
+        "ACCOUNT_NAME": "XG46956",
+        "APP_USER": "DAKSHA",
+        "APP_ROLE": "SAARTHI_APP",
+        "SECONDARY_ROLES": "{\"roles\":\"\",\"value\":\"\"}"
+      }
+    ]
+  },
+  "health": {
+    "status": "ready",
+    "service": "saarthi-web-backend",
+    "release_revision": "edd0657f60b239331f07f0cb14b4d9f1dbf7b099ffdd0367559488341dac77ca",
+    "database": {
+      "status": "ready",
+      "query_id": "01c78d07-0204-df95-0005-75520014190e"
+    }
+  }
+}

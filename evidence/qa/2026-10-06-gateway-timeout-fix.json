@@ -1,0 +1,33 @@
+{
+  "identity": {
+    "query_id": "01c78d0e-0204-df95-0005-75520014c79e",
+    "rows": [
+      {
+        "A": "WH11571",
+        "U": "DAKSHA"
+      }
+    ]
+  },
+  "applied": [
+    {
+      "file": "answer_gateway_context.sql",
+      "query_id": "01c78d0e-0204-df67-0005-75520014d04a",
+      "rows": [
+        {
+          "status": "Function ANSWER_GATEWAY_CONTEXT successfully created."
+        }
+      ]
+    },
+    {
+      "file": "answer_gateway_infer.sql",
+      "query_id": "01c78d0e-0204-df67-0005-75520014d056",
+      "rows": [
+        {
+          "status": "Function ANSWER_GATEWAY_INFER successfully created."
+        }
+      ]
+    }
+  ],
+  "model": "claude-opus-5-5",
+  "inference": "AI_COMPLETE over scoped SQL tool results; SQL citation validation retained"
+}

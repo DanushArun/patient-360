@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What does the record show about the encounter?",
+    "http_status": 502,
+    "elapsed_seconds": 77.52,
+    "body": {
+      "error": "agent_unreachable",
+      "category": "unavailable",
+      "purge_patient_state": false
+    }
+  },
+  {
+    "question": "What does the record show about Ki-67 staining?",
+    "http_status": 502,
+    "elapsed_seconds": 46.8,
+    "body": {
+      "error": "agent_unreachable",
+      "category": "unavailable",
+      "purge_patient_state": false
+    }
+  }
+]
