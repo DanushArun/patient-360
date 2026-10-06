@@ -1,37 +1,10 @@
 {
-  "recorded_at": "2026-10-06T08:55:37.343445+00:00",
-  "base_revision": "53fcf6ac195d1389d9036faa0c7d60d4f271af8b",
+  "recorded_at": "2026-10-06T11:32:42.163944+00:00",
+  "base_revision": "8b70762d63aada7fd5b8813524c514e925d70255",
   "working_tree": true,
   "status": "PASS",
-  "mode": "prepare",
-  "started_at": "2026-10-06T08:47:56+00:00",
-  "chunked": {
-    "chunks_created": 0
-  },
-  "re_extracted": [
-    "DOC-LAB-DC-12",
-    "DOC-ECHO-DC-12",
-    "DOC-PATH-DC-12",
-    "DOC-BIOPSY-DC-12"
-  ],
-  "extracted": [
-    {
-      "assertions_created": 17
-    },
-    {
-      "assertions_created": 0
-    }
-  ],
-  "reconciled": {
-    "cross_specimen_discordant": 0,
-    "reconciled_at": "2026-10-06T08:50:39",
-    "same_specimen_conflicts": 0,
-    "support_links_added": 9
-  },
-  "refreshed": {
-    "refreshed_at": "2026-10-06T08:55:34",
-    "rows_written": 370
-  },
+  "mode": "verify",
+  "started_at": "2026-10-06T11:32:39+00:00",
   "visits_tomorrow": 13,
   "outcomes": {
     "PAT-DC-12": {
@@ -265,7 +238,7 @@
       },
       "CLIN-PLT-001": {
         "outcome": "not_evaluated",
-        "reason": "no usable PLT evidence found as of 2026-10-06T08:51:53"
+        "reason": "no usable PLT evidence found as of 2026-10-06T11:31:40"
       },
       "DOC-PATH-001": {
         "outcome": "pass",
@@ -277,7 +250,7 @@
       },
       "CLIN-ANC-001": {
         "outcome": "not_evaluated",
-        "reason": "no usable ANC evidence found as of 2026-10-06T08:51:53"
+        "reason": "no usable ANC evidence found as of 2026-10-06T11:31:40"
       },
       "CLIN-BILI-001": {
         "outcome": "pass",
@@ -753,15 +726,15 @@
       "CONFLICTING": 0
     },
     {
-      "DOC_ID": "DOC-PATH-DC-12",
-      "ASSERTIONS": 3,
-      "VERIFIED": 1,
-      "CONFLICTING": 0
-    },
-    {
       "DOC_ID": "DOC-LAB-DC-12",
       "ASSERTIONS": 8,
       "VERIFIED": 8,
+      "CONFLICTING": 0
+    },
+    {
+      "DOC_ID": "DOC-PATH-DC-12",
+      "ASSERTIONS": 3,
+      "VERIFIED": 1,
       "CONFLICTING": 0
     }
   ],
@@ -772,401 +745,48 @@
       "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78b8f-0204-df72-0005-7552000a2786",
-      "elapsed_ms": 310.89258298743516
+      "query_id": "01c78c34-0204-df74-0005-7552000d8202",
+      "elapsed_ms": 188.70816699927673
     },
     {
       "label": "session_identity",
       "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78b8f-0204-df74-0005-7552000a1e3a",
-      "elapsed_ms": 173.31512499367818
-    },
-    {
-      "label": "query",
-      "sql_sha256": "b32c47dfd34716ab7ad2737467d7429b46728590791d6373c3e8d2a0d1dcfc71",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df72-0005-7552000a278a",
-      "elapsed_ms": 167.8563749883324
-    },
-    {
-      "label": "backend/sql/data/ontology.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e3e",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/ontology.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a02",
-      "status": "PASS"
-    },
-    {
-      "label": "deploy_extract_assertions_proc",
-      "sql_sha256": "18bc3561a4bcccbfec4d788034a57cce463a0fa36ff89a719e8b734f24661f0b",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a06",
-      "elapsed_ms": 292.388125002617
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e42",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e46",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a0a",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a27be",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a0e",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e62",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a1a",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a27c6",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a27ca",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a27ce",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e6e",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/data/load_daycare_cohort.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a27f2",
-      "status": "PASS"
-    },
-    {
-      "label": "reanchor_deep_case_visit",
-      "sql_sha256": "81e6e3567e033ef46257916f852efc119eb92f2cc211e5dacf92ac928e6450c3",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e76",
-      "elapsed_ms": 522.1246669825632
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e8a",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a2816",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e96",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1e9e",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a2832",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1ec2",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a2836",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a42",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4a56",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1eee",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a283a",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a283e",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a2842",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1ef2",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/load_demo_hero.sql",
-      "query_id": "01c78b90-0204-df72-0005-7552000a2846",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/reanchor_cohort_documents.sql",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ac6",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/reanchor_cohort_documents.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1ef6",
-      "status": "PASS"
-    },
-    {
-      "label": "backend/sql/demo/reanchor_cohort_documents.sql",
-      "query_id": "01c78b90-0204-df74-0005-7552000a1efa",
-      "status": "PASS"
-    },
-    {
-      "label": "query",
-      "sql_sha256": "7b6dc9e16c538f4df79642350f06139e106af814cd669518502225546c57a9d5",
-      "status": "PASS",
-      "rows": 4,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1efe",
-      "elapsed_ms": 696.9605830090586
-    },
-    {
-      "label": "refresh_dynamic_table",
-      "sql_sha256": "e06b1e701465504cd54043541376c7cf16a591b40b9604852cd4c7bae16191e8",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df72-0005-7552000a284a",
-      "elapsed_ms": 1758.3763750153594
-    },
-    {
-      "label": "refresh_dynamic_table",
-      "sql_sha256": "c6b17a90ec51225f175d4907b3aa9eeb207c06e3f3f7f24dace9f5851d67faf2",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f02",
-      "elapsed_ms": 1740.9225000010338
-    },
-    {
-      "label": "refresh_dynamic_table",
-      "sql_sha256": "b7938e5ba434f67aae9a2be3bbe6e0bce4064c5ae894c1751e13ed4666323ecd",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f0a",
-      "elapsed_ms": 1584.9977500038221
-    },
-    {
-      "label": "refresh_dynamic_table",
-      "sql_sha256": "14b9a82ccfe015e3f8d67e9e6178da14f8216bb3bda585136006ec68ca49b172",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f12",
-      "elapsed_ms": 1247.031708015129
-    },
-    {
-      "label": "CHUNK_DOCUMENTS_PROC",
-      "query_id": "01c78b90-0204-df67-0005-7552000a4aca",
-      "status": "PASS"
-    },
-    {
-      "label": "find_unverified_hero_docs",
-      "sql_sha256": "97aa81072356fa5720ae5969b2a7d11bed37865b982fb57b8fbc29cc0207a17a",
-      "status": "PASS",
-      "rows": 4,
-      "query_id": "01c78b90-0204-df72-0005-7552000a2852",
-      "elapsed_ms": 675.3762910084333
-    },
-    {
-      "label": "reset_hero_links",
-      "sql_sha256": "7058573f9bf51b219696567ab0385a2713081a67f139696856a2161fb7bb0b28",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f1a",
-      "elapsed_ms": 644.6417080005631
-    },
-    {
-      "label": "reset_hero_assertions",
-      "sql_sha256": "94f73d7071d0719083f46b6f36ebe1fecce799fa7114be5f1b18152dd6be8f5e",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ad2",
-      "elapsed_ms": 501.8142920162063
-    },
-    {
-      "label": "reset_hero_page",
-      "sql_sha256": "1e56f503aaaa4f0cdc76c3129cf79b2f34ceb8ba5d3e8245ab1a401aa23f1ebe",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ad6",
-      "elapsed_ms": 666.2366249947809
-    },
-    {
-      "label": "reset_hero_links",
-      "sql_sha256": "7058573f9bf51b219696567ab0385a2713081a67f139696856a2161fb7bb0b28",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ada",
-      "elapsed_ms": 495.4943750053644
-    },
-    {
-      "label": "reset_hero_assertions",
-      "sql_sha256": "94f73d7071d0719083f46b6f36ebe1fecce799fa7114be5f1b18152dd6be8f5e",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ade",
-      "elapsed_ms": 413.077124976553
-    },
-    {
-      "label": "reset_hero_page",
-      "sql_sha256": "1e56f503aaaa4f0cdc76c3129cf79b2f34ceb8ba5d3e8245ab1a401aa23f1ebe",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df72-0005-7552000a2856",
-      "elapsed_ms": 850.643083016621
-    },
-    {
-      "label": "reset_hero_links",
-      "sql_sha256": "7058573f9bf51b219696567ab0385a2713081a67f139696856a2161fb7bb0b28",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ae2",
-      "elapsed_ms": 606.7333329992834
-    },
-    {
-      "label": "reset_hero_assertions",
-      "sql_sha256": "94f73d7071d0719083f46b6f36ebe1fecce799fa7114be5f1b18152dd6be8f5e",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df72-0005-7552000a285a",
-      "elapsed_ms": 681.4932080160361
-    },
-    {
-      "label": "reset_hero_page",
-      "sql_sha256": "1e56f503aaaa4f0cdc76c3129cf79b2f34ceb8ba5d3e8245ab1a401aa23f1ebe",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f1e",
-      "elapsed_ms": 751.9302080036141
-    },
-    {
-      "label": "reset_hero_links",
-      "sql_sha256": "7058573f9bf51b219696567ab0385a2713081a67f139696856a2161fb7bb0b28",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f22",
-      "elapsed_ms": 486.27462500007823
-    },
-    {
-      "label": "reset_hero_assertions",
-      "sql_sha256": "94f73d7071d0719083f46b6f36ebe1fecce799fa7114be5f1b18152dd6be8f5e",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df74-0005-7552000a1f26",
-      "elapsed_ms": 435.13454098138027
-    },
-    {
-      "label": "reset_hero_page",
-      "sql_sha256": "1e56f503aaaa4f0cdc76c3129cf79b2f34ceb8ba5d3e8245ab1a401aa23f1ebe",
-      "status": "PASS",
-      "rows": 1,
-      "query_id": "01c78b90-0204-df67-0005-7552000a4ae6",
-      "elapsed_ms": 1788.1999999808613
-    },
-    {
-      "label": "EXTRACT_ASSERTIONS_PROC",
-      "query_id": "01c78b90-0204-df72-0005-7552000a285e",
-      "status": "PASS"
-    },
-    {
-      "label": "EXTRACT_ASSERTIONS_PROC",
-      "query_id": "01c78b92-0204-df67-0005-7552000a4f32",
-      "status": "PASS"
-    },
-    {
-      "label": "RECONCILE_EVIDENCE_PROC",
-      "query_id": "01c78b92-0204-df72-0005-7552000a2cce",
-      "status": "PASS"
-    },
-    {
-      "label": "REFRESH_READINESS_PROC",
-      "query_id": "01c78b92-0204-df74-0005-7552000a7176",
-      "status": "PASS"
+      "query_id": "01c78c34-0204-df74-0005-7552000d8206",
+      "elapsed_ms": 209.39900001394562
     },
     {
       "label": "query",
       "sql_sha256": "ceac6a9bd9868c43e759aa6263aaafc04f5aa303f1dc41a6f5a86954ee5d1545",
       "status": "PASS",
       "rows": 13,
-      "query_id": "01c78b97-0204-df72-0005-7552000a976a",
-      "elapsed_ms": 609.3982499733102
+      "query_id": "01c78c34-0204-df74-0005-7552000d8212",
+      "elapsed_ms": 200.08795798639767
     },
     {
       "label": "query",
       "sql_sha256": "1ee2dd797c7c1f2cf8d234fb030f8bcf6de119a308e0baa650e0fda489c123e2",
       "status": "PASS",
       "rows": 168,
-      "query_id": "01c78b97-0204-df74-0005-7552000aafd2",
-      "elapsed_ms": 1512.2722499945667
+      "query_id": "01c78c34-0204-df72-0005-7552000d737e",
+      "elapsed_ms": 323.68016699911095
     },
     {
       "label": "query",
       "sql_sha256": "fa99807403880aa984bb4b210d95ea324aa86482209387c7db78c1606fe49646",
       "status": "PASS",
       "rows": 5,
-      "query_id": "01c78b97-0204-df72-0005-7552000a976e",
-      "elapsed_ms": 303.46866699983366
+      "query_id": "01c78c34-0204-df66-0005-7552000cb6a6",
+      "elapsed_ms": 271.4684579987079
     },
     {
       "label": "query",
       "sql_sha256": "0ae17fea48bf48b67c6401e11720458ee795c01ac49fcda04689885ba744ba7c",
       "status": "PASS",
       "rows": 0,
-      "query_id": "01c78b97-0204-df74-0005-7552000aafd6",
-      "elapsed_ms": 387.88324999040924
+      "query_id": "01c78c34-0204-df72-0005-7552000d738e",
+      "elapsed_ms": 250.52400000276975
     }
   ]
 }

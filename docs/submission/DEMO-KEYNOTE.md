@@ -30,11 +30,16 @@ Seed: `backend/sql/demo/load_demo_hero.sql`.
 1. `.venv/bin/python -m backend.scripts.prepare_demo` → must print `"status": "PASS"`.
    It moves every visit to tomorrow, loads the hero, runs the two-model extraction and
    recomputes readiness. Re-run it on the morning of each demo day.
-2. `cd web && npm run demo:check` → must print `PASS` for every beat. It walks this exact
-   script in a browser against live data and saves a screenshot per beat in `evidence/demo/`.
-3. Browser: Chrome, 1440 wide, light appearance, zoom 100%, Copilot switch **on**,
+2. **Present from a production build, never the dev server.** The dev server hot-reloads
+   when any file is saved, which wipes the copilot mid-question (observed 6 Oct: a save by
+   another session during a run hung two answers). `cd web && npm run build && npx next start -p 3000`.
+3. `DEMO_BASE=http://127.0.0.1:3000 npm run demo:check` → must print `PASS: 19/19`. It walks
+   this exact script in a browser against live data and saves a screenshot per beat in
+   `evidence/demo/`. Recorded 6 Oct on a production build: 19/19 twice in a row, every answer
+   10–14 s.
+4. Browser: Chrome, 1440 wide, light appearance, zoom 100%, Copilot switch **on**,
    chat closed, sidebar open, on the Day care page. Microphone allowed. Notifications off.
-4. Warm the path once (open Anjali, ask one question) so the first live answer is not a cold start.
+5. Warm the path once (open Anjali, ask one question) so the first live answer is not a cold start.
 
 ---
 

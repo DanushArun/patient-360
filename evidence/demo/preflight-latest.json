@@ -1,20 +1,20 @@
 {
-  "recorded_at": "2026-10-06T08:42:47.815Z",
-  "base": "http://127.0.0.1:3000",
+  "recorded_at": "2026-10-06T11:49:08.148Z",
+  "base": "http://127.0.0.1:3217",
   "hero": {
     "id": "PAT-DC-12",
     "name": "Anjali Deshpande"
   },
-  "status": "FAIL",
-  "passed": 17,
+  "status": "PASS",
+  "passed": 19,
   "total": 19,
-  "seconds": 228,
+  "seconds": 128,
   "checks": [
     {
       "beat": "Day care opens with tomorrow's list",
       "ok": true,
       "detail": "13 upcoming visits · 13 accessible patients; 13 cards",
-      "ms": 2576
+      "ms": 4712
     },
     {
       "beat": "Hero is on the list, blocked, with its reason",
@@ -26,97 +26,97 @@
       "beat": "Voice: who is blocked today",
       "ok": true,
       "detail": "6 patients marked on the list",
-      "ms": 6976
+      "ms": 1693
     },
     {
       "beat": "Voice: open the hero's record (person confirms)",
       "ok": true,
       "detail": "confirmed by click, record opened",
-      "ms": 2982
+      "ms": 7452
     },
     {
       "beat": "Overview: blocked LVEF and pre-auth conflict with rule versions",
       "ok": true,
       "detail": "pre-auth table status is 'pending' but letter says 'approved' - human reconciliation required | LVEF 49 below 50 AND dropped 14pp from baseline (>=10pp threshold when current<50) - hold trastuzumab | SURV-LVEF-002 v1 | EVT-DC-12-LVEF0 | EVT-DC-12-LVEF1",
-      "ms": 8
+      "ms": 3
     },
     {
       "beat": "Facts section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 11179
+      "ms": 9134
     },
     {
       "beat": "Timeline section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 10671
+      "ms": 8643
     },
     {
       "beat": "Documents section has content",
       "ok": true,
       "detail": "5 documents",
-      "ms": 58
+      "ms": 542
     },
     {
       "beat": "Coverage section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 10151
+      "ms": 10131
     },
     {
       "beat": "Family section has content",
       "ok": true,
       "detail": "ok",
-      "ms": 72
+      "ms": 68
     },
     {
       "beat": "Copilot chat opens beside the record",
       "ok": true,
       "detail": "composer ready",
-      "ms": 66
+      "ms": 43
     },
     {
       "beat": "Ask: Why is she blocked?",
       "ok": true,
       "detail": "Safety · SURV-LVEF-002",
-      "ms": 14692
+      "ms": 12666
     },
     {
       "beat": "Ask: What does the echo show?",
       "ok": true,
       "detail": "Safety · SURV-LVEF-002",
-      "ms": 13942
+      "ms": 10312
     },
     {
       "beat": "Ask: Is her pre-authorisation approved?",
-      "ok": false,
-      "detail": "slow: 71.7 s",
-      "ms": 71707
+      "ok": true,
+      "detail": "2 of 15 record checks need attention: 1 blocked, 1 conflict. 13 met.",
+      "ms": 13766
     },
     {
       "beat": "Ask: Show me the latest lab results",
       "ok": true,
       "detail": "Neutrophils (ANC)",
-      "ms": 17030
+      "ms": 11571
     },
     {
       "beat": "Ask: What medication is she on?",
       "ok": true,
-      "detail": "LVEF 49 below 50 AND dropped 14pp from baseline (>=10pp threshold when current<50) - hold trastuzumab",
-      "ms": 15210
+      "detail": "Anjali Deshpande's recorded regimen is Paclitaxel + trastuzumab, weekly; cycle 7 is due 7 Oct 2026, 09:30.",
+      "ms": 11241
     },
     {
       "beat": "Ask: clinical judgement is refused with an evidence packet",
       "ok": true,
       "detail": "refused; packet offered to the treating practitioner",
-      "ms": 17804
+      "ms": 13898
     },
     {
       "beat": "Cited source opens on the echo report text",
-      "ok": false,
-      "detail": "locator.waitFor: Timeout 30000ms exceeded.",
-      "ms": 31170
+      "ok": true,
+      "detail": "LVEF (biplane Simpson): 49 % visible",
+      "ms": 10279
     },
     {
       "beat": "No page errors during the run",
