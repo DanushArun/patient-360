@@ -6,6 +6,9 @@
 
 ![Snowflake](https://img.shields.io/badge/Snowflake-Cortex%20AI-29B5E8?logo=snowflake&logoColor=white) ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white) ![Python tests](https://img.shields.io/badge/python%20tests-565%20passed-2ea44f) ![Web tests](https://img.shields.io/badge/web%20tests-381%20passed-2ea44f) ![E2E tests](https://img.shields.io/badge/e2e%20tests-41%20passed-2ea44f) ![Data](https://img.shields.io/badge/data-synthetic%20only-6f42c1)
 
+**Contents:** [The challenge](#the-challenge) · [What Saarthi does](#what-saarthi-does) · [The data](#the-data-structured-and-unstructured-in-one-record) · [How data gets in](#how-data-gets-in) · [How it works](#how-it-works) · [Citation checks](#how-every-answer-is-checked-against-its-evidence) · [Getting started](#getting-started) · [Verification](#verification) · [Roadmap](#roadmap)
+
+
 ![Saarthi day-care board: tomorrow's visits grouped by record state, each blocked visit showing the rule that blocked it](docs/assets/screens/day-care.png)
 
 ---
@@ -43,6 +46,7 @@ A cancer day-care visit depends on a dozen records arriving on time: a recent ec
 
 Saarthi brings every source into one patient record and runs the readiness checks before the visit:
 
+- **Automatic ingestion, no manual upload.** Records, reports and letters flow in from hospital, lab and payer systems; a new report is read, verified and reflected on the readiness board within minutes. See [How data gets in](#how-data-gets-in).
 - **A readiness board for tomorrow.** Every visit is grouped as *needs review*, *waiting on evidence*, *advisory* or *checks met*, and each block names the rule and version that caused it.
 - **One patient record.** Overview, facts, timeline, documents, coverage and family views, all drawn from the same governed reads.
 - **A copilot that cites everything.** Ask "why is she blocked?" and get the failing checks, their rule versions, and links to the exact evidence. Voice or typed.
