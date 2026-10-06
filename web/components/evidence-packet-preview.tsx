@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock } from "@/components/ui/clock";
+
 import type { ReactNode } from "react";
 import type { PatientData } from "@/lib/patient";
 import { useFactsData } from "./workspace-patient-facts";
@@ -16,7 +18,7 @@ export function EvidencePacketPreview({ patient, knownAsOf, recipient }: {
   return <section aria-label="Evidence packet preview" className="sa-packet-preview">
     <h3>Evidence packet preview</h3>
     <p className="sa-meta">Draft · Not created · Addressed to {recipient}</p>
-    <p className="sa-meta">{patient.patientName} · {patient.patientId} · Known as of {knownAsOf}</p>
+    <p className="sa-meta">{patient.patientName} · {patient.patientId} · Known as of <Clock value={knownAsOf} /></p>
     <PacketFacts patientId={patient.patientId} knownAsOf={knownAsOf} />
     <h4>Missing or conflicting records</h4>
     <ul>{patient.gates.filter((gate) => gate.outcome !== "pass").map((gate, index) =>

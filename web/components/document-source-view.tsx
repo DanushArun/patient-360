@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { formatClock } from "@/lib/display-format.mjs";
+import { Clock } from "@/components/ui/clock";
 import type { ReactNode } from "react";
 import type { DocumentSource } from "@/lib/document-source.mjs";
-import { Page, WorkspaceNav } from "@/components/sa";
+import { Page, WorkspaceBar, WorkspaceNav } from "@/components/sa";
 
 type SourceProps = {
   patientId: string; source: DocumentSource; returnHref: string; knownAsOf: string;
@@ -26,21 +28,22 @@ export function DocumentSourceView(props: SourceProps): ReactNode {
   const span = source.highlight;
   return <Page>
     <WorkspaceNav patientId={patientId} />
+    <WorkspaceBar section="Source document" knownAsOf={`Known as of ${formatClock(knownAsOf)}`} />
     <Link href={returnHref} prefetch={false}>← Back to patient record</Link>
     <header className="sa-screen-header"><div>
       <h1>Source document</h1>
       <p>Patient {patientId} · Document {source.docId} · Page {source.page + 1}
         {" · "}Version {source.version}</p>
     </div></header>
-    <p className="sa-meta">Known as of: {knownAsOf}</p>
+    <p className="sa-meta">Known as of <Clock value={knownAsOf} /></p>
     <dl>
-      <div><dt>Event time</dt><dd>{source.eventTime ?? "Not recorded"}</dd></div>
-      <div><dt>Source recorded</dt><dd>{source.recordedAt ?? "Not recorded"}</dd></div>
-      <div><dt>Ingested</dt><dd>{source.ingestedAt ?? "Not recorded"}</dd></div>
+      <div><dt>Event time</dt><dd><Clock value={source.eventTime} /></dd></div>
+      <div><dt>Source recorded</dt><dd><Clock value={source.recordedAt} /></dd></div>
+      <div><dt>Ingested</dt><dd><Clock value={source.ingestedAt} /></dd></div>
     </dl>
     {source.currentStatus && <p className="sa-meta">
       Current document status: {source.currentStatus}
-      {source.statusObservedAt && <> · observed {source.statusObservedAt}</>}
+      {source.statusObservedAt && <> · observed <Clock value={source.statusObservedAt} /></>}
       {source.currentStatus !== "active" && "; retained source, excluded from current evidence."}
     </p>}
     <p className="sa-meta">Extracted source text. {span

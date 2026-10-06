@@ -41,7 +41,7 @@ test("overview exposes returned visit and SQL cutoff without inventing source in
     onSelectDocuments: () => {},
   }));
 
-  assert.match(markup, /3 Oct 2026, 09:00:00/);
+  assert.match(markup, /3 Oct 2026, 09:00/);
   assert.match(markup, /Carboplatin \+ Paclitaxel/);
   assert.match(markup, /Dr Meera Iyer/);
   assert.match(markup, /1 Oct 2026, 09:42/);

@@ -7,7 +7,7 @@
     "dev:recording": "next dev --webpack --hostname 127.0.0.1 --port 3000",
     "build": "next build --webpack",
     "start": "next start",
-    "test": "node --test lib/*.test.mjs",
+    "test": "node --require ./lib/test-alias.cjs --test lib/*.test.mjs",
     "test:e2e": "node tests/run-e2e.mjs",
     "test:e2e:raw": "playwright test",
     "typecheck": "next typegen && tsc --noEmit --incremental false"

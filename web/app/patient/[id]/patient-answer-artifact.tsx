@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Clock } from "@/components/ui/clock";
 import type { AgentTurn, AnswerClaim } from "@/lib/patient";
 import Link from "next/link";
 
@@ -104,7 +105,7 @@ export function PatientAnswerArtifact({ turn, patientId, sourceScope }: {
     {artifact && <>
       <div className="sa-meta">Answer status: {statusLabel(artifact.overall_status)}</div>
       <div className="sa-meta">Question class: {artifact.classification}</div>
-      <div className="sa-meta">Known as of: {artifact.known_as_of ?? "Unavailable"}</div>
+      <div className="sa-meta">Known as of <Clock value={artifact.known_as_of} fallback="Unavailable" /></div>
       {artifact.refusal && <div className="sa-limitation">
         {artifact.refusal.message}<br />
         Evidence packet addressed to {artifact.refusal.practitioner.name}

@@ -1,10 +1,12 @@
 // Short-lived server-side cache for patient READS. Every cached value was produced by a full
 // withPatientSession (bind, consent check, read, consent re-check), so a hit is at most
 // TTL_MS old. Consent withdrawn inside that window is therefore honoured on the next miss,
-// not instantly: the explicit trade for millisecond repeat loads. Writes bump the patient's
+// not instantly: the explicit trade for millisecond repeat loads.
+// Window: 2 minutes (decided 6 Oct 2026). Each uncached read costs ~9 s of governed round
+// trips, so read-ahead (warm.ts) needs entries to outlive the click that follows it. Writes bump the patient's
 // generation, which drops cached entries and stops reads that began before the write from
 // storing a stale result. Errors are never cached.
-const TTL_MS = 15_000;
+const TTL_MS = 120_000;
 const MAX_ENTRIES = 500;
 
 type Entry = { at: number; generation: number; value: Promise<unknown> };
@@ -31,8 +33,12 @@ export function cachedRead<T>(patientId: string, name: string, load: () => Promi
   return value;
 }
 
+/** Scope for reads that span patients (review queue): any patient write invalidates it. */
+export const WORKSPACE_SCOPE = "__workspace";
+
 /** Call after any write that can change what a patient read returns. */
 export function invalidatePatient(patientId: string): void {
+  if (patientId !== WORKSPACE_SCOPE) invalidatePatient(WORKSPACE_SCOPE);
   state.generations.set(patientId, generationOf(patientId) + 1);
   for (const key of state.entries.keys()) {
     if (key.startsWith(`${patientId}\u0000`)) state.entries.delete(key);

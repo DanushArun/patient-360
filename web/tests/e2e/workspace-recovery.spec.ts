@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
+import { formatClock } from "../../lib/display-format.mjs";
 
 const patientId = "PAT-DC-04";
 const routePath = `/test-workspace/${patientId}`;
@@ -192,7 +193,7 @@ test("test_facts_retry_when_first_read_fails_shows_returned_clock_semantics", as
   const facts = page.getByRole("region", { name: "Patient facts" });
   await expect(facts.getByRole("alert")).toContainText("could not be loaded");
   await facts.getByRole("button", { name: "Retry" }).click();
-  await expect(facts).toContainText(`Lab data ingested through ${knownAsOf}.`);
+  await expect(facts).toContainText(`Lab data ingested through ${formatClock(knownAsOf)}.`);
   await facts.getByRole("button", { name: "Demographics" }).click();
   await expect(facts).toContainText(
     `Current facts read at ${knownAsOf}; the requested historical cutoff does not apply.`,

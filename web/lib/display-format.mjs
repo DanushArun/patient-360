@@ -1,50 +1,26 @@
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec',
-];
+// Human-readable clocks (INTERFACE-GUIDELINES §6). Raw ISO strings never appear in prose;
+// the exact stamp stays available through <time dateTime title> where it is rendered.
 
-/**
- * Formats a raw clock/timestamp string into a natural, human-readable label.
- * @param {string | null | undefined} value
- * @returns {string}
- */
+const STAMP = /(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?/;
+const MONTH = new Intl.DateTimeFormat("en-GB", { month: "short", timeZone: "UTC" });
+
+/** "2026-09-23T14:14:48" -> "23 Sept 2026, 14:14". Date-only values keep no time. */
 export function formatClock(value) {
-  if (!value || typeof value !== 'string') return 'Not recorded';
-  const trimmed = value.trim();
-
-  // Date only: YYYY-MM-DD
-  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
-  if (dateOnly) {
-    const [, y, m, d] = dateOnly;
-    const month = MONTHS[Number(m) - 1];
-    if (!month) return 'Not recorded';
-    return `${Number(d)} ${month} ${y}`;
+  const match = typeof value === "string" ? STAMP.exec(value) : null;
+  if (!match || match.index !== 0) return "Not recorded";
+  const [, year, month, day, hour, minute, , zone] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (date.getUTCMonth() !== Number(month) - 1 || date.getUTCDate() !== Number(day)) {
+    return "Not recorded";
   }
-
-  // Full timestamp: YYYY-MM-DD[T ]HH:MM:SS...
-  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/.exec(trimmed);
-  if (!match) return 'Not recorded';
-
-  const [, y, m, d, hh, mm, , zone] = match;
-  const month = MONTHS[Number(m) - 1];
-  if (!month) return 'Not recorded';
-
-  const datePart = `${Number(d)} ${month} ${y}`;
-  const timePart = `${hh}:${mm}`;
-
-  if (!zone) return `${datePart}, ${timePart}`;
-  const zoneLabel = zone === 'Z' ? 'UTC' : `UTC${zone}`;
-  return `${datePart}, ${timePart} ${zoneLabel}`;
+  const label = `${Number(day)} ${MONTH.format(date)} ${year}`;
+  if (!hour) return label;
+  const suffix = zone === "Z" ? " UTC" : zone ? ` UTC${zone}` : "";
+  return `${label}, ${hour}:${minute}${suffix}`;
 }
 
-/**
- * Replaces embedded ISO timestamps in prose text with humanized clocks.
- * @param {string | null | undefined} text
- * @returns {string}
- */
+/** Rewrites ISO stamps embedded in record text (rule reasons, notices). */
 export function humanizeClocks(text) {
-  if (!text || typeof text !== 'string') return '';
-  return text.replace(/\b(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)\b/g, (stamp) => {
-    const formatted = formatClock(stamp);
-    return formatted === 'Not recorded' ? stamp : formatted;
-  });
+  if (typeof text !== "string") return "";
+  return text.replace(new RegExp(STAMP.source, "g"), (stamp) => formatClock(stamp));
 }

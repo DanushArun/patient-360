@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Clock } from "@/components/ui/clock";
+import { formatClock } from "@/lib/display-format.mjs";
 import { useState, type ReactNode } from "react";
-import { Page, WorkspaceNav } from "@/components/sa";
+import { Page, WorkspaceBar, WorkspaceNav } from "@/components/sa";
+import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import type { LiveReviewQueue, QueueIssue, QueueTask } from "@/lib/review-queue.mjs";
 import styles from "./review-queue.module.css";
 
@@ -13,10 +16,11 @@ export function ReviewQueueView({ queue, loadedAt }: ReviewQueueViewProps): Reac
   const rows = collectRows(queue);
   return <Page>
     <WorkspaceNav current="queue" />
+    <WorkspaceBar section="Review queue" knownAsOf={<>Queue loaded <Clock value={loadedAt} /></>} />
     <div className={styles.workspace}>
       <header className={styles.header}>
         <div><h1>Review queue</h1><p>Tasks and record checks for authorized patients.</p></div>
-        <a className={styles.dayCare} href="/review-queue">Refresh queue</a>
+        <a className={styles.dayCare} href="/review-queue?refresh=1">Refresh queue</a>
       </header>
       <QueueProvenance loadedAt={loadedAt} issues={queue.issues} />
       <QueueWorkspace rows={rows} patients={queue.patients.length} />
@@ -69,7 +73,7 @@ function QueueBoard({ rows, selectedKey, onSelect }: {
         {tasks.map((row) => <button type="button" key={row.task!.taskId}
           className={styles.taskCard} aria-pressed={row.task!.taskId === selectedKey}
           onClick={() => onSelect(row.task!.taskId)}>
-          <strong>{humanize(row.task!.action) || "Review task"}</strong>
+          <strong>{titleCase(humanize(row.task!.action)) || "Review task"}</strong>
           <span>{row.issue?.patientName ?? row.task!.patientId}</span>
           <span className={styles.secondary}>{row.task!.reason ?? "Reason not recorded"}</span>
           <span className={styles.secondary}>{row.task!.owner ?? "Unassigned"}</span>
@@ -78,7 +82,8 @@ function QueueBoard({ rows, selectedKey, onSelect }: {
         {!tasks.length && <p className={styles.columnEmpty}>No tasks in this state</p>}
         {group === "Open" && rows.filter((row) => !row.task).map((row) =>
           <div className={styles.uncreated} key={row.issue!.key}>
-            <strong>{row.issue!.patientName}</strong><p>No task created · {row.issue!.reason}</p>
+            <strong>{row.issue!.patientName}</strong>
+            <span className={styles.secondary}>No task created · {row.issue!.reason}</span>
             <PatientLink patientId={row.issue!.patientId} />
           </div>)}
       </div>;
@@ -97,16 +102,16 @@ function TaskInspector({ row }: { row: QueueRow }): ReactNode {
   const patientId = row.task?.patientId ?? row.issue!.patientId;
   return <aside className={styles.inspector} aria-label="Task details">
     <h2>Task details</h2>
-    <h3>{humanize(row.task?.action ?? null) || "Readiness result needs review"}</h3>
+    <h3>{titleCase(humanize(row.task?.action ?? null)) || "Readiness result needs review"}</h3>
     <dl>
       <dt>Patient</dt><dd><PatientCell patientId={patientId} issue={row.issue} /></dd>
       <dt>Task status</dt><dd>{titleCase(humanize(row.task?.state ?? null)) || "No task"}</dd>
       <dt>Owner</dt><dd>{row.task?.owner ?? "Unassigned"}</dd>
       <dt>Task created</dt><dd><Timestamp value={row.task?.createdAt ?? null} /></dd>
     </dl>
-    <p>{row.task?.reason ?? "No task created"}</p>
+    <p className={styles.reason}>{row.task?.reason ?? "No task created"}</p>
     <h3>Record check</h3><ReadinessCell issue={row.issue} />
-    <p className={styles.secondary}>Task completion does not change the rule outcome.</p>
+    <p className={styles.note}>Task completion does not change the rule outcome.</p>
     <PatientLink patientId={patientId} />
     <Link className={styles.reviewLink} href={`/history/${encodeURIComponent(patientId)}`}
       prefetch={false}>Open task history</Link>
@@ -116,6 +121,7 @@ function TaskInspector({ row }: { row: QueueRow }): ReactNode {
 export function ReviewQueueFailure(): ReactNode {
   return <Page>
     <WorkspaceNav current="queue" />
+    <WorkspaceBar section="Review queue" knownAsOf="Not available" />
     <div className={styles.workspace}>
       <header className={styles.header}><h1>Review queue</h1></header>
       <div className={styles.empty} role="alert">
@@ -130,6 +136,7 @@ export function ReviewQueueFailure(): ReactNode {
 export function ReviewQueueLoading(): ReactNode {
   return <Page>
     <WorkspaceNav current="queue" />
+    <WorkspaceBar section="Review queue" knownAsOf="Not available" />
     <div className={styles.workspace}>
       <header className={styles.header}><h1>Review queue</h1></header>
       <p className={styles.empty} role="status" aria-busy="true">
@@ -152,7 +159,7 @@ function collectRows(queue: LiveReviewQueue): QueueRow[] {
 function QueueTableRow({ row }: { row: QueueRow }): ReactNode {
   if (!row.task) return <ReadinessRow issue={row.issue!} />;
   return <tr>
-    <td data-label="Task"><strong>{humanize(row.task.action) || "Review task"}</strong>
+    <td data-label="Task"><strong>{titleCase(humanize(row.task.action)) || "Review task"}</strong>
       <span className={styles.secondary}>{row.task.reason || "Reason not recorded"}</span></td>
     <td data-label="Patient and visit"><PatientCell patientId={row.task.patientId}
       issue={row.issue} /></td>
@@ -183,22 +190,24 @@ function PatientCell({ patientId, issue }: {
   issue: QueueIssue | null;
 }): ReactNode {
   const patientName = issue?.patientName ?? patientId;
-  return <><strong>{patientName}</strong><span className={styles.secondary}>{patientId}</span>
+  return <div className={styles.stack}><strong>{patientName}</strong>
+    <span className={styles.secondary}>{patientId}</span>
     {issue && <time className={styles.secondary} dateTime={issue.scheduled}>
-      Visit {issue.scheduled.slice(0, 10)}
-    </time>}</>;
+      Visit {formatClock(issue.scheduled)}
+    </time>}</div>;
 }
 
 function ReadinessCell({ issue }: { issue: QueueIssue | null }): ReactNode {
   if (!issue) return <span>No matching result for this visit</span>;
-  return <><strong>{issue.gate} · {issue.ruleId} v{issue.ruleVersion}</strong>
-    <span className={styles.secondary}>Rule outcome</span>
-    <span className={styles.outcome} data-outcome={issue.outcome}>
+  return <div className={styles.stack}>
+    <strong>{titleCase(issue.gate)} · {issue.ruleId} v{issue.ruleVersion}</strong>
+    <span className={styles.outcome} data-outcome={issue.outcome}
+      aria-label={`Rule outcome: ${humanize(issue.outcome)}`}>
       {titleCase(humanize(issue.outcome)) || "Outcome not recorded"}
     </span>
     {issue.reason && <span className={styles.secondary}>{issue.reason}</span>}
     <span className={styles.secondary}>Known as of <Timestamp value={issue.knownAsOf} /></span>
-  </>;
+  </div>;
 }
 
 function PatientLink({ patientId }: { patientId: string }): ReactNode {
@@ -211,11 +220,11 @@ function QueueProvenance({ loadedAt, issues }: {
   loadedAt: string;
   issues: QueueIssue[];
 }): ReactNode {
-  const timestamps = [...new Set(issues.map((issue) => issue.knownAsOf))];
+  const timestamps = [...new Set(issues.map((issue) => issue.knownAsOf).filter(Boolean))].sort();
+  const oldest = timestamps[0], newest = timestamps.at(-1);
   return <p className={styles.provenance}>
-    <span>Queue loaded <Timestamp value={loadedAt} /></span>
-    {timestamps.length > 0 && <span>Record checks as of {timestamps.map((value, index) =>
-      <span key={value}>{index > 0 ? ", " : ""}<Timestamp value={value} /></span>)}</span>}
+    {newest && <span>Newest record check <Timestamp value={newest} /></span>}
+    {oldest && oldest !== newest && <span>Oldest record check <Timestamp value={oldest} /></span>}
   </p>;
 }
 
@@ -236,7 +245,7 @@ function EmptyQueue({ patients }: { patients: number }): ReactNode {
 
 function Timestamp({ value }: { value: string | null }): ReactNode {
   if (!value) return <span>Not recorded</span>;
-  return <time dateTime={value}>{value.replace("T", " ")}</time>;
+  return <time dateTime={value}>{formatRecordDate(value)}</time>;
 }
 
 function humanize(value: string | null): string {

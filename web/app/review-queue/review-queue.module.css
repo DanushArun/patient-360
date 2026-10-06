@@ -228,9 +228,16 @@
 .views button { min-height: var(--control-height); padding: 8px 4px; color: var(--label-secondary);
   border-bottom: 2px solid transparent; }
 .views button[aria-pressed="true"] { color: var(--label); border-bottom-color: var(--accent); }
+/* Layout answers to the space this view actually has (the sidebar and the docked copilot
+   both change it), not the viewport width: columns never shrink below a readable width. */
+.workspace { container-type: inline-size; container-name: queue; }
 .boardLayout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; }
-.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
   align-items: start; }
+@container queue (max-width: 860px) {
+  .boardLayout { grid-template-columns: 1fr; }
+  .inspector { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--separator); }
+}
 .column { padding: 12px; min-width: 0; background: var(--bg-secondary); border-radius: var(--radius-control); }
 .column h2 { margin: 0 0 12px; font-size: var(--fs-callout); font-weight: 600; }
 .column h2 span { margin-left: 8px; color: var(--label-tertiary); font-weight: 400; }
@@ -242,7 +249,15 @@
   outline-offset: 2px; }
 .taskState { color: var(--label-secondary); font-size: var(--fs-footnote); text-transform: capitalize; }
 .columnEmpty { color: var(--label-tertiary); font-size: var(--fs-footnote); }
-.uncreated { padding: 12px 0; font-size: var(--fs-callout); border-top: 1px solid var(--separator); }
+.uncreated { display: grid; gap: 8px; padding: 12px; margin-bottom: 12px; font-size: var(--fs-callout);
+  background: var(--bg); border: 1px dashed var(--separator-strong); border-radius: var(--radius-control); }
+.uncreated .secondary { margin-top: 0; }
+.stack { display: grid; gap: 4px; justify-items: start; }
+.stack .secondary { margin-top: 0; }
+.stack .outcome { margin-top: 2px; font-size: var(--fs-footnote); }
+.reason { margin: 12px 0 0; color: var(--label-secondary); line-height: 1.4; }
+.note { margin: 12px 0; color: var(--label-tertiary); font-size: var(--fs-footnote); }
+.inspector .reviewLink { margin-top: 8px; }
 .inspector { min-width: 0; padding-left: 24px; border-left: 1px solid var(--separator); font-size: var(--fs-callout); }
 .inspector h2 { margin: 0 0 16px; font-size: var(--fs-title-2); }
 .inspector h3 { font-size: var(--fs-body); font-weight: 600; margin: 16px 0 8px; }

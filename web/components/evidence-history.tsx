@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock } from "@/components/ui/clock";
+
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
 
@@ -82,7 +84,7 @@ function AnswerHistoryRow({ answer }: { answer: Audit }): ReactNode {
     {` · Class ${answer.QUESTION_CLASS || "unavailable"}`}
     {` · ${answer.ANSWER_STATUS || "status unavailable"}`}
   </summary>
-    <p className="sa-meta">Known as of {answer.KNOWN_AS_OF || "Not recorded"} · {answer.RUN_ID}</p>
+    <p className="sa-meta">Known as of <Clock value={answer.KNOWN_AS_OF} /> · {answer.RUN_ID}</p>
     <p>{answer.EVIDENCE_IDS?.length ? answer.EVIDENCE_IDS.map((id) => <code key={id}>
       {id}{" "}
     </code>) : "No source pointers recorded."}</p>

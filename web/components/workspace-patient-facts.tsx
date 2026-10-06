@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock } from "@/components/ui/clock";
+
 import { useEffect, useState, type ReactNode } from "react";
 import {
   announcePatientAccessWithdrawn,
@@ -233,7 +235,7 @@ function LabTableRow({ fact, patientId, knownAsOf, expanded, onToggle }: {
       <td><span className={styles.state} data-state={String(fact.value_state ?? "unknown")}>
         {factStateDisplay(fact)}
       </span></td>
-      <td>{text(fact.event_time, "Not recorded")}</td>
+      <td><Clock value={typeof fact.event_time === "string" ? fact.event_time : null} /></td>
       <td><SourceLinks fact={fact} patientId={patientId} knownAsOf={knownAsOf} /></td>
       <td><button type="button" className={styles.detailButton} aria-expanded={expanded}
         aria-label={`${text(fact.concept, "Fact")} details`} onClick={onToggle}>
@@ -323,7 +325,9 @@ function recordTitle(domain: FactDomain, row: Record<string, unknown>): string {
 }
 
 function Property({ label, value }: { label: string; value: string }): ReactNode {
-  return <div><dt>{label}</dt><dd>{value}</dd></div>;
+  // Clock-shaped values read as natural dates; the exact value stays in <time datetime>.
+  const clock = /^\d{4}-\d{2}-\d{2}T/.test(value);
+  return <div><dt>{label}</dt><dd>{clock ? <Clock value={value} /> : value}</dd></div>;
 }
 
 function text(value: unknown, fallback: string): string {

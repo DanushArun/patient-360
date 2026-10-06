@@ -84,7 +84,9 @@ test("test_documents_when_authorized_metadata_returns_show_clocks_assertions_and
   async ({ page }) => {
   await openDocuments(page);
   const library = page.getByRole("region", { name: "Patient documents" });
-  await expect(library).toContainText("Known as of 2026-10-01T09:42:00");
+  // R2: the exact stored cutoff is rendered (datetime); the visible clock reads naturally.
+  await expect(library.locator('time[datetime="2026-10-01T09:42:00"]').first()).toBeVisible();
+  await expect(library).toContainText("Known as of 1 Oct 2026, 09:42");
   await expect(library).toContainText("City Labs (synthetic)");
   await expect(library).toContainText("2026-09-30T08:30:00");
   await expect(library).toContainText("2026-09-30T09:00:00");

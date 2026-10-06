@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { formatClock } from "@/lib/display-format.mjs";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Page, WorkspaceBar, WorkspaceNav } from "@/components/sa";
 import type { RosterPatient } from "@/components/patient-roster";
@@ -139,7 +140,7 @@ function visitLabel(patient: PatientData): ReactNode {
 
 function RefreshStatus({ model }: { model: PatientScreenModel }): ReactNode {
   if (model.preview || model.refreshState === "current") return null;
-  const knownAsOf = model.patient.knownAsOf ? ` from ${model.patient.knownAsOf}` : "";
+  const knownAsOf = model.patient.knownAsOf ? ` from ${formatClock(model.patient.knownAsOf)}` : "";
   const text = model.refreshState === "refreshing"
     ? `Checking live readiness. Displaying the stored SQL snapshot${knownAsOf}.`
     : `Live readiness refresh failed. The stored SQL snapshot${knownAsOf} remains visible.`;

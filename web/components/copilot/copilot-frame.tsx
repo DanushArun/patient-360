@@ -21,7 +21,8 @@ export function CopilotFrame(): ReactNode {
   return <>
     {!copilot.open && <button type="button" className={styles.launcher}
       onClick={() => copilot.setOpen(true)} aria-label="Open Saarthi copilot">
-      <Sparkles size={16} aria-hidden /> Ask Saarthi <kbd>⌘K</kbd>
+      <Sparkles size={16} aria-hidden /><span className={styles.launcherLabel}>Ask Saarthi</span>
+      <kbd>⌘K</kbd>
     </button>}
     {copilot.open && <CopilotPanel />}
     <CopilotPicker />
@@ -30,7 +31,10 @@ export function CopilotFrame(): ReactNode {
 
 function CopilotPanel(): ReactNode {
   const copilot = useCopilot();
-  return <aside data-copilot-panel data-copilot-ignore className={styles.panel}
+  return <>
+  {/* Below 900 px the copilot is a sheet over the page; the scrim dismisses it. */}
+  <div className={styles.scrim} aria-hidden onClick={() => copilot.setOpen(false)} />
+  <aside data-copilot-panel data-copilot-ignore className={styles.panel}
     data-expanded={copilot.expanded || undefined} aria-label="Saarthi copilot">
     <header className={styles.header}>
       <div className={styles.scope}>
@@ -43,7 +47,7 @@ function CopilotPanel(): ReactNode {
         aria-label="Conversation context" title="Conversation context"
         onClick={() => copilot.setInspector(!copilot.inspector)}><Info size={16} aria-hidden />
       </button>
-      <button type="button" className={styles.iconButton}
+      <button type="button" className={styles.iconButton} data-copilot-widen
         aria-label={copilot.expanded ? "Narrow copilot" : "Widen copilot"}
         title={copilot.expanded ? "Narrow" : "Widen"}
         onClick={() => copilot.setExpanded(!copilot.expanded)}>
@@ -57,7 +61,8 @@ function CopilotPanel(): ReactNode {
       <div ref={copilot.setSlot} className={styles.slot} />
       {!copilot.patient && <CohortConversation />}
     </div>
-  </aside>;
+  </aside>
+  </>;
 }
 
 // ---------------------------------------------------------------- cohort mode

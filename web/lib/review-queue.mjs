@@ -1,3 +1,4 @@
+import { humanizeClocks } from './display-format.mjs';
 // SQL supplies clinical outcomes. Every read independently checks user scope.
 const SCOPE = `WITH patient_scope AS (
   SELECT DISTINCT p.patient_id, p.name
@@ -115,7 +116,7 @@ export function buildLiveReviewQueue(patientRows, readinessRows, taskRows) {
       key, patientId: row.PATIENT_ID, patientName: patient.name, encounterId: row.ENCOUNTER_ID,
       scheduled: row.SCHEDULED, daysToVisit: row.DAYS_TO_VISIT ?? null,
       gate: row.GATE, ruleId: row.RULE_ID, ruleVersion: row.RULE_VERSION,
-      outcome: row.OUTCOME, severity: row.SEVERITY, reason: row.REASON ?? null,
+      outcome: row.OUTCOME, severity: row.SEVERITY, reason: row.REASON ? humanizeClocks(row.REASON) : null,
       knownAsOf: row.KNOWN_AS_OF, tasks: linkedTasks,
     });
   }

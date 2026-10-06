@@ -1,4 +1,6 @@
 import { query, procedureRows } from "./snowflake";
+import { cachedRead, WORKSPACE_SCOPE } from "./read-cache";
+import { formatClock, humanizeClocks } from "./display-format.mjs";
 import { classifyGates, describeGates, orderIssues, type ChairStatus } from "./census-display.mjs";
 
 // Scope is rechecked by the owner procedure on every request.
@@ -23,9 +25,12 @@ export interface ReadinessRow {
   COMPUTED_AT?: string | null;
 }
 
+// Census reads share the 2-minute workspace cache (read-cache.ts); any patient write and the
+// census Refresh action clear it, so a clinician's explicit refresh always re-reads.
 export async function fetchCensus(horizonDays = 7): Promise<ReadinessRow[]> {
   const sql = "CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('census',?)";
-  return procedureRows<ReadinessRow>(await query(sql, [horizonDays]));
+  return cachedRead(WORKSPACE_SCOPE, `census:${horizonDays}`,
+    async () => procedureRows<ReadinessRow>(await query(sql, [horizonDays])));
 }
 
 export interface BindablePatient {
@@ -35,14 +40,16 @@ export interface BindablePatient {
 
 export async function fetchBindablePatients(): Promise<BindablePatient[]> {
   const sql = "CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('patients',7)";
-  return procedureRows<BindablePatient>(await query(sql))
-    .sort((a, b) => a.NAME.localeCompare(b.NAME) || a.PATIENT_ID.localeCompare(b.PATIENT_ID));
+  return cachedRead(WORKSPACE_SCOPE, "patients", async () => procedureRows<BindablePatient>(await query(sql))
+    .sort((a, b) => a.NAME.localeCompare(b.NAME) || a.PATIENT_ID.localeCompare(b.PATIENT_ID)));
 }
 
 export async function fetchPractitionerName(): Promise<string> {
   const sql = "CALL SAARTHI.OPERATIONAL.GET_WEB_WORKSPACE('practitioner',7)";
-  const rows = procedureRows<{ NAME: string; QUALIFICATION: string }>(await query(sql));
-  return rows[0]?.NAME ?? "Practitioner";
+  return cachedRead(WORKSPACE_SCOPE, "practitioner", async () => {
+    const rows = procedureRows<{ NAME: string; QUALIFICATION: string }>(await query(sql));
+    return rows[0]?.NAME ?? "Practitioner";
+  });
 }
 
 // --- Triage, ported from frontend/core/census.py::classify() ---------------
@@ -82,7 +89,7 @@ function projectChair(encounterId: string, group: ReadinessRow[]): Chair {
     scheduled: meta.SCHEDULED,
     status,
     headlineRule: head?.RULE_ID ?? null,
-    headline: gates.length ? describeGates(gates, head) : describeGates([], undefined),
+    headline: humanizeClocks(gates.length ? describeGates(gates, head) : describeGates([], undefined)),
     otherIssues: Math.max(issues.length - 1, 0),
   };
 }
@@ -121,7 +128,7 @@ export function oldestKnownAsOf(rows: ReadinessRow[]): string | null {
 export function censusClockLabel(error: string | null, asOf: string | null,
   loadedAt: string, rowCount: number): string {
   if (error) return `Last attempt ${loadedAt}`;
-  if (asOf) return `Readiness as of ${asOf.replace('T', ' ')} (page loaded ${loadedAt})`;
+  if (asOf) return `Readiness as of ${formatClock(asOf)} · page loaded ${loadedAt}`;
   return rowCount > 0
     ? `Readiness clock not reported by the server (page loaded ${loadedAt})`
     : `No readiness computed yet (page loaded ${loadedAt})`;

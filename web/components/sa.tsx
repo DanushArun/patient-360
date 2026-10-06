@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { ClipboardList, LayoutDashboard, PanelLeft, Users } from "lucide-react";
 import { PatientRoster, type RosterPatient } from "./patient-roster";
 import { SidebarToggle } from "./ui/sidebar-toggle";
+import { CopilotTrigger } from "./copilot/copilot-trigger";
 
 // Colours resolve from app/tokens.css so inline styles follow light and dark.
 export const INK = "var(--label)";
@@ -151,7 +152,7 @@ export function WorkspaceBar({ section, knownAsOf, actions }: {
     <div><SidebarToggle /><Link href="/">Care workspace</Link><span aria-hidden="true">/</span>
       <strong>{section}</strong></div>
     <div className="sa-utility-actions">
-      <span className="sa-utility-asof">{knownAsOf}</span>{actions}
+      <span className="sa-utility-asof">{knownAsOf}</span>{actions}<CopilotTrigger />
     </div>
   </div>;
 }

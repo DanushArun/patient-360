@@ -71,7 +71,7 @@ test("test_facts_when_sql_labs_return_then_render_state_clocks_sources", async (
   await expect(facts).toContainText("ingested through");
 
   await facts.getByRole("button", { name: /Platelets details/i }).click();
-  await expect(facts).toContainText("2026-09-22T08:30:00");
+  await expect(facts.locator('time[datetime="2026-09-22T08:30:00"]').first()).toBeVisible();
   await expect(facts).toContainText("EVT-PLT-1");
   await expect(facts.getByRole("link", { name: /Open source document DOC-CBC-1/ }).first())
     .toHaveAttribute("href", /DOC-CBC-1.*known_as_of=2026-09-23T14%3A14%3A48.*return=facts/,

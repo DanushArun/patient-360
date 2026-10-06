@@ -94,6 +94,7 @@
   --evidence-reference: #5b4b8a;
   --shadow-elevated: 0 8px 24px rgb(16 24 32 / 0.12), 0 1px 3px rgb(16 24 32 / 0.08);
   --shadow-control: 0 1px 2px rgb(16 24 32 / 0.12);
+  --scrim: rgb(16 24 40 / 0.28);
   --shadow-window: 0 0 0 1px rgb(16 24 40 / 0.05), 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 

@@ -38,11 +38,11 @@ test(
   assert.match(markup, /Structured authorization/);
   assert.match(markup, /5 Oct 2026/);
   assert.match(markup, /30 Sep 2026/);
-  assert.match(markup, /28 Sept 2026, 00:00:00/);
-  assert.match(markup, /29 Sept 2026, 16:20:00/);
+  assert.match(markup, /28 Sept 2026, 00:00/);
+  assert.match(markup, /29 Sept 2026, 16:20/);
   assert.match(markup, /No single valid-through date is asserted/);
   assert.match(markup, /<h2>Authorization dates disagree<\/h2>/);
-  assert.match(markup, /SQL rule snapshot: 1 Oct 2026, 09:42:00/);
+  assert.match(markup, /SQL rule snapshot: 1 Oct 2026, 09:42/);
   assert.match(markup, /<mark>30 Sep 2026<\/mark>/);
   const sourceHref = ["DOC-AUTH-1\\?page=0&amp;known_as_of=2026-10-01T09%3A42%3A00",
     "&amp;return=coverage-comparison&amp;start=28&amp;end=39"].join("");

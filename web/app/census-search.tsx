@@ -72,7 +72,10 @@ function WorklistToolbar({ model }: { model: ToolbarModel }): ReactNode {
     <Toolbar label="Day-care visit controls" trailing={<>
       <SearchField label="Search day-care visits" placeholder="Search patients or checks"
         value={model.search} onChange={model.setSearch} />
-      <Button variant="plain" onClick={() => router.refresh()}>Refresh</Button>
+      <Button variant="plain" onClick={async () => {
+        await fetch("/api/workspace/refresh", { method: "POST" }).catch(() => undefined);
+        router.refresh();
+      }}>Refresh</Button>
     </>}>
       <PopUpButton id="visit-date" label="Visit date" disabled={!model.dates.length}
         value={model.showNextSevenDays ? NEXT_SEVEN_DAYS : model.selectedDate}

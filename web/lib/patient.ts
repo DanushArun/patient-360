@@ -1,4 +1,5 @@
 import { cachedRead, invalidatePatient } from "./read-cache";
+import { humanizeClocks } from "./display-format.mjs";
 import { withPatientSession, withPatientSessionAndContext, procedureRows, procedureValue } from "./snowflake";
 import { readGatewayAnswer, guardAnswer } from "./guarded-answer.mjs";
 import { routeQuestion } from "./question-routing.mjs";
@@ -256,7 +257,7 @@ function snapshotGate(row: Record<string, unknown>): Gate {
     rule_id: String(row.RULE_ID),
     rule_version: Number(row.RULE_VERSION),
     outcome,
-    reason: typeof row.REASON === "string" ? row.REASON : undefined,
+    reason: typeof row.REASON === "string" ? humanizeClocks(row.REASON) : undefined,
     severity: typeof row.SEVERITY === "string" ? row.SEVERITY : undefined,
     evidence_ids: Array.isArray(evidence) ? evidence.map(String) : [],
     ...(Array.isArray(spans) ? { source_spans: spans } : {}),

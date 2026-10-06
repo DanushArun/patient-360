@@ -102,6 +102,9 @@ body > * { pointer-events: auto; }
 }
 
 .sa-sidebar-toggle {
+  /* Always above the overlay sidebar, so the control that opened it can close it. */
+  position: relative;
+  z-index: 41;
   display: inline-grid;
   place-items: center;
   width: var(--control-height);
@@ -116,3 +119,54 @@ body > * { pointer-events: auto; }
 }
 .sa-sidebar-toggle:hover { background: var(--bg-tertiary); color: var(--label); }
 @media (max-width: 760px) { .sa-sidebar-toggle { display: none; } }
+
+/* Intrinsic layouts: side by side when the card has room, stacked when it does not. These
+   answer to the space the content actually gets (sidebar and copilot change it), so text is
+   never crushed into a few characters per line. */
+.sa-patient-columns { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)) !important; }
+.sa-history-layout { grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)) !important; }
+
+/* Separate adjacent inline items that must never run together. */
+.sa-view-intro { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-4); row-gap: var(--space-1); }
+.ct-patient-option { display: flex; align-items: center; gap: var(--space-2); }
+.ct-patient-option strong, .ct-patient-option small { display: block; }
+
+/* Sidebar and copilot share the width (HIG Sidebars: hide automatically when space is short).
+   Between 901 and 1279 px the sidebar steps aside while the copilot is open and returns when it
+   closes, so the record keeps a readable width. */
+@media (min-width: 901px) and (max-width: 1279px) {
+  html[data-copilot] .sa-workspace-nav {
+    opacity: 0;
+    transform: translateX(calc(-1 * var(--space-4))) scale(0.98);
+    pointer-events: none;
+    visibility: hidden;
+  }
+  html[data-copilot] :is(.sa-page, main.mx-auto.max-w-7xl) { margin-left: var(--window-inset) !important; }
+}
+/* The wide copilot is offered only where the record still fits beside it. */
+@media (min-width: 901px) and (max-width: 1439px) {
+  html[data-copilot="wide"] :is(.sa-page, main.mx-auto.max-w-7xl) {
+    margin-right: calc(var(--copilot-width) + 2 * var(--window-inset)) !important;
+  }
+}
+@media (max-width: 1439px) { [data-copilot-widen] { display: none !important; } }
+
+/* Room below the last row so the floating launcher never sits on top of content. */
+:is(.sa-page, main.mx-auto.max-w-7xl) { padding-bottom: calc(2 * var(--space-12)) !important; }
+
+/* At 900 px and below (where the copilot is a sheet) its entry lives in the top bar, not
+   floating over content. */
+.sa-copilot-trigger { display: none; }
+@media (max-width: 900px) {
+  .sa-copilot-trigger {
+    display: inline-grid;
+    place-items: center;
+    width: var(--control-height);
+    height: var(--control-height);
+    border: 0;
+    border-radius: var(--radius-control);
+    background: var(--accent-tint);
+    color: var(--accent);
+    cursor: pointer;
+  }
+}

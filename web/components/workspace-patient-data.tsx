@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock } from "@/components/ui/clock";
+
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
 import { normalizeWorkspaceRows } from "@/lib/workspace-data.mjs";
@@ -147,7 +149,7 @@ function LibraryHeading({ knownAsOf, sourceHref }: {
   return <header className={styles.header}>
     <div>
       <h2>Patient documents</h2>
-      <p className={styles.asOf}>Known as of {knownAsOf ?? "Not recorded"}</p>
+      <p className={styles.asOf}>Known as of <Clock value={knownAsOf} /></p>
     </div>
     {sourceHref
       ? <a className={styles.primaryAction} href={sourceHref}>Open source</a>

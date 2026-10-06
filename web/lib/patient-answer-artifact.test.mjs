@@ -69,7 +69,7 @@ test("test_citation_link_when_answer_opens_source_keeps_cutoff_and_ask_return", 
   assert.equal(url.searchParams.get("end"), "18");
   assert.match(markup, /Patient document/);
   assert.match(markup, /Text span 5–18/);
-  assert.match(markup, /Known as of: 2026-09-23T14:14:48/);
+  assert.match(markup, /Known as of <time datetime="2026-09-23T14:14:48"[^>]*>23 Sept 2026, 14:14<\/time>/i);
 });
 
 test("test_partial_answer_when_claims_and_limitations_exist_shows_observed_status", () => {

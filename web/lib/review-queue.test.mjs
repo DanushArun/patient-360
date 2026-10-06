@@ -87,7 +87,11 @@ test('live queue does not import fixtures or link to design-preview', () => {
   const page = readFileSync(new URL('../app/review-queue/page.tsx', import.meta.url), 'utf8');
   const view = readFileSync(new URL('../app/review-queue/review-queue-view.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(page + view, /fixtures\/|design-preview\/|read-only preview|Recorded fixture preview/);
-  assert.match(page, /withReadSession\(readLiveReviewQueue\)/);
+  // The page reads the queue through the shared (cached) loader, which performs the live read.
+  const loader = readFileSync(new URL('../lib/workspace-read.ts', import.meta.url), 'utf8');
+  assert.match(page, /loadReviewQueue\(\)/);
+  assert.match(loader, /withReadSession\(readLiveReviewQueue\)/);
+  assert.doesNotMatch(loader, /fixtures\/|design-preview\//);
   assert.match(view, /href=\{`\/patient\//);
   assert.match(view, /WorkspaceNav current="queue" \/>/);
 });

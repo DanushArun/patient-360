@@ -20,7 +20,7 @@ function loadSourceView() {
   const Page = ({ children }) => require("react").createElement("main", null, children);
   const mockedRequire = (name) => {
     if (name === "next/link") return { __esModule: true, default: Link };
-    if (name === "@/components/sa") return { Page, WorkspaceNav: () => null };
+    if (name === "@/components/sa") return { Page, WorkspaceNav: () => null, WorkspaceBar: () => null };
     return require(name);
   };
   new Function("require", "module", "exports", compiled)(
@@ -78,7 +78,7 @@ test("test_source_view_when_history_is_open_preserves_cutoff_status_clocks_and_s
   const { text, request, source } = sourceFixture(undefined, undefined);
   const markup = render({ source });
 
-  assert.match(markup, /Known as of: 2026-09-23T14:14:48/);
+  assert.match(markup, /Known as of <time datetime="2026-09-23T14:14:48"[^>]*>23 Sept 2026, 14:14<\/time>/i);
   assert.match(markup, /Current document status: superseded/);
   assert.match(markup, /Event time/);
   assert.match(markup, /Source recorded/);

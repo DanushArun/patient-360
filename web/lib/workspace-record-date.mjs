@@ -17,8 +17,10 @@ export function formatRecordDate(value) {
   const label = new Intl.DateTimeFormat("en-GB", {
     day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
   }).format(date);
-  const clock = `${hour}:${minute}:${second}`;
-  if (!zone) return `${label}, ${clock} (timezone not supplied)`;
+  // Minutes are the clinically useful precision; seconds and the "time zone not supplied"
+  // note live in the <time> tooltip and the page's clock legend, not after every value.
+  const clock = `${hour}:${minute}`;
+  if (!zone) return `${label}, ${clock}`;
   const offset = zone === "Z" ? "UTC" : `UTC${zone}`;
   return `${label}, ${clock} ${offset}`;
 }

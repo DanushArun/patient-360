@@ -13,6 +13,9 @@ const compiled = ts.transpileModule(src, { compilerOptions: {
 } }).outputText;
 const module = { exports: {} };
 const dependencies = (path) => path === '@/lib/workspace-patient-facts.mjs' ? factHelpers
+  // Shared UI and display helpers are real (resolved by lib/test-alias.cjs); other app
+  // modules stay stubbed so this test exercises the timeline component alone.
+  : path.startsWith('@/components/ui/') || path === '@/lib/display-format.mjs' ? require(path)
   : path.startsWith('@/') ? {} : require(path);
 new Function('require', 'module', 'exports', compiled)(dependencies, module, module.exports);
 const clock = '2026-09-23T14:14:48';

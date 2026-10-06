@@ -1,8 +1,10 @@
 "use client";
 
+import { formatClock } from "@/lib/display-format.mjs";
+
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { Field, Page, WorkspaceNav, buttonStyle } from "@/components/sa";
+import { Field, Page, WorkspaceBar, WorkspaceNav, buttonStyle } from "@/components/sa";
 import type { Gate, PatientData, ReviewTask } from "@/lib/patient";
 import { TaskActions } from "@/components/task-actions";
 import { RecordChangeHistory, readRecordChanges, type RecordChange }
@@ -86,6 +88,7 @@ function useTaskHistory(patientId: string, rule: string, revision: number): Hist
 
 function AccessUnavailable(): ReactNode {
   return <Page><WorkspaceNav current="history" />
+    <WorkspaceBar section="Patient history" knownAsOf="Not available" />
     <h1>Patient access is no longer available</h1>
     <p className="sa-data-unavailable">
       Patient content was removed after access could not be confirmed.
@@ -113,6 +116,8 @@ function HistoryWorkspace({ patient, rule, setRule, revision, onSaved }: {
   const selectedGate = patient.gates.find((gate) => gate.rule_id === rule);
   return <Page>
     <WorkspaceNav current="history" />
+    <WorkspaceBar section={`${patient.patientName} · History`}
+      knownAsOf={patient.knownAsOf ? `Known as of ${formatClock(patient.knownAsOf)}` : "Not available"} />
     <HistoryHeader patient={patient} />
     <div className="sa-history-layout">
       <section>
@@ -136,7 +141,7 @@ function HistoryHeader({ patient }: { patient: PatientData }): ReactNode {
     <div className="sa-header-fields">
       <Field label="Patient" value={patient.patientId} />
       <Field label="Consent" value={patient.consentId ?? "None"} />
-      <Field label="Known as of" value={patient.knownAsOf ?? "Not available"} />
+      <Field label="Known as of" value={patient.knownAsOf ? formatClock(patient.knownAsOf) : "Not available"} />
     </div>
   </header>;
 }

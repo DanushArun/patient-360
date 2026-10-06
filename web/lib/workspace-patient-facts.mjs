@@ -1,3 +1,4 @@
+import { formatClock } from './display-format.mjs';
 const FACT_STATES = new Map([
   ["present", "Present"],
   ["explicitly_negative", "Explicitly negative"],
@@ -62,7 +63,7 @@ export function sourceDocumentHref(patientId, docId, knownAsOf) {
 export function factsTemporalDescription(facts) {
   const timestamp = facts.known_as_of ?? "time unavailable";
   if (facts.as_of_semantics === "ingested_cutoff") {
-    return `Lab data ingested through ${timestamp}.`;
+    return `Lab data ingested through ${formatClock(timestamp)}.`;
   }
   if (facts.as_of_semantics === "current_at_query") {
     return `Current facts read at ${timestamp}; the requested historical cutoff does not apply.`;

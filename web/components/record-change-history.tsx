@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Clock } from "@/components/ui/clock";
 
 type RuleSnapshot = {
   known_as_of: string; rule_id: string; rule_version: number; outcome: string; reason: string;
@@ -60,7 +61,7 @@ function RuleChange({ change }: { change: RecordChange }): ReactNode {
 function Snapshot({ label, snapshot }: { label: string; snapshot: RuleSnapshot }): ReactNode {
   return <div><h4>{label}</h4>
     <dl><dt>Known as of</dt><dd>
-      <time dateTime={snapshot.known_as_of}>{snapshot.known_as_of}</time></dd>
+      <Clock value={snapshot.known_as_of} /></dd>
       <dt>Rule version</dt><dd>{snapshot.rule_version}</dd>
       <dt>Outcome</dt><dd>{snapshot.outcome.replaceAll("_", " ")}</dd>
       <dt>Reason</dt><dd>{snapshot.reason}</dd></dl>

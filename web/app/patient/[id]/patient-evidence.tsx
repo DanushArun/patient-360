@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { formatClock } from "@/lib/display-format.mjs";
 import { ActionButtons } from "@/components/review-task-controls";
 import type { ReviewAction, ReviewFeedback } from "@/components/review-task-feedback";
 import { StatusChip, buttonStyle, type Outcome } from "@/components/sa";
@@ -66,7 +67,7 @@ function GateEvidence({ gate }: { gate: Gate }): ReactNode {
       {gate.reason || "The evaluator returned no explanation for this check."}
     </div>
     <div className="sa-meta" style={{ marginTop: 8 }}>
-      {sourceText}{gate.known_as_of ? ` · Known as of ${gate.known_as_of}` : ""}
+      {sourceText}{gate.known_as_of ? ` · Known as of ${formatClock(gate.known_as_of)}` : ""}
     </div>
     {gate.provenance_note && <div className="sa-provenance" style={{ marginTop: 8 }}>
       {gate.provenance_note}

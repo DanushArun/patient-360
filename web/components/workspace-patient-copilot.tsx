@@ -1,5 +1,7 @@
 "use client";
 
+import { Clock } from "@/components/ui/clock";
+
 import {
   useCallback,
   useEffect,
@@ -412,7 +414,7 @@ function Message({ turn, selected, onSelect }: {
         {TURN_ERRORS[turn.error] ?? "No answer is available for this request. Retry or rephrase."}
       </div>
       : <>{!turn.artifact && <p>No validated answer is available for this request.</p>}
-        {turn.known_as_of && <div className="sa-meta">Known as of {turn.known_as_of}</div>}
+        {turn.known_as_of && <div className="sa-meta">Known as of <Clock value={turn.known_as_of} /></div>}
         {turn.history_saved === false && <p className="sa-meta" role="status">
           Answer history could not be saved.
         </p>}

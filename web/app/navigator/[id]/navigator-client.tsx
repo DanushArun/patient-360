@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { formatClock } from "@/lib/display-format.mjs";
 import Link from "next/link";
-import { Page, Field, Rule, WorkspaceNav, buttonStyle } from "@/components/sa";
+import { Page, Field, Rule, WorkspaceBar, WorkspaceNav, buttonStyle } from "@/components/sa";
 import type { PatientData } from "@/lib/patient";
 import { usePatientAccess } from "@/components/patient-access-boundary";
 import { announcePatientAccessWithdrawn, purgesPatientState } from "@/lib/workspace-state.mjs";
@@ -31,6 +32,8 @@ function AuthorizedNavigator({ patient }: { patient: PatientData }): ReactNode {
   const [language, setLanguage] = useState(initialLanguage(patient.language));
   return <Page>
     <WorkspaceNav patientId={patient.patientId} />
+    <WorkspaceBar section={`${patient.patientName} · Family view`}
+      knownAsOf={patient.knownAsOf ? `Known as of ${formatClock(patient.knownAsOf)}` : "Not available"} />
     <NavigatorHeader patient={patient} visit={visit} />
     {visit
       ? <FamilyChecklist patient={patient} gates={patient.gates} language={language}
@@ -99,6 +102,7 @@ async function fetchSchemes(patientId: string, signal: AbortSignal): Promise<Sch
 function AccessUnavailable(): ReactNode {
   return <Page>
     <WorkspaceNav />
+    <WorkspaceBar section="Family view" knownAsOf="Not available" />
     <h1>Patient access is no longer available</h1>
     <p className="sa-data-unavailable">
       Patient content was removed after access could not be confirmed.

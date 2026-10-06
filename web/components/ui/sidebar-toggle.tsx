@@ -19,10 +19,29 @@ export function SidebarToggle(): ReactNode {
     };
     sync();
     media.addEventListener("change", sync);
+    // Overlay mode (narrow windows): Esc or a click outside the sidebar dismisses it.
+    const dismiss = () => {
+      if (!media.matches || document.documentElement.dataset.sidebar !== "open") return;
+      delete document.documentElement.dataset.sidebar;
+      setCollapsed(true);
+    };
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") dismiss(); };
+    const onPointer = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest("#saarthi-sidebar, .sa-sidebar-toggle")) return;
+      dismiss();
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
     const frame = requestAnimationFrame(() => {
       document.documentElement.setAttribute("data-shell-ready", "");
     });
-    return () => { media.removeEventListener("change", sync); cancelAnimationFrame(frame); };
+    return () => {
+      media.removeEventListener("change", sync);
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+      cancelAnimationFrame(frame);
+    };
   }, []);
   const toggle = () => {
     const next = !collapsed;

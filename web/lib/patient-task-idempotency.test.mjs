@@ -33,7 +33,7 @@ test("facts copy distinguishes query-time reads from lab ingestion cutoffs", asy
     known_as_of: "2026-10-02T08:00:00", requested_known_as_of: "2026-10-01" }),
   "Current facts read at 2026-10-02T08:00:00; the requested historical cutoff does not apply.");
   assert.equal(factsTemporalDescription({ as_of_semantics: "ingested_cutoff",
-    known_as_of: "2026-10-02T08:00:00" }), "Lab data ingested through 2026-10-02T08:00:00.");
+    known_as_of: "2026-10-02T08:00:00" }), "Lab data ingested through 2 Oct 2026, 08:00.");
 });
 
 test("task receipt requires read-back confirmation, task id, and a recognized state", async () => {

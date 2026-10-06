@@ -287,10 +287,29 @@
 }
 
 .chips :global(.sa-source-scope) {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   margin: 0;
   font: var(--text-caption);
   color: var(--label-secondary);
+}
+
+.scrim { display: none; }
+@media (max-width: 900px) {
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 49;
+    display: block;
+    background: var(--scrim);
+    animation: fadeIn var(--motion-standard) var(--ease-standard);
+  }
+}
+@media (min-width: 901px) and (max-width: 1439px) {
+  .panel[data-expanded] { width: var(--copilot-width); }
+}
+@media (max-width: 900px) {
+  .launcher { display: none; }
 }

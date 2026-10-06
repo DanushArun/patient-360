@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Clock as ClockText } from "@/components/ui/clock";
 import Link from "next/link";
 import { buttonStyle } from "@/components/sa";
 import type { PatientTimeline, TimelineEvent } from "@/lib/patient";
@@ -11,7 +12,7 @@ import { isCurrentPatientRequest } from "@/lib/patient-request-lifecycle.mjs";
 function Clock({ label, value }: { label: string; value: string }): ReactNode {
   return <div>
     <div className="sa-clock-label">{label}</div>
-    <div className="sa-clock-value sa-num">{value || "Not recorded"}</div>
+    <div className="sa-clock-value sa-num"><ClockText value={value} /></div>
   </div>;
 }
 

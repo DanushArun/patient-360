@@ -100,7 +100,11 @@ function dependency(name) {
   if (name === "@/components/sa") {
     return { Page: ({ children }) => React.createElement("main", null, children),
       WorkspaceNav: () => React.createElement("nav", null,
-        React.createElement("a", { href: "/" }, "Day care"), "Review queue") };
+        React.createElement("a", { href: "/" }, "Day care"), "Review queue"),
+      WorkspaceBar: ({ section, knownAsOf }) => React.createElement("div", null, section, " ", knownAsOf) };
+  }
+  if (name === "@/lib/workspace-record-date.mjs") {
+    return require("./workspace-record-date.mjs");
   }
   if (name.endsWith(".module.css")) return { __esModule: true, default: new Proxy({}, {
     get: (_, key) => String(key),
