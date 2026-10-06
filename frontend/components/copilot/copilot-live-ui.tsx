@@ -45,8 +45,8 @@ const SPEECH_ERRORS: Record<string, string> = {
   "language-not-supported": "Voice input does not support this language here. Type in the chat.",
 };
 
-// Pauses inside a sentence are often 1 s or more; 2 s of quiet means the person has finished.
-const END_OF_SPEECH_MS = 2000;
+// Pauses inside a sentence are often 1 s or more; 2.5 s of quiet means the person has finished.
+const END_OF_SPEECH_MS = 2500;
 const FIRST_WORD_MS = 8000;
 const MAX_LISTEN_MS = 30000;
 
@@ -115,9 +115,8 @@ export function useSpeech(onFinal: (text: string) => void) {
     // Indian English hears Indian accents and patient names far better than the en-US default.
     rec.lang = "en-IN";
     rec.interimResults = true;
-    // One utterance per press: the browser ends recognition when the person stops speaking.
-    // (Continuous mode kept re-firing results, so the silence timer never ran out.)
-    rec.continuous = false;
+    // Keep listening through pauses; the silence timer below decides when the person has finished.
+    rec.continuous = true;
     rec.maxAlternatives = 5;
     // No phrase biasing: boosted names and phrases were inserted into transcripts unspoken.
     // Prefer on-device recognition where the browser offers it, so speech stays on this machine.
@@ -131,6 +130,7 @@ export function useSpeech(onFinal: (text: string) => void) {
     } catch { /* fall back to the browser's default service */ }
     let heard = "";
     let pending = "";
+    let lastTranscript = "";
     let silence: ReturnType<typeof setTimeout> | undefined;
     // Stop after this much quiet once speech has started; allow longer before the first word.
     const finishAfter = (ms: number) => {
@@ -151,8 +151,11 @@ export function useSpeech(onFinal: (text: string) => void) {
         if (result.isFinal) heard += ` ${bestAlternative(result)}`;
         else pending += result[0].transcript;
       }
-      setInterim(`${heard}${pending}`.trim());
-      finishAfter(END_OF_SPEECH_MS);
+      const transcript = `${heard}${pending}`.trim();
+      // Only new words extend listening; re-sent identical results must not hold the mic open.
+      if (transcript !== lastTranscript) finishAfter(END_OF_SPEECH_MS);
+      lastTranscript = transcript;
+      setInterim(transcript);
     };
     let retrying = false;
     rec.onerror = (event) => {
