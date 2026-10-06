@@ -75,16 +75,16 @@ USING (
 WHEN NOT MATCHED THEN INSERT (map_id, patient_id, source_system, source_patient_id, link_status, linked_at)
 VALUES (s.map_id, s.patient_id, s.source_system, s.source_patient_id, s.link_status, CURRENT_TIMESTAMP());
 
--- ---- tomorrow's encounter -------------------------------------------------------
+-- ---- tomorrow's encounter: a staggered chair queue; evidence ages stay day-based -------------------------------------------------------
 
 MERGE INTO SAARTHI.CORE.ENCOUNTER t
-USING (SELECT 'ENC-DC-' || k AS encounter_id, 'PAT-DC-' || k AS patient_id, cycle FROM SAARTHI.OPERATIONAL._DC_COHORT) s
+USING (SELECT 'ENC-DC-' || k AS encounter_id, 'PAT-DC-' || k AS patient_id, k, cycle FROM SAARTHI.OPERATIONAL._DC_COHORT) s
 ON t.encounter_id = s.encounter_id
-WHEN MATCHED THEN UPDATE SET t.scheduled_time = $dc_anchor, t.status = 'scheduled'
+WHEN MATCHED THEN UPDATE SET t.scheduled_time = DATEADD(minute, DECODE(s.k, '01',480, '02',500, '03',525, '04',550, '05',600, '06',630, '07',660, '08',705, '09',735, '10',780, '11',820, 570), DATE_TRUNC('day', $dc_anchor)), t.status = 'scheduled'
 WHEN NOT MATCHED THEN INSERT (encounter_id, patient_id, facility_id, department_id, encounter_type,
   scheduled_time, event_time, cycle_number, status, gap_type)
 VALUES (s.encounter_id, s.patient_id, 'FAC-02', 'DEPT-ONC-02', 'daycare',
-  $dc_anchor, NULL, s.cycle, 'scheduled', 'none');
+  DATEADD(minute, DECODE(s.k, '01',480, '02',500, '03',525, '04',550, '05',600, '06',630, '07',660, '08',705, '09',735, '10',780, '11',820, 570), DATE_TRUNC('day', $dc_anchor)), NULL, s.cycle, 'scheduled', 'none');
 
 -- ---- plan & coverage --------------------------------------------------------------
 

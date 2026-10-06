@@ -1,6 +1,6 @@
 """Make the live account demo-ready for today, then prove it. Re-runnable.
 
-Moves every synthetic day-care visit to tomorrow 09:30 with its evidence at the same
+Moves every synthetic day-care visit to tomorrow (a staggered 08:00-13:40 queue) with its evidence at the same
 relative age (load_daycare_cohort.sql), loads the demo hero PAT-DC-12
 (backend/sql/demo/load_demo_hero.sql), realigns generated report dates with their
 events, runs the R7 two-family extraction on any new page, reconciles evidence and
