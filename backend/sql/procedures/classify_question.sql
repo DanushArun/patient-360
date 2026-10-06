@@ -56,6 +56,17 @@ BEGIN
         -- the keyword scan above before this is reached; "Is she ready?" names no record noun.
         OR v_q RLIKE '.*\\b(what|which|when|where|has|have|do we have|is there|are there)\\b.*\\b(on record|in the record|reports?|labs?|counts?|results?|anc|platelets?|hba1c|lvef|dexa|echo[a-z]*|identifiers?|abha|consent|coverage|pm-jay|pre-?auth[a-z]*|authori[sz]ation|gates?|care team|practitioners|facilities|pathology|fish|biopsy|timeline|amended|superseded|changed|documents?|tasks?|visit|schedule)\\b.*'
         OR v_q RLIKE '.*\\bstill (valid|active|current|in force)\\b.*'
+        -- Worklist and record-summary language (6 Oct 2026, live copilot). Measured on XG46956:
+        -- 27 of 47 everyday record questions ("Who is blocked today?", "What's missing?",
+        -- "Summarise this record") reached the AI fallback and were refused. Judgment wording
+        -- ("ready for", "should", "safe", "fit for", "can he start") is still refused above first.
+        OR v_q RLIKE '.*\\b(who|who''s|whom|which patients?|any patients?|anyone|anybody|everyone|my patients|my day|today|today''s|the list|my list|day ?care|worklist|census)\\b.*\\b(blocked|blocking|blockers?|waiting|pending|missing|outstanding|conflicts?|conflicting|advisory|ready|cleared|attention|issues?|problems?|looking|summary|overview|status|list|checks?)\\b.*'
+        OR v_q RLIKE '.*\\b(my day|today''s (list|day ?care|schedule|patients)|summary|summari[sz]e|overview|brief me|recap|tell me about)\\b.*'
+        OR v_q RLIKE '.*\\b(what''s|what is|whats) (missing|outstanding|pending|blocking|open|left)\\b.*'
+        OR v_q RLIKE '.*\\b(gaps?|outstanding|blocked|blocking|blockers?|disagree[a-z]*|discrepanc[a-z]*)\\b.*'
+        OR v_q RLIKE '.*\\b(issues?|problems?) (with|in) (this |the |her |his )?(record|chart|file|visit|patient)\\b.*'
+        OR v_q RLIKE '.*\\b(is|are|was|has) (the|her|his|this|their) (pre-?auth[a-z]*|authori[sz]ation|consent|coverage|claim|report|document|pathology|scan)\\b.*'
+        OR v_q RLIKE '.*\\b(which|what) cycle\\b.*'
     ) THEN
         v_class := 'CLASS_B';
         v_method := 'structure';

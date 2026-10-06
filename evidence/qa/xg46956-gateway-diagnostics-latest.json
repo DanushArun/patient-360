@@ -1,0 +1,73 @@
+{
+  "mode": "gateway-diagnostics",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039bbe",
+      "elapsed_ms": 225.01304199977312
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-7552000389ce",
+      "elapsed_ms": 284.14533399336506
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b4fa",
+      "elapsed_ms": 223.85608399054036
+    },
+    {
+      "label": "query",
+      "sql_sha256": "1c274c9cc2d9037fe0024db945f7086dd5be7239357236601ed1a7ce6b61b2dc",
+      "status": "PASS",
+      "rows": 5,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b4fe",
+      "elapsed_ms": 5984.733749995939
+    },
+    {
+      "label": "query",
+      "sql_sha256": "3cb66efb10c89ccc0f3dc524e73ab55e0ceb821d2a5c9b983c328f4740473050",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039bc6",
+      "elapsed_ms": 262.54904200322926
+    },
+    {
+      "label": "query",
+      "sql_sha256": "3cb66efb10c89ccc0f3dc524e73ab55e0ceb821d2a5c9b983c328f4740473050",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-755200038a02",
+      "elapsed_ms": 508.0461670004297
+    },
+    {
+      "label": "query",
+      "sql_sha256": "3cb66efb10c89ccc0f3dc524e73ab55e0ceb821d2a5c9b983c328f4740473050",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039bca",
+      "elapsed_ms": 270.32283300650306
+    },
+    {
+      "label": "query",
+      "sql_sha256": "3cb66efb10c89ccc0f3dc524e73ab55e0ceb821d2a5c9b983c328f4740473050",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-755200038a0a",
+      "elapsed_ms": 546.9357080000918
+    }
+  ]
+}

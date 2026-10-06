@@ -188,8 +188,10 @@
   min-width: 0;
 }
 .sa-utility-bar a {
+  flex: none;
   color: var(--sa-ink-secondary);
   text-decoration: none;
+  white-space: nowrap; /* "Care workspace" never breaks across two lines */
 }
 .sa-utility-bar strong {
   overflow: hidden;

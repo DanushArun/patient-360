@@ -150,11 +150,11 @@ function execOn<T = Record<string, unknown>>(
 
 /** Bounded stateless reads share one connection, never a patient binding. */
 export async function withReadSession<T>(
-  fn: (run: (sql: string) => Promise<Record<string, unknown>[]>) => Promise<T>
+  fn: (run: (sql: string, binds?: (string | number | null)[]) => Promise<Record<string, unknown>[]>) => Promise<T>
 ): Promise<T> {
   const conn = await acquireConnection();
   try {
-    const result = await fn((sql) => execOn(conn, sql));
+    const result = await fn((sql, binds = []) => execOn(conn, sql, binds));
     await releaseConnection(conn);
     return result;
   } catch (error) {

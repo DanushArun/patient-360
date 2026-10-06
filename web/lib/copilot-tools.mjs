@@ -459,6 +459,12 @@ const ASK = {
   visit: "Show me the visit schedule",
 };
 
+/** The classifier-recognised wording for a tool, used when a request names the tool as an
+ * instruction ("show what's missing") rather than asking in its own words. */
+export function recordToolQuestion(tool) {
+  return ASK[tool] ?? null;
+}
+
 /** Follow-on questions per tool: the next thing a coordinator usually asks. */
 export function followOns(tool) {
   return {

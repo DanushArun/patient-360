@@ -1,0 +1,38 @@
+{
+  "mode": "deploy-one",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab2-0204-d86c-0005-755200037d06",
+      "elapsed_ms": 404.3474589998368
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab2-0204-d86c-0005-755200037d0e",
+      "elapsed_ms": 169.54975000408012
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab2-0204-d868-0005-75520003917e",
+      "elapsed_ms": 259.14554100017995
+    },
+    {
+      "label": "backend/sql/procedures/extract_one_document.sql",
+      "query_id": "01c78ab2-0204-d868-0005-755200039182",
+      "status": "PASS"
+    }
+  ]
+}

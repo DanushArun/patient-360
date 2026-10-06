@@ -1,0 +1,65 @@
+{
+  "mode": "native-probe",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d7c4-0005-755200038582",
+      "elapsed_ms": 221.14166599931195
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d7c4-0005-755200038586",
+      "elapsed_ms": 165.6372910074424
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d86c-0005-75520003b236",
+      "elapsed_ms": 171.7399579938501
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d7c4-0005-75520003858a",
+      "elapsed_ms": 1643.027832993539
+    },
+    {
+      "label": "query",
+      "sql_sha256": "57b1858a9a986af5403d93db80ce62ce9d07be3a913652e2ee2e2665b2ab4f77",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d7c4-0005-7552000385a2",
+      "elapsed_ms": 266.32895799411926
+    },
+    {
+      "label": "ANSWER_GATEWAY_CONTEXT",
+      "sql_sha256": "f9ee1de26ef1a4226043ffbd4237ebae4e8d92b9cec4a7da62c63578b838a50e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d7c4-0005-7552000385a6",
+      "elapsed_ms": 34148.337124992395
+    },
+    {
+      "label": "query",
+      "sql_sha256": "1f28ada78f63a5c6accc028906bf95a916463865725b2f8ab26009a018dd73c6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d868-0005-755200039ada",
+      "elapsed_ms": 20957.369582989486
+    }
+  ]
+}

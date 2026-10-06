@@ -19,6 +19,7 @@ import { createPortal } from "react-dom";
 import { useOptionalCopilot } from "@/components/copilot/copilot-provider";
 import { CopilotComposer, CopilotProgress, CopilotStarters } from "@/components/copilot/copilot-parts";
 import copilotStyles from "@/components/copilot/copilot.module.css";
+import { LiveReceipt } from "@/components/copilot/copilot-live-ui";
 import { PatientChatInput, PatientConversation } from "@/components/workspace-patient-copilot";
 import { FamilyChecklist } from "@/components/workspace-patient-family";
 import { PatientSectionContent } from "@/components/workspace-patient-views";
@@ -223,11 +224,15 @@ const PATIENT_STARTERS = RECORD_TOOL_STARTERS.slice(0, 3);
 function DockedPatientConversation({ model }: { model: PatientScreenModel }): ReactNode {
   const copilot = useOptionalCopilot();
   const stream = useRef<HTMLDivElement>(null);
+  const live = copilot?.live;
   useEffect(() => {
     stream.current?.scrollTo({ top: stream.current.scrollHeight });
-  }, [model.turns.length, model.chat.busy, model.chat.phases?.length]);
-  if (!copilot?.open || !copilot.slot) return null;
+  }, [model.turns.length, model.chat.busy, model.chat.phases?.length, live?.run]);
+  if (!copilot?.open || !copilot.slot || !live) return null;
   const send = (text: string) => {
+    // With the live copilot on, a request can also move the screen: open a section, find an
+    // item, bring it here. The question itself still goes through the same governed path.
+    if (live.enabled && live.start(text, "chat")) { model.chat.setQuestion(""); return; }
     const context = copilot.chips.map(({ kind, id }) => ({ kind, id }));
     copilot.clearChips();
     void model.chat.send(text, model.sourceScope, false, context);
@@ -246,7 +251,9 @@ function DockedPatientConversation({ model }: { model: PatientScreenModel }): Re
         turns={model.turns} sourceScope={model.sourceScope} showEmptyHint={false}
         selected={model.selected} onSelect={model.onSelectAnswer} busy={model.chat.busy}
         onSend={send} onRetry={() => model.chat.retry(model.sourceScope)}
-        onOpenSection={(section) => model.setSection(section as PatientSection)} />
+        onOpenSection={(section) => model.setSection(section as PatientSection)}
+        activity={{ node: <LiveReceipt />, index: live.anchor?.scope === "patient"
+          && live.anchor.runId === live.run?.id ? live.anchor.index : model.turns.length }} />
       <CopilotProgress phases={model.chat.phases ?? []} busy={model.chat.busy} />
     </div>
     <CopilotComposer label="Question about the selected patient"

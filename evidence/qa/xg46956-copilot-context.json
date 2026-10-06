@@ -1,0 +1,484 @@
+{
+  "access_scope": "37c37f1851b4ffb46325d9e33015331ad09f01a47f5a6d0f97ff8ec41bfccc9d",
+  "known_as_of": "2026-10-06T05:15:15",
+  "limitations": [
+    "Context shortened; use exact evidence IDs for validation."
+  ],
+  "patient_documents": {
+    "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+    "known_as_of": "2026-10-06T05:15:15",
+    "results": [
+      {
+        "char_end": 244,
+        "char_start": 0,
+        "chunk_id": "DOC-LAB-DC-05-0",
+        "citation_level": "page",
+        "claim_eligible": false,
+        "doc_id": "DOC-LAB-DC-05",
+        "evidence": [
+          {
+            "assertion_id": "231c0a5b-c92e-4221-acf1-9e3c5d2d2731",
+            "char_end": 113,
+            "char_start": 97,
+            "doc_id": "DOC-LAB-DC-05",
+            "id": "231c0a5b-c92e-4221-acf1-9e3c5d2d2731",
+            "kind": "document_span",
+            "missingness_state": "present",
+            "page_index": 0,
+            "text": "WBC: 2,900 /cumm",
+            "unit": "/cumm",
+            "value": "2,900",
+            "verification_status": "verified"
+          },
+          {
+            "assertion_id": "3b35bb13-f397-423b-aa7d-aa9e35118795",
+            "char_end": 146,
+            "char_start": 114,
+            "doc_id": "DOC-LAB-DC-05",
+            "id": "3b35bb13-f397-423b-aa7d-aa9e35118795",
+            "kind": "document_span",
+            "missingness_state": "present",
+            "page_index": 0,
+            "text": "Neutrophils (differential): 40 %",
+            "unit": "%",
+            "value": "40",
+            "verification_status": "verified"
+          },
+          {
+            "assertion_id": "432ebedb-fd84-404a-a34a-5fbf84ba6892",
+            "char_end": 177,
+            "char_start": 147,
+            "doc_id": "DOC-LAB-DC-05",
+            "id": "432ebedb-fd84-404a-a34a-5fbf84ba6892",
+            "kind": "document_span",
+            "missingness_state": "present",
+            "page_index": 0,
+            "text": "Platelet count: 1,56,000 /cumm",
+            "unit": "/cumm",
+            "value": "1,56,000",
+            "verification_status": "verified"
+          },
+          {
+            "assertion_id": "9966da34-fffd-4747-b05b-b7a10d4dae37",
+            "char_end": 205,
+            "char_start": 178,
+            "doc_id": "DOC-LAB-DC-05",
+            "id": "9966da34-fffd-4747-b05b-b7a10d4dae37",
+            "kind": "document_span",
+            "missingness_state": "present",
+            "page_index": 0,
+            "text": "Serum creatinine: 0.8 mg/dL",
+            "unit": "mg/dL",
+            "value": "0.8",
+            "verification_status": "verified"
+          },
+          {
+            "assertion_id": "7fa22650-cba8-4347-9e8b-376ddac3eb7a",
+            "char_end": 232,
+            "char_start": 206,
+            "doc_id": "DOC-LAB-DC-05",
+            "id": "7fa22650-cba8-4347-9e8b-376ddac3eb7a",
+            "kind": "document_span",
+            "missingness_state": "present",
+            "page_index": 0,
+            "text": "Total bilirubin: 0.8 mg/dL",
+            "unit": "mg/dL",
+            "value": "0.8",
+            "verification_status": "verified"
+          },
+          {
+            "assertion_id": "c7d9d888-a066-4d50-b78d-1cd8aef0c6d5",
+            "char_end": 244,
+            "char_start": 233,
+            "doc_id": "DOC-LAB-DC-05",
+            "id": "c7d9d888-a066-4d50-b78d-1cd8aef0c6d5",
+            "kind": "document_span",
+            "missingness_state": "present",
+            "page_index": 0,
+            "text": "AST: 33 U/L",
+            "unit": "U/L",
+            "value": "33",
+            "verification_status": "verified"
+          }
+        ],
+        "kind": "document_span",
+        "page_index": 0,
+        "text": "Tata Memorial Hospital\nLABORATORY REPORT - SYNTHETIC\nPatient: PAT-DC-05\nReport date: 2026-10-03\n\nWBC: 2,900 /cumm\nNeutrophils (differential): 40 %\nPlatelet count: 1,56,000 /cumm\nSerum creatinine: 0.8 mg/dL\nTotal bilirubin: 0.8 mg/dL\nAST: 33 U/L"
+      }
+    ]
+  },
+  "readiness": {
+    "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+    "consent_id": "CON-DC-05",
+    "gates": [
+      {
+        "citation_id": "RULE--ENC-DC-05--ENDO-HBA1C-001--1",
+        "evidence_ids": [
+          "EVT-DC-05-A1C"
+        ],
+        "gate": "safety",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "HBA1C is 6.4, within threshold 8.5",
+        "rule_id": "ENDO-HBA1C-001",
+        "rule_version": 1,
+        "severity": "advisory"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--CLIN-ANC-001--1",
+        "derived": "ANC computed as WBC x neutrophil% / 100",
+        "evidence_ids": [
+          "EVT-DC-05-WBC-ANC-DERIVED"
+        ],
+        "gate": "clinical",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "fail",
+        "reason": "ANC is 1160, below threshold 1500",
+        "rule_id": "CLIN-ANC-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--CLIN-PLT-001--1",
+        "evidence_ids": [
+          "EVT-DC-05-PLT"
+        ],
+        "gate": "clinical",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "PLT is 156000, meets threshold 100000",
+        "rule_id": "CLIN-PLT-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--DOC-DISC-001--1",
+        "evidence_ids": [],
+        "gate": "documentation",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "no cross-source discordance detected",
+        "rule_id": "DOC-DISC-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--CLIN-BILI-001--1",
+        "evidence_ids": [
+          "EVT-DC-05-AST",
+          "EVT-DC-05-BILI"
+        ],
+        "gate": "clinical",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "bilirubin 0.8 mg/dL clears strictest per-agent absolute (doxorubicin <=1.2), AST 33 U/L for context",
+        "rule_id": "CLIN-BILI-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--CLIN-CRCL-001--1",
+        "evidence_ids": [
+          "EVT-DC-05-CREAT",
+          "EVT-DC-05-WT"
+        ],
+        "gate": "clinical",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "CrCl 83.3 mL/min (Cockcroft-Gault, age=60 weight=60 cr=0.8) - clears strictest per-agent minimum (60 for cisplatin)",
+        "rule_id": "CLIN-CRCL-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--DOC-PATH-001--1",
+        "evidence_ids": [
+          "EVT-DC-05-HPE"
+        ],
+        "gate": "documentation",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "1 pathology report(s) in final status",
+        "rule_id": "DOC-PATH-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--COV-AUTH-001--1",
+        "evidence_ids": [
+          "PA-DC-05"
+        ],
+        "gate": "coverage",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "pre-authorisation approved and current",
+        "rule_id": "COV-AUTH-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--ID-LINK-001--1",
+        "evidence_ids": [
+          "DC-05-MRN"
+        ],
+        "gate": "identity",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "1 verified identifier link(s) present (abha_linked or manually_verified)",
+        "rule_id": "ID-LINK-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--ID-QUAR-001--1",
+        "evidence_ids": [],
+        "gate": "identity",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "no quarantined identity matches on record",
+        "rule_id": "ID-QUAR-001",
+        "rule_version": 1,
+        "severity": "blocker"
+      },
+      {
+        "citation_id": "RULE--ENC-DC-05--COV-LIMIT-001--1",
+        "evidence_ids": [
+          "COV-DC-05"
+        ],
+        "gate": "coverage",
+        "known_as_of": "2026-10-06T05:15:15",
+        "outcome": "pass",
+        "reason": "used 120000 of annual limit 500000 - within limit (family-floater aggregation OOS per SPEC 175)",
+        "rule_id": "COV-LIMIT-001",
+        "rule_version": 1,
+        "severity": "advisory"
+      }
+    ],
+    "known_as_of": "2026-10-06T05:15:15"
+  },
+  "record_facts": {
+    "coverage": {
+      "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+      "domain": "coverage",
+      "facts": [
+        {
+          "annual_limit": 500000,
+          "evidence_id": "ROW-COVERAGE--COV-DC-05",
+          "is_family_floater": true,
+          "payer_name": "PM-JAY",
+          "used_amount": 120000
+        }
+      ],
+      "known_as_of": "2026-10-06T05:15:15"
+    },
+    "demographics": {
+      "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+      "domain": "demographics",
+      "facts": {
+        "district": "Latur",
+        "dob": "1965-11-04",
+        "evidence_id": "ROW-PATIENT--PAT-DC-05",
+        "gender": "male",
+        "name": "Suresh Patil",
+        "patient_id": "PAT-DC-05",
+        "primary_language": "Marathi",
+        "state": "Maharashtra"
+      },
+      "known_as_of": "2026-10-06T05:15:15"
+    },
+    "encounters": {
+      "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+      "domain": "encounters",
+      "facts": [
+        {
+          "cycle_number": 4,
+          "encounter_id": "ENC-DC-05",
+          "evidence_id": "ROW-ENCOUNTER--ENC-DC-05",
+          "gap_type": "none"
+        }
+      ],
+      "known_as_of": "2026-10-06T05:15:15"
+    },
+    "identity": {
+      "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+      "domain": "identity",
+      "facts": [
+        {
+          "evidence_id": "ROW-IDENTITY--DC-05-MRN",
+          "link_status": "manually_verified",
+          "source_system": "FAC-02-MRN"
+        }
+      ],
+      "known_as_of": "2026-10-06T05:15:15"
+    },
+    "labs": {
+      "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+      "domain": "labs",
+      "facts": [
+        {
+          "concept": "ANC",
+          "derivation": "ANC computed as WBC x neutrophil% / 100",
+          "event_id": "EVT-DC-05-WBC-ANC-DERIVED",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": true,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "/cumm",
+          "value": 1160
+        },
+        {
+          "concept": "AST",
+          "event_id": "EVT-DC-05-AST",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "U/L",
+          "value": 33
+        },
+        {
+          "concept": "BILIRUBIN",
+          "event_id": "EVT-DC-05-BILI",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "mg/dL",
+          "value": 0.8
+        },
+        {
+          "concept": "CREATININE",
+          "event_id": "EVT-DC-05-CREAT",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "mg/dL",
+          "value": 0.8
+        },
+        {
+          "concept": "HBA1C",
+          "event_id": "EVT-DC-05-A1C",
+          "event_time": "2026-08-31 09:30:00.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-08-31 12:30:00.000",
+          "unit": "%",
+          "value": 6.4
+        },
+        {
+          "concept": "NEUTROPHIL_PCT",
+          "event_id": "EVT-DC-05-NEUT",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "%",
+          "value": 40
+        },
+        {
+          "concept": "PLT",
+          "event_id": "EVT-DC-05-PLT",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "/cumm",
+          "value": 156000
+        },
+        {
+          "concept": "WBC",
+          "event_id": "EVT-DC-05-WBC",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "/cumm",
+          "value": 2900
+        },
+        {
+          "concept": "WEIGHT",
+          "event_id": "EVT-DC-05-WT",
+          "event_time": "2026-10-03 23:03:11.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-10-04 02:03:11.000",
+          "unit": "kg",
+          "value": 60
+        },
+        {
+          "event_id": "EVT-DC-05-DX",
+          "event_time": "2026-08-28 09:30:00.000",
+          "ingested_at": "2026-10-06 04:24:43.452",
+          "is_derived": false,
+          "source_recorded_at": "2026-08-28 12:30:00.000"
+        }
+      ],
+      "known_as_of": "2026-10-06T05:15:15"
+    },
+    "treatment_plan": {
+      "binding_id": "8c771dff-b3d7-4d6b-bcf3-042ce773a4b5",
+      "domain": "treatment_plan",
+      "facts": [
+        {
+          "decided_at": "2026-06-18 04:24:38.732",
+          "evidence_id": "ROW-PLAN--PLAN-DC-05",
+          "intent": "curative",
+          "regimen_display": "Cisplatin weekly with radiotherapy",
+          "version": 1
+        }
+      ],
+      "known_as_of": "2026-10-06T05:15:15"
+    }
+  },
+  "reference_documents": {
+    "results": [
+      {
+        "doc_id": "REF-d2dfa8e147e9f047bf11ff7b",
+        "effective_date": "",
+        "id": "REF-d2dfa8e147e9f047bf11ff7b-23",
+        "jurisdiction": "IN",
+        "kind": "reference_clause",
+        "page_index": 23,
+        "text": "ICMR Guidelines for Management of Type 2 Diabetes 2018\n15\n z Whenever tight control is indicated \u2014 pregnancy, acute illness and \ncomplications\n z Frequency of SMBG should be individualised (e.g. with greater frequency in \npregnancy)\n5.3 What to do during Annual Check-Up?\n z Basic clinical exam including detailed foot exam with palpation of dorsalis \npedis and posterior tibial pulses, monofilament and vibration perception \ntesting (VPT) (See Section 8)\n z Retinal check-up (fundus examination for retinopathy)\n z Blood urea / serum creatinine\n z Urine \u2014 protein/albumin, micro-albuminuria if available or at least Urinary \nAlbumin by dipstick\n z ECG \n z Lipids\n z Hemogram\n z Urine routine\n z Diet/ exercise to be reinforced\n z Psychological support whenever necessary\n z Tests to be carried out when indicated: X Ray chest, uric acid, TSH, SGOT, \nSGPT, vitamin B12, electrolytes, ultrasound abdomen\nAdvanced monitoring can be done if required in case of recurrent hypoglycaemia, \nsevere fluctuations in blood glucose, disparity in measured glucose values and \nHbA1c, severe anaemia, haemoglobinopathy, hypoglycaemia unawareness etc. Here \nContinuous Glucose Monitoring (CGM) for 5-7 days or iSCGM (intermittently scanned \nCGM) for 14 days may be used."
+      },
+      {
+        "doc_id": "REF-bf5f562d0b6fba773e99a8fc",
+        "effective_date": "",
+        "id": "REF-bf5f562d0b6fba773e99a8fc-50",
+        "jurisdiction": "IN",
+        "kind": "reference_clause",
+        "page_index": 50,
+        "text": "Common Conditions\n35\nChoice of Diagnostic Technology\nCurrently, the programme is scaling up the laboratory capacity of various culture and DST\nlaboratories at state level IRLs and other laboratories. The choice of technology to be used for\ndiagnosis of MDR TB has been determined as per recommendations of the National\nLaboratory Committee. Thus, for DST at certified laboratory, wherever available Molecular\nDST (e.g. Line Probe Assay (LPA)) is preferred diagnostic method because of the rapid and\nhighly-accurate rifampicin results, followed in preference by Liquid C -DST and then Solid\nC-DST.\nMDR Diagnostic Technology Choice\nFirst Molecular DST (e.g. LPA DST)\nSecond               Liquid culture isolation and LPA DST\nThird                 Solid culture isolation and LPA DST\nFourth                Liquid culture isolation and Liquid DST\nFifth                   Solid culture isolation and DST\nSimilarly for follow up cultures, wherever available, liquid culture will be preferred over\nsolid culture. However, this will be liquid cultures for at least the crucial months of follow -up\n(IP-3, 4, 5, 6 and CP -18, 21, 24) and over and beyond this, it will be determined by the\nworkload of individual laboratories.\nTable 11. Grouping anti-TB agents (first line and second line drugs)\nGrouping Drugs\nGroup 1: First -line oral anti -TB\nagents\nIsoniazid (H); Rifampicin (R); Ethambutol (E);\nPyrazinamide(Z)\nGroup 2: Injectable anti -TB\nagents\nStreptomycin (S); Kanamycin (Km); Amikacin (Am);\nCapreomycin (Cm); Viomycin (Vm).\nGroup 3: Fluoroquinolones\nCiprofloxacin (Cfx); Ofloxacin (Ofx); Levofloxacin\n(Lvx);\nMoxifloxacin (Mfx); Gatifloxacin (Gfx)\nGroup 4: Oral second -line anti -\nTB agents\nEthionamide (Eto); Prothionamide (Pto); Cycloserine\n(Cs);\nTerizadone (Trd); para-aminosalicylic acid (PAS)\nGroup 5: Agents with unclear\nefficacy (not recommended by\nWHO for routine use in MDR-TB\npatients)\nClofazimine (Cfz); Linezolid (Lzd); Amoxicillin /\nClavulanate\n(Amx/Clv); thioacetazone (Thz); imipenem/c"
+      },
+      {
+        "doc_id": "REF-859f45ac6425f98a51576f2d",
+        "effective_date": "",
+        "id": "REF-859f45ac6425f98a51576f2d-36",
+        "jurisdiction": "US",
+        "kind": "reference_clause",
+        "page_index": 36,
+        "text": " \n      \n   \n   \n            \n           \n   \n        \n \n \nTable 14  \nExploratory Analyses by HER2 Status Using Updated Overall Survival Results \nFC FC+H \n(N = 296)a (N = 298)b \nFISH+ / IHC 0, 1+ subgroup (N=133) \nNo. Deaths / n (%) \nMedian OS Duration (mos.) \n95% CI (mos.) \nHazard ratio (95% CI) \nFISH+ / IHC2+ subgroup (N=160) \nNo. Deaths / n (%) \nMedian OS Duration (mos.) \n95% CI (mos.) \nHazard ratio (95% CI) \nFISH+ or FISH- / IHC3+c subgroup (N=294) \nNo. Deaths / n (%) \nMedian OS Duration (mos.) \n95% CI (mos.) \nHazard ratio (95% CI) \n57/71 (80%) 56/62 (90%) \n8.8 8.3 \n(6.4, 11.7) (6.2, 10.7) \n1.33 (0.92, 1.92) \n65/80 (81%) 64/80 (80%) \n10.8 12.3 \n(6.8, 12.8) (9.5, 15.7) \n0.78 (0.55, 1.10) \n104/143 (73%) 96/151 (64%) \n13.2 18.0 \n(11.5, 15.2) (15.5, 21.2) \n0.66 (0.50, 0.87) \na Two patients on the FC arm who were FISH+ but IHC status unknown were excluded from the exploratory \nsubgroup analyses. \nb Five patients on the Herceptin-containing arm who were FISH+, but IHC status unknown were excluded from the \nexploratory subgroup analyses. \nc Includes 6 patients on chemotherapy arm, 10 patients on Herceptin arm with FISH\u2013, IHC3+ and 8 patients on \nchemotherapy arm, 8 patients on Herceptin arm with FISH status unknown, IHC 3+. \n16 HOW SUPPLIED/STORAGE AND HANDLING \n150 mg Single-dose vial \nHerceptin (trastuzumab) for injection 150 mg/vial is supplied in a single-dose vial as a preservative-\nfree, white to pale yellow lyophilized sterile powder, under vacuum.  Available in a carton \ncontaining one single-dose vial (NDC 50242-132-01) and a carton containing 10 single-dose vials \n(NDC 50242-132-10). \nStore Herceptin vials in the refrigerator at 2\u00b0C to 8\u00b0C (36\u00b0F to 46\u00b0F) until time of reconstitution.   \n17 PATIENT COUNSELING INFORMATION \nCardiomyopathy \n\u2022 Advise patients to contact a health care professional immediately for any of the following: new \nonset or worsening shortness of breath, cough, swelling of the ankles/legs, swelling of the face, \npalpitations, weight gain of"
+      },
+      {
+        "doc_id": "REF-a17b70025de98015cbdf41ed",
+        "effective_date": "",
+        "id": "REF-a17b70025de98015cbdf41ed-25",
+        "jurisdiction": "IN",
+        "kind": "reference_clause",
+        "page_index": 25,
+        "text": "25 Consensus Document for Management of Breast Cancer\nAll mammographically detected lesions should be grossed under mammographic guidance. Make sure \nto block the entire lesion so as that the size of lesions can be reconstructed microscopically. Also sample \nmargins of lesions radiologically.\nEssentials in a Histopathology report:\nTumor size (all 3 dimensions) \u2022\nTumor type \u2022\nTumor grade (Modified Richardson Bloom Score) \u2022\nPresence of extensive intraductal carcinoma (EIC)* \u2022\nLymphovascular emboli \u2022\nMargin status (negative /close /focal positive /gross positive) in wide excision** \u2022\nNo.of metastatic nodes and total axillary lymph node dissected \u2022\nReceptor status: ER and PR (by IHC or EIA) and HER2neu by IHC. ER and PR should be scored as  \u2022\ndescribed later.**\nHER2neu of 2+ on IHC is considered equivocal and this can be resolved by FISH test for gene  \u2022\namplification, which is considered amplified or positive if score >2.2.\n*EIC: DCIS in >25% of any low power field within or outside the tumor. It is a strong predictor of local \nrecurrence after BCT, especially if margins are positive.\n**Gross +ve cut margin: Extensive involvement of a cut margin OR >3 foci of invasive or in-situ carcinoma \nin any inked margin. It requires revision excision or mastectomy.\n**Focal positive cut margin: 3 or less foci of invasive or in-situ carcinoma in any inked margin. It requires \nrevision surgery especially if EIC is present\nModified Richardson Bloom grading system (Nottingham\u2019s modification)\nTubule Nuclear grade Mitosis/10hpf*\nScore1 >75% Small uniform nuclei, no pleomorphism 0-6\nScore2 10-75% Moderate sized nuclei with pleomorphism 7-12\nScore3 <10% Marked pleomorphism >12\nFinal score 3-5=Grade I, Final Score 6-7=Grade II, Final Score 8-9=Grade III\n*Could vary with microscope.\nGrade all carcinomas, including post NACT, special types and core biopsies. \u2022\nER/PR estimation should be routinely performed. ERPR expression in >1% of cells is reported  \u2022\nas positive for hormone receptors. For"
+      },
+      {
+        "doc_id": "REF-bf5f562d0b6fba773e99a8fc",
+        "effective_date": "",
+        "id": "REF-bf5f562d0b6fba773e99a8fc-9",
+        "jurisdiction": "IN",
+        "kind": "reference_clause",
+        "page_index": 9,
+        "text": "x\nLIST OF ABBREVIATIONS\nAED: Automated External Defibrillator\nAHA: American Heart Association\nAPACHE: Acute Physiology and Chronic Health Evaluation\nAPTT: Activated Partial Thromboplastin Time\nBERA: Brainstem Evoked Response Audiometry\nBPS: Bio Physical Profile Scoring\nCIN: Cervical Intraepithelial Neoplasia\nCRP: C - reactive protein\nCRT: Corneal Refractive Therapy\nCT-IVP: Computed Tomography Intravenous Pyelogram\nDMPA: Depot Medroxy Progesterone Acetate\nDMSA: Dimercapto Succinic Acid\nELISA: Enzyme-Linked Immunosorbent Assay\nFDP: Fibrin Degradation Product\nFML: Flurometholone Ophthalmic Suspension\nFTA-ABS: Fluorescent Treponemal Antibody-Absorption\nHPV: Human Papilloma Virus\nLNG IUCD:Levonornestrel Intra Uterine Contraceptive Device\nLR SHUNT: Left to Right Shunt\nLSD:Lysergic Acid Diethylamine\nMHA-TP: Microhemagglutination Assay Treponema Pallidum\nNCHS:National Center For Health Statistics\nNET-EN: Norethisterone Enanthate\nNLEP:National Leprosy Eradication Programme\nNPSP: National Polio Surveillance Project\nNST: Non Stress Test\nPAIR: Puncture, Aspiration, Injection (Of A Scolicidal Agent), Reaspiration\nPC: Product Code\nPDA: Patent Ductus Arteriosus\nPEA: Pulseless Electrical Activity\nPET: Positron Emission Tomography\nPWB: Patient Wise Box"
+      }
+    ]
+  },
+  "schema_version": "saarthi.context.v1"
+}

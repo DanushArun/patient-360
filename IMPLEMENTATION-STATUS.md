@@ -1,4 +1,26 @@
-> **5 October, latest execution checkpoint:** [full release gates](docs/submission/RELEASE-GATES-2026-10-05.md)
+> **6 October, latest execution checkpoint:** new account `PVYRHHT-XG46956` (locator `WH11571`),
+> user `DAKSHA`, AWS_AP_NORTHEAST_1. `claude-opus-5-5` is live on the Snowflake agent.
+> Sixteen synthetic PDFs parsed; two-family extraction produced 81 verified assertions and
+> 9 unverified findings (6 from these documents, 3 seeded); none were forced to verified.
+> The dashboard shows PAT-DC-05's report as Present, 6/6 verified. One uncanned UI question
+> completed through the model and SQL citation gate: 4 claims accepted, overall `partial`,
+> one candidate omitted. The active scheduled graph's parse, extraction and reconciliation
+> ran successfully, but readiness refreshes failed because task sessions used
+> `America/Los_Angeles` while SQL treated wall-clock `TIMESTAMP_NTZ` values as UTC.
+> All seven task session timezones are pinned to UTC and remain started. The first post-change
+> scheduled readiness run completed successfully at 05:54 UTC; its notification child also
+> succeeded. Chrome refresh showed a newer 05:51 evidence timestamp, while the page headline
+> still says readiness as of 05:24 UTC, so full cohort snapshot freshness is not yet confirmed.
+> A manual full cohort refresh hit the 120-second session timeout. The Day
+> Care Copilot's first live whole-worklist question failed because its read session dropped
+> SQL bind values; this is fixed and verified in Chrome, returning 5 blocked visits and the
+> cohort status totals. Reference search
+> No resource monitor exists. Reference search
+> corpus is populated, but the dashboard selector remains disabled and the API rejects it.
+> Prompt-store hashes and agent source match. Local verification: 340 web tests, 15 focused
+> Python contract tests, TypeScript pass. This checkpoint supersedes stale account labels below.
+>
+> **5 October, earlier execution checkpoint:** [full release gates](docs/submission/RELEASE-GATES-2026-10-05.md)
 > track 9/20 verified (45%); this is completion tracking, not a judging score.
 > Restricted permissions are applied. Live authorized/foreign claim and consent-withdrawal
 > probes passed. Answer, practitioner packet and retried action each have one persisted row.
@@ -21,7 +43,8 @@
 
 # SAARTHI — Implementation Status
 
-**Latest checkpoint, 4 October 2026, 21:13 IST:** the user confirmed submission account
+**Latest checkpoint, superseded 6 October 2026:** the active execution account and current
+verification are summarized above. **Historical checkpoint, 4 October 2026, 21:13 IST:** the user confirmed submission account
 `KGTPGHJ-YJ28449` (`NY64016`). Earlier account labels below describe their dated runs,
 not the current submission target. The answer validator was updated and exercised on
 NY64016; the web guard and SQL-derived refusal clock pass local tests. Current local
@@ -54,7 +77,7 @@ the repo does not record a deployment of the current build there. **JN89282** is
 28 fixture tests); its counts are not current figures. Nothing from JN89282 is recorded as redeployed on OS69400 unless
 stated. Which account holds the submission build must be confirmed by the team (gap 13).
 
-## A. Current state by component (4 Oct 2026)
+## A. Historical state by component (4 Oct 2026; current 6 Oct delta is above)
 
 | Component | Status | Account / date | Notes and corrected wording |
 |---|---|---|---|
@@ -68,6 +91,7 @@ stated. Which account holds the submission build must be confirmed by the team (
 | Linker | **built** | OS69400, 3 Oct | 66 of 66 numeric values link to exactly one structured event. Documents are generated from the same event snapshot: this measures linkage, not independent extraction accuracy (C-20) |
 | Answer validator (6 checks, `validate_answer.sql`) | **partial** | JN89282 only | Procedure built; **not called by `ASK_SAARTHI` or the MCP path** (Round 6 reviewed wiring and declined: the agent is not constrained to emit the frozen claims schema the validator needs, so a call would either always fail closed or need a new claim-extraction step outside SPEC s7); `web/README.md` records the guard as deferred. Check 4 (`AI_FILTER`) only tested structurally (C-6) |
 | Copilot record tools (8, deterministic) | **built**; live on NY64016, 6 Oct | 6 Oct (local app, PAT-DC-04) | `web/lib/copilot-tools.mjs`: after the Class A check, a Class B question that names readiness, labs, documents, coverage, timeline, conflicts, tasks or the visit is answered from the same governed reads the screen uses, as an inline card (summary, rows with state word and icon, up to 2 actions, citations recorded in answer history). No model writes any of it. Live: 5 tool questions answered (readiness twice, labs, documents, coverage); the 2 timed took 11.5 s and 13.1 s, one governed session each (bind, consent, classification, read, history). A Class A question in the same runs was still refused. Suggested questions are tested against `classify_question.sql` patterns so none falls to the unavailable LLM fallback. Unmatched questions still go to `ASK_SAARTHI` |
+| Live copilot (floating dock, on-screen orchestration) | **built**; local app on XG46956, 6 Oct | 6 Oct (headless Chromium, live data, synthetic speech input) | `web/lib/copilot-intent.mjs` plans a spoken or typed request into a closed set of screen steps (choose patient, go to page, open section, find item, add to chat, ask, mark cited items); `web/lib/copilot-run.mjs` runs them with pause, resume, stop and receipts written only on completion; `web/components/copilot/copilot-live*.tsx` carry them out with the existing router, section state and governed `/api/ask` and `/api/copilot/cohort` paths. No model plans or decides anything: planning is deterministic pattern matching. A spoken name only highlights the patient; a person's click opens the record. Manual clicks, keys or scrolling pause any step that would move the view. Browser checks, 6 Oct: voice request → confirm → record opened → Overview → answered (instruction asked as "What is missing in the record?") → 2 cited checks marked; manual click paused a 4-step run and Resume finished it; a missing item ("echo report") failed honestly; Return to previous view restored Documents; turning the copilot off mid-run cancelled it and cleared marks. **Not verified:** a real microphone (speech input was injected), Safari/Firefox, dark appearance. The cohort step failed live with `no_patient_bound` from `/api/copilot/cohort` (the same endpoint fails without the live layer) |
 | Cortex Agent (8 generic tools, no `patient_id` input) | **partial** | JN89282, 23 Sept | Not recorded on OS69400. `ASK_SAARTHI` is a thin `DATA_AGENT_RUN` wrapper |
 | MCP server | **partial** | JN89282, 23 Sept (query ID `01c74481-0003-92e6-0001-fca600116122`) | Inbound server over the agent verified there. No outbound action (ticket/notification send). MCP calls are not passed through `validate_answer` (C-19) |
 | Semantic view | **partial**; Round-6 version **unverified-needs-deploy** | JN89282 (old 2-entity view) | Working tree (4 Oct, Round 6): widened to 6 tables (patient, encounter, readiness, review_issue, authorization, scheme_eligibility) with **7 verified queries** (SPEC s8 lists 6; Class B only) and `AI_QUESTION_CATEGORIZATION`. Offline contract test checks every VQR column is defined in the view (`backend/tests/test_semantic_verified_queries.py`). **Not run on Snowflake:** the `AI_VERIFIED_QUERIES` clause syntax and the physical-table form of the VQR SQL are unverified, no VQR has been validated against its natural-language question, and the agent does not consult the view (no Cortex Analyst tool over patient data, AGENTS.md 3.5) (C-12) |

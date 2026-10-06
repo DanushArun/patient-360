@@ -1,0 +1,657 @@
+{
+  "mode": "extract-parsed",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b16a",
+      "elapsed_ms": 179.59362499823328
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003850e",
+      "elapsed_ms": 166.6636670124717
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b176",
+      "elapsed_ms": 157.710166007746
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039772",
+      "elapsed_ms": 474.9661670066416
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 6,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b17e",
+      "elapsed_ms": 196.25733299471904
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039776",
+      "elapsed_ms": 328.6541249981383
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003977a",
+      "elapsed_ms": 174.09495799802244
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003977e",
+      "elapsed_ms": 346.7945000011241
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 6,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b182",
+      "elapsed_ms": 188.7538340088213
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b186",
+      "elapsed_ms": 392.3741659964435
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038516",
+      "elapsed_ms": 230.55658300290816
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039786",
+      "elapsed_ms": 301.9697499985341
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 6,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003851a",
+      "elapsed_ms": 189.8412919981638
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003978a",
+      "elapsed_ms": 852.8268750087591
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 6,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038526",
+      "elapsed_ms": 173.63908400875516
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003978e",
+      "elapsed_ms": 430.7632080017356
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039796",
+      "elapsed_ms": 202.75762499659322
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038552",
+      "elapsed_ms": 377.4111250095302
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b19a",
+      "elapsed_ms": 170.91674999392126
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b19e",
+      "elapsed_ms": 1451.0131659917533
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003979a",
+      "elapsed_ms": 38619.54512499506
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038576",
+      "elapsed_ms": 867.9292919987347
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d86c-0005-75520003b1e6",
+      "elapsed_ms": 166.93875000055414
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d86c-0005-75520003b1ea",
+      "elapsed_ms": 783.0979999998817
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d86c-0005-75520003b1ee",
+      "elapsed_ms": 448.855624999851
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abb-0204-d86c-0005-75520003b1f2",
+      "elapsed_ms": 288.1491250009276
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d868-0005-7552000397f6",
+      "elapsed_ms": 1647.7969580009812
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d86c-0005-75520003b1f6",
+      "elapsed_ms": 55332.681792002404
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abb-0204-d7c4-0005-75520003897e",
+      "elapsed_ms": 792.8888330061454
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b492",
+      "elapsed_ms": 179.09799999324605
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039b96",
+      "elapsed_ms": 1320.3474170004483
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b496",
+      "elapsed_ms": 700.0853329955135
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b49a",
+      "elapsed_ms": 309.78287500329316
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b49e",
+      "elapsed_ms": 1654.6951249911217
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b4b6",
+      "elapsed_ms": 10689.047166990349
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-755200038986",
+      "elapsed_ms": 819.188541994663
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039b9a",
+      "elapsed_ms": 180.87333400035277
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039b9e",
+      "elapsed_ms": 816.2449160008691
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-75520003898e",
+      "elapsed_ms": 521.8603749963222
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abc-0204-d868-0005-755200039ba2",
+      "elapsed_ms": 242.52808299206663
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039ba6",
+      "elapsed_ms": 1551.384665988735
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-755200038992",
+      "elapsed_ms": 33360.74066600122
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b622",
+      "elapsed_ms": 767.7372909965925
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039bce",
+      "elapsed_ms": 170.2854580071289
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039bd2",
+      "elapsed_ms": 805.9363329957705
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d7c4-0005-755200038a26",
+      "elapsed_ms": 429.97054099396337
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b656",
+      "elapsed_ms": 242.4702920106938
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d86c-0005-75520003b662",
+      "elapsed_ms": 1474.9945840012515
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abc-0204-d868-0005-755200039bd6",
+      "elapsed_ms": 28014.298666996183
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abd-0204-d7c4-0005-755200038a3e",
+      "elapsed_ms": 927.8334580012597
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abd-0204-d86c-0005-75520003b79a",
+      "elapsed_ms": 551.4098339917837
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abd-0204-d7c4-0005-755200038a5e",
+      "elapsed_ms": 736.9916669995291
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abd-0204-d86c-0005-75520003b79e",
+      "elapsed_ms": 534.3227910052519
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abd-0204-d868-0005-755200039c16",
+      "elapsed_ms": 287.84091598936357
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abd-0204-d86c-0005-75520003b7a2",
+      "elapsed_ms": 1531.5437920071417
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abd-0204-d868-0005-755200039c1a",
+      "elapsed_ms": 37562.27358400065
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003b97e",
+      "elapsed_ms": 1450.054959001136
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d868-0005-755200039c8e",
+      "elapsed_ms": 203.1732499890495
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d868-0005-755200039c96",
+      "elapsed_ms": 591.3074589916505
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003b9ba",
+      "elapsed_ms": 485.35733300377615
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abe-0204-d868-0005-755200039c9a",
+      "elapsed_ms": 218.16716699686367
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003b9da",
+      "elapsed_ms": 1535.7912909967126
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d868-0005-755200039ca6",
+      "elapsed_ms": 34275.310416996945
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003bdba",
+      "elapsed_ms": 778.817333994084
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d868-0005-755200039e9e",
+      "elapsed_ms": 198.82812499417923
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003bdc2",
+      "elapsed_ms": 752.883583001676
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003bdc6",
+      "elapsed_ms": 478.06637499888893
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abe-0204-d7c4-0005-755200038ec6",
+      "elapsed_ms": 440.04891700751614
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d86c-0005-75520003bdca",
+      "elapsed_ms": 2139.1025420016376
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abe-0204-d7c4-0005-755200038efa",
+      "elapsed_ms": 13480.017708003288
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d86c-0005-75520003bde2",
+      "elapsed_ms": 1383.3325000014156
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d86c-0005-75520003bdea",
+      "elapsed_ms": 185.4707090096781
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d86c-0005-75520003bdee",
+      "elapsed_ms": 923.8969170110067
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b1da9beb87bdfe454ad94273209806df4288072dd7eb409b1ce368f6841db58a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d868-0005-755200039ea2",
+      "elapsed_ms": 524.4450829923153
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78abf-0204-d7c4-0005-755200038fae",
+      "elapsed_ms": 507.8462079982273
+    },
+    {
+      "label": "BIND_PATIENT",
+      "sql_sha256": "a8d395c70a28bf53ec54ca2258e760f44b9cdba1243e920316c2052fd5d4b5bd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d7c4-0005-755200038fb2",
+      "elapsed_ms": 2963.3901659981348
+    },
+    {
+      "label": "EXTRACT_ONE_DOCUMENT",
+      "sql_sha256": "f3ea338c6c316e2643c42c6f998b8c6639ef324485b617d4230d8f78b10fd194",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d868-0005-755200039ea6",
+      "elapsed_ms": 40349.99095799867
+    },
+    {
+      "label": "RELEASE_PATIENT_BINDING",
+      "sql_sha256": "20370386f1c78ced5b7a1db0299d7702899ab7d5c0a238ebee73bef4cb99c5e1",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d7c4-0005-75520003c026",
+      "elapsed_ms": 829.0024589950917
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4db2b0b8013ec3bffde58b01f5961a9de1f642e659ced4cb33d96646ff88c419",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d86c-0005-75520003bdfe",
+      "elapsed_ms": 218.05354100069962
+    },
+    {
+      "label": "query",
+      "sql_sha256": "67982cff22880081081720374efcb898223b409307139b3b600a72f47fca3ce9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78abf-0204-d868-0005-755200039eea",
+      "elapsed_ms": 1120.1490410021506
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6f410c9773cf0cc239caf8d4b2aef94119afb13be288a2aeade1a1beb7819227",
+      "status": "PASS",
+      "rows": 2,
+      "query_id": "01c78abf-0204-d868-0005-755200039ef2",
+      "elapsed_ms": 269.5596249977825
+    }
+  ]
+}

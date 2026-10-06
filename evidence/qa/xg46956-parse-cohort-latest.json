@@ -1,0 +1,913 @@
+{
+  "mode": "parse-cohort",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d868-0005-7552000390fe",
+      "elapsed_ms": 289.6614170022076
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d868-0005-755200039102",
+      "elapsed_ms": 203.3807080006227
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d868-0005-755200039106",
+      "elapsed_ms": 157.92950001196004
+    },
+    {
+      "label": "query",
+      "sql_sha256": "fb7e2e7681cd69c7ff39ef999736974cc73a1d343c297d5789b9f21a58f91822",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d7c4-0005-755200038226",
+      "elapsed_ms": 238.98425001243595
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d86c-0005-755200037a8e",
+      "elapsed_ms": 241.2457079917658
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aaf-0204-d868-0005-75520003910a",
+      "elapsed_ms": 189.12770799943246
+    },
+    {
+      "label": "query",
+      "sql_sha256": "82e76c1b19379b2619c1e3e9b7a21314110e30e859ecd9917b1947cc67d3c9cb",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d7c4-0005-75520003822a",
+      "elapsed_ms": 740.6896250031423
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aaf-0204-d7c4-0005-75520003822e",
+      "elapsed_ms": 713.4241659950931
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-01",
+      "query_id": "01c78aaf-0204-d86c-0005-755200037a92",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d868-0005-75520003910e",
+      "elapsed_ms": 948.4486660076072
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d7c4-0005-755200038232",
+      "elapsed_ms": 1429.2109170055483
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d868-0005-755200039112",
+      "elapsed_ms": 184.4801249972079
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab0-0204-d86c-0005-755200037a9a",
+      "elapsed_ms": 265.29241699608974
+    },
+    {
+      "label": "query",
+      "sql_sha256": "354918786c7d5bf3e5accffe58e617910d626c0a66479cde491dd8396b19245e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d868-0005-755200039116",
+      "elapsed_ms": 4049.5630000077654
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d7c4-0005-755200038236",
+      "elapsed_ms": 489.08891700557433
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-PATH-DC-01",
+      "query_id": "01c78ab0-0204-d7c4-0005-75520003823a",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d868-0005-755200039126",
+      "elapsed_ms": 1533.5332909889985
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d86c-0005-755200037aaa",
+      "elapsed_ms": 572.4844170035794
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d86c-0005-755200037aae",
+      "elapsed_ms": 271.58124999550637
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab0-0204-d7c4-0005-755200038246",
+      "elapsed_ms": 203.68583301024046
+    },
+    {
+      "label": "query",
+      "sql_sha256": "d9689a14d863d5803a75fb62e0826802ac7d3f88f71b9272c6539bcab3f20ab6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d7c4-0005-75520003824a",
+      "elapsed_ms": 840.448542003287
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab0-0204-d868-0005-75520003912a",
+      "elapsed_ms": 742.6712079904974
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-02",
+      "query_id": "01c78ab0-0204-d868-0005-75520003912e",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d7c4-0005-7552000382ba",
+      "elapsed_ms": 4267.766375007341
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d86c-0005-755200037d6a",
+      "elapsed_ms": 679.7187089978252
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d868-0005-755200039196",
+      "elapsed_ms": 210.8665830019163
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab3-0204-d7c4-0005-7552000382be",
+      "elapsed_ms": 188.87129198992625
+    },
+    {
+      "label": "query",
+      "sql_sha256": "dc50c90bc5841fadb4c4bb0503c4924b52cf6cc5984b63f60e49d06bd36abbd5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d868-0005-75520003919a",
+      "elapsed_ms": 902.6184579997789
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d868-0005-75520003919e",
+      "elapsed_ms": 573.4665830095764
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-PATH-DC-02",
+      "query_id": "01c78ab3-0204-d7c4-0005-7552000382c2",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d868-0005-7552000391a2",
+      "elapsed_ms": 1047.771957993973
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d7c4-0005-7552000382c6",
+      "elapsed_ms": 587.6852499932284
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d86c-0005-755200037d6e",
+      "elapsed_ms": 278.8741250114981
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab3-0204-d7c4-0005-7552000382ca",
+      "elapsed_ms": 152.27379101270344
+    },
+    {
+      "label": "query",
+      "sql_sha256": "0b9d503cbf1080846d1aca18ec2eabc7d2f9567bc753223c43af05b79ec2c37b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d86c-0005-755200037d72",
+      "elapsed_ms": 530.4062500072177
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab3-0204-d868-0005-7552000391a6",
+      "elapsed_ms": 471.6729589999886
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-03",
+      "query_id": "01c78ab3-0204-d86c-0005-755200037d76",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d7c4-0005-755200038322",
+      "elapsed_ms": 790.5142079980578
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d7c4-0005-75520003832e",
+      "elapsed_ms": 526.797708007507
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d868-0005-7552000391b2",
+      "elapsed_ms": 304.74158401193563
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab4-0204-d7c4-0005-755200038346",
+      "elapsed_ms": 218.33045799576212
+    },
+    {
+      "label": "query",
+      "sql_sha256": "5920d6a8ad312fa819b11a9cc5d30397ccabd322993ec388392e81f4067c018e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d7c4-0005-755200038352",
+      "elapsed_ms": 878.0636669980595
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d868-0005-7552000391b6",
+      "elapsed_ms": 709.7062919929158
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-04",
+      "query_id": "01c78ab4-0204-d7c4-0005-75520003836e",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d7c4-0005-755200038372",
+      "elapsed_ms": 617.3273340100423
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d868-0005-7552000391c2",
+      "elapsed_ms": 684.8767500050599
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d7c4-0005-755200038376",
+      "elapsed_ms": 241.35933299839962
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab4-0204-d86c-0005-755200037ed2",
+      "elapsed_ms": 164.9693330109585
+    },
+    {
+      "label": "query",
+      "sql_sha256": "8f8151bd6308c83c309341c39bb4dc986341589143d215488a0b7914101045f7",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d868-0005-7552000391c6",
+      "elapsed_ms": 1030.2544579899404
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d868-0005-7552000391ca",
+      "elapsed_ms": 684.8972500010859
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-PATH-DC-04",
+      "query_id": "01c78ab4-0204-d86c-0005-755200037ef2",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d868-0005-7552000391ce",
+      "elapsed_ms": 714.2252909980016
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d86c-0005-755200037f26",
+      "elapsed_ms": 828.2548749994021
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d86c-0005-755200037f3e",
+      "elapsed_ms": 179.09366700041573
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab4-0204-d7c4-0005-75520003837a",
+      "elapsed_ms": 161.27708400017582
+    },
+    {
+      "label": "query",
+      "sql_sha256": "ef9807d0ae6e17d4b617cc3da0f8bd5b45ea837d13ee8e37266d71d0c33a2633",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d86c-0005-755200037f4a",
+      "elapsed_ms": 527.7184580045287
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab4-0204-d7c4-0005-75520003837e",
+      "elapsed_ms": 522.222415995202
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-05",
+      "query_id": "01c78ab4-0204-d7c4-0005-755200038382",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab9-0204-d86c-0005-75520003b146",
+      "elapsed_ms": 783.8839169999119
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab9-0204-d86c-0005-75520003b14a",
+      "elapsed_ms": 517.240834000404
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab9-0204-d868-0005-755200039602",
+      "elapsed_ms": 300.0982500088867
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78ab9-0204-d868-0005-75520003960a",
+      "elapsed_ms": 203.8362080056686
+    },
+    {
+      "label": "query",
+      "sql_sha256": "41d1b8a0782e845031517b15f58d00d2b25dc61888c70998e511ae83abb2f01a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab9-0204-d868-0005-75520003960e",
+      "elapsed_ms": 4086.9246660004137
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ab9-0204-d7c4-0005-7552000384f2",
+      "elapsed_ms": 530.2749580005184
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-06",
+      "query_id": "01c78ab9-0204-d7c4-0005-7552000384f6",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-7552000384fa",
+      "elapsed_ms": 812.0337910077069
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039696",
+      "elapsed_ms": 613.8552500051446
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000396a2",
+      "elapsed_ms": 201.28475000092294
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d7c4-0005-7552000384fe",
+      "elapsed_ms": 189.45070799964014
+    },
+    {
+      "label": "query",
+      "sql_sha256": "4b56fff74e9c43e717ee59bba8d5aa4e95fbb797dbb45f4d0e1cdd5892343fd0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000396a6",
+      "elapsed_ms": 1103.5332499886863
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000396b6",
+      "elapsed_ms": 479.25104199384805
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-PATH-DC-06",
+      "query_id": "01c78aba-0204-d86c-0005-75520003b152",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038502",
+      "elapsed_ms": 747.561542011681
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b156",
+      "elapsed_ms": 525.076457997784
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b15a",
+      "elapsed_ms": 185.03200000850484
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d868-0005-7552000396f6",
+      "elapsed_ms": 182.39104199165013
+    },
+    {
+      "label": "query",
+      "sql_sha256": "774594c832852c39196b283a376064c2a508529cf69f9600485668f228591fb7",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038506",
+      "elapsed_ms": 466.6920830059098
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003970a",
+      "elapsed_ms": 459.79341700149234
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-07",
+      "query_id": "01c78aba-0204-d86c-0005-75520003b15e",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b162",
+      "elapsed_ms": 1352.5275829888415
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003850a",
+      "elapsed_ms": 511.17854099720716
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b166",
+      "elapsed_ms": 182.53095900581684
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d868-0005-755200039766",
+      "elapsed_ms": 182.67795800056774
+    },
+    {
+      "label": "query",
+      "sql_sha256": "71888b0767044f115047114d8cc627b50d774e19963debd92334c887e174287d",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-75520003976e",
+      "elapsed_ms": 515.0089160015341
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b17a",
+      "elapsed_ms": 523.2919169939123
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-08",
+      "query_id": "01c78aba-0204-d7c4-0005-755200038512",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039782",
+      "elapsed_ms": 694.0289999911329
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003851e",
+      "elapsed_ms": 470.4142499977024
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b18a",
+      "elapsed_ms": 197.5722500064876
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038522",
+      "elapsed_ms": 206.2169580021873
+    },
+    {
+      "label": "query",
+      "sql_sha256": "1a78bb24e7d2798e65106cbe8d35b77da5bc03ad9c3b0f7bb075f53f765bd370",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b18e",
+      "elapsed_ms": 526.8277079885593
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-755200039792",
+      "elapsed_ms": 583.4498330077622
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-09",
+      "query_id": "01c78aba-0204-d86c-0005-75520003b196",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1b6",
+      "elapsed_ms": 816.7907919996651
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1ba",
+      "elapsed_ms": 615.4858750087442
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000397ca",
+      "elapsed_ms": 353.1822920049308
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1be",
+      "elapsed_ms": 182.22699999751057
+    },
+    {
+      "label": "query",
+      "sql_sha256": "e92a834045da0b8ecd33ee60ba6c0910aa3dd82cc58e8df26dc59759bfc6f4a4",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000397d6",
+      "elapsed_ms": 4041.642625001259
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1c2",
+      "elapsed_ms": 541.1812499951338
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-10",
+      "query_id": "01c78aba-0204-d868-0005-7552000397da",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003855e",
+      "elapsed_ms": 763.2857499993406
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1c6",
+      "elapsed_ms": 529.3254999996861
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038562",
+      "elapsed_ms": 206.45770798728336
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1ca",
+      "elapsed_ms": 193.6478330026148
+    },
+    {
+      "label": "query",
+      "sql_sha256": "049d55aca21934e9a57f3f86093f899c12a9438a544f307f7e1b5640118820c3",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038566",
+      "elapsed_ms": 481.82166600599885
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000397de",
+      "elapsed_ms": 413.28491699823644
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-PATH-DC-10",
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1ce",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003856a",
+      "elapsed_ms": 758.0739580007503
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1d2",
+      "elapsed_ms": 596.0986249992857
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000397e2",
+      "elapsed_ms": 196.46816699241754
+    },
+    {
+      "label": "query",
+      "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aba-0204-d868-0005-7552000397e6",
+      "elapsed_ms": 181.43974999838974
+    },
+    {
+      "label": "query",
+      "sql_sha256": "1c9ec29055450d1b481ed60cc94c108751bc0cf66fd1c12d1b75489314014169",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d868-0005-7552000397ea",
+      "elapsed_ms": 482.69199999049306
+    },
+    {
+      "label": "query",
+      "sql_sha256": "2ef0b9ff44a2003c5f3472e6856b6eddadbeb7af925a44c5926771c527b8b08e",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-75520003856e",
+      "elapsed_ms": 521.4289160066983
+    },
+    {
+      "label": "AI_PARSE_DOCUMENT",
+      "doc_id": "DOC-LAB-DC-11",
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1d6",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "27cb281de75ce5c166f448e00a0f73705ac3e24a782e4b831f00ab21b620e0cd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1da",
+      "elapsed_ms": 1432.8864580020308
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6183734c5ac1aa7d6f32f167d74a88a5de7972bdd9ea7ac6e5dc9b87d09ea41a",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d7c4-0005-755200038572",
+      "elapsed_ms": 604.6405829983996
+    },
+    {
+      "label": "query",
+      "sql_sha256": "68e1341e5b74e94134c7c439f7e52e674ddad6947a6bfe92c21bcdbbafabc1ce",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aba-0204-d86c-0005-75520003b1de",
+      "elapsed_ms": 1135.060207991046
+    }
+  ]
+}

@@ -96,3 +96,32 @@ The copilot never shows a confidence percentage. It shows evidence states instea
 - No "I think", no hedging adjectives, no "we".
 - Every answer ends with the clock line.
 - Refusals name who decides and what the copilot can do instead.
+
+## 8. Live copilot (the floating layer)
+
+An optional layer over the dashboard that carries out a request on screen and brings the result into the same chat. Concept study: `copilot-concepts-2026-10-06/`. Code: `web/lib/copilot-intent.mjs` (planner), `web/lib/copilot-run.mjs` (runner), `web/components/copilot/copilot-live*.tsx` (dock, switch, receipt, step execution).
+
+**Controls.** A **Copilot** switch in the top bar turns the layer on or off and is remembered per browser. Off: the dashboard and chat behave exactly as before, and the ⌘K launcher returns. On: a floating dock sits centred over the record card's bottom strip, never over the sidebar or the chat. The microphone starts only when the person presses it. **Hide** collapses the dock to a small pill and stops the microphone; work already running continues and its results stay in the chat.
+
+**One conversation, one composer.** The dock has no thread of its own. A spoken request and a typed one in the chat go through the same planner.
+
+**Closed step vocabulary.** A request becomes a short list of these steps and nothing else:
+
+| Step | What happens | Receipt when done |
+|---|---|---|
+| Choose patient | Highlights the named patient's card and asks **Open record?**. A person's click, here or on the card, opens it. Never automatic. | Opened Fatima Begum's record |
+| Go | Day care or the review queue | Opened Day care |
+| Section | Overview, Facts, Timeline, Documents, Coverage, Review, Family | Opened Documents |
+| Find | Locates a tagged item (`data-copilot-ref`) by specific words or lab concept code, scrolls it into view only if needed, and outlines it | Found Lab report |
+| Add to chat | The item travels into the composer as a chip. Under reduced motion it simply appears. | Added Lab report to the chat |
+| Ask | The same governed `/api/ask` or `/api/copilot/cohort` path as the composer. An instruction ("show what's missing") is asked in classifier-recognised record wording ("What is missing in the record?"). A question in the person's own words is sent unchanged. | Answered from the record · Referred to the treating practitioner |
+| Mark | Outlines the checks, facts, documents or patients the answer cites | Marked 2 cited items on Overview |
+
+**Control rules.**
+- Receipts are written only when a step completes. A failed step says why: "No document matching "echo report" is on this page."
+- **Pause** stops further steps; the step already running may finish. **Stop** aborts it, and anything it returns late is discarded.
+- **Manual work wins.** A person's click, key or scroll pauses any remaining step that would move the view. Reads already in flight continue.
+- Opening a different patient stops the run. Turning the copilot off stops the run and clears every mark.
+- The chat shows each run as an activity card above the question it led to, with **Return to previous view**.
+
+**Voice.** Uses the browser's speech recognition and prefers on-device recognition where the browser offers it. Otherwise the browser's own speech service hears the request, so a patient name spoken aloud leaves the machine. Unsupported browsers get "Type a request" instead.

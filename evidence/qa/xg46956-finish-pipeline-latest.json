@@ -1,0 +1,61 @@
+{
+  "mode": "finish-pipeline",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d868-0005-755200039ef6",
+      "elapsed_ms": 235.0378749979427
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d7c4-0005-75520003c0d2",
+      "elapsed_ms": 249.61608299054205
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d868-0005-755200039efa",
+      "elapsed_ms": 253.68379200517666
+    },
+    {
+      "label": "query",
+      "sql_sha256": "dc73063e014adbf88b4edd92d21a7b115a5e76f45765c19d8ddf3ee8a7bf4508",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d7c4-0005-75520003c0da",
+      "elapsed_ms": 264.2070840083761
+    },
+    {
+      "label": "RECONCILE_EVIDENCE_PROC",
+      "query_id": "01c78ac0-0204-d868-0005-755200039f02",
+      "status": "PASS",
+      "result": [
+        [
+          "{\n  \"cross_specimen_discordant\": 0,\n  \"reconciled_at\": \"2026-10-06T05:20:31\",\n  \"same_specimen_conflicts\": 0,\n  \"support_links_added\": 0\n}"
+        ]
+      ]
+    },
+    {
+      "label": "REFRESH_READINESS_PROC",
+      "query_id": "01c78ac0-0204-d86c-0005-75520003be0a",
+      "status": "PASS",
+      "result": [
+        [
+          "{\n  \"refreshed_at\": \"2026-10-06T05:24:14\",\n  \"rows_written\": 265\n}"
+        ]
+      ]
+    }
+  ]
+}

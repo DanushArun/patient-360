@@ -1,0 +1,41 @@
+{
+  "mode": "file-info",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aae-0204-d868-0005-7552000390c6",
+      "elapsed_ms": 222.0736669987673
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aae-0204-d868-0005-7552000390ca",
+      "elapsed_ms": 285.63662500528153
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aae-0204-d7c4-0005-755200038206",
+      "elapsed_ms": 392.4570420058444
+    },
+    {
+      "label": "query",
+      "sql_sha256": "41eeccd8f61a4546efeeaba58fab33d4d366fbc43bdfdc9cc4419ce99383df24",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aae-0204-d7c4-0005-75520003820a",
+      "elapsed_ms": 468.63658299844246
+    }
+  ]
+}

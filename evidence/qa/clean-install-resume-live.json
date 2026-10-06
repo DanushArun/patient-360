@@ -1,0 +1,287 @@
+{
+  "recorded_at": "2026-10-06T04:50:50.376862+00:00",
+  "base_revision": "fe734fc6a825fc063ad55ddbade12b48cee476ff",
+  "working_tree": true,
+  "status": "PASS_PRE_AI",
+  "resumed_from": "backend/sql/procedures/answer_gateway_candidates.sql",
+  "statement_timeout_s": 1800,
+  "files": [
+    "backend/sql/procedures/answer_gateway_candidates.sql",
+    "backend/sql/procedures/answer_gateway_resolve.sql",
+    "backend/sql/procedures/answer_gateway_refusal.sql",
+    "backend/sql/procedures/answer_gateway_finalize.sql",
+    "backend/sql/procedures/answer_gateway_record_fallback.sql",
+    "backend/sql/procedures/answer_gateway_context_pack.sql",
+    "backend/sql/procedures/answer_gateway_context_section.sql",
+    "backend/sql/procedures/answer_gateway_context.sql",
+    "backend/sql/procedures/answer_gateway_infer.sql",
+    "backend/sql/agent/ask_saarthi.sql",
+    "backend/sql/procedures/judge/judge_probes.sql",
+    "backend/sql/governance/03_grants.sql"
+  ],
+  "events": [
+    {
+      "label": "query",
+      "sql_sha256": "8713f7c4aa04bf0aca67e195f9078cac20b64aeef97a9423cca9ca78bc49cea6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa2-0204-d86c-0005-75520002dfd2",
+      "elapsed_ms": 217.15333400061354
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_candidates.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520002dfde",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_resolve.sql",
+      "query_id": "01c78aa2-0204-d868-0005-7552000365a2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_refusal.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031752",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_finalize.sql",
+      "query_id": "01c78aa2-0204-d868-0005-7552000365c6",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_record_fallback.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031762",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_context_pack.sql",
+      "query_id": "01c78aa2-0204-d868-0005-7552000365e6",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_context_section.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520002dffe",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_context.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-75520003177a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/answer_gateway_infer.sql",
+      "query_id": "01c78aa2-0204-d868-0005-7552000365f6",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/agent/ask_saarthi.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031796",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d868-0005-7552000365fe",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-7552000317a2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520003701a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036636",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-7552000317ba",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520003702e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d868-0005-75520003664e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/judge/judge_probes.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-7552000317ca",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520003706a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-7552000317ce",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-755200037076",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520003707e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-755200037082",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-7552000317de",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-7552000317ee",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-755200037086",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-75520003708a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031816",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-75520003181a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-755200037092",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-7552000366fe",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036706",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-7552000370ae",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031826",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-75520003182a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036716",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036722",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036726",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031836",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036746",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036752",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-7552000370c2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031846",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-75520003184e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-75520003185a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-75520003676e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-7552000370ca",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d86c-0005-7552000370da",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d7c4-0005-755200031872",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/governance/03_grants.sql",
+      "query_id": "01c78aa2-0204-d868-0005-755200036782",
+      "status": "PASS"
+    }
+  ],
+  "task_user": "DAKSHA",
+  "active_file": "backend/sql/governance/03_grants.sql",
+  "deferred_files": [
+    "backend/sql/agent/saarthi_mcp.sql"
+  ]
+}

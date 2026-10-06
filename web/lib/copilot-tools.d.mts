@@ -25,3 +25,5 @@ export function composeRecordAnswer(match: RecordToolMatch, reads: Record<string
   RecordAnswer;
 export function followOns(tool: RecordTool): string[];
 export const RECORD_TOOL_STARTERS: string[];
+
+export function recordToolQuestion(tool: RecordTool): string | null;

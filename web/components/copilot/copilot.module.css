@@ -76,16 +76,21 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
 }
 .slot { display: contents; }
 
 .stream {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   padding: var(--space-4);
   scroll-behavior: smooth;
 }
+.stream :global(p),
+.stream :global(code) { overflow-wrap: anywhere; }
+.stream :global(.sa-turn-assistant) { min-width: 0; }
 .stream > * + * { margin-top: var(--space-4); }
 .stream :global(.sa-turn-user) {
   margin-left: var(--space-8);
@@ -139,6 +144,9 @@
 
 .composer {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex-shrink: 0;
+  min-width: 0;
   gap: var(--space-2);
   margin: 0 var(--space-3) var(--space-3);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
@@ -155,6 +163,8 @@
 }
 .composer textarea {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   min-height: 24px;
   padding: var(--space-1) 0;
   border: 0;
@@ -168,10 +178,11 @@
 /* One focus frame only: the composer shows focus; the field inside it stays invisible. */
 .composer textarea:focus,
 .composer textarea:focus-visible { outline: none; box-shadow: none; }
-.composerBar { display: flex; align-items: center; gap: var(--space-2); }
-.hint { flex: 1; font: var(--text-caption); color: var(--label-quaternary); }
+.composerBar { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.hint { flex: 1; min-width: 0; font: var(--text-caption); color: var(--label-tertiary); }
 .send {
   display: inline-grid;
+  flex-shrink: 0;
   place-items: center;
   width: var(--control-height);
   height: var(--control-height);
@@ -183,7 +194,7 @@
 }
 .send:disabled { background: var(--bg-tertiary); color: var(--label-tertiary); cursor: not-allowed; }
 
-.chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); min-width: 0; }
 .chip {
   display: inline-flex;
   align-items: center;
@@ -207,6 +218,9 @@
   cursor: pointer;
 }
 .scopeSelect {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1;
   height: var(--control-height-small);
   padding: 0 var(--space-2);
   border: 1px solid var(--separator-strong);
@@ -287,6 +301,8 @@
 }
 
 .chips :global(.sa-source-scope) {
+  min-width: 0;
+  max-width: 100%;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;

@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useOptionalCopilot } from "@/components/copilot/copilot-provider";
 import { useParams } from "next/navigation";
 import type { RosterPatient } from "@/components/patient-roster";
 import type { PatientData } from "@/lib/patient";
+import type { PatientSection } from "@/lib/workspace-state.mjs";
+import type { Turn } from "@/app/patient/[id]/patient-evidence";
+import type { LivePatientPage } from "@/components/copilot/copilot-live";
 import { usePatientRecord } from "@/components/use-patient-record";
 import { usePatientChat, useStoredTurns } from "@/components/workspace-patient-copilot";
 import { usePatientReviewTask } from "@/components/use-patient-review-task";
@@ -61,6 +64,10 @@ export default function PatientClient({
   const reviewTask = usePatientReviewTask(patient.patientId);
   const selection = usePatientEvidenceSelection(currentPatient, turns, selectionAskOpen,
     setSelectionAskOpen);
+  useLivePatientPage({ register: copilot?.live.registerPage, available: accessAvailable,
+    patient: currentPatient?.patientId === patient.patientId ? currentPatient : null,
+    section: sections.section, setSection: sections.setSection, chat, turns,
+    selectGate: selection.selectGate });
   if (!accessAvailable) return <PatientAccessUnavailable />;
   if (!currentPatient || currentPatient.patientId !== patient.patientId) return <PatientLoading />;
   return <PatientWorkspaceScreen model={{
@@ -74,4 +81,40 @@ export default function PatientClient({
     toggleAsk: copilot ? copilot.toggle : selection.toggleAsk, closeEvidence: selection.closeEvidence,
     onSelectGate: selection.selectGate, onSelectAnswer: selection.selectAnswer,
   }} />;
+}
+
+/** What the live copilot may do on this page: switch sections, ask through the same governed
+ * chat path as the composer, read back the answer it caused, and open a check's evidence. */
+function useLivePatientPage({ register, available, patient, section, setSection, chat, turns,
+  selectGate }: {
+  register?: (page: LivePatientPage | null) => void;
+  available: boolean;
+  patient: PatientData | null;
+  section: string;
+  setSection: (section: PatientSection) => void;
+  chat: ReturnType<typeof usePatientChat>;
+  turns: Turn[];
+  selectGate: (ruleId: string) => void;
+}): void {
+  const latest = useRef({ chat, turns, setSection, selectGate });
+  latest.current = { chat, turns, setSection, selectGate };
+  const patientId = patient?.patientId;
+  const patientName = patient?.patientName;
+  useEffect(() => {
+    if (!register || !available || !patientId || !patientName) return;
+    register({
+      kind: "patient", patientId, patientName, section,
+      setSection: (next) => latest.current.setSection(next as PatientSection),
+      ask: (question, context) => latest.current.chat.send(question, "patient", false, context),
+      stop: () => latest.current.chat.stop(),
+      turnCount: () => latest.current.turns.length,
+      latestAnswer: () => {
+        const last = latest.current.turns.at(-1);
+        return last?.role === "assistant" ? last : null;
+      },
+      selectGate: (ruleId) => latest.current.selectGate(ruleId),
+      setDraft: (text) => latest.current.chat.setQuestion(text),
+    });
+    return () => register(null);
+  }, [register, available, patientId, patientName, section]);
 }

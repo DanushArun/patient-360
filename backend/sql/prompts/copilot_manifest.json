@@ -1,0 +1,17 @@
+{
+  "version": "copilot@2026-10-06.1",
+  "model": "claude-opus-5-5",
+  "prompts": {
+    "response": {
+      "file": "copilot_response.md",
+      "sha256": "d971b0cbb4c9cde57520a6f791fa432dffa9ba352c156d80cd7f9cd1bc41c3d1"
+    },
+    "orchestration": {
+      "file": "copilot_orchestration.md",
+      "sha256": "ab914aad09fcf7f7a85dd8e09f387e536b98c5ee5b054b4a77c1e3a81f2b8991"
+    }
+  },
+  "deployment_source": "backend/sql/agent/saarthi_agent.sql",
+  "runtime_source": "backend/sql/procedures/answer_gateway_infer.sql",
+  "answer_contract": "frontend/contracts/answer_schema.json"
+}

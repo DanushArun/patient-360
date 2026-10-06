@@ -1,0 +1,113 @@
+{
+  "mode": "inventory",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d7c4-0005-7552000319fe",
+      "elapsed_ms": 199.17837499815505
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a02",
+      "elapsed_ms": 232.1573749941308
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d86c-0005-7552000372d6",
+      "elapsed_ms": 162.0678330073133
+    },
+    {
+      "label": "query",
+      "sql_sha256": "258136a4dc35b1cb33566834f7cc8529c512d1dd08956010b4e0c10b97016c69",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a06",
+      "elapsed_ms": 242.1663340064697
+    },
+    {
+      "label": "query",
+      "sql_sha256": "ea263cfdec5e1f898097a7293a464af4266926149a9a5e40ed95f7cb83553418",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c78aa9-0204-d86c-0005-7552000372da",
+      "elapsed_ms": 172.96916600025725
+    },
+    {
+      "label": "query",
+      "sql_sha256": "e2f61c346be648f3468f1b9113d48787cb532e35524c41bfeb0d2db04078a7d9",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d86c-0005-7552000372de",
+      "elapsed_ms": 274.09266598988324
+    },
+    {
+      "label": "query",
+      "sql_sha256": "64674e4ed0edfb4b70d597a4994667671fe464af787acd88a07f3e38a83d9b8f",
+      "status": "PASS",
+      "rows": 2,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a0a",
+      "elapsed_ms": 303.0287919973489
+    },
+    {
+      "label": "query",
+      "sql_sha256": "6f410c9773cf0cc239caf8d4b2aef94119afb13be288a2aeade1a1beb7819227",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d868-0005-7552000369b2",
+      "elapsed_ms": 222.11700001207646
+    },
+    {
+      "label": "query",
+      "sql_sha256": "53e9131daf19306e5df01bb1df1e5404441c7191c790e209ed1fa207a0eea916",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d86c-0005-7552000372e2",
+      "elapsed_ms": 257.44133300031535
+    },
+    {
+      "label": "query",
+      "sql_sha256": "c31de2108057a386426fa8dad88ce6ffa234ef0ae176bbb2fb46deb012432025",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a0e",
+      "elapsed_ms": 305.5573329911567
+    },
+    {
+      "label": "query",
+      "sql_sha256": "f1da14e4ab038d9ea503ba3284e22ceecebec49aabcacaef619028e95c90a08a",
+      "status": "PASS",
+      "rows": 18,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a12",
+      "elapsed_ms": 682.5741250067949
+    },
+    {
+      "label": "query",
+      "sql_sha256": "7c9b534e35b081200fc167e60d33e96a652ee9cf79d82f345076f87c928b4409",
+      "status": "PASS",
+      "rows": 3,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a16",
+      "elapsed_ms": 183.74079201021232
+    },
+    {
+      "label": "query",
+      "sql_sha256": "c230065550eae248676bf850f6f6a00b0a5edf9fdff8423936e543b8d9709b33",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78aa9-0204-d7c4-0005-755200031a1a",
+      "elapsed_ms": 191.0326250072103
+    }
+  ]
+}

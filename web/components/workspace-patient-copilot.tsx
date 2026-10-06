@@ -151,7 +151,10 @@ async function askRecord(
     headers: { "Content-Type": "application/json", Accept: "application/x-ndjson, application/json" },
     body: JSON.stringify({ patientId, question, sourceScope,
       ...(context.length ? { context } : {}) }),
-    signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
+    // The native model, scoped retrieval and validation share one request.
+    // Leave time for the server's 120-second SQL bound plus session setup;
+    // the operator's Stop button still aborts immediately.
+    signal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
   });
   if (!response.headers.get("content-type")?.includes("application/x-ndjson") || !response.body) {
     return { response, result: await response.json() as AskResult };
@@ -363,9 +366,11 @@ function storedQuestion(storageKey: string): string {
 
 export function PatientConversation({
   patientId, turns, selected, onSelect, busy, onSend, onRetry, sourceScope, patient,
-  showEmptyHint = true, onOpenSection,
+  showEmptyHint = true, onOpenSection, activity,
 }: {
   showEmptyHint?: boolean;
+  /** Live copilot activity, shown before the turn it led to (or after the last turn). */
+  activity?: { index: number; node: ReactNode };
   onOpenSection?: (section: string) => void;
   patientId: string;
   patient?: PatientData;
@@ -384,6 +389,7 @@ export function PatientConversation({
       practitioner.
     </div>}
     {turns.map((turn, index) => <div key={turn.id}>
+      {activity?.index === index && activity.node}
       <Message turn={turn} selected={selected} onSelect={onSelect}
         onOpenSection={onOpenSection} />
       {turn.role === "assistant" && !turn.error
@@ -393,6 +399,7 @@ export function PatientConversation({
         && <ClinicalReferral patientId={patientId} patient={patient} turn={turn}
           question={turns[index - 1].text} />}
     </div>)}
+    {activity && activity.index >= turns.length && activity.node}
     {busy && <div className="sa-meta" role="status">Consulting the record…</div>}
     {last?.error && !NON_RETRYABLE_ERRORS.has(last.error) && <button type="button" className="sa-quiet-button"
       onClick={onRetry} disabled={busy}>Retry last question</button>}

@@ -1,0 +1,42 @@
+{
+  "mode": "probe-gpt61",
+  "identity": {
+    "A": "WH11571",
+    "U": "DAKSHA"
+  },
+  "events": [
+    {
+      "label": "disable_secondary_roles",
+      "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d7c4-0005-75520003c0ce",
+      "elapsed_ms": 197.39125001069624
+    },
+    {
+      "label": "session_identity",
+      "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d7c4-0005-75520003c0d6",
+      "elapsed_ms": 230.8310420048656
+    },
+    {
+      "label": "query",
+      "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c78ac0-0204-d868-0005-755200039efe",
+      "elapsed_ms": 253.77066600776743
+    },
+    {
+      "label": "query",
+      "sql_sha256": "fb69da3fedbb5219dd21d347e6042c902031df696a8aa39c432117dad329e9b3",
+      "status": "FAIL",
+      "error_type": "ProgrammingError",
+      "error_code": 512513,
+      "query_id": "01c78ac0-0204-d86c-0005-75520003be06",
+      "elapsed_ms": 20761.20304199867
+    }
+  ]
+}

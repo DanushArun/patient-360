@@ -1,0 +1,65 @@
+[
+  {
+    "label": "disable_secondary_roles",
+    "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
+    "status": "PASS",
+    "rows": 1,
+    "query_id": "01c78aae-0204-d86c-0005-755200037a86",
+    "elapsed_ms": 190.74120800360106
+  },
+  {
+    "label": "session_identity",
+    "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
+    "status": "PASS",
+    "rows": 1,
+    "query_id": "01c78aae-0204-d7c4-0005-755200038216",
+    "elapsed_ms": 266.882625001017
+  },
+  {
+    "label": "query",
+    "sql_sha256": "cc322e20ef3bffb9da833ba1ae4a34ba989efe4b0824219c173275df0d25a4cf",
+    "status": "PASS",
+    "rows": 1,
+    "query_id": "01c78aae-0204-d7c4-0005-75520003821a",
+    "elapsed_ms": 165.6531670014374
+  },
+  {
+    "label": "query",
+    "sql_sha256": "fb7e2e7681cd69c7ff39ef999736974cc73a1d343c297d5789b9f21a58f91822",
+    "status": "PASS",
+    "rows": 1,
+    "query_id": "01c78aae-0204-d868-0005-7552000390da",
+    "elapsed_ms": 196.22341700596735
+  },
+  {
+    "label": "query",
+    "sql_sha256": "cb301bd65c29be00b233f0e7acd9fc0226385bc0c3d13fffc8428fb026b87ca5",
+    "status": "PASS",
+    "rows": 1,
+    "query_id": "01c78aae-0204-d868-0005-7552000390de",
+    "elapsed_ms": 196.4102079946315
+  },
+  {
+    "label": "query",
+    "sql_sha256": "675d3fcbc1a5495632855390262bcf21af522d1469436258c65fcef07923a8d6",
+    "status": "PASS",
+    "rows": 0,
+    "query_id": "01c78aae-0204-d868-0005-7552000390e2",
+    "elapsed_ms": 181.91862499224953
+  },
+  {
+    "label": "query",
+    "sql_sha256": "82e76c1b19379b2619c1e3e9b7a21314110e30e859ecd9917b1947cc67d3c9cb",
+    "status": "PASS",
+    "rows": 1,
+    "query_id": "01c78aae-0204-d868-0005-7552000390e6",
+    "elapsed_ms": 2719.222207990242
+  },
+  {
+    "label": "AI_PARSE_DOCUMENT",
+    "doc_id": "DOC-LAB-DC-01",
+    "query_id": "01c78aaf-0204-d7c4-0005-75520003821e",
+    "status": "FAIL",
+    "error": "001007 (22023): SQL compilation error:\ninvalid type [CAST(TO_FILE('@SAARTHI.STAGES.PATIENT_DOCS', 'PAT-DC-01/DOC-LAB-DC-01') AS OBJECT)] for parameter 'TO_OBJECT'"
+  }
+]

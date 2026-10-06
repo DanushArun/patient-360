@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Info, Maximize2, Minimize2, Plus, Sparkles, X } from "lucide-react";
@@ -8,7 +8,9 @@ import { CensusChip, type CensusStatus } from "@/components/sa";
 import { formatRecordDate } from "@/lib/workspace-record-date.mjs";
 import { useCopilot, type CopilotChip } from "./copilot-provider";
 import { COHORT_STARTERS } from "@/lib/copilot-cohort.mjs";
+import type { CohortRow, CohortTurn } from "@/lib/copilot-session.mjs";
 import { CopilotComposer, CopilotStarters } from "./copilot-parts";
+import { LiveDock, LiveReceipt } from "./copilot-live-ui";
 import styles from "./copilot.module.css";
 
 // Global copilot frame: launcher, docked panel and the "+ Ask" picker. Patient pages render
@@ -20,12 +22,14 @@ export function CopilotFrame(): ReactNode {
   // The recorded design preview has no live backend; offering a copilot there would mislead.
   if (pathname.startsWith("/design-preview")) return null;
   return <>
-    {!copilot.open && <button type="button" className={styles.launcher}
+    {/* With the live copilot on, the dock is the entry point; the launcher would duplicate it. */}
+    {!copilot.open && !copilot.live.enabled && <button type="button" className={styles.launcher}
       onClick={() => copilot.setOpen(true)} aria-label="Open Saarthi copilot">
       <Sparkles size={16} aria-hidden /><span className={styles.launcherLabel}>Ask Saarthi</span>
       <kbd>⌘K</kbd>
     </button>}
     {copilot.open && <CopilotPanel />}
+    <LiveDock />
     <CopilotPicker />
   </>;
 }
@@ -68,43 +72,20 @@ function CopilotPanel(): ReactNode {
 
 // ---------------------------------------------------------------- cohort mode
 
-type CohortRow = { patientId: string; name: string; status: CensusStatus;
-  headline: string | null; headlineRule: string | null; otherIssues: number };
-type CohortTurn =
-  | { id: string; role: "user"; text: string }
-  | { id: string; role: "assistant"; title: string | null; rows: CohortRow[];
-    counts?: Record<CensusStatus, number>; basis: string | null; known_as_of: string | null;
-    text?: string; error?: string | null };
-
-
 function CohortConversation(): ReactNode {
   const copilot = useCopilot();
-  const [turns, setTurns] = useState<CohortTurn[]>([]);
-  const [question, setQuestion] = useState("");
-  const [busy, setBusy] = useState(false);
   const stream = useRef<HTMLDivElement>(null);
-  useEffect(() => { stream.current?.scrollTo({ top: stream.current.scrollHeight }); }, [turns, busy]);
-
-  const send = async (text: string) => {
-    if (!text.trim() || busy) return;
-    setTurns((current) => [...current, { id: crypto.randomUUID(), role: "user", text }]);
-    setQuestion("");
-    setBusy(true);
-    try {
-      const response = await fetch("/api/copilot/cohort", { method: "POST",
-        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: text }),
-        signal: AbortSignal.timeout(60000) });
-      const result = await response.json();
-      setTurns((current) => [...current, { id: crypto.randomUUID(), role: "assistant",
-        title: null, rows: [], basis: null, known_as_of: null, ...result,
-        error: response.ok ? result.error ?? null : result.error ?? "record_service_unavailable" }]);
-    } catch {
-      setTurns((current) => [...current, { id: crypto.randomUUID(), role: "assistant",
-        title: null, rows: [], basis: null, known_as_of: null, error: "record_service_unavailable" }]);
-    } finally {
-      setBusy(false);
-    }
+  const { turns, busy, question } = copilot.cohort;
+  const live = copilot.live;
+  useEffect(() => { stream.current?.scrollTo({ top: stream.current.scrollHeight }); },
+    [turns, busy, live.run]);
+  // With the live copilot on, a request can also open records and bring items to the chat.
+  const send = (text: string) => {
+    if (live.enabled && live.start(text, "chat")) { copilot.setCohortQuestion(""); return; }
+    void copilot.sendCohort(text);
   };
+  const anchor = live.anchor?.scope === "cohort" && live.anchor.runId === live.run?.id
+    ? live.anchor.index : turns.length;
 
   return <>
     {copilot.inspector && <div className={styles.inspector}>
@@ -121,16 +102,22 @@ function CohortConversation(): ReactNode {
         <h2>Ask about your day-care list</h2>
         <p>Who can be treated, who is blocked and why. Every answer comes from the record
           checks on screen. Open a patient to ask about their record.</p>
-        <CopilotStarters starters={COHORT_STARTERS} onPick={(text) => void send(text)} />
+        <CopilotStarters starters={COHORT_STARTERS} onPick={send} />
       </div>}
-      {turns.map((turn) => turn.role === "user"
-        ? <div key={turn.id} className="sa-turn-user">{turn.text}</div>
-        : <CohortAnswer key={turn.id} turn={turn} />)}
+      {turns.map((turn, index) => <Fragment key={turn.id}>
+        {index === anchor && <LiveReceipt />}
+        {turn.role === "user"
+          ? <div className="sa-turn-user">{turn.text}</div>
+          : <CohortAnswer turn={turn} />}
+      </Fragment>)}
+      {anchor >= turns.length && <LiveReceipt />}
       {busy && <p className={styles.meta} role="status">Reading the day-care record checks…</p>}
     </div>
     <CopilotComposer label="Question about the day-care list"
-      placeholder="Ask about today's day-care list…" value={question} setValue={setQuestion}
-      busy={busy} onSend={() => void send(question)} chips={[]} onDetach={() => {}}
+      placeholder="Ask about today's day-care list…" value={question}
+      setValue={copilot.setCohortQuestion} busy={busy}
+      onSend={() => send(question)} onStop={copilot.stopCohort}
+      chips={[]} onDetach={() => {}}
       picking={copilot.picking} onPick={() => copilot.setPicking(!copilot.picking)} />
     <p className={styles.disclaimer}>Record and coverage facts only. Clinical decisions belong to
       the treating practitioner.</p>
@@ -141,6 +128,7 @@ const COHORT_ERRORS: Record<string, string> = {
   record_service_unavailable: "The record service didn't respond. Try again in a moment.",
   classification_unavailable: "That question couldn't be routed safely. Ask who is blocked, "
     + "waiting on evidence, in conflict or ready.",
+  cancelled: "Stopped. The worklist read was cancelled; no workflow action was made.",
 };
 
 function CohortAnswer({ turn }: { turn: Extract<CohortTurn, { role: "assistant" }> }): ReactNode {

@@ -9,8 +9,10 @@ TOOLS = {entry['tool_spec']['name']: entry['tool_spec'] for entry in SPEC['tools
 
 
 @pytest.mark.parametrize('name', sorted(TOOLS))
-def test_agent_tool_when_configured_rejects_extra_arguments(name: str) -> None:
-    assert TOOLS[name]['input_schema'].get('additionalProperties') is False
+def test_agent_tool_when_configured_uses_supported_schema_and_no_scope_selector(name: str) -> None:
+    schema = TOOLS[name]['input_schema']
+    assert not set(schema) - {'type', 'properties', 'required'}
+    assert not set(schema.get('properties', {})) & {'patient_id', 'encounter_id', 'facility_id'}
 
 
 def test_agent_domain_when_configured_uses_closed_allowlist() -> None:
@@ -32,6 +34,33 @@ def test_configuration_when_all_resources_match_returns_eight_bounded_tools() ->
     from backend.verification import copilot
 
     assert len(copilot.verify_configuration(ROOT)['tools']) == 8
+    assert copilot.verify_configuration(ROOT)['prompt_store']['model'] == 'claude-opus-5-5'
+
+
+def test_prompt_store_when_deployment_prompt_drifts_fails_closed(tmp_path: Path) -> None:
+    from backend.verification.copilot import verify_prompt_store
+
+    prompt_dir = tmp_path / 'prompts'
+    prompt_dir.mkdir()
+    response = 'Return the verified claim.'
+    orchestration = 'Use only bounded tools.'
+    (prompt_dir / 'response.md').write_text(response + '\n')
+    (prompt_dir / 'orchestration.md').write_text(orchestration + '\n')
+    import hashlib
+    import json
+    manifest = {'version': 'test@1', 'model': 'claude-opus-5-5', 'prompts': {
+        'response': {'file': 'response.md', 'sha256': hashlib.sha256(
+            (response + '\n').encode()).hexdigest()},
+        'orchestration': {'file': 'orchestration.md', 'sha256': hashlib.sha256(
+            (orchestration + '\n').encode()).hexdigest()},
+    }}
+    (prompt_dir / 'copilot_manifest.json').write_text(json.dumps(manifest))
+    specification = {'instructions': {'response': response, 'orchestration': orchestration}}
+
+    with pytest.raises(ValueError, match='response prompt differs'):
+        verify_prompt_store(tmp_path, {**specification, 'instructions': {
+            **specification['instructions'], 'response': 'Return changed content.'}},
+            'claude-opus-5-5')
 
 
 def test_signature_when_schema_omits_required_argument_rejects() -> None:

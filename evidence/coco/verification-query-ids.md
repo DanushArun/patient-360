@@ -188,3 +188,48 @@ Left in place in `SAARTHI.GOVERNANCE` as the seed of the real implementation and
 | `CURRENT_USER()` inside deployed Streamlit container runtime | needs a deployed app | if it returns the owner, use a dedicated service user |
 | `CREATE STREAMLIT … COMPUTE_POOL` on a trial account | needs the app | warehouse runtime plus `AGENT_RUN`, already proven |
 | R7 two-pass disagreement on the ambiguous CBC | extraction task not yet built | in progress |
+
+---
+
+## 6 Oct — new account PVYRHHT-XG46956 (AWS_AP_NORTHEAST_1), model availability
+
+Account provided by Snowflake support with AI model access. Connected as DAKSHA (key-pair), secondary roles NONE,
+`CORTEX_ENABLED_CROSS_REGION = ANY_REGION` already set. Probe: `AI_COMPLETE(model, 'Reply with the single word OK', {temperature:0, max_tokens:5})`
+on `SAARTHI_AI_WH`, run as ACCOUNTADMIN.
+
+| Query ID | Model | Result |
+|---|---|---|
+| `01c78a85-0204-d86c-0005-75520002d0be` | `llama3.3-70b` | OK — R7 pass A |
+| `01c78a85-0204-d868-0005-755200022712` | `claude-haiku-4-5` | OK — R7 pass B (different family) |
+| `01c78a85-0204-d7c4-0005-7552000217fa` | `claude-opus-5` | resolved, empty string under 5-token cap — agent orchestration pin is reachable |
+| `01c78a85-0204-d868-0005-755200022716` | `llama3.1-8b` | OK — classifier |
+| `01c78a85-0204-d868-0005-755200022722` | `mistral-large3` | OK — pass B fallback 1 |
+| `01c78a85-0204-d868-0005-75520002272e` | `qwen3-32b` | OK — pass B fallback 2 |
+| `01c78a85-0204-d7c4-0005-75520002180e` | `claude-sonnet-5` | OK |
+| `01c78a85-0204-d7c4-0005-755200021812` | `claude-opus-4-8` | OK |
+
+Failure recorded: a prior partial install on this account (5 Oct ~20:15 PT, `setup.sql` run directly) stopped at
+`TASK_PARSE_DOCUMENTS` because `EXECUTE AS USER SITAR` names a user that does not exist here. The partial database was
+dropped (`01c78a86-0204-d868-0005-75520002273e`) and replaced via `backend.scripts.install_clean_account`, which rewrites
+the task user to the installing user. Install receipt: `evidence/qa/clean-install-live.json`.
+
+### 6 Oct — AI pipeline and Copilot execution on the new account
+
+| Query ID | What it established |
+|---|---|
+| `01c78abc-0204-deb9-0005-75520003209e` | Scheduled `TASK_PARSE_DOCUMENTS` completed on the new synthetic cohort. |
+| `01c78abc-0204-d7c4-0005-755200038a2a` | Scheduled two-family `TASK_EXTRACT_ASSERTIONS` completed. |
+| `01c78ac0-0204-d868-0005-755200039f02` | Scheduled reconciliation completed; 0 support links and 0 conflicts (no forced evidence match). |
+| `01c78ac0-0204-d86c-0005-75520003be0a` | Manual readiness materialization wrote 265 rows at 05:24 UTC. |
+| `01c78ad4-0204-d86c-0005-75520003e81e` | `DESCRIBE AGENT` live verification: Opus 5.5, 8 tools, 4 skills, stored prompts/hash match. |
+| `01c78ab8-0204-d868-0005-755200039356` | Full guarded dashboard answer path succeeded in 77 seconds; accepted SQL citations persisted. |
+| `01c78ad9-0204-d868-0005-75520003f8b2` | Updated `TASK_REFRESH_READINESS` task session timezone to UTC (the account default was America/Los_Angeles). All seven task parameters verified as UTC; task graph roots resumed. |
+| `01c78ae2-0204-d86c-0005-75520004145e` | Read-only `TASK_HISTORY` verification: the first UTC-configured `TASK_REFRESH_READINESS` run (05:50:08 UTC) and its notification child completed successfully (05:54:12 UTC and 05:54:15 UTC). |
+
+More details and failed runs: `evidence/qa/2026-10-06-copilot-capabilities.md`,
+`evidence/qa/xg46956-*-latest.json`, and account `TASK_HISTORY`. The cutoff fix passed one direct
+five readiness task failures were traced to task timezone `America/Los_Angeles` while UTC is
+assumed by the snapshot conversion. All seven task parameters are now UTC; the first subsequent
+scheduled readiness run and notification child succeeded. A dashboard refresh showed one newer
+evidence timestamp, but its headline still reported the older 05:24 UTC materialization. A
+separate manual cohort refresh exceeded the verification connector's 120-second statement limit.

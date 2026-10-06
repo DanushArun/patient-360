@@ -31,6 +31,27 @@ test("record conflict questions reach the record agent", async () => {
   assert.equal(agentCalls, 1);
 });
 
+test("record classifier receives the question bind", async () => {
+  let captured;
+  const run = async (sql, binds) => {
+    if (sql.includes("CLASSIFY_QUESTION")) captured = binds;
+    return rows({ classification: "CLASS_B", method: "structure" });
+  };
+  await routeQuestion("List the blocked patients", run, async () => ({ text: "ok" }));
+  assert.deepEqual(captured, ["List the blocked patients"]);
+});
+
+test("Class A refusal receives the SQL clock bind", async () => {
+  let captured;
+  const run = async (sql, binds) => {
+    if (sql.includes("CLASSIFY_QUESTION")) return rows({ classification: "CLASS_A" });
+    if (sql.includes("ANSWER_GATEWAY_REFUSAL")) captured = binds;
+    return rows(refusal);
+  };
+  await routeQuestion("Is it safe?", run, async () => ({}));
+  assert.deepEqual(captured, ["2026-10-04T15:00:00"]);
+});
+
 test("clinical assessment questions stop before the record agent", async () => {
   let agentCalls = 0;
   const run = clinicalRun;

@@ -1,6 +1,6 @@
 {
-  "recorded_at": "2026-10-05T06:43:33.549773+00:00",
-  "base_revision": "16befcb4a0bc0d3592526e988f955d864fb76295",
+  "recorded_at": "2026-10-06T05:31:22.557853+00:00",
+  "base_revision": "b6a03f107b080e06194289968985fa30a1a6ef17",
   "working_tree": true,
   "status": "PASS",
   "proof_type": "offline_configuration",
@@ -16,14 +16,22 @@
       "GetChanges",
       "CreateReviewTask"
     ],
-    "model": "claude-opus-5",
+    "model": "claude-opus-5-5",
     "skills": [
       "clinical-question-routing",
       "evidence-retrieval",
       "risk-stratification",
       "evidence-reconciliation"
     ],
-    "agent_sql_sha256": "22b20472e47a8aa024546d6b5562d238a45364dbb54af9a2618102e42d46b28c",
+    "prompt_store": {
+      "version": "copilot@2026-10-06.1",
+      "model": "claude-opus-5-5",
+      "sha256": {
+        "response": "d971b0cbb4c9cde57520a6f791fa432dffa9ba352c156d80cd7f9cd1bc41c3d1",
+        "orchestration": "ab914aad09fcf7f7a85dd8e09f387e536b98c5ee5b054b4a77c1e3a81f2b8991"
+      }
+    },
+    "agent_sql_sha256": "b03fb9dbf662fa1a8acb3aea0f3eda47eb7fdb7f8e014e4b2097e57a877c09b7",
     "native_execution": "requires funded-account verification",
     "mcp_sql_binding_continuity": "requires live proof; unbound calls must deny"
   }

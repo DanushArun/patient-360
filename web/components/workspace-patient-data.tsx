@@ -286,6 +286,12 @@ function DocumentTable({ rows, selectedId, groupByType, onSelect, onSelectGate }
   </div>;
 }
 
+/** "lab_report" reads as "Lab report" on a chip; a real title is kept as written. */
+function readableLabel(title: string): string {
+  const text = String(title).replace(/_/g, " ").trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function DocumentTableRow({ row, selected, onSelect, onSelectGate }: {
   row: DocumentLibraryRow; selected: boolean; onSelect: (row: DocumentLibraryRow) => void;
   onSelectGate?: (ruleId: string) => void;
@@ -296,7 +302,7 @@ function DocumentTableRow({ row, selected, onSelect, onSelectGate }: {
   const docId = row.kind === "received" && document?.doc_id ? String(document.doc_id) : null;
   return <tr data-selected={selected} data-kind={row.kind}
     data-copilot-ref={docId ? `document:${docId}` : undefined}
-    data-copilot-label={docId ? `Document ${type}` : undefined}>
+    data-copilot-label={docId ? readableLabel(row.title) : undefined}>
     <td data-label="Document">
       {row.kind === "received"
         ? <button type="button" className={styles.selectDocument}

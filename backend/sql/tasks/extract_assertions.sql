@@ -89,7 +89,7 @@ BEGIN
               ELSE 'Extract only explicit labelled findings; do not infer document purpose.\n' END ||
             'PAGE TEXT:\n' || v_page_text;
 
-        v_raw_a := (SELECT AI_COMPLETE('llama3.3-70b', :v_prompt_a, {'temperature': 0,'max_tokens':1800}));
+        v_raw_a := (SELECT AI_COMPLETE('llama3.3-70b', :v_prompt_a, {'temperature': 0,'max_tokens':1800})::VARCHAR);
         -- Strip markdown code fences: claude-haiku-4-5 wraps JSON in ```json
         -- ... ``` despite being told "Return ONLY JSON" - verified live
         -- (query 21 Sept). TRY_PARSE_JSON correctly refuses fenced text as
@@ -101,7 +101,7 @@ BEGIN
         IF (NOT COALESCE(IS_ARRAY(v_findings),FALSE) OR ARRAY_SIZE(v_findings)>16) THEN
             RETURN OBJECT_CONSTRUCT('error','pass_a_invalid','assertions_created',v_count);
         END IF;
-        v_raw_b := (SELECT AI_COMPLETE('claude-haiku-4-5', :v_prompt_a, {'temperature':0,'max_tokens':1800}));
+        v_raw_b := (SELECT AI_COMPLETE('claude-haiku-4-5', :v_prompt_a, {'temperature':0,'max_tokens':1800})::VARCHAR);
         v_findings_b := TRY_PARSE_JSON(REGEXP_REPLACE(v_raw_b, '```(json)?', ''));
         IF (NOT COALESCE(IS_ARRAY(v_findings_b),FALSE) OR ARRAY_SIZE(v_findings_b)>16) THEN
             RETURN OBJECT_CONSTRUCT('error','pass_b_invalid','assertions_created',v_count);
@@ -208,14 +208,16 @@ BEGIN
                 (assertion_id, doc_id, page_index, concept_id, subject, predicate, value, unit,
                  negation, missingness_state, extraction_confidence, verification_status,
                  pass1_value, pass2_value, extractor_version,char_start,char_end)
-            VALUES
-                (:v_assertion_id, :v_doc_id, :v_page_index, :v_concept_id,
+            -- SELECT, not VALUES: a VALUES row rejects IFF/NULLIF over bind
+            -- variables at run time (002014, first live extraction, 6 Oct).
+            SELECT
+                 :v_assertion_id, :v_doc_id, :v_page_index, :v_concept_id,
                  :v_subject, :v_predicate, IFF(:v_verification='verified',NULLIF(:v_value,'null'),NULL),
                  IFF(:v_verification='verified',NULLIF(:v_unit,'null'),NULL),
                  COALESCE(:v_negation, FALSE), IFF(:v_verification='verified',:v_missing,'conflicting'), NULL, :v_verification,
                  NULLIF(:v_value,'null'), :v_pass2_value, 'independent-page-read@0.1',
                  IFF(:v_verification='verified',POSITION(:v_quote,:v_page_text)-1,NULL),
-                 IFF(:v_verification='verified',POSITION(:v_quote,:v_page_text)-1+LENGTH(:v_quote),NULL));
+                 IFF(:v_verification='verified',POSITION(:v_quote,:v_page_text)-1+LENGTH(:v_quote),NULL);
 
             v_count := v_count + 1;
             v_i := v_i + 1;
@@ -232,6 +234,7 @@ $$;
 -- EXECUTE AS USER for the same DOC_PAGE row access policy reason as TASK_PARSE_DOCUMENTS.
 CREATE OR REPLACE TASK SAARTHI.OPERATIONAL.TASK_EXTRACT_ASSERTIONS
   WAREHOUSE = SAARTHI_AI_WH
+  TIMEZONE = 'UTC'
   AFTER SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS
   EXECUTE AS USER SITAR
 AS

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useOptionalCopilot } from "./copilot/copilot-provider";
 import { Search } from "lucide-react";
 import { filterAuthorizedPatients } from "@/lib/authorized-patient-search.mjs";
 import { PatientRosterItems, type RosterPatient } from "./patient-roster-list";
@@ -21,6 +22,11 @@ export function PatientRoster({
   available = true,
 }: PatientRosterProps): ReactNode {
   const [query, setQuery] = useState("");
+  // The live copilot matches a spoken name only against patients this person may open.
+  const setLiveRoster = useOptionalCopilot()?.live.setRoster;
+  useEffect(() => {
+    if (available && !preview) setLiveRoster?.(patients);
+  }, [setLiveRoster, patients, available, preview]);
   const matches = filterAuthorizedPatients(patients, query, available);
   const emptyMessage = !available
     ? "Patient list unavailable."

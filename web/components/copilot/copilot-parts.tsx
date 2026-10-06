@@ -74,7 +74,7 @@ export function CopilotComposer({ label, placeholder, value, setValue, busy, onS
           <X size={12} aria-hidden /></button>
       </span>)}
     </div>}
-    <textarea ref={input} aria-label={label} rows={1} value={value} placeholder={placeholder}
+    <textarea ref={input} name="question" autoComplete="off" aria-label={label} rows={1} value={value} placeholder={placeholder}
       disabled={busy} onChange={(event) => setValue(event.target.value)}
       onKeyDown={(event) => {
         if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;

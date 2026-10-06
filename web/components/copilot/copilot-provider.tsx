@@ -1,9 +1,12 @@
 "use client";
 
 import {
-  createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode,
+  createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore,
+  type ReactNode,
 } from "react";
 import { MAX_CONTEXT_REFERENCES, type ContextReference } from "@/lib/api-contracts.mjs";
+import { createCohortSession, type CohortSession } from "@/lib/copilot-session.mjs";
+import { useLiveCopilot, type LiveState } from "./copilot-live";
 
 // The copilot frame shared by every page (docs/design/COPILOT-EXPERIENCE.md). Pages that own
 // a patient conversation render it into `slot`; everything else gets cohort mode.
@@ -30,6 +33,12 @@ type CopilotState = {
   setPatient: (patient: CopilotPatientScope | null) => void;
   slot: HTMLElement | null;
   setSlot: (slot: HTMLElement | null) => void;
+  cohort: ReturnType<CohortSession["getSnapshot"]>;
+  setCohortQuestion: (question: string) => void;
+  sendCohort: (question: string) => Promise<void>;
+  stopCohort: () => void;
+  /** The optional live layer that carries out requests on the dashboard (copilot-live.tsx). */
+  live: LiveState;
 };
 
 const CopilotContext = createContext<CopilotState | null>(null);
@@ -53,6 +62,9 @@ export function CopilotProvider({ children }: { children: ReactNode }): ReactNod
   const [chips, setChips] = useState<CopilotChip[]>([]);
   const [patient, setPatientState] = useState<CopilotPatientScope | null>(null);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [cohortSession] = useState(createCohortSession);
+  const cohort = useSyncExternalStore(cohortSession.subscribe, cohortSession.getSnapshot,
+    cohortSession.getSnapshot);
 
   const attach = useCallback((chip: CopilotChip) => {
     setChips((current) => current.some((item) => item.kind === chip.kind && item.id === chip.id)
@@ -70,15 +82,22 @@ export function CopilotProvider({ children }: { children: ReactNode }): ReactNod
     });
   }, []);
 
+  const live = useLiveCopilot({ setOpen, attach, chips, clearChips, cohortSession,
+    patientId: patient?.patientId ?? null });
+
   useCopilotKeyboard({ open, setOpen, picking, setPicking });
   useDockedLayout(open, expanded);
 
   const value = useMemo<CopilotState>(() => ({
     open, setOpen, toggle: () => setOpen((current) => !current), expanded, setExpanded,
     inspector, setInspector, picking, setPicking, chips, attach, detach, clearChips,
-    patient, setPatient, slot, setSlot,
+    patient, setPatient, slot, setSlot, cohort,
+    setCohortQuestion: cohortSession.setQuestion,
+    sendCohort: cohortSession.send,
+    stopCohort: cohortSession.stop,
+    live,
   }), [open, expanded, inspector, picking, chips, attach, detach, clearChips, patient,
-    setPatient, slot]);
+    setPatient, slot, cohort, cohortSession, live]);
   return <CopilotContext.Provider value={value}>{children}</CopilotContext.Provider>;
 }
 

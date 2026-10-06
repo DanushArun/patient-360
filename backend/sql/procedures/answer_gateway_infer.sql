@@ -24,7 +24,12 @@ BEGIN
                 || '\nSQL_CONTEXT: ' || TO_JSON(v_context)
                 || '\nReturn only JSON with claims. Use provided exact evidence IDs. '
                 || 'Claims: text,claim_type,evidence[{kind,id}],asserted_value for typed values. '
-                || 'Dates: YYYY-MM-DD. No clinical judgments. Empty: claims=[].'))))));
+                || 'For numeric claims asserted_value MUST be a JSON number '
+                || '(e.g. 2900), never a quoted string and never include units. '
+                || 'Copy SQL value_num for numeric claims; units belong in text only. '
+                || 'Dates: YYYY-MM-DD strings, one separate claim for each date. '
+                || 'Status: exact source status string. Textual: omit asserted_value. '
+                || 'Each claim cites exactly one source. No clinical judgments. Empty: claims=[].'))))));
     BEGIN
         v_result := (SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
             'SAARTHI.OPERATIONAL.SAARTHI_AGENT',:v_payload));

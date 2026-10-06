@@ -1,0 +1,149 @@
+{
+  "account": "WH11571",
+  "timezone": "UTC",
+  "first_post_fix_scheduled_run": {
+    "task": "TASK_REFRESH_READINESS",
+    "scheduled_time_utc": "2026-10-06T05:50:08.927Z",
+    "started_at_utc": "2026-10-06T05:50:09.429Z",
+    "completed_at_utc": "2026-10-06T05:54:12.227Z",
+    "state": "SUCCEEDED",
+    "query_history_query_id": "01c78ae2-0204-d86c-0005-75520004145e",
+    "notify_state": "SUCCEEDED",
+    "dashboard_read_after_completion": "refresh returned current record facts, including a waiting-evidence timestamp of 2026-10-06 05:51 UTC; page headline still says readiness as of 05:24 UTC"
+  },
+  "events": [
+    {
+      "task": "TASK_PARSE_DOCUMENTS",
+      "action": "suspend_root",
+      "query_id": "01c78ad9-0204-d7c4-0005-75520003ce72",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_REFRESH_READINESS",
+      "action": "suspend_root",
+      "query_id": "01c78ad9-0204-d868-0005-75520003f8aa",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_EXTRACT_ASSERTIONS",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d7c4-0005-75520003ce76",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_FLATTEN_FHIR",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d86c-0005-75520003e8aa",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_NOTIFY",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d868-0005-75520003f8ae",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_PARSE_DOCUMENTS",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d7c4-0005-75520003ce7a",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_RECONCILE_EVIDENCE",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d86c-0005-75520003e8ae",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_REFRESH_READINESS",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d868-0005-75520003f8b2",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_SAARTHI_ORCHESTRATOR",
+      "action": "set_timezone_utc",
+      "query_id": "01c78ad9-0204-d868-0005-75520003f8b6",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_PARSE_DOCUMENTS",
+      "action": "resume_root",
+      "query_id": "01c78ad9-0204-d868-0005-75520003f8c2",
+      "status": "PASS"
+    },
+    {
+      "task": "TASK_REFRESH_READINESS",
+      "action": "resume_root",
+      "query_id": "01c78ad9-0204-d868-0005-75520003f8c6",
+      "status": "PASS"
+    }
+  ],
+  "verification": [
+    {
+      "task": "TASK_EXTRACT_ASSERTIONS",
+      "timezone": "UTC"
+    },
+    {
+      "task": "TASK_FLATTEN_FHIR",
+      "timezone": "UTC"
+    },
+    {
+      "task": "TASK_NOTIFY",
+      "timezone": "UTC"
+    },
+    {
+      "task": "TASK_PARSE_DOCUMENTS",
+      "timezone": "UTC"
+    },
+    {
+      "task": "TASK_RECONCILE_EVIDENCE",
+      "timezone": "UTC"
+    },
+    {
+      "task": "TASK_REFRESH_READINESS",
+      "timezone": "UTC"
+    },
+    {
+      "task": "TASK_SAARTHI_ORCHESTRATOR",
+      "timezone": "UTC"
+    }
+  ],
+  "task_states": [
+    {
+      "task": "TASK_EXTRACT_ASSERTIONS",
+      "state": "started",
+      "predecessors": "[\n  \"SAARTHI.OPERATIONAL.TASK_PARSE_DOCUMENTS\"\n]"
+    },
+    {
+      "task": "TASK_FLATTEN_FHIR",
+      "state": "started",
+      "predecessors": "[]"
+    },
+    {
+      "task": "TASK_NOTIFY",
+      "state": "started",
+      "predecessors": "[\n  \"SAARTHI.OPERATIONAL.TASK_REFRESH_READINESS\"\n]"
+    },
+    {
+      "task": "TASK_PARSE_DOCUMENTS",
+      "state": "started",
+      "predecessors": "[]"
+    },
+    {
+      "task": "TASK_RECONCILE_EVIDENCE",
+      "state": "started",
+      "predecessors": "[\n  \"SAARTHI.OPERATIONAL.TASK_EXTRACT_ASSERTIONS\"\n]"
+    },
+    {
+      "task": "TASK_REFRESH_READINESS",
+      "state": "started",
+      "predecessors": "[]"
+    },
+    {
+      "task": "TASK_SAARTHI_ORCHESTRATOR",
+      "state": "started",
+      "predecessors": "[]"
+    }
+  ]
+}

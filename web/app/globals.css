@@ -527,3 +527,31 @@ main.mx-auto.max-w-7xl .sa-census-card:hover { border-color: var(--separator); b
 /* Copilot docking lives in shell.css with the rest of the window layout. */
 html[data-copilot-picking] [data-copilot-ref] { cursor: crosshair; outline: 1px dashed var(--separator-strong); outline-offset: 2px; }
 html[data-copilot-picking] [data-copilot-ref]:hover { outline: 2px solid var(--accent); }
+
+/* Live copilot marks (components/copilot/copilot-live.tsx). Found: the item it is pointing at.
+   Cited: what the latest answer cites. Suggested: a patient it is asking you to confirm. */
+[data-copilot-mark] { outline: 2px solid var(--accent); outline-offset: -2px; transition: outline-color var(--motion-standard) var(--ease-standard), background-color var(--motion-standard) var(--ease-standard); }
+[data-copilot-mark="found"], [data-copilot-mark="cited"] { background-color: var(--accent-tint) !important; }
+[data-copilot-mark="found"] { animation: copilot-found 1.4s var(--ease-standard) 1; }
+[data-copilot-mark="suggested"] { outline-offset: 2px; animation: copilot-suggest 1.6s var(--ease-standard) infinite; }
+@keyframes copilot-found { 0% { outline-color: transparent; } 20% { outline-color: var(--accent); } }
+@keyframes copilot-suggest { 50% { outline-color: var(--accent-tint); } }
+@media (prefers-reduced-motion: reduce) { [data-copilot-mark] { animation: none !important; } }
+.copilot-flight {
+  position: fixed;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  max-width: 240px;
+  height: var(--control-height-small);
+  padding: 0 var(--space-3);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-label);
+  font: var(--text-caption);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: var(--shadow-elevated);
+  pointer-events: none;
+}
