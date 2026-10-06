@@ -8,7 +8,7 @@ MERGE INTO SAARTHI.OPERATIONAL.CLINICAL_ONTOLOGY t
 USING (
   SELECT 'ANC' canonical_name, 'analyte' concept_type, TRUE is_safety_critical, ARRAY_CONSTRUCT('absolute neutrophil count','neuts') synonyms
   UNION ALL SELECT 'PLT',        'analyte',   TRUE,  ARRAY_CONSTRUCT('PLT','thrombocytes','platelet count','platelets')
-  UNION ALL SELECT 'HER2_IHC',   'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 immunohistochemistry')
+  UNION ALL SELECT 'HER2_IHC',   'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 immunohistochemistry','HER2 IHC')
   UNION ALL SELECT 'HER2_FISH',  'biomarker', TRUE,  ARRAY_CONSTRUCT('HER2 in-situ hybridisation')
   UNION ALL SELECT 'CREATININE', 'analyte',   TRUE,  ARRAY_CONSTRUCT('Cr','serum creatinine')
   UNION ALL SELECT 'BILIRUBIN',  'analyte',   TRUE,  ARRAY_CONSTRUCT('T.Bil','total bilirubin')
@@ -21,12 +21,12 @@ USING (
   -- Not in SPEC.md/WORK-PLAN.md's 12-concept ontology list, but UNIT_REGISTRY's
   -- GM% pattern (WORK-PLAN.md Day 4) is a haemoglobin unit and needs a concept
   -- to join to. Added to close that cross-reference gap; flagged, not silent.
-  UNION ALL SELECT 'HEMOGLOBIN', 'analyte',   FALSE, ARRAY_CONSTRUCT('Hb','HGB')
+  UNION ALL SELECT 'HEMOGLOBIN', 'analyte',   FALSE, ARRAY_CONSTRUCT('Hb','HGB','Haemoglobin')
   -- Same gap, same reason: WBC and neutrophil percent are the two raw inputs
   -- to the ANC derivation (WBC x neutrophil% / 100, WORK-PLAN.md Day 4-5)
   -- but neither is a named concept in SPEC.md/WORK-PLAN.md's ontology list.
   UNION ALL SELECT 'WBC',        'analyte',   FALSE, ARRAY_CONSTRUCT('white blood cell count','WBC count')
-  UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', FALSE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%')
+  UNION ALL SELECT 'NEUTROPHIL_PCT', 'analyte', FALSE, ARRAY_CONSTRUCT('neutrophil percent','neutrophils %','PMN%','Neutrophils','Neutrophils (differential)')
   -- Same gap: pass_a_claim.md names auth_status and valid_until as the letter fields
   -- COV-AUTH-001 compares with the AUTHORIZATION row, but extraction keeps only
   -- ontology concepts, so a letter yielded no assertions. 'document_type' is the

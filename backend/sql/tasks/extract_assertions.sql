@@ -169,14 +169,17 @@ BEGIN
             LET v_pass2_value  VARCHAR := NULL;
             LET v_matches ARRAY;
             LET v_first_matches INTEGER;
+            -- Pair the two readers by the exact source phrase, as EXTRACT_ONE_DOCUMENT does.
+            -- Subject and predicate are free-form labels each model words its own way
+            -- (6 Oct, live: claude-haiku-4-5 filed every lab under predicate "value" while
+            -- llama3.3-70b repeated the analyte name), so pairing on them left facts both
+            -- models read identically unverified. Agreement is still required on value,
+            -- unit, missingness and negation below, and the quote must occur exactly once
+            -- on the page; repeated findings with different source context never collapse.
             SELECT COUNT(*) INTO :v_first_matches FROM TABLE(FLATTEN(input=>:v_findings))
-             WHERE value:predicate::VARCHAR=:v_predicate AND value:subject::VARCHAR=:v_subject
-               AND value:quote::VARCHAR=:v_quote;
+             WHERE value:quote::VARCHAR=:v_quote;
             SELECT ARRAY_AGG(value) INTO :v_matches FROM TABLE(FLATTEN(input=>:v_findings_b))
-             WHERE value:predicate::VARCHAR=:v_predicate AND value:subject::VARCHAR=:v_subject
-               AND value:quote::VARCHAR=:v_quote;
-            -- Pair by exact source phrase, not concept alone: repeated findings
-            -- with different source context must not collapse into one result.
+             WHERE value:quote::VARCHAR=:v_quote;
             IF (v_first_matches=1 AND ARRAY_SIZE(v_matches)=1 AND v_concept_id IS NOT NULL) THEN
                 LET v_result_b VARIANT := GET(:v_matches,0);
                 v_pass2_value := NULLIF(v_result_b:value::VARCHAR,'null');
