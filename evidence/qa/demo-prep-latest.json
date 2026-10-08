@@ -1,10 +1,29 @@
 {
-  "recorded_at": "2026-10-06T11:32:42.163944+00:00",
-  "base_revision": "8b70762d63aada7fd5b8813524c514e925d70255",
+  "recorded_at": "2026-10-08T08:55:21.372584+00:00",
+  "base_revision": "6099ad49a9744023a2f876e0158b8d0973c0dc47",
   "working_tree": true,
   "status": "PASS",
-  "mode": "verify",
-  "started_at": "2026-10-06T11:32:39+00:00",
+  "mode": "prepare",
+  "started_at": "2026-10-08T08:40:25+00:00",
+  "chunked": {
+    "chunks_created": 0
+  },
+  "re_extracted": [],
+  "extracted": [
+    {
+      "assertions_created": 0
+    }
+  ],
+  "reconciled": {
+    "cross_specimen_discordant": 0,
+    "reconciled_at": "2026-10-08T08:41:15",
+    "same_specimen_conflicts": 0,
+    "support_links_added": 0
+  },
+  "refreshed": {
+    "refreshed_at": "2026-10-08T08:55:18",
+    "rows_written": 1008
+  },
   "visits_tomorrow": 13,
   "outcomes": {
     "PAT-DC-12": {
@@ -238,7 +257,7 @@
       },
       "CLIN-PLT-001": {
         "outcome": "not_evaluated",
-        "reason": "no usable PLT evidence found as of 2026-10-06T11:31:40"
+        "reason": "no usable PLT evidence found as of 2026-10-08T08:52:40"
       },
       "DOC-PATH-001": {
         "outcome": "pass",
@@ -250,7 +269,7 @@
       },
       "CLIN-ANC-001": {
         "outcome": "not_evaluated",
-        "reason": "no usable ANC evidence found as of 2026-10-06T11:31:40"
+        "reason": "no usable ANC evidence found as of 2026-10-08T08:52:40"
       },
       "CLIN-BILI-001": {
         "outcome": "pass",
@@ -642,11 +661,11 @@
     "PAT-DEEP-0001": {
       "ENDO-HBA1C-001": {
         "outcome": "fail",
-        "reason": "HBA1C assessment is 540 days old, exceeds 90-day limit"
+        "reason": "HBA1C assessment is 542 days old, exceeds 90-day limit"
       },
       "CLIN-PLT-001": {
         "outcome": "fail",
-        "reason": "PLT assessment is 559 days old, exceeds 7-day limit"
+        "reason": "PLT assessment is 561 days old, exceeds 7-day limit"
       },
       "CLIN-BILI-001": {
         "outcome": "pass",
@@ -662,7 +681,7 @@
       },
       "CLIN-ANC-001": {
         "outcome": "fail",
-        "reason": "ANC assessment is 559 days old, exceeds 7-day limit"
+        "reason": "ANC assessment is 561 days old, exceeds 7-day limit"
       },
       "ID-LINK-001": {
         "outcome": "pass",
@@ -682,7 +701,7 @@
       },
       "ENDO-DEXA-001": {
         "outcome": "fail",
-        "reason": "DEXA T-score -1.6 (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan 572 days old, overdue"
+        "reason": "DEXA T-score -1.6 (osteopenia, -2.5<T<-1.0) - 12-month interval per NCCN, last scan 574 days old, overdue"
       },
       "CLIN-CRCL-001": {
         "outcome": "pass",
@@ -698,7 +717,7 @@
       },
       "SURV-LVEF-001": {
         "outcome": "fail",
-        "reason": "LVEF last measured 540 days ago, exceeds 90-day surveillance interval"
+        "reason": "LVEF last measured 542 days ago, exceeds 90-day surveillance interval"
       },
       "COV-LIMIT-001": {
         "outcome": "pass",
@@ -726,15 +745,15 @@
       "CONFLICTING": 0
     },
     {
-      "DOC_ID": "DOC-LAB-DC-12",
-      "ASSERTIONS": 8,
-      "VERIFIED": 8,
-      "CONFLICTING": 0
-    },
-    {
       "DOC_ID": "DOC-PATH-DC-12",
       "ASSERTIONS": 3,
       "VERIFIED": 1,
+      "CONFLICTING": 0
+    },
+    {
+      "DOC_ID": "DOC-LAB-DC-12",
+      "ASSERTIONS": 8,
+      "VERIFIED": 8,
       "CONFLICTING": 0
     }
   ],
@@ -745,48 +764,343 @@
       "sql_sha256": "9c24646004f1bd0297371e67d7c7933159eefaaada7fe2dfb9cb6f38c9bd99e0",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78c34-0204-df74-0005-7552000d8202",
-      "elapsed_ms": 188.70816699927673
+      "query_id": "01c796c8-0304-df66-0005-7552004271ca",
+      "elapsed_ms": 209.05333399423398
     },
     {
       "label": "session_identity",
       "sql_sha256": "9c753484260dce8e77edbeaa16cf2a5f8a8e4f02cd697268bc4ee13a5032a94b",
       "status": "PASS",
       "rows": 1,
-      "query_id": "01c78c34-0204-df74-0005-7552000d8206",
-      "elapsed_ms": 209.39900001394562
+      "query_id": "01c796c8-0304-df66-0005-7552004271ce",
+      "elapsed_ms": 168.57000000891276
+    },
+    {
+      "label": "query",
+      "sql_sha256": "b32c47dfd34716ab7ad2737467d7429b46728590791d6373c3e8d2a0d1dcfc71",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c8-0304-df5c-0005-75520041cf5a",
+      "elapsed_ms": 172.2825839824509
+    },
+    {
+      "label": "backend/sql/data/ontology.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f22",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/ontology.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f26",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/web_patient_context.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f2a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/web_reads.sql",
+      "query_id": "01c796c8-0304-df5c-0005-75520041cf7a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/procedures/web_reads.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271d2",
+      "status": "PASS"
+    },
+    {
+      "label": "deploy_extract_assertions_proc",
+      "sql_sha256": "18bc3561a4bcccbfec4d788034a57cce463a0fa36ff89a719e8b734f24661f0b",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c8-0304-df66-0005-7552004271d6",
+      "elapsed_ms": 318.016166012967
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f2e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df5c-0005-75520041cf9e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271da",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271de",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f32",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df5c-0005-75520041cfbe",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271e2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271e6",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271ee",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271f2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-df5c-0005-75520041cfee",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/data/load_daycare_cohort.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f36",
+      "status": "PASS"
+    },
+    {
+      "label": "reanchor_deep_case_visit",
+      "sql_sha256": "81e6e3567e033ef46257916f852efc119eb92f2cc211e5dacf92ac928e6450c3",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c8-0304-e40f-0005-755200422f3a",
+      "elapsed_ms": 555.3651670052204
+    },
+    {
+      "label": "practitioner_display_name",
+      "sql_sha256": "285bd5e1d8f33d5bc5360aeae5418f0acc6407544a74335508b6a959004e1cc6",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c8-0304-df5c-0005-75520042903a",
+      "elapsed_ms": 310.9972079982981
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f3e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-75520042904a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-755200429052",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-755200429066",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f42",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f46",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271f6",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f4a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-75520042909e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-7552004290a6",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-7552004290ba",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df66-0005-7552004271fa",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-df5c-0005-7552004290f2",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f4e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_demo_hero.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f52",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/reanchor_cohort_documents.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f56",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/reanchor_cohort_documents.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f5a",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/reanchor_cohort_documents.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f5e",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_forward_schedule.sql",
+      "query_id": "01c796c8-0304-df5c-0005-755200429182",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_forward_schedule.sql",
+      "query_id": "01c796c8-0304-e40f-0005-755200422f62",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_forward_schedule.sql",
+      "query_id": "01c796c8-0304-df5c-0005-7552004291ae",
+      "status": "PASS"
+    },
+    {
+      "label": "backend/sql/demo/load_forward_schedule.sql",
+      "query_id": "01c796c8-0304-df5c-0005-7552004291ba",
+      "status": "PASS"
+    },
+    {
+      "label": "query",
+      "sql_sha256": "7b6dc9e16c538f4df79642350f06139e106af814cd669518502225546c57a9d5",
+      "status": "PASS",
+      "rows": 4,
+      "query_id": "01c796c9-0304-df66-0005-755200427206",
+      "elapsed_ms": 1260.7909169746563
+    },
+    {
+      "label": "refresh_dynamic_table",
+      "sql_sha256": "e06b1e701465504cd54043541376c7cf16a591b40b9604852cd4c7bae16191e8",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c9-0304-df5c-0005-7552004291ea",
+      "elapsed_ms": 2362.362749991007
+    },
+    {
+      "label": "refresh_dynamic_table",
+      "sql_sha256": "c6b17a90ec51225f175d4907b3aa9eeb207c06e3f3f7f24dace9f5851d67faf2",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c9-0304-df66-0005-75520042720a",
+      "elapsed_ms": 2288.646708999295
+    },
+    {
+      "label": "refresh_dynamic_table",
+      "sql_sha256": "b7938e5ba434f67aae9a2be3bbe6e0bce4064c5ae894c1751e13ed4666323ecd",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c9-0304-df5c-0005-755200429256",
+      "elapsed_ms": 1176.1858749960084
+    },
+    {
+      "label": "refresh_dynamic_table",
+      "sql_sha256": "14b9a82ccfe015e3f8d67e9e6178da14f8216bb3bda585136006ec68ca49b172",
+      "status": "PASS",
+      "rows": 1,
+      "query_id": "01c796c9-0304-df66-0005-755200427212",
+      "elapsed_ms": 1762.0823750039563
+    },
+    {
+      "label": "CHUNK_DOCUMENTS_PROC",
+      "query_id": "01c796c9-0304-e40f-0005-755200422f66",
+      "status": "PASS"
+    },
+    {
+      "label": "find_unverified_hero_docs",
+      "sql_sha256": "97aa81072356fa5720ae5969b2a7d11bed37865b982fb57b8fbc29cc0207a17a",
+      "status": "PASS",
+      "rows": 0,
+      "query_id": "01c796c9-0304-e40f-0005-755200422f72",
+      "elapsed_ms": 235.4421670024749
+    },
+    {
+      "label": "EXTRACT_ASSERTIONS_PROC",
+      "query_id": "01c796c9-0304-e40f-0005-755200422f76",
+      "status": "PASS"
+    },
+    {
+      "label": "RECONCILE_EVIDENCE_PROC",
+      "query_id": "01c796c9-0304-e40f-0005-755200422f7e",
+      "status": "PASS"
+    },
+    {
+      "label": "REFRESH_READINESS_PROC",
+      "query_id": "01c796c9-0304-e40f-0005-755200422f92",
+      "status": "PASS"
     },
     {
       "label": "query",
       "sql_sha256": "ceac6a9bd9868c43e759aa6263aaafc04f5aa303f1dc41a6f5a86954ee5d1545",
       "status": "PASS",
       "rows": 13,
-      "query_id": "01c78c34-0204-df74-0005-7552000d8212",
-      "elapsed_ms": 200.08795798639767
+      "query_id": "01c796d7-0304-df66-0005-7552004272c2",
+      "elapsed_ms": 478.46891699009575
     },
     {
       "label": "query",
       "sql_sha256": "1ee2dd797c7c1f2cf8d234fb030f8bcf6de119a308e0baa650e0fda489c123e2",
       "status": "PASS",
       "rows": 168,
-      "query_id": "01c78c34-0204-df72-0005-7552000d737e",
-      "elapsed_ms": 323.68016699911095
+      "query_id": "01c796d7-0304-df66-0005-7552004272c6",
+      "elapsed_ms": 865.6607080192771
     },
     {
       "label": "query",
       "sql_sha256": "fa99807403880aa984bb4b210d95ea324aa86482209387c7db78c1606fe49646",
       "status": "PASS",
       "rows": 5,
-      "query_id": "01c78c34-0204-df66-0005-7552000cb6a6",
-      "elapsed_ms": 271.4684579987079
+      "query_id": "01c796d7-0304-df5c-0005-7552004337ca",
+      "elapsed_ms": 412.08187499432825
     },
     {
       "label": "query",
       "sql_sha256": "0ae17fea48bf48b67c6401e11720458ee795c01ac49fcda04689885ba744ba7c",
       "status": "PASS",
       "rows": 0,
-      "query_id": "01c78c34-0204-df72-0005-7552000d738e",
-      "elapsed_ms": 250.52400000276975
+      "query_id": "01c796d7-0304-df66-0005-7552004272ca",
+      "elapsed_ms": 590.5349169916008
     }
   ]
 }

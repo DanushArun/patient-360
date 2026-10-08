@@ -2,7 +2,8 @@
 
 Moves every synthetic day-care visit to tomorrow (a staggered 08:00-13:40 queue) with its evidence at the same
 relative age (load_daycare_cohort.sql), loads the demo hero PAT-DC-12
-(backend/sql/demo/load_demo_hero.sql), realigns generated report dates with their
+(backend/sql/demo/load_demo_hero.sql), schedules every patient's later cycles through 7 Dec
+(backend/sql/demo/load_forward_schedule.sql), realigns generated report dates with their
 events, runs the R7 two-family extraction on any new page, reconciles evidence and
 recomputes readiness. Then it checks the outcome every demo beat depends on and writes
 evidence/qa/demo-prep-latest.json. Nothing here decides a clinical outcome (R1): it
@@ -28,6 +29,7 @@ from backend.verification.session import ROOT, Session, connect
 COHORT = ROOT / "backend/sql/data/load_daycare_cohort.sql"
 HERO = ROOT / "backend/sql/demo/load_demo_hero.sql"
 DOC_DATES = ROOT / "backend/sql/demo/reanchor_cohort_documents.sql"
+FORWARD = ROOT / "backend/sql/demo/load_forward_schedule.sql"
 ONTOLOGY = ROOT / "backend/sql/data/ontology.sql"
 EXTRACTOR = ROOT / "backend/sql/tasks/extract_assertions.sql"
 REPORT = ROOT / "evidence/qa/demo-prep-latest.json"
@@ -115,6 +117,8 @@ def prepare(session: Session, report: dict) -> None:
                   label="practitioner_display_name")
     run_file(session, HERO)
     run_file(session, DOC_DATES)
+    # Later cycles through 7 Dec, so the census is never empty on any review day.
+    run_file(session, FORWARD)
     for row in session.query("SHOW DYNAMIC TABLES IN DATABASE SAARTHI"):
         name = f"{row['database_name']}.{row['schema_name']}.{row['name']}"
         session.query(f"ALTER DYNAMIC TABLE {name} REFRESH", label="refresh_dynamic_table")
